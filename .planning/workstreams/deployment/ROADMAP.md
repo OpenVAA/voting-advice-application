@@ -904,7 +904,7 @@ Plans:
   2. The `migrations` and `settings` steps connect with `PGSSLMODE=verify-full` and the Supabase root CA, a wrong CA or host is refused, the guard test fails on a fallback to `require`, and an observed staging deploy is green.
   3. A standalone reviewer brief describes what the relay collects, where it goes, anonymisation, consent and retention, and poses the six readings as questions; the legal review stays an external blocker.
   4. The three UAT todos and the D-14 audit items are fixed and their todos closed, one observed full `main.yaml` CI run is green, and the full local E2E suite is green at the phase's end with summed deltas against the last full run (729 passed).
-**Plans:** 18/20 plans executed (5 gap-closure plans)
+**Plans:** 19/20 plans executed (5 gap-closure plans)
 
 Plans:
 **Wave 1**
@@ -956,7 +956,7 @@ Plans:
 - [x] 189.1.1-18-PLAN.md — review IN-02..IN-05 fixed (comments, smoke title), IN-06 and IN-07 deferred with reasons (wave 14)
 
 **Wave 15** *(blocked on Wave 14 completion)*
-- [ ] 189.1.1-19-PLAN.md — deploy of the fix; nested-Escape script on staging before and after (wave 15, operator decision and review approval)
+- [x] 189.1.1-19-PLAN.md — deploy of the fix; nested-Escape script on staging before and after (wave 15, operator decision and review approval)
 
 **Wave 16** *(blocked on Wave 15 completion)*
 - [ ] 189.1.1-20-PLAN.md — gap-closure map, review dispositions, closing gates, the phase's full E2E run (wave 16)
