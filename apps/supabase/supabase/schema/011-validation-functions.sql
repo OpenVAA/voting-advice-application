@@ -6,8 +6,9 @@
 -- - is_image(jsonb) - whether a JSONB value is a well-formed StoredImage object
 -- - validate_image(jsonb) - raise a rule-specific error if a JSONB value is not a well-formed StoredImage object
 -- - validate_answer_value(jsonb, question_type, jsonb) - validate an answer value against its question type
--- - nomination_shape_rule(nomination_shape, entity_type) - which entity types an election type admits, and where a candidate needs a parent
--- - validate_nomination() - enforce nomination tenancy, the election-type rule, the constituency rule, hierarchy and parent consistency
+-- - nomination_shape_rule(nomination_shape, entity_type) - which entity types a nomination shape admits, and where a candidate needs a parent
+-- - validate_nomination() - enforce nomination tenancy, the nomination-shape rule, the constituency rule, hierarchy and parent consistency
+-- - nomination_requests_parent(jsonb) - whether a nomination's custom data asks for a parent that is not in the system
 -- - validate_nomination_parent_required() - refuse, when the transaction ends, a candidate nomination that needs a parent and has none
 -- - enforce_nomination_confirmation() - refuse or clear a nomination's confirmation the caller may not set
 -- - enforce_nomination_entity_columns() - bound the nomination columns a non-admin may write
@@ -230,14 +231,14 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- nomination_shape_rule: the election type x entity type matrix, encoded once
+-- nomination_shape_rule: the nomination shape x entity type matrix, encoded once
 --
--- Answers, for one election type and one entity type, one of three words:
+-- Answers, for one nomination shape and one entity type, one of the three members of `public.nomination_admission`:
 --   'admitted'        - the entity type may be nominated, with or without a parent nomination.
 --   'parent_required' - it may be nominated, and when the transaction ends its nomination must have a parent nomination or carry `requestedParentOrganization` in its custom data.
 --   'refused'         - it may not be nominated in an election of that type.
 --
--- The CASE below is the table: one line per cell, one block per election type, the entity types in the same order in each. A faction stands wherever a candidate may have a parent, and an alliance wherever an organization may stand.
+-- The CASE below is the table: one line per cell, one block per nomination shape, the entity types in the same order in each. A faction stands wherever a candidate may have a parent, and an alliance wherever an organization may stand.
 --
 -- A NULL argument answers NULL, and so would a pair the CASE does not name. Every caller treats NULL as a refusal, so a type added to either enum admits nothing until it is given a cell here.
 --
@@ -248,10 +249,10 @@ $$;
 CREATE OR REPLACE FUNCTION public.nomination_shape_rule (
   p_shape public.nomination_shape,
   p_entity_type public.entity_type
-) RETURNS text LANGUAGE sql IMMUTABLE
+) RETURNS public.nomination_admission LANGUAGE sql IMMUTABLE
 SET
   search_path = '' AS $$
-  SELECT CASE
+  SELECT (CASE
     WHEN (p_shape, p_entity_type) = ('organization_list', 'candidate') THEN 'parent_required'
     WHEN (p_shape, p_entity_type) = ('organization_list', 'organization') THEN 'admitted'
     WHEN (p_shape, p_entity_type) = ('organization_list', 'faction') THEN 'admitted'
@@ -271,16 +272,16 @@ SET
     WHEN (p_shape, p_entity_type) = ('organization_only', 'organization') THEN 'admitted'
     WHEN (p_shape, p_entity_type) = ('organization_only', 'faction') THEN 'refused'
     WHEN (p_shape, p_entity_type) = ('organization_only', 'alliance') THEN 'admitted'
-  END;
+  END)::public.nomination_admission;
 $$;
 
 --------------------------------------------------------------------------------
--- validate_nomination: enforce the election-type rule, hierarchy and election/constituency consistency
+-- validate_nomination: enforce the nomination-shape rule, hierarchy and election/constituency consistency
 --
--- Election-type rule:
---   The row's entity type must be one its election's type admits, as `nomination_shape_rule` answers. A refusal is `Nomination shape refused: ...` with SQLSTATE 23514.
+-- Nomination-shape rule:
+--   The row's entity type must be one its election's nomination shape admits, as `nomination_shape_rule` answers. A refusal is `Nomination shape refused: ...` with SQLSTATE 23514.
 --   It binds every writer, on INSERT and on UPDATE: an entity's own editor, an admin, the service role and the owner of the tables alike. The function reads no role.
---   It is asked when a nomination is written. Nothing re-checks the nominations an election holds when its type is changed, so a later write of a row the new type refuses is refused.
+--   It is asked when a nomination is written. Nothing re-checks the nominations an election holds when its nomination shape is changed, so a later write of a row the new shape refuses is refused.
 --   Whether a candidate that needs a parent has one is not asked here: `validate_nomination_parent_required` asks it when the transaction ends.
 --
 -- Hierarchy rules:
@@ -291,7 +292,7 @@ $$;
 --
 -- Consistency rules:
 --   The nomination's election and constituency must belong to the nomination's own project.
---   The nomination's constituency must be a constituency of its election: one a constituency group linked to the election holds. A refusal is `Nomination constituency <id> is no constituency of its election <id>` with SQLSTATE 23514. It binds every writer, as the election-type rule does, and is asked on INSERT and on an UPDATE that changes the row's election or constituency. A stored nomination whose constituency is unlinked from its election later is not judged again until it is moved, so it can still be edited where it is.
+--   The nomination's constituency must be a constituency of its election: one a constituency group linked to the election holds. A refusal is `Nomination constituency <id> is no constituency of its election <id>` with SQLSTATE 23514. It binds every writer, as the nomination-shape rule does, and is asked on INSERT and on an UPDATE that changes the row's election or constituency. A stored nomination whose constituency is unlinked from its election later is not judged again until it is moved, so it can still be edited where it is.
 --   If parent_nomination_id is set, election_id, constituency_id, and election_round must match the parent nomination. A round that is not stored is round 1 on either side.
 --   A faction's parent must be the nomination of that faction's own organization, not merely of some organization. The exception names both organization ids.
 --
@@ -310,8 +311,8 @@ DECLARE
   p_parent_organization_id uuid;
   p_child_type public.entity_type;
   p_faction_organization_id uuid;
-  p_election_type public.nomination_shape;
-  p_shape_rule text;
+  p_nomination_shape public.nomination_shape;
+  p_shape_rule public.nomination_admission;
   p_contest_judged boolean;
 BEGIN
   -- Derive entity_type from the FK columns
@@ -336,21 +337,21 @@ BEGIN
       USING ERRCODE = 'check_violation';
   END IF;
 
-  -- The election-type rule: the matrix is asked with the entity type derived above, because the generated `entity_type` column is NULL in a BEFORE trigger. Only 'admitted' and 'parent_required' let the row through, so an answer of NULL is a refusal. Checked for every writer, as the tenancy rule above is, and before the return below, which would otherwise let every row without a parent pass unasked.
-  SELECT e.election_type INTO p_election_type
+  -- The nomination-shape rule: the matrix is asked with the entity type derived above, because the generated `entity_type` column is NULL in a BEFORE trigger. Only 'admitted' and 'parent_required' let the row through, so an answer of NULL is a refusal. Checked for every writer, as the tenancy rule above is, and before the return below, which would otherwise let every row without a parent pass unasked.
+  SELECT e.nomination_shape INTO p_nomination_shape
   FROM public.elections e
   WHERE e.id = NEW.election_id;
 
-  p_shape_rule := public.nomination_shape_rule(p_election_type, p_child_type);
+  p_shape_rule := public.nomination_shape_rule(p_nomination_shape, p_child_type);
 
   IF p_shape_rule IS NULL OR p_shape_rule NOT IN ('admitted', 'parent_required') THEN
-    RAISE EXCEPTION 'Nomination shape refused: % cannot be nominated in an election of type % (election %)',
+    RAISE EXCEPTION 'Nomination shape refused: % cannot be nominated in an election whose nomination shape is % (election %)',
       CASE
         WHEN p_child_type IS NULL THEN 'a row that names no entity'
         WHEN p_child_type IN ('organization', 'alliance') THEN 'an ' || p_child_type::text
         ELSE 'a ' || p_child_type::text
       END,
-      p_election_type,
+      p_nomination_shape,
       NEW.election_id
       USING ERRCODE = 'check_violation';
   END IF;
@@ -453,15 +454,34 @@ END;
 $$ LANGUAGE plpgsql;
 
 --------------------------------------------------------------------------------
+-- nomination_requests_parent: whether a nomination asks for a parent that is not in the system
+--
+-- True when the custom data carries `requestedParentOrganization` as a string holding something other than white space. Such a nomination has no parent nomination yet: it waits for a parent an admin must resolve, a party for a candidate and an alliance for an organization. Any other value, an absent key and a NULL argument answer false.
+--
+-- `validate_nomination_parent_required` and `enforce_nomination_confirmation` ask it, so the two read the request alike.
+--
+-- Reads no table, so it is IMMUTABLE and not SECURITY DEFINER. It lives in `public` because this file is applied before the `private` schema exists.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.nomination_requests_parent (p_custom_data jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    jsonb_typeof(p_custom_data -> 'requestedParentOrganization') = 'string'
+    AND (p_custom_data ->> 'requestedParentOrganization') ~ '[^[:space:]]',
+    false
+  );
+$$;
+
+--------------------------------------------------------------------------------
 -- validate_nomination_parent_required: a candidate that needs a parent has one when the transaction ends
 --
--- The function of the constraint trigger `nominations_parent_required` (104-nominations.sql). Where `nomination_shape_rule` answers 'parent_required' for a candidate, the candidate's nomination must have a parent nomination or carry `requestedParentOrganization` in its custom data as a string that is not blank. A refusal is `Nomination parent required: ...` with SQLSTATE 23514.
+-- The function of the constraint trigger of the same name (104-nominations.sql). Where `nomination_shape_rule` answers 'parent_required' for a candidate, the candidate's nomination must have a parent nomination or ask for one, as `nomination_requests_parent` answers. A refusal is `Nomination parent required: ...` with SQLSTATE 23514.
 --
 -- It runs at the end of the transaction and not at the statement, so a writer may insert the candidate's row, then its party's row, then point the first at the second: only a row that is still without a parent when the transaction ends is refused.
 --
 -- It reads the row again by its id and never judges the row the queued event carries. The event carries the row as that statement wrote it, so judging it would refuse the three-statement order above. A row that is gone by then is not judged at all.
 --
--- A function that must report the refusal inside its own call forces the constraint and puts it back before it returns: `SET CONSTRAINTS public.nominations_parent_required IMMEDIATE;` and then `SET CONSTRAINTS public.nominations_parent_required DEFERRED;`. While the constraint is immediate, a candidate's row without a parent is refused at its own statement, so the second statement is not optional.
+-- A function that must report the refusal inside its own call forces the constraint and puts it back before it returns: `SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE;` and then `SET CONSTRAINTS public.validate_nomination_parent_required DEFERRED;`. While the constraint is immediate, a candidate's row without a parent is refused at its own statement, so the second statement is not optional.
 --
 -- SECURITY DEFINER with an empty search_path, as `validate_nomination` is: the re-read must find the row whatever row-level security the writer carries. The rule binds every writer, and the function reads no role.
 --------------------------------------------------------------------------------
@@ -473,7 +493,7 @@ DECLARE
   v_parent_nomination_id uuid;
   v_custom_data jsonb;
   v_election_id uuid;
-  v_election_type public.nomination_shape;
+  v_nomination_shape public.nomination_shape;
 BEGIN
   -- Scalar variables, not a row of the table's type: this file is applied before the table exists, and a declaration is resolved when the function is created.
   SELECT n.candidate_id, n.parent_nomination_id, n.custom_data, n.election_id
@@ -484,18 +504,15 @@ BEGIN
   IF NOT FOUND
      OR v_candidate_id IS NULL
      OR v_parent_nomination_id IS NOT NULL
-     OR (
-       jsonb_typeof(v_custom_data -> 'requestedParentOrganization') = 'string'
-       AND (v_custom_data ->> 'requestedParentOrganization') ~ '[^[:space:]]'
-     ) THEN
+     OR public.nomination_requests_parent(v_custom_data) THEN
     RETURN NULL;
   END IF;
 
-  SELECT e.election_type INTO v_election_type
+  SELECT e.nomination_shape INTO v_nomination_shape
   FROM public.elections e
   WHERE e.id = v_election_id;
 
-  IF public.nomination_shape_rule(v_election_type, 'candidate') = 'parent_required' THEN
+  IF public.nomination_shape_rule(v_nomination_shape, 'candidate') = 'parent_required' THEN
     RAISE EXCEPTION 'Nomination parent required: candidate nomination % in election % has neither a parent nomination nor a requested parent organization',
       NEW.id, v_election_id
       USING ERRCODE = 'check_violation';
@@ -510,7 +527,7 @@ $$ LANGUAGE plpgsql;
 --
 -- Editing a nomination turns its confirmation off. The system sets the flag, so this is a trigger rather than a policy: a policy can refuse a row but cannot rewrite one. Three rules, in order:
 --
---   1. On either verb, a row being confirmed while its custom_data carries `requestedParentOrganization` as a string that is not blank is refused. A nomination with a NULL parent either stands on its own or waits for a parent that is not in the system yet, a party for a candidate and an alliance for an organization, and that key is the only difference. Confirming such a row would publish as standing on its own a nominee that asked for a parent.
+--   1. On either verb, a row being confirmed while `nomination_requests_parent` holds for its custom_data is refused. A nomination with a NULL parent either stands on its own or waits for a parent that is not in the system yet, a party for a candidate and an alliance for an organization, and that key is the only difference. Confirming such a row would publish as standing on its own a nominee that asked for a parent.
 --   2. On UPDATE, when the caller's effective database role is `authenticated` and the caller does not hold `nomination.confirm` on the row's project, an attempt to turn the flag on is refused by name, and any other edit has the flag forced off. The refusal is explicit so a client never believes an ignored request succeeded.
 --   3. Otherwise the supplied value stands. That makes an admin's edit-and-confirm a single statement, and keeps a service-role re-seed from unconfirming every row it touches.
 --
@@ -518,7 +535,7 @@ $$ LANGUAGE plpgsql;
 --
 -- A project editor holds `nomination.edit` but not `nomination.confirm`, so its edits also turn confirmation off and only an admin can restore the flag. That is the review gate.
 --
--- On INSERT it also repeats the policy cap on originated unconfirmed parent nominations, so the caller is told the limit.
+-- On INSERT it also repeats the policy cap on originated unconfirmed parent nominations, so the caller is told the limit. That refusal raises SQLSTATE OV004, a code no other refusal raises, so a client recognises it by the code alone.
 --
 -- SECURITY INVOKER, unlike validate_nomination: the role test must see the caller's effective role, which owner rights would replace. It reads no table directly; its authority questions go through `user_can` and the private cap-count helper.
 --------------------------------------------------------------------------------
@@ -526,9 +543,8 @@ CREATE OR REPLACE FUNCTION public.enforce_nomination_confirmation () RETURNS TRI
 BEGIN
   -- Rule 1: the free-text branch can never be confirmed, on either verb.
   IF NEW.confirmed
-     AND jsonb_typeof(NEW.custom_data -> 'requestedParentOrganization') = 'string'
-     AND (NEW.custom_data ->> 'requestedParentOrganization') ~ '[^[:space:]]' THEN
-    RAISE EXCEPTION 'Nomination % cannot be confirmed while custom_data carries "requestedParentOrganization" (%): an admin must resolve the requested party first, or confirming would publish as an independent a candidate who asked for a party',
+     AND public.nomination_requests_parent(NEW.custom_data) THEN
+    RAISE EXCEPTION 'Nomination % cannot be confirmed while custom_data carries "requestedParentOrganization" (%): an admin must resolve the requested parent first, or confirming would publish as standing on its own a nominee who asked for a parent',
       COALESCE(NEW.id::text, '(new)'),
       NEW.custom_data ->> 'requestedParentOrganization';
   END IF;
@@ -556,7 +572,8 @@ BEGIN
      AND NOT public.user_can('project', NEW.project_id, 'project.edit_nominations')
      AND private.caller_unconfirmed_originated_count() >= 10 THEN
     RAISE EXCEPTION 'A caller may originate at most 10 unconfirmed parent nominations; this caller already holds %. An administrator must confirm or reject some before more can be created.',
-      private.caller_unconfirmed_originated_count();
+      private.caller_unconfirmed_originated_count()
+      USING ERRCODE = 'OV004';
   END IF;
 
   -- Rule 3: the supplied value stands.
@@ -670,7 +687,7 @@ $$;
 --
 -- The body names no entity type and no protected column. The protected columns arrive per registration in TG_ARGV and are compared through a JSONB projection of both rows, and the entity type is derived from TG_TABLE_NAME, so one body serves all four entity tables. The confirmation column is not a parameter: it has the same name on every entity table and is the subject of rule 1.
 --
--- Each refusal starts with a stable prefix, so `throws_like` can match it and a seed log can tell the two apart. Both name the table, the row and both values; the immutability refusal also names the column, and its prefix says "name" for every protected column, the short name included.
+-- Each refusal starts with a stable prefix, so `throws_like` can match it and a seed log can tell the two apart. Both name the table, the row and both values; the immutability refusal also names the column, and its prefix says "name" for every protected column, the short name included. The immutability refusal raises SQLSTATE OV001, a code no other refusal raises, so a client recognises it by the code alone and never by its text.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_entity_immutability () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
@@ -704,7 +721,8 @@ BEGIN
          AND NOT public.user_can('entity', NEW.id, 'entity.edit_immutable', v_entity_type) THEN
         RAISE EXCEPTION 'Entity name is immutable once confirmed: column %.%.% on row % cannot be changed (current: %, attempted: %); changing it requires the entity.edit_immutable permission',
           TG_TABLE_SCHEMA, TG_TABLE_NAME, v_col, NEW.id,
-          COALESCE(v_old_row ->> v_col, '(none)'), COALESCE(v_new_row ->> v_col, '(none)');
+          COALESCE(v_old_row ->> v_col, '(none)'), COALESCE(v_new_row ->> v_col, '(none)')
+          USING ERRCODE = 'OV001';
       END IF;
     END LOOP;
   END IF;

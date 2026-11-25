@@ -2,7 +2,7 @@
   "baseLocale": "en",
   "locales": ["en", "fi", "sv", "da", "et", "fr", "lb"],
   "modules": [
-    "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@4.6.0/dist/index.js",
+    "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@4/dist/index.js",
     "https://cdn.jsdelivr.net/npm/@inlang/plugin-m-function-matcher@2/dist/index.js"
   ],
   "plugin.inlang.messageFormat": {
@@ -20,13 +20,11 @@
       "./messages/{locale}/authConfirm.json",
       "./messages/{locale}/contestantApp.basicInfo.json",
       "./messages/{locale}/contestantApp.common.json",
-      "./messages/{locale}/contestantApp.emailSent.json",
       "./messages/{locale}/contestantApp.entitySelection.json",
       "./messages/{locale}/contestantApp.error.json",
       "./messages/{locale}/contestantApp.help.json",
       "./messages/{locale}/contestantApp.home.json",
       "./messages/{locale}/contestantApp.identityProvider.json",
-      "./messages/{locale}/contestantApp.info.json",
       "./messages/{locale}/contestantApp.login.json",
       "./messages/{locale}/contestantApp.logoutModal.json",
       "./messages/{locale}/contestantApp.nominations.json",
@@ -36,8 +34,6 @@
       "./messages/{locale}/contestantApp.privacy.json",
       "./messages/{locale}/contestantApp.questions.json",
       "./messages/{locale}/contestantApp.register.json",
-      "./messages/{locale}/contestantApp.resetPassword.json",
-      "./messages/{locale}/contestantApp.setPassword.json",
       "./messages/{locale}/contestantApp.settings.json",
       "./messages/{locale}/common.json",
       "./messages/{locale}/components.json",

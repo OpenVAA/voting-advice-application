@@ -7,8 +7,7 @@ resource "aws_cloudwatch_log_group" "app" {
   retention_in_days = var.log_retention_days
 }
 
-# The task has an execution role, which pulls the image, reads the parameters and writes the logs, and
-# no task role: the container itself calls no AWS API.
+# The task has an execution role, which pulls the image, reads the parameters and writes the logs, and no task role: the container itself calls no AWS API.
 resource "aws_ecs_task_definition" "app" {
   family                   = "${local.name}-frontend"
   requires_compatibilities = ["FARGATE"]
@@ -32,8 +31,7 @@ resource "aws_ecs_task_definition" "app" {
       environment  = local.container_environment
       secrets      = local.container_secrets
 
-      # The container is unhealthy unless its own server answers /api/health, so a task that starts
-      # but does not serve counts as failed.
+      # The container is unhealthy unless its own server answers /api/health, so a task that starts but does not serve counts as failed.
       healthCheck = {
         command = [
           "CMD",
@@ -63,7 +61,7 @@ resource "aws_ecs_task_definition" "app" {
   lifecycle {
     precondition {
       condition     = length(local.unknown_values) == 0
-      error_message = "Every key of environment_values and environment_overrides must be an entry of task-environment.json whose source is \"value\". Not such an entry: ${join(", ", local.unknown_values)}."
+      error_message = "Every key of environment_values and environment_overrides must be an entry of task-environment.json whose source is \"value\" and that the task receives with this identity_provider_type; PUBLIC_IDENTITY_PROVIDER_TYPE is set from identity_provider_type and never given. Not such an entry: ${join(", ", local.unknown_values)}."
     }
 
     precondition {
@@ -75,12 +73,16 @@ resource "aws_ecs_task_definition" "app" {
       condition     = length(local.unknown_omitted) == 0
       error_message = "Every name in omit_environment must be an entry of task-environment.json. Not an entry: ${join(", ", local.unknown_omitted)}."
     }
+
+    # The stop timeout covers the server's drain and then its shutdown flush: the analytics forward timeout of 10 seconds and a margin of 5.
+    precondition {
+      condition     = can(tonumber(local.shutdown_timeout)) && var.stop_timeout_seconds >= try(tonumber(local.shutdown_timeout), 0) + 15
+      error_message = can(tonumber(local.shutdown_timeout)) ? "stop_timeout_seconds must be at least SHUTDOWN_TIMEOUT plus 15 seconds, the analytics forward timeout of 10 and a margin of 5, so that the server finishes its drain and its shutdown flush before the kill. stop_timeout_seconds is ${var.stop_timeout_seconds}; SHUTDOWN_TIMEOUT is ${local.shutdown_timeout}, so the stop timeout must be at least ${try(tonumber(local.shutdown_timeout), 0) + 15}." : "SHUTDOWN_TIMEOUT must be a number of seconds, so that stop_timeout_seconds can be checked against it. It is \"${local.shutdown_timeout}\"."
+    }
   }
 }
 
-# A rollout starts the new tasks before it stops the old ones, and a rollout whose tasks do not
-# become healthy is rolled back to the last one that completed. The service's tags reach its tasks,
-# so that the tasks' cost is attributed by tag.
+# A rollout starts the new tasks before it stops the old ones, and a rollout whose tasks do not become healthy is rolled back to the last one that completed. The service's tags reach its tasks, so that the tasks' cost is attributed by tag.
 resource "aws_ecs_service" "app" {
   name                               = "${local.name}-frontend"
   cluster                            = aws_ecs_cluster.this.id

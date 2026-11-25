@@ -65,21 +65,21 @@
 
 {#if request}
   <MainContent
-    title={t('contestantApp.emailSent.title')}
+    title={t('common.account.emailSent.title')}
     data-testid={testId}
     data-wording={request.wording}
     data-address={address ? 'shown' : 'none'}
     data-resend={countdown.ready ? 'ready' : 'waiting'}>
     {#snippet hero()}
       <figure role="presentation">
-        <HeroEmoji emoji={t('contestantApp.emailSent.heroEmoji')} />
+        <HeroEmoji emoji={t('common.account.emailSent.heroEmoji')} />
       </figure>
     {/snippet}
 
     {#snippet heading()}
       <HeadingGroup>
         <PreHeading>{appName}</PreHeading>
-        <h1 tabindex="-1">{t('contestantApp.emailSent.title')}</h1>
+        <h1 tabindex="-1">{t('common.account.emailSent.title')}</h1>
       </HeadingGroup>
     {/snippet}
 
@@ -98,7 +98,7 @@
       {#if addressScreenHref}
         <Button
           href={addressScreenHref}
-          text={t('contestantApp.emailSent.changeAddress')}
+          text={t('common.account.emailSent.changeAddress')}
           data-testid="email-sent-change-address" />
       {/if}
       <Button href={returnHref} text={t('common.return')} data-testid="email-sent-return" />

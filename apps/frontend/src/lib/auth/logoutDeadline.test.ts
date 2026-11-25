@@ -7,6 +7,7 @@ import { COOKIE } from '$lib/cookies';
 import {
   clearLogoutDeadline,
   cookieValues,
+  everyCopyOf,
   LOGOUT_DEADLINE_GRACE_SECONDS,
   LOGOUT_DEADLINE_SETTLED,
   LOGOUT_PENDING_MAX_AGE_SECONDS,
@@ -56,8 +57,8 @@ afterEach(() => {
 describe('cookieValues', () => {
   it('returns every value of one name, in order', () => {
     expect(
-      cookieValues(`a=1; ${COOKIE.logoutPending}=${ID}; b=2; ${COOKIE.logoutPending}=passed`, COOKIE.logoutPending)
-    ).toEqual([ID, 'passed']);
+      cookieValues(`a=1; ${COOKIE.logoutPending}=${ID}; b=2; ${COOKIE.logoutPending}=settled`, COOKIE.logoutPending)
+    ).toEqual([ID, 'settled']);
   });
 
   it('returns none for another name, or for a name that ends with the one asked for', () => {
@@ -120,6 +121,23 @@ describe('removalDomainsOf', () => {
 
   it.each(['localhost', '127.0.0.1', '::1', '[::1]'])('names none for %s', (hostname) => {
     expect(removalDomainsOf(hostname)).toEqual([]);
+  });
+});
+
+describe('everyCopyOf', () => {
+  it('names both cookies host-only and then for each removal domain', () => {
+    expect(everyCopyOf('app.example.org')).toEqual([
+      { name: COOKIE.logoutPending },
+      { name: COOKIE.logoutPending, domain: 'app.example.org' },
+      { name: COOKIE.logoutPending, domain: 'example.org' },
+      { name: COOKIE.logoutDeadline },
+      { name: COOKIE.logoutDeadline, domain: 'app.example.org' },
+      { name: COOKIE.logoutDeadline, domain: 'example.org' }
+    ]);
+  });
+
+  it('names only the host-only copies for localhost', () => {
+    expect(everyCopyOf('localhost')).toEqual([{ name: COOKIE.logoutPending }, { name: COOKIE.logoutDeadline }]);
   });
 });
 
@@ -240,7 +258,7 @@ describe('withdrawAnyCount', () => {
 
 describe('LOGOUT_DEADLINE_SETTLED', () => {
   it('is a value never read as an id of a count', () => {
-    expect(LOGOUT_DEADLINE_SETTLED).toBe('passed');
+    expect(LOGOUT_DEADLINE_SETTLED).toBe('settled');
     expect(LOGOUT_DEADLINE_SETTLED).not.toMatch(ID_SHAPE);
   });
 });

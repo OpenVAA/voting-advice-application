@@ -1,7 +1,5 @@
 /**
- * The hosted conformance probe: its comparisons as pure functions, and its entry run as a child process against a stub
- * Management API on 127.0.0.1. The child gets a minimal environment, so no access token of the shell that runs the
- * suite reaches it, and it talks to the stub only.
+ * The hosted conformance probe: its comparisons as pure functions, and its entry run as a child process against a stub Management API on 127.0.0.1. The child gets a minimal environment, so no access token of the shell that runs the suite reaches it, and it talks to the stub only.
  */
 
 import { spawn } from 'node:child_process';
@@ -257,8 +255,7 @@ function functionsWith(slug: string, change: JsonObject | null): Array<JsonObjec
 }
 
 /**
- * Every planted fault of the batched break at once, one per check, with the marker each finding must hold. These are
- * the faults the live red run plants on the throwaway project.
+ * Every planted fault of the batched break at once, one per check, with the marker each finding must hold. These are the faults the live red run plants on the throwaway project.
  */
 const BATCHED_BREAK: Array<{ check: string; marker: string }> = [
   { check: 'api.max-rows', marker: '500' },
@@ -358,8 +355,7 @@ const REPO_FILES = [
 ];
 
 /**
- * Runs `body` against a temporary repository holding copies of `REPO_FILES`, with each entry of `files` written over
- * them (relative path to content), and removes it afterwards.
+ * Runs `body` against a temporary repository holding copies of `REPO_FILES`, with each entry of `files` written over them (relative path to content), and removes it afterwards.
  */
 function withRepo(files: Record<string, string>, body: (repo: string) => void): void {
   const repo = mkdtempSync(join(tmpdir(), 'probe-hosted-repo-'));
@@ -1200,10 +1196,7 @@ function handleManagement(req: IncomingMessage, res: ServerResponse): void {
 }
 
 /**
- * A stand-in for psql, written into a temporary directory and passed to the probe as `PROBE_PSQL`. It appends its
- * arguments to the log file `FAKE_PSQL_LOG`; for `-c` it prints `FAKE_PSQL_CATALOG` and exits
- * `FAKE_PSQL_CATALOG_STATUS`, and for `-f` it writes `FAKE_PSQL_SEED_STDERR` to stderr and exits
- * `FAKE_PSQL_SEED_STATUS`.
+ * A stand-in for psql, written into a temporary directory and passed to the probe as `PROBE_PSQL`. It appends its arguments to the log file `FAKE_PSQL_LOG`; for `-c` it prints `FAKE_PSQL_CATALOG` and exits `FAKE_PSQL_CATALOG_STATUS`, and for `-f` it writes `FAKE_PSQL_SEED_STDERR` to stderr and exits `FAKE_PSQL_SEED_STATUS`.
  */
 const FAKE_PSQL = `#!/usr/bin/env node
 const { appendFileSync } = require('node:fs');

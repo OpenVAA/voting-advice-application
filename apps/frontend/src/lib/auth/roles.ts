@@ -1,3 +1,4 @@
+import { SERVED_ENTITY_TYPES } from '@openvaa/app-shared';
 import type { EntityType } from '@openvaa/data';
 
 /**
@@ -62,25 +63,23 @@ export function readSessionGrants(session: { access_token: string }): Array<Gran
  *
  * This is an app-entry gate, not the authorisation boundary: row-level security decides what an admin may read or write. Widening the set grants no data access, and narrowing it hides the app from someone the database would still serve.
  *
- * An `admin` grant at global, account or project scope carries permissions. An `admin` grant at entity scope carries none, so it is not listed and opens nothing.
+ * An `admin` grant at global, account or project scope carries permissions, and so does an `editor` grant at project scope: the database gives a project editor the project's edit capabilities, `project.edit_questions` among them, so a project editor is an administrator of that project. An `admin` grant at entity scope carries none, so it is not listed and opens nothing.
  */
 export const ADMIN_GRANTS = [
   { scope: 'global', role: 'admin' },
   { scope: 'account', role: 'admin' },
-  { scope: 'project', role: 'admin' }
+  { scope: 'project', role: 'admin' },
+  { scope: 'project', role: 'editor' }
 ] as const satisfies ReadonlyArray<GrantShape>;
 
 /**
- * The grant shapes that open the Contestant App.
+ * The grant shapes that open the Contestant App: the editor grant of an entity, one shape per served entity type.
  *
- * An app-entry gate like `ADMIN_GRANTS`, not the authorisation boundary: the database's policies are authoritative, and they decide which entity a signed-in user may read or write.
- *
- * The editor of a candidate or of an organization is admitted. Faction and alliance editors hold the same `(entity, editor)` pair with a different `target_type` and are not admitted, because the app serves neither type. Whether this project serves the editor's type is decided after sign-in, where the user's entities are listed.
+ * An app-entry gate like `ADMIN_GRANTS`, not the authorisation boundary: the database's policies are authoritative, and they decide which entity a signed-in user may read or write. Whether this project serves the editor's type is decided after sign-in, where the user's entities are listed.
  */
-export const CONTESTANT_GRANTS = [
-  { scope: 'entity', role: 'editor', target_type: 'candidate' },
-  { scope: 'entity', role: 'editor', target_type: 'organization' }
-] as const satisfies ReadonlyArray<GrantShape>;
+export const CONTESTANT_GRANTS: ReadonlyArray<GrantShape> = SERVED_ENTITY_TYPES.map(
+  (target_type) => ({ scope: 'entity', role: 'editor', target_type }) as const
+);
 
 /**
  * One grant assignment, as it appears in an access token's `grants` claim.

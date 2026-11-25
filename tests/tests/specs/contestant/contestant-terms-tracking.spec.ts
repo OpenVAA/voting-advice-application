@@ -3,10 +3,11 @@
  *
  * # The consent to usage data at the Contestant App's terms of use
  *
- * In the Contestant App, accepting the terms of use counts as consent to the collection of usage data, unless the user ticks the opt-out box the terms-of-use view shows under its acceptance checkbox. The choice is written to the same origin-wide store the voter app's consent prompt writes (`appContext-userPreferences`, `data.dataCollection.consent`), and the Contestant App's privacy page offers the consent control by which it can be changed.
+ * In the Contestant App, accepting the terms of use counts as consent to the collection of usage data, unless the user ticks the opt-out box the terms-of-use view shows under its acceptance checkbox. The choice is written to the Contestant App's own member of the stored preferences (`appContext-userPreferences`, `data.contestantDataConsent.consent`), apart from the voter app's `dataCollection`, and the Contestant App's privacy page offers the consent control by which it can be changed.
  *
  * This spec observes that in a browser, on the `perm-analytics-tracking` dataset, whose settings row turns `analytics.trackEvents` on:
  *  - the view shows the box unticked, passes the suite's axe scan with the box visible, and the box is reached with Tab and toggled with Space; the terms text holds the usage-data section;
+ *  - the unticked box's border has a contrast of at least 3:1 against the view in the light and the dark theme, which axe does not check;
  *  - at 320 px wide the view does not overflow sideways and the box lies inside the viewport;
  *  - accepting without ticking the box stores `granted`, after which a menu opening is sent with a visit id and every pageview is sent without one;
  *  - accepting with the box ticked stores `denied`, after which nothing but pageviews is sent;
@@ -27,6 +28,8 @@
  *
  * The describe is serial: the acceptances of the third and fourth tests remove the view the first two read, and every test reads the dataset's settings row, which only the perm serial chain writes. The project that hosts the spec runs its files one test at a time.
  *
+ * The contrast test runs after the serial describe and outside it, so its failure cannot stop the serial tests from running. By then the granting user has accepted, so its own `beforeAll` registers that user again without an acceptance.
+ *
  * Rigidity contract: hard assertions only, no retry, every locator behind a fixture.
  */
 
@@ -38,11 +41,12 @@ import { createContestantPrivacyPage } from '../../fixtures/contestant/contestan
 import { createContestantTermsOfUsePage } from '../../fixtures/contestant/contestantTermsOfUsePage.fixture';
 import { expectOnlyAllowedDeviceState, readDeviceState } from '../../fixtures/shared/deviceStores.fixture';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
-import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
+import { createRelayCapture, flushUntil, hasVisitId, visitIdOf } from '../../fixtures/shared/relayCapture.fixture';
 import { settleNetworkIdle, TIMEOUTS } from '../../helpers';
 import { registerAndStoreSession } from '../../setup/shared/registerAndStoreSession';
 import { assertAxeScan } from '../../utils/axeScan';
-import { toScanEntry } from '../../utils/contestantAxeScan';
+import { assertContestantReach } from '../../utils/contestantAxeScan';
+import { measureBorderContrastInSchemes, NON_TEXT_CONTRAST_MINIMUM } from '../../utils/nonTextContrast';
 import { NARROW_PHONE, phoneUse } from '../../utils/phoneViewports';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import {
@@ -52,42 +56,44 @@ import {
   ANALYTICS_TERMS_REFUSING_EMAIL,
   ANALYTICS_TERMS_REFUSING_EXTERNAL_ID,
   ANALYTICS_TERMS_REFUSING_STORAGE_STATE,
-  TEST_CANDIDATE_PASSWORD
+  TEST_PASSWORD
 } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
-import type { BrowserContext, Page, TestInfo } from '@playwright/test';
+import { toScanEntry } from '../../utils/themedAxeScans';
+import type { Browser, BrowserContext, Page, TestInfo } from '@playwright/test';
 import type { ContestantTermsOfUsePageFixture } from '../../fixtures/contestant/contestantTermsOfUsePage.fixture';
 import type { CapturedRelayEvent, RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
 import type { StoredSessionIdentity } from '../../setup/shared/registerAndStoreSession';
-import type { ContestantAxeRoute } from '../../utils/contestantAxeScan';
+import type { ThemedScanEntry } from '../../utils/themedAxeScans';
 
 /** The message of the waits for a batch, which fail when the relay forwards nothing. */
 const RELAY_MESSAGE =
   'the expected batch was not captured: the server must run with ANALYTICS_PROVIDER=log, as .env.example sets it, and in the default consent mode';
 
 /** The terms-of-use view with the opt-out box, as the suite's shared scan core scans it. Anchored on the box, so the scan waits until the box is rendered; the reach proof's marker is the view's Continue button, which only the protected layout renders for a user who has not accepted. */
-const OPT_OUT_SCAN: ContestantAxeRoute = {
+const OPT_OUT_SCAN: ThemedScanEntry = {
   name: 'contestant-terms-gate-with-opt-out',
-  fixture: 'raw',
   routeId: 'ContestantAppHome',
   contentTestId: testIds.contestant.terms.trackingOptOut,
-  postLoginTestId: testIds.contestant.terms.submit
+  // The test opens the view itself and reads it before the scan, so the scan reaches nothing more.
+  reach: async () => {},
+  proveReach: (page, label) => assertContestantReach(page, { postLoginTestId: testIds.contestant.terms.submit }, label)
 };
 
 /** The two users, registered as editors of the dataset's two member candidates without an acceptance of the terms of use. Each session is stored only once the terms-of-use view has rendered for its user. */
 const TERMS_PENDING_IDENTITIES: ReadonlyArray<StoredSessionIdentity> = [
   {
-    externalId: ANALYTICS_TERMS_GRANTING_EXTERNAL_ID,
+    entityGrants: [{ entityType: 'candidate', externalId: ANALYTICS_TERMS_GRANTING_EXTERNAL_ID }],
     email: ANALYTICS_TERMS_GRANTING_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: ANALYTICS_TERMS_GRANTING_STORAGE_STATE,
     acceptTermsOfUse: false,
     settledTestId: testIds.contestant.terms.submit
   },
   {
-    externalId: ANALYTICS_TERMS_REFUSING_EXTERNAL_ID,
+    entityGrants: [{ entityType: 'candidate', externalId: ANALYTICS_TERMS_REFUSING_EXTERNAL_ID }],
     email: ANALYTICS_TERMS_REFUSING_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: ANALYTICS_TERMS_REFUSING_STORAGE_STATE,
     acceptTermsOfUse: false,
     settledTestId: testIds.contestant.terms.submit
@@ -102,30 +108,25 @@ function requireBaseURL(testInfo: TestInfo): string {
 }
 
 /**
- * Reach the hidden flush point on the SAME document. The root layout sends the pending batch when the document becomes hidden, so this overrides `document.visibilityState` with `'hidden'` and dispatches `visibilitychange`; it then removes the override, so the real value shows through again, and dispatches the event once more, which marks the page visible.
+ * Register each identity without an acceptance of the terms of use and store its session, each in a browser context of its own, so that no state of one sign-in reaches another's stored session.
  */
-async function flushTrackingBuffer(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
-    document.dispatchEvent(new Event('visibilitychange'));
-    Reflect.deleteProperty(document, 'visibilityState');
-    document.dispatchEvent(new Event('visibilitychange'));
-  });
-}
-
-/**
- * Flush until `arrived` holds, and fail with `RELAY_MESSAGE` when it never does. A flush with nothing to send sends nothing, so the repeats add no batch.
- */
-async function flushUntil(page: Page, arrived: () => boolean): Promise<void> {
-  await expect
-    .poll(
-      async () => {
-        await flushTrackingBuffer(page);
-        return arrived();
-      },
-      { message: RELAY_MESSAGE, timeout: TIMEOUTS.slowPage }
-    )
-    .toBe(true);
+async function registerTermsPendingUsers(
+  browser: Browser,
+  testInfo: TestInfo,
+  identities: ReadonlyArray<StoredSessionIdentity>
+): Promise<void> {
+  const baseURL = requireBaseURL(testInfo);
+  for (const identity of identities) {
+    // The empty storage state is explicit: Playwright fills every option `newContext` leaves out from the use options of the test that runs this hook, and the first test's `storageState` names a file this hook has not written yet.
+    const context = await browser.newContext({
+      ...devices['Desktop Chrome'],
+      baseURL,
+      storageState: { cookies: [], origins: [] }
+    });
+    const page = await context.newPage();
+    await registerAndStoreSession(page, identity);
+    await context.close();
+  }
 }
 
 /** True when `routeId` belongs to the route whose id is `root`, or to a route under it. */
@@ -135,7 +136,7 @@ function isUnder(root: string, routeId: string): boolean {
 
 /** A short description of a captured event, for failure messages. */
 function describeEvent(event: CapturedRelayEvent): string {
-  return `${event.name} on ${event.routeId}${event.id === undefined ? '' : ` with id ${event.id}`}`;
+  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with visit id ${String(visitIdOf(event))}` : ''}`;
 }
 
 /** The captured events named `name`. */
@@ -149,8 +150,8 @@ function eventsNamed(capture: RelayCaptureFixture, name: string): Array<Captured
 async function readStoredConsent(context: BrowserContext, page: Page): Promise<string | undefined> {
   const { userPreferences } = await readDeviceState(context, page);
   if (userPreferences === null) return undefined;
-  const envelope = JSON.parse(userPreferences) as { data?: { dataCollection?: { consent?: string } } };
-  return envelope.data?.dataCollection?.consent;
+  const envelope = JSON.parse(userPreferences) as { data?: { contestantDataConsent?: { consent?: string } } };
+  return envelope.data?.contestantDataConsent?.consent;
 }
 
 /** Open the menu, which buffers a `menu_open` event, and close it again. */
@@ -176,19 +177,7 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
   let capture: RelayCaptureFixture;
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    const baseURL = requireBaseURL(testInfo);
-    for (const identity of TERMS_PENDING_IDENTITIES) {
-      // A context of its own for each user, so that no state of one sign-in reaches the other's stored session.
-      // The empty storage state is explicit: Playwright fills every option `newContext` leaves out from the use options of the test that runs this hook, and the first test's `storageState` names a file this hook has not written yet.
-      const context = await browser.newContext({
-        ...devices['Desktop Chrome'],
-        baseURL,
-        storageState: { cookies: [], origins: [] }
-      });
-      const page = await context.newPage();
-      await registerAndStoreSession(page, identity);
-      await context.close();
-    }
+    await registerTermsPendingUsers(browser, testInfo, TERMS_PENDING_IDENTITIES);
   });
 
   test.beforeEach(({ context }) => {
@@ -245,9 +234,9 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
 
       await settleNetworkIdle(page, { timeoutMs: TIMEOUTS.slowPage });
       await openAndCloseMenu(page);
-      await flushUntil(page, () => eventsNamed(capture, 'menu_open').length > 0);
+      await flushUntil(page, () => eventsNamed(capture, 'menu_open').length > 0, RELAY_MESSAGE);
 
-      const unlinkedMenuOpens = eventsNamed(capture, 'menu_open').filter((event) => !isUuidV7(event.id));
+      const unlinkedMenuOpens = eventsNamed(capture, 'menu_open').filter((event) => !isUuidV7(visitIdOf(event)));
       expect(
         unlinkedMenuOpens.map(describeEvent),
         'a menu opening was sent without a UUIDv7 visit id after a granting acceptance'
@@ -259,10 +248,7 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
         pageviews.filter((event) => !isUnder(CONTESTANT, event.routeId)).map(describeEvent),
         `a pageview outside the Contestant App (${CONTESTANT}) was captured`
       ).toEqual([]);
-      expect(
-        pageviews.filter((event) => event.id !== undefined).map(describeEvent),
-        'a pageview carries an id'
-      ).toEqual([]);
+      expect(pageviews.filter(hasVisitId).map(describeEvent), 'a pageview carries a visit id').toEqual([]);
     });
   });
 
@@ -287,8 +273,10 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
       // The home's own pageview is sent at the first flush after the menu was opened, in the batch a menu opening would join if it were allowed, so its arrival is the moment to read the capture.
       await settleNetworkIdle(page, { timeoutMs: TIMEOUTS.slowPage });
       await openAndCloseMenu(page);
-      await flushUntil(page, () =>
-        eventsNamed(capture, 'pageview').some((event) => isUnder(CONTESTANT_ENTITY, event.routeId))
+      await flushUntil(
+        page,
+        () => eventsNamed(capture, 'pageview').some((event) => isUnder(CONTESTANT_ENTITY, event.routeId)),
+        RELAY_MESSAGE
       );
 
       expect(
@@ -322,5 +310,29 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
       await openAndCloseMenu(page);
       await expectOnlyAllowedDeviceState(context, page);
     });
+  });
+});
+
+test.describe('the opt-out box in the light and the dark theme', () => {
+  test.use({ storageState: ANALYTICS_TERMS_GRANTING_STORAGE_STATE });
+
+  test.beforeAll(async ({ browser }, testInfo) => {
+    await registerTermsPendingUsers(browser, testInfo, [TERMS_PENDING_IDENTITIES[0]]);
+  });
+
+  test('the unchecked opt-out box has a border of at least 3:1 contrast in the light and the dark theme', async ({
+    page
+  }, testInfo) => {
+    const ratios = await measureBorderContrastInSchemes(page, async () => {
+      const termsPage = await openTermsView(page);
+      await termsPage.expectTrackingOptOutUnticked();
+      return termsPage.getTrackingOptOut();
+    });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      testInfo.annotations.push({ type: 'border-contrast', description: `${scheme}=${ratio.toFixed(2)}` });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      expect(ratio, `the border contrast of the unchecked opt-out box in the ${scheme} theme`).toBeGreaterThanOrEqual(
+        NON_TEXT_CONTRAST_MINIMUM
+      );
   });
 });

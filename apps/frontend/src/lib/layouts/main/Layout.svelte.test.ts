@@ -25,7 +25,6 @@ const video = $state<{ show: boolean; hasContent: boolean; player: unknown; mode
 vi.mock('$lib/contexts/app', () => ({
   getAppContext: () => ({
     t: (key: string) => key,
-    startEvent: () => undefined,
     track: () => undefined,
     darkMode: { current: false },
     appType: { current: 'admin' },

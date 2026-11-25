@@ -16,7 +16,7 @@ Below, the dynamic App Settings are explained in detail. For more information ab
 
 Every project starts with the default values set in the [dynamicSettings.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.ts) file. A project's own values are stored in the `settings` column of its row in the `app_settings` database table and replace the defaults. There is no settings editor in the Admin App yet, so the values are changed in the database, for example in Supabase Studio or with a data import; your developer can do this for you.
 
-A stored setting replaces only the default it names. For example, to change `results.showFeedbackPopup`, store that one value: the other values of the `results` group keep their defaults. Two things follow from this. A setting that is a list, such as `results.sections`, is replaced as a whole, so store the complete list. And leaving a setting out never switches a feature off, because the default then applies: store the value that disables it.
+A stored setting replaces only the default it names. For example, to change `results.showFeedbackPopup`, store that one value: the other values of the `results` group keep their defaults. Two things follow from this. A setting that is a list, such as `results.sections`, is replaced as a whole, so store the complete list; so is `contestantApp.servedEntityTypes`, so name every type the app serves. And leaving a setting out never switches a feature off, because the default then applies: store the value that disables it. The one exception is a type left out of `contestantApp.servedEntityTypes`, which is then not served.
 
 The settings and their types are documented in [dynamicSettings.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.type.ts). They control the following features.
 
@@ -133,18 +133,20 @@ Settings related to election and constituency selection in VAAs with multiple el
 
 Settings related to access to the applications.
 
-- `contestantApp`: If `true`, the Candidate App can be accessed. Default: `true`.
+- `contestantApp`: If `true`, the Contestant App (the app candidates and parties use, named after `servedEntityTypes`; see below) can be accessed. Default: `true`.
 - `voterApp`: If `true`, the Voter App can be accessed. Default: `true`.
 - `adminApp`: If `true`, the Admin App can be accessed. Default: `true`.
 - `underMaintenance`: If `true`, an under maintenance error page will be shown when attempting to access any part of the app. Default: `false`.
-- `answersLocked`: If `true`, candidates and parties can no longer edit their answers. Default: `false`.
-- `nominationsLocked`: If `true`, candidates and parties can no longer add or change their own nominations. Administrators and project editors still can. Default: `false`.
+- `contestantEditing`: What candidates and parties may still edit in the Contestant App. Administrators and project editors can always edit everything. Default: `open`.
+  - `open`: Candidates and parties edit their answers, profile and nominations.
+  - `nominationsLocked`: They can no longer add, change or remove their own nominations, and still edit their answers and profile.
+  - `locked`: They can no longer edit anything, and no way to register is offered.
 
 ### `notifications`
 
 Settings related to important notifications shown to users. Neither notification is set by default.
 
-- `contestantApp`: The notification shown to users of the Candidate App. Defined by the properties:
+- `contestantApp`: The notification shown to users of the Contestant App. Defined by the properties:
   - `show`: If `true`, the notification will be shown the next time the user loads the app.
   - `title`: The title of the notification, in each language.
   - `content`: The content of the notification, in each language.
@@ -153,26 +155,41 @@ Settings related to important notifications shown to users. Neither notification
 
 ### `contestantApp`
 
-Settings related to the Candidate App.
+Settings related to the Contestant App.
 
-- `questions`: Settings related to the question view in the Candidate App.
-  - `hideVideo`: Whether to hide possible video content for questions in the Candidate App. Default: `false`.
-  - `hideHero`: Whether to hide possible hero content for questions in the Candidate App. Default: `false`.
-- `entityTypes`: Whom the app serves: `candidate`, `organization` (parties) or both. There must be at least one. Default: `candidate` only.
-- `registrationModes`: The ways of registering that are allowed, set separately for `candidate` and for `organization`. Each of the two is a list of any of the modes below. Default: both lists are empty, so nothing is allowed.
+- `questions`: Settings related to the question view in the Contestant App.
+  - `hideVideo`: Whether to hide possible video content for questions in the Contestant App. Default: `false`.
+  - `hideHero`: Whether to hide possible hero content for questions in the Contestant App. Default: `false`.
+- `servedEntityTypes`: Whom the app serves, and the ways of registering allowed for each. It has a key for each type the app serves, `candidate`, `organization` (parties) or both, and there must be at least one. Under each key, `registrationModes` is a list of any of the modes below. Default: `{ "candidate": { "registrationModes": [] } }`, candidates only with no way of registering allowed.
   - `identity_provider`: The person identifies with a bank identity and an account is created for them. With it allowed for candidates, a candidate is created; with it allowed for parties, a party is created, whose name the person then enters. Where both are allowed, the registration page asks which to register. The person then gives the email address they will sign in with and confirms it by a link sent to it.
   - `email`: Registration with the email address an invitation was sent for: the person asks for a sign-in link to it.
   - `code`: Registration with a registration code the person has been given.
 
-The app names itself after `entityTypes`: "Candidate app" when it serves candidates, "Party app" when it serves parties and "Candidate and party app" when it serves both. To give it a name of your own, override the three texts `dynamic.contestantAppName.candidate`, `dynamic.contestantAppName.organization` and `dynamic.contestantAppName.candidateAndOrganization` with [App customization](/developers-guide/configuration/app-customization); the app shows the one that matches the setting. A text stored under the former single name `dynamic.contestantAppName` is ignored.
+The app names itself after the types `servedEntityTypes` has keys for: "Candidate app" when it serves candidates, "Party app" when it serves parties and "Candidate and party app" when it serves both. To give it a name of your own, override the three texts `dynamic.contestantAppName.candidate`, `dynamic.contestantAppName.organization` and `dynamic.contestantAppName.candidateAndOrganization` with [App customization](/developers-guide/configuration/app-customization); the app shows the one that matches the setting. A text stored under the former single name `dynamic.contestantAppName` is ignored.
 
-What the login page offers follows `registrationModes`:
+What the login page offers follows the `registrationModes` of the served types:
 
 - With nothing declared, the app is the "Candidate app" with sign-in only: the login page offers to sign in and no way to register.
 - An invitation for a candidate or a party created by an administrator works only under a mode allowed here for its entity type: an invitation sent to an email address needs `email`, and one with a registration code needs `code`. With nothing declared, such invitations cannot be used until a mode is allowed. Invitations of project editors and administrators do not depend on this setting.
-- While answers are locked (`access.answersLocked`), no way to register is offered, whatever is set here.
-- A mode is offered when it is allowed for a type that `entityTypes` lists. Modes listed for a type the app does not serve have no effect.
+- While editing is locked (`access.contestantEditing` is `locked`), no way to register is offered, whatever is set here.
 - `identity_provider` also needs the identity provider's environment variables to be set on the server, both for the app and for the `identity-callback` function; see [Bank authentication (OIDC)](/developers-guide/contestant-app/bank-authentication) for their names. The setting alone decides what the login page shows: without that configuration the page still offers registration with the identity provider, and it fails when the visitor starts identification.
 - "Register" leads to a registration page that lists the allowed modes, and only those, to choose from.
 - The sign-in page also offers to email a sign-in link when `email` or `identity_provider` is allowed for a served type, for a person who has no password yet.
-- Each list is stored as a whole, as explained above: name every mode you want to allow for a type.
+- `servedEntityTypes` is stored as a whole, as each list is: name every type the app serves, and every mode you want to allow for it. For example, to serve candidates and parties, let candidates register by email or with a code and let parties only sign in, store:
+
+  ```json
+  {
+    "contestantApp": {
+      "servedEntityTypes": {
+        "candidate": { "registrationModes": ["email", "code"] },
+        "organization": { "registrationModes": [] }
+      }
+    }
+  }
+  ```
+
+### `analytics`
+
+Settings related to collecting data about how voters use the app. See [What data should be collected from voters’ use of the VAA?](/publishers-guide/preparing/what-data-should-be-collected).
+
+- `trackEvents`: Whether usage events other than the anonymous page-view count are collected. By default, voters are asked for their consent first, and their events are collected only if they grant it. The analytics provider is chosen by the server configuration, not by this setting, and without a provider nothing is collected. Default: `false`.

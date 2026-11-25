@@ -8,12 +8,17 @@
     "awaitingConfirmation": "Ootab kinnitamist",
     "emailIntro": "Sisesta e-posti aadress, millega soovid järgmisel korral sisse logida. Saadame sellele kinnituslingi. Saad kohe jätkata. Kuni sa pole linki avanud, logi sisse pangatunnustega.",
     "emailInUse": "Seda e-posti aadressi kasutab juba teine konto. Sisesta mõni teine aadress või logi selle asemel sisse selle aadressiga.",
+    "emailInvited": "Sellele e-posti aadressile on saadetud kutse. Logi välja ja logi selle asemel sisse e-posti teel selle kutsega ning võta ühendust toega, et äsja tehtud registreering eemaldada.",
     "emailTakenNotice": "Varem sisestatud aadressi kasutab nüüd teine konto, seega ei saanud seda sinu kontole lisada. Sisesta mõni teine aadress.",
     "error": {
       "cancelled": {
         "content": "Katkestasid tuvastamise ja midagi ei salvestatud. Saad end uuesti tuvastada, kui oled valmis.",
         "support": "Kui vajad abi, {contactSupportLink}.",
         "title": "Tuvastamine katkestati"
+      },
+      "noAccount": {
+        "content": "Kasutatud isikusamasusega ei ole ühtegi kontot registreeritud. Kui registreerusid e-posti aadressiga, logi selle asemel sisse sellega.",
+        "title": "Kontot ei leitud"
       },
       "noRetry": {
         "content": "Vabandame, tegemist on probleemiga meie poolel ja uuesti proovimine ei aita. Palun võta ühendust toega.",

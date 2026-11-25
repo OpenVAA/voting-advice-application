@@ -12,8 +12,8 @@
         },
         "name": {
           "locked": {
-            "candidate": "Your name has been set by the administrator or taken from your identification, and you cannot change it here. If it is wrong, please contact support.",
-            "organization": "Your party’s name and abbreviation have been confirmed by the administrator, and you cannot change them here. If they are wrong, please contact support."
+            "candidate": "Your name has been set by the administrator or taken from your identification, and you cannot change it here. If it is wrong, please {contactSupportLink}.",
+            "organization": "Your party’s name and abbreviation have been confirmed by the administrator, and you cannot change them here. If they are wrong, please {contactSupportLink}."
           },
           "editable": {
             "candidate": "You can change your name until an administrator has confirmed your profile.",

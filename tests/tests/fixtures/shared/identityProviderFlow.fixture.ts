@@ -8,13 +8,14 @@
  * **Steps.**
  *   - `mintIdentity`: a fresh identity, and the provider's answer to the next authorization, for one browser context.
  *   - `startIdentityProviderFlow`: open the registration screen, in English or in a locale given, choose the provider's mode and, where the panel asks, the entity type, and press Continue, so the browser leaves for the provider and comes back with its answer; a test may take a step of its own while the panel is shown and while the browser is at the provider.
+ *   - `signInWithIdentityProvider`: open the login screen in English and press its entry that signs in with the provider, so the browser leaves for the provider and comes back with its answer.
  *   - `expectProviderAskedForLocale`: the provider was asked to show its screens in a locale, as the `ui_locales` of the authorization request it received.
  *   - `forgeEntityType`: overwrite the entity type cookie the flow's start left in a browser context, as the browser's owner can.
  *   - `setIdentityProviderMatrix`: which entity types the project lets register with the provider.
  *   - `expectNoAccountFor`: no account exists for a minted identity.
  *   - `entitiesOf`: the candidates and organizations a minted identity's account edits in the project.
  *   - `grantSecondCandidate`: give a minted identity's account a candidate of its own, as an administrator does.
- *   - `placeholderAddressOf`: the address the application stores for an identity until the user proves one of their own.
+ *   - `placeholderEmailOf`: the address the application stores for an identity until the user proves one of their own.
  *   - `freshAddress`: an address nobody holds, under the prefix the identity-provider specs type.
  *   - `expectOwnEntityHome`: the page is the home of the candidate or the organization the application made for a minted identity.
  *   - `organizationOf`: what the organization the application made for a minted identity holds: whether it is confirmed, its name and its abbreviation.
@@ -61,10 +62,11 @@ import { assertSignInLinkShape, openMailedLink, runOriginFromEnv, toRunOrigin } 
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import { createContestantIdentityProviderGate } from '../contestant/contestantIdentityProviderGate.fixture';
+import { createContestantLoginPage } from '../contestant/contestantLoginPage.fixture';
 import { createContestantLogoutButton } from '../contestant/contestantLogoutButton.fixture';
 import { createContestantRegisterPage } from '../contestant/contestantRegisterPage.fixture';
 import { createContestantTermsOfUsePage } from '../contestant/contestantTermsOfUsePage.fixture';
-import type { RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
+import type { DynamicSettings, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
 import type { BrowserContext, Page } from '@playwright/test';
 import type { MockOutcome } from '../../support/mockOidcIssuer';
 
@@ -125,55 +127,10 @@ export interface OwnOrganization {
 /** The external id of the identity-provider dataset's one candidate, which no test edits; an invitation for an address is seeded on it. */
 const INVITED_CANDIDATE_EXTERNAL_ID = 'e2e-bankauth-idp-cand-1';
 
-/** The registration modes the candidates' row holds in the identity-provider dataset, with and without the provider's. */
+/** The registration modes candidates are allowed in the identity-provider dataset, with and without the provider's. */
 const CANDIDATE_MODES_WITH_PROVIDER: ReadonlyArray<RegistrationMode> = ['identity_provider', 'email', 'code'];
+
 const CANDIDATE_MODES_WITHOUT_PROVIDER: ReadonlyArray<RegistrationMode> = ['email', 'code'];
-
-/**
- * The ids of the entities of a type in the suite's project that a user edits, read through the user's editor grants.
- *
- * @param admin - The admin client.
- * @param userId - The user whose grants are read.
- * @param entityType - The entity type.
- * @returns The ids.
- */
-async function ownEntityIdsOf(
-  admin: SupabaseAdminClient,
-  userId: string,
-  entityType: ServedEntityType
-): Promise<Array<string>> {
-  if (entityType === 'candidate') return admin.candidateIdsForUser(userId);
-  const grants = await admin.findData('grants', {
-    user_id: userId,
-    scope: 'entity',
-    target_type: 'organization',
-    role: 'editor'
-  });
-  if (grants.type !== 'success') throw new Error(`identityProviderFlow: reading the grants failed: ${grants.cause}`);
-  const grantedIds = (grants.data ?? []).map((grant) => String(grant.target_id));
-  if (grantedIds.length === 0) return [];
-  const rows = await admin.findData('organizations', { id: { $in: grantedIds } });
-  if (rows.type !== 'success') throw new Error(`identityProviderFlow: reading the organizations failed: ${rows.cause}`);
-  return (rows.data ?? []).map((row) => String(row.id));
-}
-
-/**
- * The id of the account the application made for a minted identity, found by the identity the account's metadata names, whatever address the account holds.
- */
-async function accountIdOf(admin: SupabaseAdminClient, sub: string): Promise<string> {
-  const accountId = await admin.authUserIdForIdentity(sub);
-  expect(accountId !== undefined, 'an account exists for the minted identity').toBe(true);
-  return accountId!;
-}
-
-/**
- * The id of the one entity of a type a minted identity's account edits, asserting that there is exactly one.
- */
-async function ownEntityIdOf(admin: SupabaseAdminClient, sub: string, entityType: ServedEntityType): Promise<string> {
-  const ids = await ownEntityIdsOf(admin, await accountIdOf(admin, sub), entityType);
-  expect(ids, `${entityType} entities the identity edits in the project`).toHaveLength(1);
-  return ids[0];
-}
 
 /** What a test gives when it registers an identity with the provider. */
 export interface RegisterWithIdentityProviderOptions {
@@ -266,6 +223,18 @@ export function createIdentityProviderFlow() {
     },
 
     /**
+     * Sign in with the identity provider as a visitor does: open the login screen in English and press its entry that signs in with the provider. The browser leaves for the provider, which answers as {@link mintIdentity} chose, and the step returns once the browser is back in the application; the caller asserts the screen the flow ends on.
+     *
+     * @param page - The test's page, in the browser context an identity was minted for, with no session.
+     */
+    async signInWithIdentityProvider(page: Page): Promise<void> {
+      const loginPage = createContestantLoginPage(page);
+      await loginPage.openEntryDirectly();
+      await loginPage.expectEntryShown();
+      await loginPage.continueWithIdentityProvider();
+    },
+
+    /**
      * Assert that the provider was asked to show its screens in a locale: the `ui_locales` of the one authorization request the mock issuer received in this browser context, as the issuer reports it in a cookie of its own origin.
      *
      * @param context - The browser context the flow was started in.
@@ -298,27 +267,23 @@ export function createIdentityProviderFlow() {
     },
 
     /**
-     * Let the identity provider's mode register exactly these entity types: the project serves candidates and organizations, the candidates' row holds the email and code modes and the provider's where candidates are named, and the organizations' row holds the provider's mode where organizations are named and nothing otherwise.
+     * Let the identity provider's mode register exactly these entity types: the project serves candidates and organizations, candidates are allowed the email and code modes and the provider's where candidates are named, and organizations the provider's mode where organizations are named and nothing otherwise.
      *
-     * The settings row is read and written back whole with these three members replaced, so nothing of an earlier matrix is left and every other setting stays as it was. The row is the project's one, so a spec that calls this runs its tests one after another in one worker, and writes the matrix back when the tests that need it are done.
+     * The served entity types are replaced whole, so nothing of an earlier matrix is left, and every other setting stays as it was. The row is the project's one, so a spec that calls this runs its tests one after another in one worker, and writes the matrix back when the tests that need it are done.
      *
      * @param types - The entity types the provider's mode registers.
      */
     async setIdentityProviderMatrix(types: ReadonlyArray<ServedEntityType>): Promise<void> {
-      const admin = new SupabaseAdminClient();
-      const settings = (await admin.getAppSettings()) ?? {};
-      const contestantApp = (settings.contestantApp ?? {}) as Record<string, unknown>;
-      await admin.replaceAppSettings({
-        ...settings,
+      await new SupabaseAdminClient().updateAppSettings({
         contestantApp: {
-          ...contestantApp,
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: {
-            candidate: [
-              ...(types.includes('candidate') ? CANDIDATE_MODES_WITH_PROVIDER : CANDIDATE_MODES_WITHOUT_PROVIDER)
-            ],
-            organization: types.includes('organization') ? ['identity_provider'] : []
-          }
+          servedEntityTypes: {
+            candidate: {
+              registrationModes: [
+                ...(types.includes('candidate') ? CANDIDATE_MODES_WITH_PROVIDER : CANDIDATE_MODES_WITHOUT_PROVIDER)
+              ]
+            },
+            organization: { registrationModes: types.includes('organization') ? ['identity_provider'] : [] }
+          } satisfies DynamicSettings['contestantApp']['servedEntityTypes']
         }
       });
     },
@@ -369,7 +334,7 @@ export function createIdentityProviderFlow() {
      * @param sub - A minted `sub`.
      * @returns The placeholder address of that identity.
      */
-    placeholderAddressOf(sub: string): string {
+    placeholderEmailOf(sub: string): string {
       return `${sub}@${PLACEHOLDER_EMAIL_DOMAIN}`;
     },
 
@@ -687,5 +652,51 @@ export const test = base.extend<object, { identityProviderFlow: IdentityProvider
     { scope: 'worker' }
   ]
 });
+
+/**
+ * The ids of the entities of a type in the suite's project that a user edits, read through the user's editor grants.
+ *
+ * @param admin - The admin client.
+ * @param userId - The user whose grants are read.
+ * @param entityType - The entity type.
+ * @returns The ids.
+ */
+async function ownEntityIdsOf(
+  admin: SupabaseAdminClient,
+  userId: string,
+  entityType: ServedEntityType
+): Promise<Array<string>> {
+  if (entityType === 'candidate') return admin.candidateIdsForUser(userId);
+  const grants = await admin.findData('grants', {
+    user_id: userId,
+    scope: 'entity',
+    target_type: 'organization',
+    role: 'editor'
+  });
+  if (grants.type !== 'success') throw new Error(`identityProviderFlow: reading the grants failed: ${grants.cause}`);
+  const grantedIds = (grants.data ?? []).map((grant) => String(grant.target_id));
+  if (grantedIds.length === 0) return [];
+  const rows = await admin.findData('organizations', { id: { $in: grantedIds } });
+  if (rows.type !== 'success') throw new Error(`identityProviderFlow: reading the organizations failed: ${rows.cause}`);
+  return (rows.data ?? []).map((row) => String(row.id));
+}
+
+/**
+ * The id of the account the application made for a minted identity, found by the identity the account's metadata names, whatever address the account holds.
+ */
+async function accountIdOf(admin: SupabaseAdminClient, sub: string): Promise<string> {
+  const accountId = await admin.authUserIdForIdentity(sub);
+  expect(accountId !== undefined, 'an account exists for the minted identity').toBe(true);
+  return accountId!;
+}
+
+/**
+ * The id of the one entity of a type a minted identity's account edits, asserting that there is exactly one.
+ */
+async function ownEntityIdOf(admin: SupabaseAdminClient, sub: string, entityType: ServedEntityType): Promise<string> {
+  const ids = await ownEntityIdsOf(admin, await accountIdOf(admin, sub), entityType);
+  expect(ids, `${entityType} entities the identity edits in the project`).toHaveLength(1);
+  return ids[0];
+}
 
 export { expect };

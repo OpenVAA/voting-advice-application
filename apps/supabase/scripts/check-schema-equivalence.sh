@@ -9,24 +9,18 @@
 #
 # The dump covers every schema of the database, the platform's own (auth, storage, realtime and others) included, so a migration that changes a platform object is compared as well.
 #
-# Two things are kept out of a snapshot on purpose. The daily partitions of realtime.messages are left out of the dump: the platform names them after the day an instance is created, so two sides built on either side of midnight, or a snapshot reused on a later day, would differ in them and in nothing else. A role setting whose name holds `secret`, `password`, `token` or `key` is written as a SHA-256 digest and not as its value: the local instance's JWT secret is such a setting, and it is compared without being written to a file or printed.
+# Two things are kept out of a snapshot on purpose. The daily partitions of realtime.messages are left out of the dump: the platform names them after the day an instance is created, so two sides built on either side of midnight would differ in them and in nothing else. A role setting whose name holds `secret`, `password`, `token` or `key` is written as a SHA-256 digest and not as its value: the local instance's JWT secret is such a setting, and it is compared without being written to a file or printed.
 #
 # The two sides are built one after the other, and each instance is stopped as soon as its snapshot is written, so the two never run at the same moment. Every instance this script starts is stopped on every way out, an interrupt included.
 #
 # Usage:
 #   ```sh
 #   apps/supabase/scripts/check-schema-equivalence.sh
-#   apps/supabase/scripts/check-schema-equivalence.sh --out tmp/equivalence
-#   apps/supabase/scripts/check-schema-equivalence.sh --schema-dir /tmp/schema-copy --reuse-m tmp/equivalence/migrations.snapshot.sql
 #   ```
 #
-#   --schema-dir <dir>      OPTIONAL. Default: apps/supabase/supabase/schema.
-#   --migrations-dir <dir>  OPTIONAL. Default: apps/supabase/supabase/migrations.
-#   --out <dir>             OPTIONAL. Where migrations.snapshot.sql, schema.snapshot.sql and equivalence.diff are kept. Created when missing. Default: a temporary directory that is removed when the script exits.
-#   --reuse-m <file>        OPTIONAL. A snapshot of side M that an earlier run wrote. Side M is then not built. The script checks only that the file passes the floor; that it is a snapshot of the migrations as they are now is the caller's to answer for. Mutually exclusive with --migrations-dir.
-#   -h, --help              Print this header and exit 0.
+#   It compares apps/supabase/supabase/migrations with apps/supabase/supabase/schema, and keeps its snapshots and the diff in a temporary directory that is removed when the script exits.
 #
-#   A relative path is resolved against the REPO ROOT, never against $PWD, so the script behaves identically from any working directory.
+#   -h, --help              Print this header and exit 0.
 #
 # Output: on standard output, one census line for each side, then the verdict, and on a difference the objects that differ and the whole diff. In the diff a line starting `-` is in the database built from the migrations only, and a line starting `+` in the one built from schema/ only. Progress goes to standard error.
 #
@@ -63,10 +57,12 @@ export LC_ALL=C
 # Auto-detect paths from the script's location, so the script behaves identically from any working directory.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd -P)"
+# shellcheck source=lib/cli.sh
+. "$SCRIPT_DIR/lib/cli.sh"
 HARNESS="$SCRIPT_DIR/isolated-instance.sh"
 
-DEFAULT_SCHEMA_DIR="apps/supabase/supabase/schema"
-DEFAULT_MIGRATIONS_DIR="apps/supabase/supabase/migrations"
+SCHEMA_DIR="$(resolve_path apps/supabase/supabase/schema)"
+MIGRATIONS_DIR="$(resolve_path apps/supabase/supabase/migrations)"
 
 # The non-vacuity floor. Absolute thresholds, counted over a whole-database snapshot; raise them as the schema grows. A database with no migration applied already holds the platform's own tables and functions (46 and 47 on the pinned image) and no policy, so MIN_TABLES alone does not refuse it: the `CREATE TABLE public.` test and MIN_POLICIES do.
 MIN_TABLES=20
@@ -92,48 +88,86 @@ RESTRICT_KEY="openvaaSchemaEquivalence0"
 # One header line for each catalog query of a snapshot.
 QUERY_COUNT=4
 
-SCHEMA_DIR=""
-MIGRATIONS_DIR=""
-OUT_DIR=""
-REUSE_M=""
 WORK_DIR=""
 OWNS_M=0
 OWNS_S=0
+
+main() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -h | --help)
+        usage
+        exit 0
+        ;;
+      *)
+        usage_error "unknown argument: $1"
+        ;;
+    esac
+  done
+
+  if [ ! -d "$SCHEMA_DIR" ]; then
+    fatal "the schema directory is not a directory: $SCHEMA_DIR" 2
+  fi
+  if [ ! -d "$MIGRATIONS_DIR" ]; then
+    fatal "the migrations directory is not a directory: $MIGRATIONS_DIR" 2
+  fi
+  if [ ! -f "$HARNESS" ]; then
+    fatal "the instance harness is not at $HARNESS" 2
+  fi
+  if ! command -v docker >/dev/null 2>&1; then
+    fatal "docker is not on PATH" 2
+  fi
+
+  trap on_exit EXIT
+  trap on_interrupt INT TERM HUP
+
+  local tmp_base="${TMPDIR:-/tmp}"
+  WORK_DIR="$(mktemp -d "${tmp_base%/}/openvaa-equivalence.XXXXXX")" || fatal "could not create a working directory under $tmp_base" 2
+
+  local out_dir="$WORK_DIR/out"
+  mkdir "$out_dir" || fatal "could not create $out_dir" 2
+  local m_snapshot="$out_dir/migrations.snapshot.sql"
+  local s_snapshot="$out_dir/schema.snapshot.sql"
+  local diff_file="$out_dir/equivalence.diff"
+  local m_source="the migrations in $MIGRATIONS_DIR"
+  local s_source="the schema files in $SCHEMA_DIR"
+
+  # Written before any instance is started: an unreadable schema directory then costs no build.
+  mkdir "$WORK_DIR/schema-as-migration" || fatal "could not create a directory under $WORK_DIR" 2
+  write_schema_migration "$SCHEMA_DIR" "$WORK_DIR/schema-as-migration/00001_schema.sql"
+
+  start_instance "$INSTANCE_M" "$PORT_BASE_M" "$MIGRATIONS_DIR" "$m_source"
+  write_snapshot "$INSTANCE_M" "$m_snapshot" "$m_source"
+  finish_instance "$INSTANCE_M"
+  census_and_floor "$m_source" "$m_snapshot"
+
+  start_instance "$INSTANCE_S" "$PORT_BASE_S" "$WORK_DIR/schema-as-migration" "$s_source"
+  write_snapshot "$INSTANCE_S" "$s_snapshot" "$s_source"
+  finish_instance "$INSTANCE_S"
+  census_and_floor "$s_source" "$s_snapshot"
+
+  local diff_status=0
+  diff -u --label "the database built from migrations" --label "the database built from schema" "$m_snapshot" "$s_snapshot" >"$diff_file" || diff_status=$?
+
+  if [ "$diff_status" -eq 0 ] && [ ! -s "$diff_file" ]; then
+    echo "check-schema-equivalence.sh: EQUAL -- the database built from $s_source is the database built from $m_source (${SECONDS} s)"
+    exit 0
+  fi
+  if [ "$diff_status" -eq 1 ] && [ -s "$diff_file" ]; then
+    echo "check-schema-equivalence.sh: DIFFERENT -- the database built from $s_source is not the database built from $m_source (${SECONDS} s). The objects that differ:"
+    differing_objects "$m_snapshot" "$s_snapshot" "$diff_file" || fatal "the objects that differ could not be listed" 2
+    echo "The diff. A line starting \`-\` is in the database built from the migrations only, a line starting \`+\` in the one built from schema/ only:"
+    cat "$diff_file"
+    exit 1
+  fi
+  fatal "diff exited $diff_status and could not compare the two snapshots" 2
+}
 
 usage() {
   # Delimit the header block rather than hardcoding a line range, so the exit-code table is never truncated when the header grows.
   sed -n '2,/^set -euo pipefail/p' "${BASH_SOURCE[0]}" | sed '$d'
 }
 
-fatal() {
-  echo "check-schema-equivalence.sh: FATAL -- $1" >&2
-  exit "$2"
-}
-
-usage_error() {
-  usage >&2
-  fatal "$1" 2
-}
-
-note() {
-  echo "check-schema-equivalence.sh: $1" >&2
-}
-
-# A value-taking flag given as the LAST argument must be a usage error. `shift 2` with one positional left fails, and under `set -e` the script would die with status 1, which the table above gives to a difference.
-#
-# $1 = flag name, $2 = the caller's remaining argument count ($#).
-require_value() {
-  if [ "$2" -lt 2 ]; then
-    usage_error "$1 requires a value"
-  fi
-}
-
-resolve_path() {
-  case "$1" in
-    /*) printf '%s\n' "$1" ;;
-    *) printf '%s\n' "$REPO_ROOT/$1" ;;
-  esac
-}
 
 # --- instances ---------------------------------------------------------------------
 
@@ -209,7 +243,7 @@ start_instance() {
   fi
   # Claimed before the start, so that a start cut short by a signal is torn down as well.
   if [ "$1" = "$INSTANCE_M" ]; then OWNS_M=1; else OWNS_S=1; fi
-  bash "$HARNESS" start --name "$1" --mode db --port-base "$2" --migrations "$3" </dev/null >&2 || status=$?
+  bash "$HARNESS" start --name "$1" --port-base "$2" --migrations "$3" </dev/null >&2 || status=$?
   if [ "$status" -eq 4 ]; then
     # The harness refused before it started anything, so nothing here is this run's to stop.
     if [ "$1" = "$INSTANCE_M" ]; then OWNS_M=0; else OWNS_S=0; fi
@@ -396,124 +430,4 @@ differing_objects() {
   ' "$1" "$2" "$3"
 }
 
-# --- argument parsing --------------------------------------------------------------
-
-while [ $# -gt 0 ]; do
-  case "$1" in
-    --schema-dir)
-      require_value --schema-dir $#
-      SCHEMA_DIR="$2"
-      shift 2
-      ;;
-    --migrations-dir)
-      require_value --migrations-dir $#
-      MIGRATIONS_DIR="$2"
-      shift 2
-      ;;
-    --out)
-      require_value --out $#
-      OUT_DIR="$2"
-      shift 2
-      ;;
-    --reuse-m)
-      require_value --reuse-m $#
-      REUSE_M="$2"
-      shift 2
-      ;;
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    *)
-      usage_error "unknown argument: $1"
-      ;;
-  esac
-done
-
-if [ -n "$REUSE_M" ] && [ -n "$MIGRATIONS_DIR" ]; then
-  usage_error "--reuse-m and --migrations-dir are mutually exclusive: a reused snapshot is not built from a directory"
-fi
-SCHEMA_DIR="$(resolve_path "${SCHEMA_DIR:-$DEFAULT_SCHEMA_DIR}")"
-MIGRATIONS_DIR="$(resolve_path "${MIGRATIONS_DIR:-$DEFAULT_MIGRATIONS_DIR}")"
-if [ ! -d "$SCHEMA_DIR" ]; then
-  usage_error "--schema-dir is not a directory: $SCHEMA_DIR"
-fi
-if [ -n "$REUSE_M" ]; then
-  REUSE_M="$(resolve_path "$REUSE_M")"
-  if [ ! -f "$REUSE_M" ]; then
-    usage_error "--reuse-m is not a file: $REUSE_M"
-  fi
-elif [ ! -d "$MIGRATIONS_DIR" ]; then
-  usage_error "--migrations-dir is not a directory: $MIGRATIONS_DIR"
-fi
-if [ ! -f "$HARNESS" ]; then
-  fatal "the instance harness is not at $HARNESS" 2
-fi
-if ! command -v docker >/dev/null 2>&1; then
-  fatal "docker is not on PATH" 2
-fi
-
-# --- run ---------------------------------------------------------------------------
-
-trap on_exit EXIT
-trap on_interrupt INT TERM HUP
-
-TMP_BASE="${TMPDIR:-/tmp}"
-WORK_DIR="$(mktemp -d "${TMP_BASE%/}/openvaa-equivalence.XXXXXX")" || fatal "could not create a working directory under $TMP_BASE" 2
-
-if [ -n "$OUT_DIR" ]; then
-  OUT_DIR="$(resolve_path "$OUT_DIR")"
-  mkdir -p "$OUT_DIR" || fatal "could not create $OUT_DIR" 2
-else
-  OUT_DIR="$WORK_DIR/out"
-  mkdir "$OUT_DIR" || fatal "could not create $OUT_DIR" 2
-fi
-M_SNAPSHOT="$OUT_DIR/migrations.snapshot.sql"
-S_SNAPSHOT="$OUT_DIR/schema.snapshot.sql"
-DIFF_FILE="$OUT_DIR/equivalence.diff"
-
-if [ -n "$REUSE_M" ]; then
-  if [ "$REUSE_M" -ef "$S_SNAPSHOT" ] || [ "$REUSE_M" -ef "$DIFF_FILE" ]; then
-    usage_error "--reuse-m names a file this run writes: $REUSE_M"
-  fi
-  M_SOURCE="the reused snapshot $REUSE_M"
-  M_SNAPSHOT="$REUSE_M"
-else
-  M_SOURCE="the migrations in $MIGRATIONS_DIR"
-  rm -f -- "$M_SNAPSHOT" || fatal "could not remove the earlier $M_SNAPSHOT" 2
-fi
-S_SOURCE="the schema files in $SCHEMA_DIR"
-# A file left by an earlier run must not be read as this run's.
-rm -f -- "$S_SNAPSHOT" "$DIFF_FILE" || fatal "could not remove the files of an earlier run in $OUT_DIR" 2
-
-# Written before any instance is started: an unreadable schema directory then costs no build.
-mkdir "$WORK_DIR/schema-as-migration" || fatal "could not create a directory under $WORK_DIR" 2
-write_schema_migration "$SCHEMA_DIR" "$WORK_DIR/schema-as-migration/00001_schema.sql"
-
-if [ -z "$REUSE_M" ]; then
-  start_instance "$INSTANCE_M" "$PORT_BASE_M" "$MIGRATIONS_DIR" "$M_SOURCE"
-  write_snapshot "$INSTANCE_M" "$M_SNAPSHOT" "$M_SOURCE"
-  finish_instance "$INSTANCE_M"
-fi
-census_and_floor "$M_SOURCE" "$M_SNAPSHOT"
-
-start_instance "$INSTANCE_S" "$PORT_BASE_S" "$WORK_DIR/schema-as-migration" "$S_SOURCE"
-write_snapshot "$INSTANCE_S" "$S_SNAPSHOT" "$S_SOURCE"
-finish_instance "$INSTANCE_S"
-census_and_floor "$S_SOURCE" "$S_SNAPSHOT"
-
-DIFF_STATUS=0
-diff -u --label "the database built from migrations" --label "the database built from schema" "$M_SNAPSHOT" "$S_SNAPSHOT" >"$DIFF_FILE" || DIFF_STATUS=$?
-
-if [ "$DIFF_STATUS" -eq 0 ] && [ ! -s "$DIFF_FILE" ]; then
-  echo "check-schema-equivalence.sh: EQUAL -- the database built from $S_SOURCE is the database built from $M_SOURCE (${SECONDS} s)"
-  exit 0
-fi
-if [ "$DIFF_STATUS" -eq 1 ] && [ -s "$DIFF_FILE" ]; then
-  echo "check-schema-equivalence.sh: DIFFERENT -- the database built from $S_SOURCE is not the database built from $M_SOURCE (${SECONDS} s). The objects that differ:"
-  differing_objects "$M_SNAPSHOT" "$S_SNAPSHOT" "$DIFF_FILE" || fatal "the objects that differ could not be listed" 2
-  echo "The diff. A line starting \`-\` is in the database built from the migrations only, a line starting \`+\` in the one built from schema/ only:"
-  cat "$DIFF_FILE"
-  exit 1
-fi
-fatal "diff exited $DIFF_STATUS and could not compare the two snapshots" 2
+main "$@"

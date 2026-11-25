@@ -12,6 +12,10 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
   `import { AccordionSelect } from '$lib/components/accordionSelect';`
 
+- [AccountAddress](/developers-guide/frontend/components/generated/components/accountAddress/AccountAddress)
+
+  `import { AccountAddress } from '$lib/components/accountAddress';`
+
 - [Alert](/developers-guide/frontend/components/generated/components/alert/Alert)
 
   `import { Alert } from '$lib/components/alert';`
@@ -148,6 +152,10 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
   `import { ModalContainer } from '$lib/components/modal';`
 
+- [MultiConstituencySelector](/developers-guide/frontend/components/generated/components/constituencySelector/MultiConstituencySelector)
+
+  `import { MultiConstituencySelector } from '$lib/components/constituencySelector';`
+
 - [MultilingualTextPart](/developers-guide/frontend/components/generated/components/input/parts/MultilingualTextPart)
 
   `import { MultilingualTextPart } from '$lib/components/input/parts';`
@@ -239,6 +247,10 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 - [Radio](/developers-guide/frontend/components/generated/components/input/Radio)
 
   `import { Radio } from '$lib/components/input';`
+
+- [RadioGroup](/developers-guide/frontend/components/generated/components/input/RadioGroup)
+
+  `import { RadioGroup } from '$lib/components/input';`
 
 - [ScoreGauge](/developers-guide/frontend/components/generated/components/scoreGauge/ScoreGauge)
 
@@ -426,6 +438,10 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
   `import { PasswordResetScreen } from '$lib/dynamic-components/accountScreens';`
 
+- [PasswordSaveForm](/developers-guide/frontend/components/generated/dynamic-components/passwordSaveForm/PasswordSaveForm)
+
+  `import { PasswordSaveForm } from '$lib/dynamic-components/passwordSaveForm';`
+
 - [QuestionHeading](/developers-guide/frontend/components/generated/dynamic-components/questionHeading/QuestionHeading)
 
   `import { QuestionHeading } from '$lib/dynamic-components/questionHeading';`
@@ -452,6 +468,10 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
 ### Contestant App Components
 
+- [NominationCard](/developers-guide/frontend/components/generated/contestant/components/nominationCard/NominationCard)
+
+  `import { NominationCard } from '$contestant/components/nominationCard';`
+
 - [NotEditableNote](/developers-guide/frontend/components/generated/contestant/components/notEditableNote/NotEditableNote)
 
   `import { NotEditableNote } from '$contestant/components/notEditableNote';`
@@ -463,6 +483,10 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 - [PasswordSignIn](/developers-guide/frontend/components/generated/contestant/components/passwordSignIn/PasswordSignIn)
 
   `import { PasswordSignIn } from '$contestant/components/passwordSignIn';`
+
+- [PendingAddressPanel](/developers-guide/frontend/components/generated/contestant/components/pendingAddressPanel/PendingAddressPanel)
+
+  `import { PendingAddressPanel } from '$contestant/components/pendingAddressPanel';`
 
 - [ReadFailure](/developers-guide/frontend/components/generated/contestant/components/readFailure/ReadFailure)
 
@@ -490,4 +514,4 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
 ---
 
-Total: 119 components
+Total: 125 components

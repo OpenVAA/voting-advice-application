@@ -1,5 +1,4 @@
 import type { ButtonProps } from '$lib/components/button';
-import type { Route } from '$lib/routes';
 
 /**
  * What a Log out leaves undone, as the app reads it: the counts the modal's sentences say and whether the entity is hidden from voters while opinion questions are unanswered.
@@ -15,13 +14,9 @@ export type LogoutWarning = {
 
 export type LogoutButtonProps = Partial<ButtonProps> & {
   /**
-   * The app's own sign-out. It rejects when the sign-out failed. An app whose sign-out navigates to its login takes the reason the session ends for, for the login to say.
+   * The app's own sign-out, which navigates to the app's login after a sign-out that worked. It rejects when the sign-out failed. It takes the reason the session ends for, for the login to say.
    */
   logout: (options?: { reason?: 'loggedOutAutomatically' }) => Promise<void>;
-  /**
-   * Where the button leaves to after a sign-out that worked, for an app whose `logout` does not navigate. When the count ran out the route carries `errorMessage: 'loggedOutAutomatically'`. Absent, the reason goes to `logout` and the app navigates.
-   */
-  redirectTo?: Route;
   /**
    * What is left undone. When it is set the button opens its modal before logging out, and the modal says what is left.
    */

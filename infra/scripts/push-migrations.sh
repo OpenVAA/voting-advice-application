@@ -67,6 +67,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd -P)"
 CLI="$REPO_ROOT/node_modules/.bin/supabase"
 DRIFT_CHECK="$SCRIPT_DIR/check-drift.sh"
+SCRIPT_NAME="push-migrations.sh"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$REPO_ROOT/scripts/lib/cli.sh"
+# shellcheck source=../../scripts/lib/redact.sh
+. "$REPO_ROOT/scripts/lib/redact.sh"
 
 SHARED_STACK_WORKDIR="$REPO_ROOT/apps/supabase"
 CONFIRM_PROMPT="Type the project ref to push to it:"
@@ -82,39 +87,6 @@ CONFIRMED_REF=""
 CHILD_PID=""
 CHILD_IS_CLI=0
 
-usage() {
-  # Delimit the header block rather than hardcoding a line range, so the exit-code table is never truncated when the header grows.
-  sed -n '2,/^set -euo pipefail/p' "${BASH_SOURCE[0]}" | sed '$d'
-}
-
-fatal() {
-  echo "push-migrations.sh: FATAL -- $1" >&2
-  exit "$2"
-}
-
-usage_error() {
-  usage >&2
-  fatal "$1" 2
-}
-
-note() {
-  echo "push-migrations.sh: $1" >&2
-}
-
-# $1 = flag name, $2 = the caller's remaining argument count ($#).
-require_value() {
-  if [ "$2" -lt 2 ]; then
-    usage_error "$1 requires a value"
-  fi
-}
-
-resolve_path() {
-  case "$1" in
-    /*) printf '%s\n' "$1" ;;
-    *) printf '%s\n' "$REPO_ROOT/$1" ;;
-  esac
-}
-
 # Prints a directory's physical path, or the path unchanged when it is not a directory.
 physical_path() {
   if [ -d "$1" ]; then
@@ -122,25 +94,6 @@ physical_path() {
   else
     printf '%s\n' "$1"
   fi
-}
-
-# Prints a tool's output without credentials, as check-drift.sh does. $1 = file.
-print_redacted() {
-  sed -E \
-    -e '/[Ss][Ee][Cc][Rr][Ee][Tt]|_KEY|[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd]=/s/.*/<a line naming a key, a secret or a password value was removed>/' \
-    -e '/:\/\/[^[:space:]]*@/s/.*/<a line holding an address with a user part was removed>/' \
-    -e 's/eyJ[A-Za-z0-9_-]{10,}(\.[A-Za-z0-9_-]+)*/<redacted>/g' \
-    -e 's/sb_(secret|publishable)_[A-Za-z0-9_-]+/<redacted>/g' \
-    "$1"
-}
-
-# Prints the id of every process below $1.
-descendants() {
-  local child
-  for child in $(pgrep -P "$1" 2>/dev/null || true); do
-    echo "$child"
-    descendants "$child"
-  done
 }
 
 # The CLI is a wrapper around a binary, so SIGTERM goes to every process below the child as well. The binary can ignore SIGTERM while it waits on the network, so a CLI call still running after the grace period is killed outright. The drift check is only sent SIGTERM and waited for: it removes its shadow database before it exits.

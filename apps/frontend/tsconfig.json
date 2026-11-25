@@ -14,7 +14,8 @@
     "vite.restartOnRootEnv.ts",
     "vite.restartOnRootEnv.test.ts",
     "paraglide.options.ts",
-    "scripts/compile-paraglide.ts"
+    "scripts/compile-paraglide.ts",
+    "../../scripts/lib/docTokens.mjs"
   ],
   "references": [
     { "path": "../../packages/app-shared/tsconfig.json" },

@@ -90,7 +90,7 @@ afterEach(() => {
 
 describe('createQueue', () => {
   it('holds what it is given and returns how many it took', () => {
-    const queue = createQueue({ provider: recordingProvider().provider });
+    const queue = createQueue({ provider: recordingProvider().provider, flushIntervalMs: 2_000 });
     expect(queue.enqueue(events(3))).toBe(3);
     expect(queue.size()).toBe(3);
     queue.stop();
@@ -98,7 +98,7 @@ describe('createQueue', () => {
 
   it('keeps what fits under the cap, drops the rest and reports only the count at the next flush', async () => {
     const { provider, batches } = recordingProvider();
-    const queue = createQueue({ provider, maxSize: 5 });
+    const queue = createQueue({ provider, maxSize: 5, flushIntervalMs: 2_000 });
     expect(queue.enqueue(events(4))).toBe(4);
     expect(queue.enqueue(events(4, 4))).toBe(1);
     expect(queue.size()).toBe(5);
@@ -118,7 +118,7 @@ describe('createQueue', () => {
 
   it('hands the events on in order, in slices of at most the batch size, and empties itself', async () => {
     const { provider, batches } = recordingProvider();
-    const queue = createQueue({ provider, batchSize: 2 });
+    const queue = createQueue({ provider, batchSize: 2, flushIntervalMs: 2_000 });
     queue.enqueue(events(5));
     await queue.flush();
     expect(indices(batches)).toEqual([[0, 1], [2, 3], [4]]);
@@ -128,7 +128,7 @@ describe('createQueue', () => {
 
   it('calls nothing when it is empty', async () => {
     const { provider } = recordingProvider();
-    const queue = createQueue({ provider });
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
     await queue.flush();
     expect(provider.capture).not.toHaveBeenCalled();
     queue.stop();
@@ -136,7 +136,7 @@ describe('createQueue', () => {
 
   it('resolves and is empty when the provider rejects, and still sends the later slices', async () => {
     const { provider, batches } = recordingProvider(() => Promise.reject(new Error('provider down')));
-    const queue = createQueue({ provider, batchSize: 2 });
+    const queue = createQueue({ provider, batchSize: 2, flushIntervalMs: 2_000 });
     queue.enqueue(events(3));
     await expect(queue.flush()).resolves.toBeUndefined();
     expect(queue.size()).toBe(0);
@@ -146,7 +146,7 @@ describe('createQueue', () => {
 
   it('returns from enqueue before the provider is called', () => {
     const { provider } = recordingProvider();
-    const queue = createQueue({ provider });
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
     queue.enqueue(events(2));
     expect(provider.capture).not.toHaveBeenCalled();
     queue.stop();
@@ -212,8 +212,8 @@ describe('createQueue', () => {
   });
 
   it('keeps no state shared between queues', () => {
-    const first = createQueue({ provider: recordingProvider().provider });
-    const second = createQueue({ provider: recordingProvider().provider });
+    const first = createQueue({ provider: recordingProvider().provider, flushIntervalMs: 2_000 });
+    const second = createQueue({ provider: recordingProvider().provider, flushIntervalMs: 2_000 });
     first.enqueue(events(3));
     expect(second.size()).toBe(0);
     first.stop();
@@ -224,7 +224,7 @@ describe('createQueue', () => {
 describe('registerShutdownFlush', () => {
   it('flushes once when the shutdown event is emitted, and does nothing on a second emission', async () => {
     const { provider, batches } = recordingProvider();
-    const queue = createQueue({ provider });
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
     const emitter = new EventEmitter();
     registerShutdownFlush(queue, emitter);
     queue.enqueue(events(3));
@@ -263,7 +263,7 @@ describe('registerShutdownFlush', () => {
 
   it('listens on the process when no target is given', async () => {
     const { provider } = recordingProvider();
-    const queue = createQueue({ provider });
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
     const before = process.listenerCount('sveltekit:shutdown');
     registerShutdownFlush(queue);
     expect(process.listenerCount('sveltekit:shutdown')).toBe(before + 1);

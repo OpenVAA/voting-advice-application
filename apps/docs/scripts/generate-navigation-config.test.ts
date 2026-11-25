@@ -71,6 +71,28 @@ describe('a section that becomes an item', () => {
     expect(output).toContain('// Removed: /guide/topic/deep');
     expect(output).toContain('route: "/guide/topic"');
   });
+
+  it('keeps the former children as removed children of the item, not as its children', () => {
+    const current: Navigation = [
+      {
+        title: 'Guide',
+        route: '/guide',
+        children: [{ title: 'Topic', route: '/guide/topic', children: [{ title: 'Deep', route: '/guide/topic/deep' }] }]
+      }
+    ];
+    const discovered: Navigation = [
+      { title: 'Guide', route: '/guide', children: [{ title: 'Topic', route: '/guide/topic' }] }
+    ];
+
+    const [guide] = compareNavigations(current, discovered);
+    const topic = 'children' in guide ? guide.children[0] : undefined;
+
+    expect(topic).toEqual({
+      status: 'existing',
+      item: { title: 'Topic', route: '/guide/topic', fixedTitle: undefined },
+      removedChildren: [{ status: 'removed', item: { title: 'Deep', route: '/guide/topic/deep' } }]
+    });
+  });
 });
 
 describe('a nested section with a page of its own', () => {

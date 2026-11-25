@@ -19,7 +19,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
  *
  * This is the single most surprising thing about the assertions below, so it is stated before them rather than discovered inside them.
  *
- * - **The BROAD form** (`SELECTORS.S2_BROAD`, research's original) keys on the MEMBER NAME alone: any `init` in any class body. It was measured firing on the abstract base, on the Supabase mixin's inner class — whose name carries no adapter suffix — AND on the live `init` member of `src/lib/contexts/contestant/contestantUserDataState.svelte.ts`, a store with nothing to do with adapters. That last one is a FALSE POSITIVE, so the broad form ships in the ADAPTER BLOCK ONLY, where every class is an adapter. Zone C is that block.
+ * - **The BROAD form** (`SELECTORS.S2_BROAD`, research's original) keys on the MEMBER NAME alone: any `init` in any class body. It was measured firing on the abstract base, on the Supabase mixin's inner class — whose name carries no adapter suffix — AND on the live `init` member of `src/lib/contexts/contestant/entityUserDataState.svelte.ts`, a store with nothing to do with adapters. That last one is a FALSE POSITIVE, so the broad form ships in the ADAPTER BLOCK ONLY, where every class is an adapter. Zone C is that block.
  * - **The SCOPED form** (`SELECTORS.S2_SCOPED`) additionally keys on the CLASS'S OWN NAME ending in one of the same five adapter suffixes the instance clause uses. It is silent on the store and on the mixin's inner class, and it ships in ALL THREE blocks.
  *
  * The abstract base and the store resolve to the SAME effective zone (B), so no block placement can catch one without the other — which is why two forms exist rather than one placed cleverly. The consequence for this file: the five generic-named clause-2 fixtures (`CLAUSE2_VIOLATIONS`, class `A` / `WithMixin`) fire at zone C and ONLY at zone C, while the five adapter-suffixed ones (`CLAUSE2_VIOLATIONS_SCOPED`) fire at all three. Both sets are asserted, in the form that actually ships at each zone.
@@ -454,7 +454,7 @@ const IN_SCOPE_MESSAGE = 'const assertion';
 
 /** The three real files whose CURRENT source this spec lints from disk. The store is the false positive the two declaration forms exist to avoid; the two singletons are the exemptions whose directives must be doing their job. */
 const REAL_FILES = {
-  store: 'lib/contexts/contestant/contestantUserDataState.svelte.ts',
+  store: 'lib/contexts/contestant/entityUserDataState.svelte.ts',
   localDataProvider: 'lib/server/api/adapters/local/dataProvider/index.ts',
   localFeedbackWriter: 'lib/server/api/adapters/local/feedbackWriter/index.ts'
 } as const;

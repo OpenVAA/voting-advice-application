@@ -19,8 +19,10 @@ The overview of every root, the order of first applies and the rules that hold f
   shows the project as a creation is never applied.
 - **A plan that shows a destroy, a replacement or a change of the database password is never
   applied**, because each of them changes what the project holds or how it is reached, and none can be
-  undone by applying again. The one exception is a fault step of the throwaway root, which may destroy
-  or replace a settings resource and never a project (see "Fault steps on the throwaway project").
+  undone by applying again. There are two exceptions, and neither ever touches a project: a fault
+  step of the throwaway root may destroy or replace a settings resource (see "Fault steps on the
+  throwaway project"), and Step 18 admits the destroy of the SMTP credential settings resource,
+  `module.supabase.supabase_settings.smtp_secret[0]`, while the root's send-email hook is on.
 - **A plan and its apply are two separate steps**: you make the plan, save it, paste its named lines,
   and wait for the go-ahead before you apply that saved file, because only a plan someone has read
   against these rules may be applied.
@@ -159,7 +161,7 @@ categories are fetched from the API.
    ```bash
    cd infra/envs/scratch/supabase
    export LC_ALL=C
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-supabase.XXXXXX")
    ```
 
    Then export, for this session only, `SUPABASE_ACCESS_TOKEN` and `TF_VAR_database_password` with the
@@ -232,7 +234,7 @@ and the region, so the three exports of Step 2 are removed.
 ```bash
 cd infra/envs/scratch/supabase
 export LC_ALL=C
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-supabase.XXXXXX")
 unset TF_VAR_organization_id TF_VAR_project_name TF_VAR_region
 ```
 
@@ -306,7 +308,7 @@ receives the raw auth configuration of the project, which holds its secrets.
 ```bash
 cd infra/envs/scratch/supabase
 export LC_ALL=C
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-supabase.XXXXXX")
 REF='<the throwaway project ref>'
 ```
 
@@ -440,7 +442,7 @@ to import, stop and say so.
 cd infra/envs/staging/supabase
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-supabase.XXXXXX")
 REF='cofbsatfrdysyphajsky'
 ```
 
@@ -533,7 +535,7 @@ which holds its secrets.
 cd infra/envs/staging/supabase
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-supabase.XXXXXX")
 REF='cofbsatfrdysyphajsky'
 ```
 
@@ -645,7 +647,7 @@ R=scratch
 REF=$(sed -n 's/^project_ref *= *"\([a-z]*\)".*/\1/p' \
   "infra/envs/$R/supabase/terraform.tfvars")
 W=tmp/supabase-linked/$REF
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-184.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-supabase.XXXXXX")
 ```
 
 Then the secrets the sitting names, each read without echoing it and exported, never given on a
@@ -693,7 +695,7 @@ it again:
 
 ```bash
 test -d "$L" || \
-  L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-184.XXXXXX")
+  L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-supabase.XXXXXX")
 ```
 
 ### Step 14: The linked work directory
@@ -955,12 +957,20 @@ Secrets: `SUPABASE_ACCESS_TOKEN`, `TF_VAR_database_password` and, when the root 
    ```
 
 Do not apply. Whoever reads the lines reads them against the stop rules of Step 4, with
-`s18_plan_exit=0` in place of the plan status of Step 3, and with these resource headings admitted,
-each as a creation or an update in place: `module.supabase.supabase_settings.this`,
-`module.supabase.supabase_settings.smtp_secret[0]` and
-`module.supabase.supabase_edge_function_secrets.this[0]`. The go-ahead names the SHA-256 and the ref
-it was given for. If the reading says stop, nothing is applied and the plan file is removed with
+`s18_plan_exit=0` in place of the plan status of Step 3, and with these resource headings admitted:
+`module.supabase.supabase_settings.this` and `module.supabase.supabase_edge_function_secrets.this`,
+each as a creation or an update in place, and, while the root's send-email hook is on,
+`module.supabase.supabase_settings.smtp_secret[0]` only as a destroy, which changes nothing on the
+project; the summary line then reads `1 to destroy` in place of rule 3's `0 to destroy`, and the
+destroy line it prints is that resource's. A root whose `enable_send_email_hook` is `false` admits
+`smtp_secret[0]` as a creation or an update in place instead. The go-ahead names the SHA-256 and
+the ref it was given for. If the reading says stop, nothing is applied and the plan file is removed with
 `rm -f "infra/envs/$R/supabase/tfplan"`.
+
+The first plan of a state that still holds `supabase_edge_function_secrets.this[0]` also prints
+`module.supabase.supabase_edge_function_secrets.this[0] has moved to
+module.supabase.supabase_edge_function_secrets.this`, from the module's `moved` block. That line
+changes nothing on the project and is admitted; the plans after its apply no longer print it.
 
 **Part B: the apply.** Begin with the lines of a sitting and `T="infra/envs/$R/supabase"`.
 
@@ -1007,7 +1017,10 @@ it was given for. If the reading says stop, nothing is applied and the plan file
    of each function secret, one `s18_secret_name=` line each. That list holds nothing but secrets,
    so it is printed by name and never with a value or a digest; it also holds the names the
    platform sets itself, which begin with `SUPABASE_`. The sender address is the one e-mail
-   address a paste may hold.
+   address a paste may hold. While the root's send-email hook is on, the module sends no SMTP
+   setting to the auth service, so the `s18_smtp` lines read what the project already held, not
+   what this apply wrote; only for a root whose `enable_send_email_hook` is `false` do they read
+   the root's `smtp` object back.
 
    ```bash
    API="https://api.supabase.com/v1/projects/$REF"
@@ -1580,7 +1593,7 @@ Secrets: `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, and `PGPASSWORD` with
 
 **Removing the contestant.** The user is deleted through the Auth Admin API, and the grant and the
 acceptance go with it by `ON DELETE CASCADE` on both tables' `user_id` (seen on an isolated
-database, `evidence/186-04-grant-script.md` of phase 186). Begin with the lines of the sitting,
+database). Begin with the lines of the sitting,
 `R=staging`, Step 15, item 3 and item 6 up to its `unset X`, which must print
 `s22c_address_read=yes`. Secrets: as above.
 
@@ -1764,8 +1777,8 @@ root. These rules hold for every such step:
   A line more, a line less or another action is a stop: nothing is applied, the plan file goes with
   `$L`, and the lines are pasted.
 - **A plan that creates, destroys or replaces `supabase_project` is never applied**, whatever the
-  step gives. A settings resource may be destroyed or replaced in a fault step; that is the one
-  exception to the second rule of this root, and it holds in the scratch root only.
+  step gives. A settings resource may be destroyed or replaced in a fault step; that exception to
+  the second rule of this root holds in the scratch root only.
 - **The revert** is a plan with `-var fault_set=none -replace=module.supabase.supabase_settings.this`,
   read and applied the same way. Destroying the fault resource changes nothing on the project; only
   the replaced module resource sends the correct values again. Its named lines are
@@ -1812,7 +1825,7 @@ The hosted values live in [`../../../modules/supabase/hosted-settings.json`](../
 in five groups: `api`, `auth`, `auth_hook` (the access-token hook), `auth_send_email_hook` (the
 send-email hook) and `redirect_callback_paths`. The module adds what depends on the environment: the
 site address and the redirect allow list, built from the root's `public_origin`, the rate limits, and
-the SMTP settings once a root sets them. `terraform output -json managed_auth_keys` lists the auth
+the SMTP settings while a root sets `smtp` and switches the send-email hook off. `terraform output -json managed_auth_keys` lists the auth
 settings a root sends. Every key of the local Supabase configuration's API and auth tables is in one of
 four classes:
 
@@ -1836,13 +1849,15 @@ the guard's report.
 
 The send-email hook's function takes every mail the auth service would send and sends none; the
 application's own function sends the mails. So while the send-email hook is on, the hosted auth service
-sends no mail of its own, and the SMTP settings and the mail rate limit `rate_limit_email_sent` govern
-no mail the auth service sends. Step 18 applies the SMTP settings when a root's `terraform.tfvars`
-sets its `smtp` object, as the staging root's does. That object holds no user name and no password:
-the SMTP user name, which for SES is the access key id of the SMTP user and half of the mail
-credential, is `TF_VAR_smtp_user`, and the password is `TF_VAR_smtp_password`.
-Both are exported in the shell that plans, from the dns-mail root's outputs, and written to no file;
-the module sends them through a settings resource of their own, so no plan diff shows them.
+sends no mail of its own, and the module sends it no SMTP setting, no SMTP credential and no
+`rate_limit_email_sent`; their hosted values stay as they are. The root's `smtp` object, as the
+staging root's `terraform.tfvars` sets it, then feeds only the Edge Functions' `SMTP_` secrets. That
+object holds no user name and no password: the SMTP user name, which for SES is the access key id of
+the SMTP user and half of the mail credential, is `TF_VAR_smtp_user`, and the password is
+`TF_VAR_smtp_password`. Both are exported in the shell that plans, from the dns-mail root's outputs,
+and written to no file. Step 18 sends them to the Edge Functions as `SMTP_USER` and `SMTP_PASS`, and
+to the auth service too only for a root whose `enable_send_email_hook` is `false`, through a settings
+resource of their own, so no plan diff shows them.
 
 ## Traps
 
@@ -1986,7 +2001,9 @@ moves it.
 | 2026-11-15    | The smoke contestant was created on the persistent project at a sitting the operator approved (Step 22, items 3 to 13): one auth user through the Auth Admin API with the address confirmed (status 200), the `editor` grant on `smoke_cand_0000` and the terms-of-use acceptance (`grants=1`, `terms=1`), a password sign-in answering 200 with one entity editor grant in the token, the sign-out 204, and the seed check 0. The full deployed smoke run against `https://staging.openvaa.org` then passed with the service-role key unset and the contestant read from the keychain: five gate `PASS` lines, the voter walk to results and the contestant sign-in, complete home and sign-out (run directory `186-08-green-20261115T120003Z`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | 2026-11-17    | Step 18 was applied by hand to the persistent project (`R=staging`) by the operator, in the sitting of the pipeline's first green deploy and before its approval. The first plan exited 1: the provider answered 401 `Invalid access token` on `supabase_project.this`. A plan file left from an earlier sitting was found and removed unapplied, and the token was read again. The second plan exited 0 with one update in place of `module.supabase.supabase_settings.this` (`Plan: 0 to add, 1 to change, 0 to destroy.`), but its apply exited 1 with `Error: Project Services Unhealthy` (the services did not become active within the provider's timeout). The plan file was removed; `mailer_otp_length` still read `6` and `uri_allow_list` was unchanged, so nothing had been applied, and the eight services the provider waits on (auth, db, db_postgres_user, pg_bouncer, pooler, realtime, rest, storage) then read `ACTIVE_HEALTHY`. That this failure was transient has not been confirmed. The third plan showed the same single update: `mailer_otp_length` 6 to 10, and `uri_allow_list` from the two `/api/auth/callback` paths to `https://staging.openvaa.org/auth/confirm,https://staging.openvaa.org/*/auth/confirm`. The apply of the plan file whose sha256 the go-ahead named completed (`Apply complete! Resources: 0 added, 1 changed, 0 destroyed.`), the plan after it read `No changes`, and the served auth settings (status 200) read `mailer_otp_length` 10 and that `uri_allow_list`. |
 | 2026-11-19    | The deploy workflow's run 44491292876 on `deploy/staging`, commit `a7003b490`, pushed the appended migration `00023_invitation_caller_limit` to the persistent project under the `staging` review, before it deployed the functions. The dry run printed one pending version, `push_pending=00023`; the push was confirmed by the environment (`push_status=0`). The drift check after it read the manifest and the database's history both `00001` to `00023` and the schema diff empty, `drift_status=0`. The functions step then deployed `account-access`, `identity-callback` and `send-email` from the commit, each `ACTIVE` with `verify_jwt` as configured.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| 2026-11-19    | The per-caller limit of migration `00023_invitation_caller_limit` was seen on the hosted `account-access` (plan 188-16, attempt `20261119T095140Z.b5b5ecf9f`), every caller on `curl -4` with fresh unknown codes to `check-code`. AWS CloudShell was answered 200 thirty times and refused with 429 and `Retry-After: 593` at its 31st call (09:59:32Z). The workstation was answered 200 at 10:00:11Z, inside that window, was refused at its own 31st call with `Retry-After: 589` and the same body, `{"error":"too-many-requests"}`, and was answered 200 again at 10:10:18Z, after its window. Addresses were not recorded, and the throttle rows were left to expire.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 2026-11-20    | At a read-only sitting the operator approved, the first probe run after the function deploy of 2026-11-19, the conformance probe (Step 23) passed every check on the persistent project: status 0, twenty-two `PASS` lines, no `FAIL` and no `COULD NOT RUN`, with the publishable key, the catalog role `postgres` through the session pooler (Step 15 item 2) and no service-role key. Among them `functions.verify-jwt` and `functions.identity-callback-unverified` passed, so the hosted `identity-callback` was deployed with `verify_jwt` as configured and, called with no key, answered 400 to a GET and 401 to a POST of an empty object. Its note again named the legacy keys enabled. The lines are in `189-05-staging-reads.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 2026-11-20    | At the same sitting, through the session pooler, `select has_table_privilege('postgres', 'auth.users', 'UPDATE')` returned `t`: the role `postgres` held `UPDATE` on `auth.users` on the persistent project. The line is in `189-05-staging-reads.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 2026-11-20    | At a read-only sitting the operator approved, the persistent project answered the backups read of Step 24 (`R=staging`, read at 13:55Z) with status 200: region `eu-north-1`, PITR off (`pitr_enabled=false`), WAL-G archiving on (`walg_enabled=true`), and eight backups, all eight `COMPLETED`. The earliest and the latest physical backup times both printed `null`, so the answer gave no physical-backup range, and the read prints no backup dates, so the span of the eight is not known from it. No restore was started and nothing on the project changed. The lines are in `189-06-backups.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 2026-11-19    | The per-caller limit of migration `00023_invitation_caller_limit` was seen on the hosted `account-access` (attempt `20261119T095140Z.b5b5ecf9f`), every caller on `curl -4` with fresh unknown codes to `check-code`. AWS CloudShell was answered 200 thirty times and refused with 429 and `Retry-After: 593` at its 31st call (09:59:32Z). The workstation was answered 200 at 10:00:11Z, inside that window, was refused at its own 31st call with `Retry-After: 589` and the same body, `{"error":"too-many-requests"}`, and was answered 200 again at 10:10:18Z, after its window. Addresses were not recorded, and the throttle rows were left to expire.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 2026-11-20    | At a read-only sitting the operator approved, the first probe run after the function deploy of 2026-11-19, the conformance probe (Step 23) passed every check on the persistent project: status 0, twenty-two `PASS` lines, no `FAIL` and no `COULD NOT RUN`, with the publishable key, the catalog role `postgres` through the session pooler (Step 15 item 2) and no service-role key. Among them `functions.verify-jwt` and `functions.identity-callback-unverified` passed, so the hosted `identity-callback` was deployed with `verify_jwt` as configured and, called with no key, answered 400 to a GET and 401 to a POST of an empty object. Its note again named the legacy keys enabled.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 2026-11-20    | At the same sitting, through the session pooler, `select has_table_privilege('postgres', 'auth.users', 'UPDATE')` returned `t`: the role `postgres` held `UPDATE` on `auth.users` on the persistent project.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| 2026-11-20    | At a read-only sitting the operator approved, the persistent project answered the backups read of Step 24 (`R=staging`, read at 13:55Z) with status 200: region `eu-north-1`, PITR off (`pitr_enabled=false`), WAL-G archiving on (`walg_enabled=true`), and eight backups, all eight `COMPLETED`. The earliest and the latest physical backup times both printed `null`, so the answer gave no physical-backup range, and the read prints no backup dates, so the span of the eight is not known from it. No restore was started and nothing on the project changed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-11-21    | The deploy workflow's run 44939177207 on `deploy/staging`, commit `2ddc331d1`, the first with the settings stage. After the migrations step, which found none pending (`push_up_to_date=yes`, no `push_pending=` line) and read the manifest and the database's history both `00001` to `00024` with the schema diff empty (`drift_status=0`), the step "Check the deployment settings" ran `infra/scripts/check-deployment-settings.sql` against the persistent project through the session pooler and exited 0 (`settings_exit=0`): `private.deployment_settings` holds its row and `behind_cloudflare` reads true. The functions step then redeployed the three functions, each `ACTIVE`. The deployed smoke's caller-limit spec had thirty calls from the runner admitted by the hosted `account-access` (`caller_limit_admitted=30`) and the next refused with 429 and `Retry-After: 582` (`caller_limit_retry_after=582`). The runner's address was not recorded, and its throttle row was left to expire.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 2026-11-25    | At a sitting the operator approved, the persistent project's database was reset to the restacked migrations and rebuilt (record `189.1.1-12-staging-rebuild`). `supabase db reset --linked --no-seed`, from a work directory holding only the migrations `00001` to `00004` and with `PGSSLMODE=verify-full` against the committed root, exited 0 with four migrations applied; the history then read `00001 00002 00003 00004`, where it had read `00001` to `00024`. The first bootstrap exited 3 and wrote nothing, because `infra/scripts/bootstrap.sql` cast an unset `BOOTSTRAP_ACCESS_CALLER_MAX` to `integer`; with that corrected the sitting resumed after the reset. The bootstrap (Step 20, `BOOTSTRAP_BEHIND_CLOUDFLARE=true`) exited 0 twice with counts `1,1,1,2,1`, `open_for_voters` and `behind_cloudflare` true, and the seed check 0. The `smoke` dataset was seeded (status 0; anonymous read 206, `Content-Range: 0-0/1001`) and the smoke contestant made again from the keychain item's address and password (create 200, `grants=1`, `terms=1`, sign-in 200, sign-out 204). `analytics.trackEvents` was set true by one statement and read true through the public REST API; `infra/scripts/check-deployment-settings.sql` exited 0. Not restored: every earlier auth user, the first administrator of Step 21 among them, and a setting made by hand (the candidate registration mode `identity_provider`). Staging served build `2ddc331d1` before and after.                                  |

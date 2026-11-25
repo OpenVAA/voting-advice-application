@@ -1,4 +1,4 @@
-import { chmod, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import * as path from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -23,14 +23,11 @@ describe('moveTarget', () => {
     await writeFile(path.join(dest, 'kept', '+page.md'), '# Kept\n');
     await mkdir(src, { recursive: true });
     await writeFile(path.join(src, 'a.md'), '# A\n');
+    // `b.md` becomes the directory `b/` while the asset `b` is a file at that same path, so one of the two writes fails whichever is read first
     await writeFile(path.join(src, 'b.md'), '# B\n');
-    await chmod(path.join(src, 'b.md'), 0o000);
+    await writeFile(path.join(src, 'b'), 'asset');
 
-    try {
-      await expect(moveTarget(src, dest, routes)).rejects.toThrow();
-    } finally {
-      await chmod(path.join(src, 'b.md'), 0o644);
-    }
+    await expect(moveTarget(src, dest, routes)).rejects.toThrow();
     expect(await readdir(dest)).toEqual(['kept']);
     expect(await readFile(path.join(dest, 'kept', '+page.md'), 'utf-8')).toBe('# Kept\n');
   });

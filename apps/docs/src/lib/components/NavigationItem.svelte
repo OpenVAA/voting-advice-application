@@ -36,6 +36,7 @@
     <a
       href={item.route}
       class={[itemActive && 'menu-active bg-base-300 text-neutral', item.isSecondary && 'secondary']}
+      aria-current={itemActive ? 'page' : undefined}
       onclick={onLinkClick}>
       {item.title}
     </a>

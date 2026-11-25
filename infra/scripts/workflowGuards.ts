@@ -1,13 +1,9 @@
 /**
  * The rules every infrastructure workflow under `.github/workflows/` obeys, as a list of violations.
  *
- * A workflow of this repository runs in public: its log is readable by anyone, a pull request's run takes its
- * workflow file from the pull request, and the default token of the repository may write. The rules below keep a
- * credential, a plan or an attacker's text out of reach of that surface. They are checked by unit tests rather than by a
- * workflow's first run, because a first run is a public push and a mistake in it cannot be taken back.
+ * A workflow of this repository runs in public: its log is readable by anyone, a pull request's run takes its workflow file from the pull request, and the default token of the repository may write. The rules below keep a credential, a plan or an attacker's text out of reach of that surface. They are checked by unit tests rather than by a workflow's first run, because a first run is a public push and a mistake in it cannot be taken back.
  *
- * Each violation is one string, `<rule>: <where and what>`, the rule being one of {@link SHARED_RULES}. A structural
- * rule reads the parsed document; a text rule reads the file line by line, so that it also sees comments.
+ * Each violation is one string, `<rule>: <where and what>`, the rule being one of {@link SHARED_RULES}. A structural rule reads the parsed document; a text rule reads the file line by line, so that it also sees comments.
  */
 
 import { readFileSync } from 'node:fs';
@@ -137,15 +133,7 @@ export function triggerEvents(doc: WorkflowDocument): Array<string> {
 /**
  * Every violation of the shared rules in one workflow.
  *
- * The rules: the top-level `permissions` is an empty mapping; every job sets its own `permissions`; every action is
- * pinned by a full commit SHA, and its `uses:` line carries the tag in a comment; no trigger is `pull_request_target`;
- * no step uploads an artifact; the text names no service-role or secret key; no `run:` script holds a workflow
- * expression, so secrets and event text reach scripts through `env`; `id-token: write` is granted only to a job that
- * assumes a role, with the credentials action or a script reading the token request URL; every checkout sets
- * `persist-credentials: false`; every job runs on one of {@link RUNNER_LABELS}; every Terraform `-out=` writes under
- * `$RUNNER_TEMP`; and no `run:` script reads `$?` other than in an `||` list on its command's line, as
- * `cmd || name=$?`, or turns errexit off with `set +e`, because a `run:` step that names no `shell:` runs under
- * `bash -e`, which ends the step at a failing command before a status read on the next line runs.
+ * The rules: the top-level `permissions` is an empty mapping; every job sets its own `permissions`; every action is pinned by a full commit SHA, and its `uses:` line carries the tag in a comment; no trigger is `pull_request_target`; no step uploads an artifact; the text names no service-role or secret key; no `run:` script holds a workflow expression, so secrets and event text reach scripts through `env`; `id-token: write` is granted only to a job that assumes a role, with the credentials action or a script reading the token request URL; every checkout sets `persist-credentials: false`; every job runs on one of {@link RUNNER_LABELS}; every Terraform `-out=` writes under `$RUNNER_TEMP`; and no `run:` script reads `$?` other than in an `||` list on its command's line, as `cmd || name=$?`, or turns errexit off with `set +e`, because a `run:` step that names no `shell:` runs under `bash -e`, which ends the step at a failing command before a status read on the next line runs.
  *
  * @param doc - The parsed workflow.
  * @param text - The text the workflow was parsed from.

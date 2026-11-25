@@ -1,7 +1,5 @@
 /**
- * The build-and-push script, run through its own self-test: throwaway repositories with a bare repository as origin,
- * and the AWS CLI and docker replaced by stubs inside the script. The child gets a minimal environment, so no credential
- * of the shell that runs the suite reaches it.
+ * The build-and-push script, run through its own self-test: throwaway repositories with a bare repository as origin, and the AWS CLI and docker replaced by stubs inside the script. The child gets a minimal environment, so no credential of the shell that runs the suite reaches it.
  */
 
 import { spawnSync } from 'node:child_process';

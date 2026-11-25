@@ -48,3 +48,26 @@ export async function isAdminOnlyInProject(
   });
   return grants !== undefined && isAdminOnly(grants);
 }
+
+/**
+ * Whether a verified session's grants in this project are contestant-only, as {@link isContestantOnly} reads them. The mirror of {@link isAdminOnlyInProject}.
+ *
+ * The grants that reach this project are read only when the session's token holds a contestant grant somewhere: the token lists the user's grants in every project, so a token without one holds none here either. A read that fails is logged and answered `false`, so it sends nobody to the Contestant App.
+ *
+ * @param session - A session `safeGetSession` verified.
+ * @param readProjectGrants - The read of the grants that reach this project, the data writer's `getProjectGrants`.
+ * @param logLabel - Names the caller in the log line of a read that failed.
+ * @returns `true` when the session's grants in this project are contestant-only.
+ */
+export async function isContestantOnlyInProject(
+  session: { access_token: string },
+  readProjectGrants: () => Promise<Array<GrantClaim>>,
+  logLabel: string
+): Promise<boolean> {
+  if (!hasAnyGrant(readSessionGrants(session), CONTESTANT_GRANTS)) return false;
+  const grants = await readProjectGrants().catch((e: Error | undefined) => {
+    log.error(`${logLabel}: reading the grants that reach this project failed: ${e?.message ?? '-'}`);
+    return undefined;
+  });
+  return grants !== undefined && isContestantOnly(grants);
+}

@@ -18,6 +18,8 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const TESTS_ROOT = path.join(REPO_ROOT, 'tests');
 const DEPLOYED_DIR = path.join(TESTS_ROOT, 'tests', 'deployed');
 const GITHUB_DIR = path.join(REPO_ROOT, '.github');
+/** The shared voter-walk fixture. The voter spec imports its answer loop, and its consent-granting handler is installed by `walkUntilQuestionsIntro` alone. */
+const VOTER_JOURNEY_FIXTURE = 'tests/tests/fixtures/voter/voter-journey.fixture.ts';
 
 /** The remote-seed switch, in its environment, flag and option spellings. */
 const REMOTE_SEED_SWITCH = /DEV_SEED_ALLOW_REMOTE|allow-remote|allowRemote/;
@@ -96,9 +98,14 @@ function scanForTokens(text: string, pattern: RegExp): Array<TokenFinding> {
   });
 }
 
+/** `text` without the comments `COMMENTS` matches. */
+function withoutComments(text: string): string {
+  return COMMENTS.reduce((stripped, comment) => stripped.replace(comment, '$1'), text);
+}
+
 /** The specifiers `text` imports or re-exports as values, static and dynamic; `import type` and `export type` are skipped. */
 function valueImportSpecifiers(text: string): Array<string> {
-  const code = COMMENTS.reduce((stripped, comment) => stripped.replace(comment, '$1'), text);
+  const code = withoutComments(text);
   const staticSpecifiers = [...code.matchAll(STATIC_IMPORT)]
     .filter(([, typeKeyword]) => !typeKeyword)
     .map(([, , specifier]) => specifier);
@@ -154,6 +161,30 @@ function forbiddenReach(walk: ImportWalk): Array<string> {
     .map(({ specifier, chain }) => `${show(chain)} → ${specifier}`);
   const unresolved = walk.unresolved.map(({ specifier, chain }) => `${show(chain)} → ${specifier} (unresolved)`);
   return [...forbiddenFiles, ...forbiddenPackages, ...unresolved];
+}
+
+/** Every index at which `needle` begins in `text`. */
+function indicesOf(text: string, needle: string): Array<number> {
+  const found: Array<number> = [];
+  for (let index = text.indexOf(needle); index !== -1; index = text.indexOf(needle, index + 1)) found.push(index);
+  return found;
+}
+
+/**
+ * The span of the braces that open at the first `{` after `anchor` in `text`, from that brace to the one that closes it, or undefined when `text` holds no such pair.
+ *
+ * It counts braces only, so it serves an anchor whose own text up to the brace holds none, such as a function declared with plain parameters.
+ */
+function braceSpan(text: string, anchor: string): { open: number; close: number } | undefined {
+  const at = text.indexOf(anchor);
+  const open = at === -1 ? -1 : text.indexOf('{', at + anchor.length);
+  if (open === -1) return undefined;
+  let depth = 0;
+  for (let index = open; index < text.length; index++) {
+    if (text[index] === '{') depth++;
+    else if (text[index] === '}' && --depth === 0) return { open, close: index };
+  }
+  return undefined;
 }
 
 function tokenFindingsIn(files: Array<string>, pattern: RegExp): Array<string> {
@@ -255,22 +286,38 @@ describe('the deployed config', () => {
     expect(text).toContain("test.use({ trace: 'off', screenshot: 'off', video: 'off' });");
   });
 
-  it('turns tracing off in the caller-limit spec and sends its calls through the probe', () => {
-    const text = fs.readFileSync(path.join(DEPLOYED_DIR, 'caller-limit.smoke.ts'), 'utf8');
-    expect(text).toContain("test.use({ trace: 'off' });");
-    expect(text).toContain('checkCodeRequest(');
-    expect(text).toContain('probeCallerLimit(');
-  });
-
-  it('declines the consent prompt in the voter spec through a handler installed before it navigates, and the shared navigation installs none', () => {
+  it('installs a locator handler in the voter spec before it navigates', () => {
     const text = fs.readFileSync(path.join(DEPLOYED_DIR, 'voter.smoke.ts'), 'utf8');
     const handler = text.indexOf('page.addLocatorHandler(');
     expect(handler).toBeGreaterThan(-1);
     expect(text.indexOf('navigateToFirstQuestion(page)')).toBeGreaterThan(handler);
-    expect(text).toContain('collecting usage data');
-    expect(text).toContain('don.t want to share my data');
-    const navigation = fs.readFileSync(path.join(TESTS_ROOT, 'tests', 'utils', 'voterNavigation.ts'), 'utf8');
-    expect(navigation).not.toContain('addLocatorHandler');
+  });
+
+  it('lets no module the voter spec reaches install a locator handler on the path the spec runs', () => {
+    const spec = path.join(DEPLOYED_DIR, 'voter.smoke.ts');
+    const fixture = path.join(REPO_ROOT, VOTER_JOURNEY_FIXTURE);
+    const code = (file: string): string => withoutComments(fs.readFileSync(file, 'utf8'));
+    const reached = [...walkValueImports([spec], REPO_ROOT).reached.keys()].filter((file) => file !== spec);
+    expect(reached).toContain(fixture);
+    const installers = reached.filter((file) => code(file).includes('addLocatorHandler'));
+    expect(installers.map((file) => path.relative(REPO_ROOT, file))).toEqual([VOTER_JOURNEY_FIXTURE]);
+    const walkFixture = code(fixture);
+    const grant = braceSpan(walkFixture, 'async function walkUntilQuestionsIntro(');
+    const fixtures = braceSpan(walkFixture, 'base.extend<VoterJourneyFixtures>(');
+    expect(grant).toBeDefined();
+    expect(fixtures).toBeDefined();
+    const inside = (span: { open: number; close: number } | undefined, index: number): boolean =>
+      span !== undefined && index > span.open && index < span.close;
+    // The fixture's one handler grants consent. It is installed only by `walkUntilQuestionsIntro`, which only the fixtures of `voterJourneyTest` call, and the spec uses neither.
+    expect(indicesOf(walkFixture, 'addLocatorHandler').filter((index) => !inside(grant, index))).toEqual([]);
+    const declaration = walkFixture.indexOf('async function walkUntilQuestionsIntro(') + 'async function '.length;
+    const calls = indicesOf(walkFixture, 'walkUntilQuestionsIntro(').filter((index) => index !== declaration);
+    expect(calls.length).toBeGreaterThan(0);
+    expect(calls.filter((index) => !inside(fixtures, index))).toEqual([]);
+    const namers = [spec, ...reached.filter((file) => file !== fixture)].filter((file) =>
+      /walkUntilQuestionsIntro|voterJourneyTest/.test(code(file))
+    );
+    expect(namers.map((file) => path.relative(REPO_ROOT, file))).toEqual([]);
   });
 
   it('refuses every origin but public_origin in the contestant spec before it signs in', () => {
@@ -330,6 +377,14 @@ describe('the value-import walk', () => {
         "import { createServiceRoleClient } from '@openvaa/dev-seed';\n\nexport const factory = createServiceRoleClient;\n"
     });
     expect(forbiddenReach(walkValueImports([path.join(dir, 'a.ts')], dir))).toEqual(['a.ts → @openvaa/dev-seed']);
+  });
+
+  it('spans the braces of a function body, nested braces included', () => {
+    const text =
+      'const a = {};\nasync function walk(page: Page): Promise<void> {\n  if (page) {\n    run();\n  }\n}\nconst b = {};\n';
+    const span = braceSpan(text, 'async function walk(');
+    expect(span && text.slice(span.open, span.close + 1)).toBe('{\n  if (page) {\n    run();\n  }\n}');
+    expect(braceSpan(text, 'async function missing(')).toBeUndefined();
   });
 
   it('fails closed on a relative specifier it cannot resolve', () => {

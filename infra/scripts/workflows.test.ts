@@ -3,26 +3,15 @@
  *
  * Each workflow's own test holds the rules of that file. The rules here need more than one file to state:
  *
- * - **apply-root** — every Terraform `apply`, `destroy` or `plan -destroy` in any workflow names
- *   `-chdir=infra/envs/staging/aws`. The example roots are a forker's template and the other staging roots are applied
- *   by hand; a workflow that applied one of them would reach state no reviewer of the pipeline approved.
- * - **no-main-push** — no push branch pattern of `deploy.yml` or `destroy.yml` can match `main`. A merge to the default
- *   branch must deploy and destroy nothing.
- * - **shared-concurrency** — `deploy.yml` and `destroy.yml` share the group `staging-aws` and never cancel a running
- *   job, so no deploy and destroy write the one state at the same time and no apply is cut short holding its lock.
- * - **deploy-role-arn** — the deploy role ARN written literally in `infra-plan.yml` and `destroy.yml` is the one the
- *   bootstrap root's tfvars create. The wrong-subject job proves a refusal against that ARN, and a refusal by a role
- *   that does not exist would prove nothing.
- * - **environments** — `staging` is named by `deploy.yml` alone and `staging-destroy` by `destroy.yml` alone, and
- *   `infra-plan.yml` names none, since an environment's name is the subject the deploy role trusts.
- * - **arm-lock** — every root a job on an ARM runner initialises has a lock whose every provider carries one `h1:` hash
- *   per platform of `LOCK_PLATFORMS`. `init -lockfile=readonly` on that runner installs packages whose `h1:` hashes it
- *   cannot record, and the plan then refuses them. A hash does not name its platform, so the rule counts them. A job
- *   that initialises Terraform on a runner, or in a root, that the rule cannot read as a literal is a violation.
- * - **lock-platforms** — every root lock under `infra/` carries one `h1:` hash per platform of `LOCK_PLATFORMS` for
- *   each provider, and locks that select the same provider version carry the same hashes, so a lock written for other
- *   platforms differs from its siblings. The module directories are left out: their locks are written by the module
- *   tests and are not tracked.
+ * - **apply-root** — every Terraform `apply`, `destroy` or `plan -destroy` in any workflow names `-chdir=infra/envs/staging/aws`. The example roots are a forker's template and the other staging roots are applied by hand; a workflow that applied one of them would reach state no reviewer of the pipeline approved.
+ * - **no-main-push** — no push branch pattern of `deploy.yml` or `destroy.yml` can match `main`. A merge to the default branch must deploy and destroy nothing.
+ * - **shared-concurrency** — `deploy.yml` and `destroy.yml` share the group `staging-aws` and never cancel a running job, so no deploy and destroy write the one state at the same time and no apply is cut short holding its lock.
+ * - **deploy-role-arn** — the deploy role ARN written literally in `infra-plan.yml` and `destroy.yml` is the one the bootstrap root's tfvars create. The wrong-subject job proves a refusal against that ARN, and a refusal by a role that does not exist would prove nothing.
+ * - **environments** — `staging` is named by `deploy.yml` alone and `staging-destroy` by `destroy.yml` alone, and `infra-plan.yml` names none, since an environment's name is the subject the deploy role trusts.
+ * - **arm-lock** — every root a job on an ARM runner initialises has a lock whose every provider carries one `h1:` hash per platform of `LOCK_PLATFORMS`. `init -lockfile=readonly` on that runner installs packages whose `h1:` hashes it cannot record, and the plan then refuses them. A hash does not name its platform, so the rule counts them. A job that initialises Terraform on a runner, or in a root, that the rule cannot read as a literal is a violation.
+ * - **lock-platforms** — every root lock under `infra/` carries one `h1:` hash per platform of `LOCK_PLATFORMS` for each provider, and locks that select the same provider version carry the same hashes, so a lock written for other platforms differs from its siblings. The module directories are left out: the one tracked module lock, `infra/modules/supabase`'s, is read only by that module's test init.
+ *
+ * A `run:` script is read together with every `infra/scripts/*.sh` of the repository it names, so a Terraform command moved from a step into such a script stays under these rules.
  *
  * Each rule is shown red on a mutated in-memory copy, so that its green result on the real files means something.
  */
@@ -53,8 +42,7 @@ const EXPECTED_ENVIRONMENTS: Record<string, Array<string>> = {
 /** A literal IAM role ARN. */
 const ROLE_ARN = /arn:aws:iam::\d{12}:role\/[\w+=,.@/-]+/g;
 /**
- * The platforms every provider lock is written for. Each lock is written by `terraform providers lock` with one
- * `-platform=` flag for each, in this order.
+ * The platforms every provider lock is written for. Each lock is written by `terraform providers lock` with one `-platform=` flag for each, in this order.
  */
 const LOCK_PLATFORMS = ['linux_amd64', 'linux_arm64', 'darwin_arm64', 'darwin_amd64'] as const;
 /** A root path the rules can read as a literal. */
@@ -97,21 +85,35 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** Every `run:` script of a workflow, with where it stands. */
+/** `script` followed by the text of every `infra/scripts/*.sh` of the repository it names. */
+function withCalledScripts(script: string): string {
+  const called = [...new Set(script.match(/infra\/scripts\/[A-Za-z0-9_-]+\.sh/g) ?? [])];
+  return [
+    script,
+    ...called
+      .filter((path) => existsSync(join(REPO_ROOT, path)))
+      .map((path) => readFileSync(join(REPO_ROOT, path), 'utf8'))
+  ].join('\n');
+}
+
+/** Every `run:` script of a workflow, with the scripts it calls, and where it stands. */
 function runScripts(doc: WorkflowDocument): Array<{ where: string; script: string }> {
   return workflowJobs(doc).flatMap(([jobId, job]) =>
     jobSteps(job).flatMap((step, index) =>
       typeof step.run === 'string'
-        ? [{ where: `job ${jobId} step ${String(step.id ?? step.name ?? `#${index + 1}`)}`, script: step.run }]
+        ? [
+            {
+              where: `job ${jobId} step ${String(step.id ?? step.name ?? `#${index + 1}`)}`,
+              script: withCalledScripts(step.run)
+            }
+          ]
         : []
     )
   );
 }
 
 /**
- * The Terraform commands of a script, each as its words. Continued lines are joined, a line is split at `&&`, `||`,
- * `;`, `|` and `$(`, and a piece counts only when `terraform` is its command word, so an `echo` that names a Terraform
- * command is not one.
+ * The Terraform commands of a script, each as its words. Continued lines are joined, a line is split at `&&`, `||`, `;`, `|` and `$(`, and a piece counts only when `terraform` is its command word, so an `echo` that names a Terraform command is not one.
  */
 function terraformCommands(script: string): Array<Array<string>> {
   const logicalLines = script.replace(/\\\n/g, ' ').split('\n');
@@ -273,9 +275,7 @@ function defaultWorkingDirectory(owner: Record<string, unknown>): string | undef
 }
 
 /**
- * Every `terraform init` of a `run:` step of every job of every workflow. The root is the value of its `-chdir=` word
- * with the quotes removed; else the step's `working-directory`; else the job's, then the workflow's,
- * `defaults.run.working-directory`; else undefined.
+ * Every `terraform init` of a `run:` step of every job of every workflow, the scripts it calls included. The root is the value of its `-chdir=` word with the quotes removed; else the step's `working-directory`; else the job's, then the workflow's, `defaults.run.working-directory`; else undefined.
  */
 function terraformInits(files: Array<WorkflowFile>): Array<TerraformInit> {
   return files.flatMap(({ name, text }) => {
@@ -284,7 +284,7 @@ function terraformInits(files: Array<WorkflowFile>): Array<TerraformInit> {
       jobSteps(job).flatMap((step) => {
         if (typeof step.run !== 'string') return [];
         const stepDirectory = typeof step['working-directory'] === 'string' ? step['working-directory'] : undefined;
-        return terraformCommands(step.run)
+        return terraformCommands(withCalledScripts(step.run))
           .filter((words) => terraformSubcommand(words) === 'init')
           .map((words) => {
             const chdir = words.find((word) => word.startsWith('-chdir='));
@@ -438,8 +438,8 @@ describe('apply-root: no workflow applies or destroys anything but the staging A
     {
       fault: 'main.yaml runs terraform destroy in a loop over every root',
       name: 'main.yaml',
-      pattern: 'terraform -chdir="$root" validate -no-color',
-      replacement: 'terraform -chdir="$root" destroy -auto-approve'
+      pattern: 'run: infra/scripts/terraform-checks.sh validate',
+      replacement: 'run: for root in infra/envs/*/*/; do terraform -chdir="$root" destroy -auto-approve; done'
     }
   ])('reports a red copy in which $fault', ({ name, pattern, replacement }) => {
     const violations = applyRootViolations(withMutation(FILES, name, pattern, replacement));

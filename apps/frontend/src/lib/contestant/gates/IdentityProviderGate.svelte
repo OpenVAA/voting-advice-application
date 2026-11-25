@@ -8,15 +8,17 @@ What is shown follows from the user-level data, the answers lock and the arrival
 - With an address awaiting its link and nothing else to ask, that address, "Send again" and "Use another email address", which replaces the address by the email form in place.
 - With a proved address and nothing else to ask, that address.
 
-Continue with a form sends nothing while a field is in error: it says what is wrong at each field and moves focus to the first, the name before the address. Otherwise it saves the names and records the address, which is mailed a link to confirm it, and reruns the page's loads, so the next gate or the page the user asked for replaces this view without waiting for the link. An address another account holds is told at the address field; any other failure is told under the form, and what was typed is kept. Continue with nothing to ask clears the arrival notice and reruns the loads.
+Continue with a form sends nothing while a field is in error: it says what is wrong at each field and moves focus to the first, the name before the address. Otherwise it saves the names and records the address, which is mailed a link to confirm it, and reruns the page's loads, so the next gate or the page the user asked for replaces this view without waiting for the link. An address another account holds, and one an open invitation is addressed to, which is to be used by signing in by email with that invitation, is told at the address field; any other failure is told under the form, and what was typed is kept. Continue with nothing to ask clears the arrival notice and reruns the loads.
 
 "Send again" mails the link once more. It is available on arrival, and after a press unavailable until a count of `RESEND_WAIT_SECONDS` from the request's settlement has ended.
 
 The view cannot be put aside: only a rerun load that reads an address or a name removes it. Logging out is always available and asks nothing.
 
+Its Log out is the shared `LogoutButton`, and "Send again", "Use another email address" and the status region are the `PendingAddressPanel`.
+
 ### Dynamic component
 
-Accesses `ContestantContext`: `user`, `answersLocked`, `logout` and `t`. Reads `arrival` from the page's data. Posts to `UNIVERSAL_API_ROUTES.identityProviderRegistration`.
+Accesses `ContestantContext`: `user`, `answersLocked`, `logout`, `registerIdentityProviderAccount` and `t`. Reads `arrival` from the page's data.
 
 ### Properties
 
@@ -43,23 +45,23 @@ None.
   import { invalidateAll } from '$app/navigation';
   import { page } from '$app/state';
   import { MainContent } from '$layouts/main';
+  import { AccountAddress } from '$lib/components/accountAddress';
   import { Button } from '$lib/components/button';
   import { EmailEntry } from '$lib/components/emailEntry';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Input } from '$lib/components/input';
+  import { PendingAddressPanel } from '$lib/contestant/components/pendingAddressPanel';
   import { hasDefaultLocaleName } from '$lib/contestant/utils/identityProviderAccount';
   import { requiredNameLocale } from '$lib/contestant/utils/nameRule';
-  import {
-    PendingAddressResend,
-    postIdentityProviderRegistration
-  } from '$lib/contestant/utils/pendingAddressResend.svelte';
   import { getContestantContext } from '$lib/contexts/contestant/contestantContext.svelte';
-  import { EmailSentResend } from '$lib/dynamic-components/emailSentPanel';
+  import { LogoutButton } from '$lib/dynamic-components/logoutButton';
   import { assertTranslationKey } from '$lib/i18n/utils';
   import { getUUID } from '$lib/utils/components';
   import { isBlankText } from '$lib/utils/localizedText';
   import type { LocalizedString } from '@openvaa/app-shared';
+  import type { RegisterIdentityProviderAccountOptions } from '$lib/api/base/dataWriter.type';
+  import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -67,19 +69,17 @@ None.
 
   // user and answersLocked are reactive accessors: read via contestantCtx.X in each tracking scope, never destructured.
   const contestantCtx = getContestantContext();
-  const { logout, t } = contestantCtx;
+  const { logout, registerIdentityProviderAccount, t } = contestantCtx;
 
   ////////////////////////////////////////////////////////////////////
   // What the view asks for
   ////////////////////////////////////////////////////////////////////
 
   /** The arrival marker as the gated load returns it: `created` for an identity just registered, `existing` for one found. */
-  const arrival = $derived.by((): 'created' | 'existing' | null => {
-    const value: unknown = page.data.arrival;
-    return value === 'created' || value === 'existing' ? value : null;
-  });
+  const arrival = $derived(page.data.arrival ?? null);
 
-  const addressState = $derived(contestantCtx.user?.addressState ?? 'none');
+  const address = $derived<AddressState>(contestantCtx.user?.address ?? { state: 'none', pendingTaken: false });
+  const addressState = $derived(address.state);
   const returning = $derived(arrival === 'existing');
 
   /** Whether the user chose to give another address in place of the one awaiting its link. */
@@ -92,9 +92,9 @@ None.
   const shownAddress = $derived.by((): { label: string; address: string } | undefined => {
     if (hasForm) return undefined;
     const user = contestantCtx.user;
-    if (addressState === 'pending' && user?.pendingEmail)
-      return { label: t('contestantApp.identityProvider.awaitingConfirmation'), address: user.pendingEmail };
-    if (addressState === 'proved' && user?.email)
+    if (address.state === 'pending')
+      return { label: t('contestantApp.identityProvider.awaitingConfirmation'), address: address.email };
+    if (address.state === 'proved' && user?.email)
       return { label: t('contestantApp.identityProvider.signInEmail'), address: user.email };
     return undefined;
   });
@@ -109,8 +109,7 @@ None.
   );
 
   const lead = $derived.by(() => {
-    if (addressState === 'none' && contestantCtx.user?.pendingEmailTaken)
-      return t('contestantApp.identityProvider.emailTakenNotice');
+    if (address.state === 'none' && address.pendingTaken) return t('contestantApp.identityProvider.emailTakenNotice');
     if (asksName && addressState !== 'none') return t('contestantApp.identityProvider.nameIntro');
     if (addressState === 'pending') return t('contestantApp.identityProvider.alreadyRegistered.pending');
     if (addressState === 'proved') return t('contestantApp.identityProvider.alreadyRegistered.proved');
@@ -139,39 +138,7 @@ None.
   let nameError = $state<string>();
 
   let status = $state<'idle' | 'saving' | 'failed'>('idle');
-  let loggingOut = $state(false);
   let mounted = $state(false);
-
-  /** A name's entries that hold text, or `undefined` when none does. */
-  function filledEntries(value: LocalizedString): LocalizedString | undefined {
-    const filled = Object.fromEntries(Object.entries(value).filter(([, text]) => !isBlankText(text)));
-    return Object.keys(filled).length ? filled : undefined;
-  }
-
-  function handleNameChange(value: unknown): void {
-    name = { ...(value as LocalizedString) };
-    if (nameError && hasDefaultLocaleName(name, defaultLocale)) nameError = undefined;
-  }
-
-  function handleShortNameChange(value: unknown): void {
-    shortName = { ...(value as LocalizedString) };
-  }
-
-  /** Rerun the page's loads. Awaited so that the main button keeps its saving state until the page has its new data; only the rerun load removes this view. */
-  async function rerun(): Promise<void> {
-    try {
-      await invalidateAll();
-    } catch (error) {
-      log.error('Failed to rerun the loads after the identity-provider registration was saved', { err: error });
-    }
-  }
-
-  /** Mark the request failed and give focus back to the element that had it, when the saving state took it away. */
-  async function fail(focused: Element | null): Promise<void> {
-    status = 'failed';
-    await tick();
-    if (focused instanceof HTMLElement && document.activeElement === document.body) focused.focus();
-  }
 
   async function handleSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
@@ -195,7 +162,7 @@ None.
     // The main button is natively disabled while the save runs, and a browser may drop the focus of a button that becomes disabled.
     const focused = document.activeElement;
     status = 'saving';
-    const body: Record<string, unknown> = { intent: 'save' };
+    const body: RegisterIdentityProviderAccountOptions = { intent: 'save' };
     if (asksName) {
       body.name = filledEntries(name);
       const short = filledEntries(shortName);
@@ -203,14 +170,21 @@ None.
     }
     if (asksEmail) body.email = email;
 
-    const result = await postIdentityProviderRegistration(body);
+    const result = await registerIdentityProviderAccount(body);
     if (result === 'saved') {
       await rerun();
       status = 'idle';
-    } else if (result === 'in-use') {
+    } else if (result === 'in-use' || result === 'invited') {
       status = 'idle';
       await tick();
-      entry?.showEmailError(t('contestantApp.identityProvider.emailInUse'));
+      entry?.showEmailError(
+        t(
+          result === 'in-use'
+            ? 'contestantApp.identityProvider.emailInUse'
+            : 'contestantApp.identityProvider.emailInvited'
+        ),
+        result
+      );
     } else {
       await fail(focused);
     }
@@ -220,12 +194,21 @@ None.
     if (status === 'saving') return;
     const focused = document.activeElement;
     status = 'saving';
-    if ((await postIdentityProviderRegistration({ intent: 'acknowledge' })) === 'acknowledged') {
+    if ((await registerIdentityProviderAccount({ intent: 'acknowledge' })) === 'acknowledged') {
       await rerun();
       status = 'idle';
     } else {
       await fail(focused);
     }
+  }
+
+  function handleNameChange(value: unknown): void {
+    name = { ...(value as LocalizedString) };
+    if (nameError && hasDefaultLocaleName(name, defaultLocale)) nameError = undefined;
+  }
+
+  function handleShortNameChange(value: unknown): void {
+    shortName = { ...(value as LocalizedString) };
   }
 
   async function handleChangeAddress(): Promise<void> {
@@ -234,36 +217,30 @@ None.
     document.getElementById(`${entryId}-email`)?.focus();
   }
 
-  async function handleLogout(): Promise<void> {
-    loggingOut = true;
+  /** A name's entries that hold text, or `undefined` when none does. */
+  function filledEntries(value: LocalizedString): LocalizedString | undefined {
+    const filled = Object.fromEntries(Object.entries(value).filter(([, text]) => !isBlankText(text)));
+    return Object.keys(filled).length ? filled : undefined;
+  }
+
+  /** Rerun the page's loads. Awaited so that the main button keeps its saving state until the page has its new data; only the rerun load removes this view. */
+  async function rerun(): Promise<void> {
     try {
-      await logout();
-    } catch (e) {
-      log.error(`Error logging out: ${(e as Error)?.message ?? '-'}`);
-    } finally {
-      loggingOut = false;
+      await invalidateAll();
+    } catch (error) {
+      log.error('Failed to rerun the loads after the identity-provider registration was saved', { err: error });
     }
   }
 
-  ////////////////////////////////////////////////////////////////////
-  // Send again
-  ////////////////////////////////////////////////////////////////////
-
-  /** The request for the link and the count of `RESEND_WAIT_SECONDS` that runs from its settlement. */
-  const resend = new PendingAddressResend();
-
-  const resendStatus = $derived(
-    resend.status === 'requested'
-      ? t('contestantApp.emailSent.resendRequested')
-      : resend.status === 'ready'
-        ? t('contestantApp.emailSent.resendReady')
-        : ''
-  );
+  /** Mark the request failed and give focus back to the element that had it, when the saving state took it away. */
+  async function fail(focused: Element | null): Promise<void> {
+    status = 'failed';
+    await tick();
+    if (focused instanceof HTMLElement && document.activeElement === document.body) focused.focus();
+  }
 
   onMount(() => {
     mounted = true;
-    resend.start();
-    return () => resend.stop();
   });
 </script>
 
@@ -284,15 +261,10 @@ None.
   <p class="text-center" data-testid="identity-provider-gate-lead">{lead}</p>
 
   {#if shownAddress}
-    <dl class="my-lg text-center">
-      <dt class="small-label">{shownAddress.label}</dt>
-      <dd
-        class="font-bold [overflow-wrap:anywhere] hyphens-none"
-        translate="no"
-        data-testid="identity-provider-gate-address">
-        {shownAddress.address}
-      </dd>
-    </dl>
+    <AccountAddress
+      label={shownAddress.label}
+      address={shownAddress.address}
+      data-testid="identity-provider-gate-address" />
   {/if}
 
   {#if hasForm}
@@ -335,26 +307,17 @@ None.
     </form>
   {/if}
 
-  {#if waitsForLink}
-    <div class="flex w-full flex-col items-center">
-      <EmailSentResend
-        secondsLeft={resend.secondsLeft}
-        loading={resend.requesting}
-        onresend={() => resend.resend()}
-        resendTestId="identity-provider-gate-resend"
-        countdownTestId="identity-provider-gate-countdown" />
-      <Button
-        type="button"
-        text={t('contestantApp.emailSent.changeAddress')}
-        onclick={handleChangeAddress}
-        data-testid="identity-provider-gate-change-address" />
-    </div>
-  {/if}
-
   {#if addressState === 'pending'}
-    <p class="sr-only" role="status" aria-live="polite" data-testid="identity-provider-gate-status">
-      {resendStatus}
-    </p>
+    <!-- Mounted for as long as the address is pending, so that the count of Send again survives the switch to the form. -->
+    <PendingAddressPanel
+      hideActions={!waitsForLink}
+      onchangeaddress={handleChangeAddress}
+      testIds={{
+        resend: 'identity-provider-gate-resend',
+        countdown: 'identity-provider-gate-countdown',
+        change: 'identity-provider-gate-change-address',
+        status: 'identity-provider-gate-status'
+      }} />
   {/if}
 
   {#if status === 'failed'}
@@ -387,11 +350,6 @@ None.
         onclick={handleContinue}
         data-testid="identity-provider-gate-submit" />
     {/if}
-    <Button
-      color="warning"
-      text={t('common.logout')}
-      loading={loggingOut}
-      onclick={handleLogout}
-      data-testid="identity-provider-gate-logout" />
+    <LogoutButton {logout} icon={undefined} data-testid="identity-provider-gate-logout" />
   {/snippet}
 </MainContent>

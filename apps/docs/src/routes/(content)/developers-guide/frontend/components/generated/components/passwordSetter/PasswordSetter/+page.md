@@ -43,7 +43,7 @@ Contains the dynamic `PasswordValidator` component, and judges a password with `
     event.preventDefault();
     if (setter.validate()) save();
   }} />
-<Button type="submit" form="set-password" variant="main" text={t('contestantApp.setPassword.setPassword')} />
+<Button type="submit" form="set-password" variant="main" text={t('common.account.setPassword.setPassword')} />
 ```
 
 ## Source

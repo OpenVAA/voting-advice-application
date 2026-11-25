@@ -2,7 +2,7 @@
 --
 -- A migration is the same text for every deployment, and two of these rows hold a deployment's own address and key. This script writes them in one transaction:
 --   - the account `00000000-0000-0000-0000-000000000001`, the project named by PUBLIC_PROJECT_ID and that project's settings row. A row that already exists is left exactly as it is, so a second run never undoes what an administrator has changed since, `open_for_voters` included.
---   - the two rows of public.storage_config and the row of private.deployment_settings. These are overwritten on every run, so a rotated key or a corrected address is applied by running the script again.
+--   - the two rows of public.storage_config and the row of private.deployment_settings. These are overwritten on every run, so a rotated key or a corrected address is applied by running the script again. The one exception is `access_caller_max`, which a run writes only when BOOTSTRAP_ACCESS_CALLER_MAX is set, and otherwise leaves at its current value, 30 on a new database.
 --
 -- It does not create the first administrator. That is a separate, one-off step.
 --
@@ -17,20 +17,24 @@
 --
 -- Environment. A value is used exactly as given; one that is empty or holds only whitespace counts as not set.
 --   Required:
---     PUBLIC_PROJECT_ID            The project's id, a uuid. The frontend is scoped to the same value under the same name.
---     BOOTSTRAP_STORAGE_URL        The address the database uses to reach the Storage API. On a hosted project it is the project's own URL; on a local stack it is the gateway's address inside the Docker network, the value seed.sql writes.
---     SUPABASE_SERVICE_ROLE_KEY    The key the storage cleanup triggers send to the Storage API.
---     BOOTSTRAP_BEHIND_CLOUDFLARE  `true` when every request reaches the API through Cloudflare, otherwise `false`.
+--     PUBLIC_PROJECT_ID:           The project's id, a uuid. The frontend is scoped to the same value under the same name.
+--     BOOTSTRAP_STORAGE_URL:       The address the database uses to reach the Storage API, stored as the storage_config key `supabase_url`. On a hosted project it is the project's own URL; on a local stack it is the gateway's address inside the Docker network, the value seed.sql writes.
+--     SUPABASE_SERVICE_ROLE_KEY:   The key the storage cleanup triggers send to the Storage API.
+--     BOOTSTRAP_BEHIND_CLOUDFLARE: `true` when every request reaches the API through Cloudflare, otherwise `false`.
 --   Optional, with the value used when not set:
---     BOOTSTRAP_ACCOUNT_NAME       Default Account
---     BOOTSTRAP_PROJECT_NAME       Default Project
---     BOOTSTRAP_DEFAULT_LOCALE     en
---     BOOTSTRAP_OPEN_FOR_VOTERS    false
+--     BOOTSTRAP_ACCOUNT_NAME:      Default Account
+--     BOOTSTRAP_PROJECT_NAME:      Default Project
+--     BOOTSTRAP_DEFAULT_LOCALE:    en
+--     BOOTSTRAP_OPEN_FOR_VOTERS:   false
+--     BOOTSTRAP_CANDIDATE_REGISTRATION_MODES:  none
+--                                  A comma-separated list of the modes by which a candidate may claim an invitation: any of `identity_provider`, `email` and `code`. With none, no candidate invitation can be claimed until an administrator allows a mode. It is written into the settings row, as `contestantApp.servedEntityTypes.candidate.registrationModes`, only when that row is created.
+--     BOOTSTRAP_ACCESS_CALLER_MAX:  the current value of `access_caller_max`
+--                                  The anonymous account-access requests (`check-code`, `request-link` and `request-recovery` together) one caller is admitted per project per ten minutes, a whole number from 1 to 999999999. A larger number suits a deployment where many contestants register from one network at once.
 --
 -- Exit status, which is psql's own:
---   0  every row is in place
---   2  the connection was refused or lost
---   3  a required variable is not set, each one named on standard error, or a value is malformed. Nothing has been written.
+--   0:  every row is in place
+--   2:  the connection was refused or lost
+--   3:  a required variable is not set, BOOTSTRAP_CANDIDATE_REGISTRATION_MODES names an unknown mode or BOOTSTRAP_ACCESS_CALLER_MAX is not a whole number from 1 to 999999999, each named on standard error, or another value is malformed. Nothing has been written.
 --
 -- The script holds no secret and prints no value it was given, except that psql quotes a malformed project id or boolean in its error. The key travels as a bound parameter and is in no statement's text. A server that is set to log the parameters of statements that succeed, or of slow ones, logs it all the same; those settings are the server's and this script cannot change them.
 \set ON_ERROR_STOP on
@@ -97,7 +101,21 @@ SET log_parameter_max_length_on_error = 0;
   \set open_for_voters ''
 \endif
 
--- Two statements that write nothing: they say which required values are not set and give each optional value its default. The key is tested by itself, as a bound parameter, so that it is in no statement's text.
+\unset candidate_registration_modes
+\getenv candidate_registration_modes BOOTSTRAP_CANDIDATE_REGISTRATION_MODES
+\if :{?candidate_registration_modes}
+\else
+  \set candidate_registration_modes ''
+\endif
+
+\unset access_caller_max
+\getenv access_caller_max BOOTSTRAP_ACCESS_CALLER_MAX
+\if :{?access_caller_max}
+\else
+  \set access_caller_max ''
+\endif
+
+-- Two statements that write nothing: they say which required values are not set or malformed and give each optional value its default. The key is tested by itself, as a bound parameter, so that it is in no statement's text.
 SELECT
   btrim(:'project_id') = '' AS project_id_missing,
   btrim(:'storage_url') = '' AS storage_url_missing,
@@ -105,7 +123,12 @@ SELECT
   CASE WHEN btrim(:'account_name') = '' THEN 'Default Account' ELSE :'account_name' END AS account_name,
   CASE WHEN btrim(:'project_name') = '' THEN 'Default Project' ELSE :'project_name' END AS project_name,
   CASE WHEN btrim(:'default_locale') = '' THEN 'en' ELSE :'default_locale' END AS default_locale,
-  CASE WHEN btrim(:'open_for_voters') = '' THEN 'false' ELSE :'open_for_voters' END AS open_for_voters
+  CASE WHEN btrim(:'open_for_voters') = '' THEN 'false' ELSE :'open_for_voters' END AS open_for_voters,
+  EXISTS (
+    SELECT 1 FROM unnest(string_to_array(:'candidate_registration_modes', ',')) m
+    WHERE btrim(m) NOT IN ('', 'identity_provider', 'email', 'code')
+  ) AS candidate_registration_modes_malformed,
+  btrim(:'access_caller_max') !~ '^([1-9][0-9]{0,8})?$' AS access_caller_max_malformed
 \gset
 
 SELECT btrim($1) = '' AS service_role_key_missing \bind :service_role_key \gset
@@ -126,8 +149,16 @@ SELECT btrim($1) = '' AS service_role_key_missing \bind :service_role_key \gset
   \warn 'bootstrap: BOOTSTRAP_BEHIND_CLOUDFLARE is not set'
   \set missing true
 \endif
+\if :candidate_registration_modes_malformed
+  \warn 'bootstrap: BOOTSTRAP_CANDIDATE_REGISTRATION_MODES names a mode other than identity_provider, email and code'
+  \set missing true
+\endif
+\if :access_caller_max_malformed
+  \warn 'bootstrap: BOOTSTRAP_ACCESS_CALLER_MAX is not a whole number from 1 to 999999999'
+  \set missing true
+\endif
 \if :{?missing}
-  DO $$ BEGIN RAISE EXCEPTION 'bootstrap: required environment variables are not set, and nothing was written'; END $$;
+  DO $$ BEGIN RAISE EXCEPTION 'bootstrap: required environment variables are not set or malformed, and nothing was written'; END $$;
 \endif
 
 -- One transaction. The casts to uuid and boolean refuse a malformed value inside it, and psql then leaves without committing.
@@ -149,8 +180,26 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+-- A stored `servedEntityTypes` replaces the shipped map whole, so the project serves candidates only. Each mode is kept once, in the order given.
 INSERT INTO public.app_settings (project_id, settings)
-VALUES (:'project_id'::uuid, '{}'::jsonb)
+SELECT
+  :'project_id'::uuid,
+  jsonb_build_object(
+    'contestantApp',
+    jsonb_build_object(
+      'servedEntityTypes',
+      jsonb_build_object('candidate', jsonb_build_object('registrationModes', COALESCE(modes.list, '[]'::jsonb)))
+    )
+  )
+FROM (
+  SELECT jsonb_agg(u.mode ORDER BY u.first_position) AS list
+  FROM (
+    SELECT btrim(m) AS mode, min(position) AS first_position
+    FROM unnest(string_to_array(:'candidate_registration_modes', ',')) WITH ORDINALITY AS t (m, position)
+    WHERE btrim(m) <> ''
+    GROUP BY btrim(m)
+  ) u
+) modes
 ON CONFLICT (project_id) DO NOTHING;
 
 INSERT INTO public.storage_config (key, value)
@@ -165,5 +214,9 @@ ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value \bind :service_role_key \
 INSERT INTO private.deployment_settings (singleton, behind_cloudflare)
 VALUES (true, :'behind_cloudflare'::boolean)
 ON CONFLICT (singleton) DO UPDATE SET behind_cloudflare = EXCLUDED.behind_cloudflare;
+
+UPDATE private.deployment_settings
+SET access_caller_max = NULLIF(btrim(:'access_caller_max'), '')::integer
+WHERE btrim(:'access_caller_max') <> '';
 
 COMMIT;

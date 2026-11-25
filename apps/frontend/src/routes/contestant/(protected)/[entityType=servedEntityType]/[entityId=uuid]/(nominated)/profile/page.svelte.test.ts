@@ -11,14 +11,15 @@
  * 6. **The three outcomes of a save.** A stored save navigates, after the list of the user's entities is read again when it shows a stored property. A refused name and a failed save stay on the page, each with its own sentence in the one message region, and with focus on the Save button. A failed save reads the answers lock alone, and runs no load again unless that read finds answers locked: then the page's data is read again and the page shows the answers-locked note and no failure, with focus on the Return button. While the lock is read as open, or cannot be read, the page stays as it is, with its edits, and says that the save failed. The store's `save`, the lock's reader and the navigation module's `goto` and `invalidateAll` are spies.
  * 7. **The Save button's label and where a stored save leads.** The label follows the saved data with the draft, and the target follows the entity's task state as the save leaves it. The fake context's task state is the real `taskStateOf` over the box's saved facts, and a fake save rewrites the box before it resolves, so a case can tell a target read after the save from one computed before it.
  *
- * The fake context's members are reactive behind getters over one raw state box, as the real accessors are. The box is raw so that the user data a case puts in it reaches an `Input` as the plain object the real store hands out. Messages are their keys.
+ * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are. The box is raw so that the user data a case puts in it reaches an `Input` as the plain object the real store hands out. Messages are their keys, except the two locked name sentences, which are their keys followed by the support link's placeholder.
  */
 
 import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { hasNomination, taskStateOf } from '$lib/contestant/tasks/taskState';
-import type { ContestantUserData, EntityNomination, UserEntity } from '$lib/api/base/dataWriter.type';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
+import type { EntityNomination, EntityUserData, UserEntity } from '$lib/api/base/dataWriter.type';
 
 /** A question as the page and `QuestionInput` read one. */
 type FakeQuestion = {
@@ -28,26 +29,28 @@ type FakeQuestion = {
   type: 'text';
   required: boolean;
   customData: { locked?: boolean };
+  isAnswered: (answer?: { value?: unknown } | null) => boolean;
 };
+
+/** A fake question's `isAnswered`: any saved value answers it. */
+function answeredByAnyValue(answer?: { value?: unknown } | null): boolean {
+  return answer?.value != null && answer.value !== '';
+}
 
 /** Everything the page reads from the contestant context. */
 type Box = {
   selectedEntity: UserEntity | undefined;
   answersLocked: boolean;
-  current: ContestantUserData<true> | undefined;
+  current: EntityUserData<true> | undefined;
   hasUnsaved: boolean;
   infoQuestions: Array<FakeQuestion>;
   unansweredRequiredInfoQuestions: Array<FakeQuestion>;
   opinionQuestions: Array<FakeQuestion>;
   unansweredOpinionQuestions: Array<FakeQuestion>;
   questionsReady: boolean;
-  profileComplete: boolean;
   /** The nominations the page data holds for the entity, or nothing when it holds no entity. */
   nominations: Array<EntityNomination> | undefined;
 };
-
-/** A route as the page hands one to the route builder: its name, or an object that holds it. */
-type RouteArgument = string | { route: string };
 
 const EMPTY_BOX: Box = {
   selectedEntity: undefined,
@@ -59,16 +62,12 @@ const EMPTY_BOX: Box = {
   opinionQuestions: [],
   unansweredOpinionQuestions: [],
   questionsReady: false,
-  profileComplete: false,
   nominations: undefined
 };
 
-let box = $state.raw<Box>(EMPTY_BOX);
-
 const {
   setProperty,
-  setImage,
-  resetImage,
+  resetProperty,
   setAnswer,
   save,
   resetUnsaved,
@@ -82,8 +81,7 @@ const {
   getElection: vi.fn(),
   getConstituency: vi.fn(),
   setProperty: vi.fn(),
-  setImage: vi.fn(),
-  resetImage: vi.fn(),
+  resetProperty: vi.fn(),
   setAnswer: vi.fn(),
   save: vi.fn(),
   resetUnsaved: vi.fn(),
@@ -91,71 +89,58 @@ const {
   invalidateAll: vi.fn()
 }));
 
-const context = {
-  t: (key: string) => key,
-  getRoute: {
-    current: (route: RouteArgument) => `/route/${typeof route === 'string' ? route : route.route}`
+/** The address the support link of a locked name sentence writes to. */
+const SUPPORT_EMAIL = 'support@example.org';
+
+/** The sentences that hold a placeholder, each its key followed by the placeholder. Every other key translates to itself. */
+const SENTENCES: Record<string, string> = Object.fromEntries(
+  [
+    'dynamic.contestantAppBasicInfo.identity.name.locked.candidate',
+    'dynamic.contestantAppBasicInfo.identity.name.locked.organization'
+  ].map((key) => [key, `${key} {contactSupportLink}`])
+);
+
+const { context, box } = fakeContestantContext(EMPTY_BOX, (held) => ({
+  appSettings: {
+    admin: { email: SUPPORT_EMAIL },
+    entities: { hideIfMissingAnswers: { candidate: false, organization: false } }
   },
-  appSettings: { entities: { hideIfMissingAnswers: { candidate: false, organization: false } } },
+  t: (key: string, params: Record<string, unknown> = {}) =>
+    (SENTENCES[key] ?? key).replace(/\{(\w+)\}/g, (match, name: string) =>
+      name in params ? String(params[name]) : match
+    ),
   dataRoot: { getElection, getConstituency },
   userData: {
     get current() {
-      return box.current;
+      return held.current.current;
     },
     get hasUnsaved() {
-      return box.hasUnsaved;
+      return held.current.hasUnsaved;
     },
     setProperty,
-    setImage,
-    resetImage,
+    resetProperty,
     setAnswer,
     save,
     resetUnsaved
   },
-  get selectedEntity() {
-    return box.selectedEntity;
-  },
-  get answersLocked() {
-    return box.answersLocked;
-  },
-  get infoQuestions() {
-    return box.infoQuestions;
-  },
   get requiredInfoQuestions() {
-    return box.infoQuestions.filter((question) => question.required);
-  },
-  get unansweredRequiredInfoQuestions() {
-    return box.unansweredRequiredInfoQuestions;
-  },
-  get opinionQuestions() {
-    return box.opinionQuestions;
-  },
-  get unansweredOpinionQuestions() {
-    return box.unansweredOpinionQuestions;
-  },
-  get questionsReady() {
-    return box.questionsReady;
-  },
-  get profileComplete() {
-    return box.profileComplete;
-  },
-  get nominations() {
-    return box.nominations;
+    return held.current.infoQuestions.filter((question) => question.required);
   },
   /** The entity's task state over the box's saved facts. It is not known while the box holds no entity or no list of nominations. */
   get taskState() {
+    const facts = held.current;
     return taskStateOf({
-      entityKnown: !!box.selectedEntity && !!box.nominations,
-      hasNomination: hasNomination(box.nominations),
-      questionsReady: box.questionsReady,
-      unansweredRequiredInfoCount: box.unansweredRequiredInfoQuestions.length,
+      entityKnown: !!facts.selectedEntity && !!facts.nominations,
+      hasNomination: hasNomination(facts.nominations),
+      questionsReady: facts.questionsReady,
+      unansweredRequiredInfoCount: facts.unansweredRequiredInfoQuestions.length,
       requiredNameMissing: false,
-      opinionCount: box.opinionQuestions.length,
-      unansweredOpinionCount: box.unansweredOpinionQuestions.length,
-      firstUnansweredOpinionId: box.unansweredOpinionQuestions[0]?.id
+      opinionCount: facts.opinionQuestions.length,
+      unansweredOpinionCount: facts.unansweredOpinionQuestions.length,
+      firstUnansweredOpinionId: facts.unansweredOpinionQuestions[0]?.id
     });
   }
-};
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -251,11 +236,11 @@ const CANDIDATE: UserEntity = {
 const PARTY: UserEntity = { type: 'organization', id: ENTITY_ID, name: 'Esimerkkipuolue', confirmed: false };
 
 /** The user data of a candidate, as the store hands it out. */
-function candidateData(names: { firstName: string; lastName: string } = CANDIDATE_NAMES): ContestantUserData<true> {
+function candidateData(names: { firstName: string; lastName: string } = CANDIDATE_NAMES): EntityUserData<true> {
   return {
     entity: { type: 'candidate', id: ENTITY_ID, ...names, answers: {} },
     nominations: []
-  } as unknown as ContestantUserData<true>;
+  } as unknown as EntityUserData<true>;
 }
 const CANDIDATE_NAMES = { firstName: 'Ada', lastName: 'Alpha' };
 
@@ -268,12 +253,12 @@ function partyData({
   name?: Record<string, string> | null;
   shortName?: Record<string, string> | null;
   color?: { normal: string; dark?: string };
-} = {}): ContestantUserData<true> {
+} = {}): EntityUserData<true> {
   return {
     entity: { type: 'organization', id: ENTITY_ID, name: 'Esimerkkipuolue', answers: {}, ...(color && { color }) },
     localizedNames: { name, shortName },
     nominations: []
-  } as unknown as ContestantUserData<true>;
+  } as unknown as EntityUserData<true>;
 }
 
 /** A nomination of the entity, as the store hands one out. */
@@ -287,7 +272,8 @@ const NOMINATION: EntityNomination = {
   electionSymbol: '77',
   confirmed: true,
   customData: null,
-  updatedAt: '2026-10-01T12:00:00+00:00'
+  updatedAt: '2026-10-01T12:00:00+00:00',
+  writable: true
 };
 
 const NOMINATIONS_SECTION = '[data-testid="contestant-profile-nominations"]';
@@ -299,6 +285,7 @@ const LOCKED_QUESTION: FakeQuestion = {
   name: 'Locked question',
   info: '',
   type: 'text',
+  isAnswered: answeredByAnyValue,
   required: false,
   customData: { locked: true }
 };
@@ -319,14 +306,14 @@ beforeEach(() => {
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  box = EMPTY_BOX;
+  box.current = EMPTY_BOX;
   vi.restoreAllMocks();
   vi.resetAllMocks();
 });
 
 /** Mount the page for a state of the context. */
 function render(state: Partial<Box>): HTMLElement {
-  box = { ...EMPTY_BOX, ...state };
+  box.current = { ...EMPTY_BOX, ...state };
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(Page, { target });
@@ -362,6 +349,19 @@ function rowOf(input: HTMLElement): HTMLElement {
   const row = input.closest<HTMLElement>('.vaa-group-join-item');
   expect(row, 'the input should sit in a joined row').not.toBeNull();
   return row!;
+}
+
+/** Assert that a name note is the start-aligned locked sentence of a key, with one link in place of its placeholder that opens the support email. */
+function expectLockedSentence(note: Element | null, key: string): void {
+  expect(note?.tagName).toBe('P');
+  expect(note?.textContent).toBe(`${key} contestantApp.common.contactSupportLink`);
+  expect(note?.classList.contains('mx-md')).toBe(true);
+  expect(note?.classList.contains('text-start')).toBe(true);
+  expect(note?.classList.contains('text-center')).toBe(false);
+  const links = note?.querySelectorAll('a') ?? [];
+  expect(links).toHaveLength(1);
+  expect(links[0].textContent).toBe('contestantApp.common.contactSupportLink');
+  expect((links[0].getAttribute('href') ?? '').startsWith(`mailto:${SUPPORT_EMAIL}?subject=`)).toBe(true);
 }
 
 function submitOf(target: HTMLElement): HTMLButtonElement {
@@ -427,7 +427,7 @@ describe('profile page — a candidate', () => {
 
     const note = identity.querySelector(NAME_NOTE);
     expect(note?.id).toBe(NAME_NOTE_ID);
-    expect(note?.textContent).toBe('dynamic.contestantAppBasicInfo.identity.name.locked.candidate');
+    expectLockedSentence(note, 'dynamic.contestantAppBasicInfo.identity.name.locked.candidate');
     expect(firstName.getAttribute('aria-describedby')).toContain(NAME_NOTE_ID);
 
     expect(target.querySelector(NAME)).toBeNull();
@@ -451,6 +451,7 @@ describe('profile page — a candidate', () => {
     expect(identity.querySelector(NAME_NOTE)?.textContent).toBe(
       'dynamic.contestantAppBasicInfo.identity.name.editable.candidate'
     );
+    expect(identity.querySelector(`${NAME_NOTE} a`)).toBeNull();
   });
 
   it('shows the in-row required badge on a blank first name of an unconfirmed candidate', () => {
@@ -480,19 +481,19 @@ describe('profile page — whether the entity’s data is loaded', () => {
     const identity = identityOf(target);
     expect(identity.dataset.entityLoaded).toBe('false');
 
-    box = { ...box, current: data() };
+    box.set({ current: data() });
     flushSync();
     expect(identityOf(target)).toBe(identity);
     expect(identity.dataset.entityLoaded).toBe('true');
 
-    box = { ...box, current: undefined };
+    box.set({ current: undefined });
     flushSync();
     expect(identity.dataset.entityLoaded).toBe('false');
   });
 });
 
 describe('profile page — nothing of the entity’s nominations', () => {
-  const CASES: Array<[string, UserEntity, ContestantUserData<true>, string]> = [
+  const CASES: Array<[string, UserEntity, EntityUserData<true>, string]> = [
     [
       'a candidate with a nomination',
       CANDIDATE,
@@ -545,6 +546,7 @@ describe('profile page — an organization', () => {
     expect(identity.querySelector(NAME_NOTE)?.textContent).toBe(
       'dynamic.contestantAppBasicInfo.identity.name.editable.organization'
     );
+    expect(identity.querySelector(`${NAME_NOTE} a`)).toBeNull();
 
     // The name: the required locale's field is shown with the translations hidden, and the value has no entry in it.
     const nameFields = fieldsOf(identity, NAME);
@@ -588,9 +590,9 @@ describe('profile page — an organization', () => {
 
     const identity = identityOf(target);
     expect(identity.dataset.nameState).toBe('locked-confirmed');
-    expect(identity.querySelector(NAME_NOTE)?.textContent).toBe(
-      'dynamic.contestantAppBasicInfo.identity.name.locked.organization'
-    );
+    const note = identity.querySelector(NAME_NOTE);
+    expect(note?.id).toBe(NAME_NOTE_ID);
+    expectLockedSentence(note, 'dynamic.contestantAppBasicInfo.identity.name.locked.organization');
     for (const container of [NAME, SHORT_NAME]) {
       const fields = fieldsOf(identity, container);
       expect(fields.length).toBeGreaterThan(0);
@@ -693,9 +695,9 @@ describe('profile page — removing the image', () => {
   const STORED_IMAGE = { url: 'https://example.test/portrait.png' };
 
   /** The user data of a candidate whose portrait is stored. */
-  function candidateWithImage(): ContestantUserData<true> {
+  function candidateWithImage(): EntityUserData<true> {
     const data = candidateData();
-    return { ...data, entity: { ...data.entity, image: STORED_IMAGE } } as unknown as ContestantUserData<true>;
+    return { ...data, entity: { ...data.entity, image: STORED_IMAGE } } as unknown as EntityUserData<true>;
   }
 
   function removeOf(target: HTMLElement): HTMLButtonElement {
@@ -708,21 +710,21 @@ describe('profile page — removing the image', () => {
     const target = render({ selectedEntity: CANDIDATE, current: candidateWithImage() });
 
     const remove = removeOf(target);
-    expect(remove.getAttribute('aria-label')).toBe('contestantApp.basicInfo.removeImage');
+    expect(remove.getAttribute('aria-label')).toBe('contestantApp.basicInfo.removeImage.candidate');
     expect(remove.disabled).toBe(false);
     remove.click();
     await settle();
 
-    expect(setImage).toHaveBeenCalledTimes(1);
-    expect(setImage).toHaveBeenCalledWith(null);
-    expect(resetImage).not.toHaveBeenCalled();
+    expect(setProperty).toHaveBeenCalledTimes(1);
+    expect(setProperty).toHaveBeenCalledWith('candidate', 'image', null);
+    expect(resetProperty).not.toHaveBeenCalled();
   });
 
   it('moves focus to the upload button once the image has gone with the Trash', async () => {
     const target = render({ selectedEntity: CANDIDATE, current: candidateWithImage() });
-    setImage.mockImplementation((image: null) => {
-      const current = box.current!;
-      box = { ...box, current: { ...current, entity: { ...current.entity, image } } as ContestantUserData<true> };
+    setProperty.mockImplementation((_type: string, _property: 'image', image: null) => {
+      const current = box.current.current!;
+      box.set({ current: { ...current, entity: { ...current.entity, image } } as EntityUserData<true> });
     });
 
     removeOf(target).click();
@@ -739,16 +741,16 @@ describe('profile page — removing the image', () => {
     const data = partyData();
     const target = render({
       selectedEntity: PARTY,
-      current: { ...data, entity: { ...data.entity, image: STORED_IMAGE } } as unknown as ContestantUserData<true>
+      current: { ...data, entity: { ...data.entity, image: STORED_IMAGE } } as unknown as EntityUserData<true>
     });
 
     const remove = removeOf(target);
-    expect(remove.getAttribute('aria-label')).toBe('contestantApp.basicInfo.removeLogo');
+    expect(remove.getAttribute('aria-label')).toBe('contestantApp.basicInfo.removeImage.organization');
     remove.click();
     await settle();
 
-    expect(setImage).toHaveBeenCalledTimes(1);
-    expect(setImage).toHaveBeenCalledWith(null);
+    expect(setProperty).toHaveBeenCalledTimes(1);
+    expect(setProperty).toHaveBeenCalledWith('organization', 'image', null);
   });
 
   it('offers no Remove while the image field shows no image', () => {
@@ -773,7 +775,8 @@ describe('profile page — what an edit hands the store', () => {
     commit(fieldsOf(target, NAME)[0], 'Example Party');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    const [property, value] = setProperty.mock.calls[0];
+    const [type, property, value] = setProperty.mock.calls[0];
+    expect(type).toBe('organization');
     expect(property).toBe('name');
     expect(() => structuredClone(value)).not.toThrow();
     expect(value).toEqual({ fi: 'Esimerkkipuolue', en: 'Example Party' });
@@ -785,8 +788,9 @@ describe('profile page — what an edit hands the store', () => {
     commit(fieldsOf(target, SHORT_NAME)[0], 'EP');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    expect(setProperty.mock.calls[0][0]).toBe('shortName');
-    expect(setProperty.mock.calls[0][1]).toEqual({ en: 'EP' });
+    expect(setProperty.mock.calls[0][0]).toBe('organization');
+    expect(setProperty.mock.calls[0][1]).toBe('shortName');
+    expect(setProperty.mock.calls[0][2]).toEqual({ en: 'EP' });
   });
 
   it('stages nothing when the translations are expanded', () => {
@@ -805,7 +809,7 @@ describe('profile page — what an edit hands the store', () => {
     commit(inputOf(target, FIRST_NAME), 'Adah');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    expect(setProperty).toHaveBeenCalledWith('firstName', 'Adah');
+    expect(setProperty).toHaveBeenCalledWith('candidate', 'firstName', 'Adah');
   });
 
   it('stages a colour as an object holding the normal colour alone', () => {
@@ -814,8 +818,8 @@ describe('profile page — what an edit hands the store', () => {
     commit(inputOf(target, COLOR_HEX), '#2546A8');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    expect(setProperty).toHaveBeenCalledWith('color', { normal: '#2546a8' });
-    expect(Object.keys(setProperty.mock.calls[0][1])).toEqual(['normal']);
+    expect(setProperty).toHaveBeenCalledWith('organization', 'color', { normal: '#2546a8' });
+    expect(Object.keys(setProperty.mock.calls[0][2])).toEqual(['normal']);
   });
 
   it('stages null when the colour is emptied', () => {
@@ -827,7 +831,7 @@ describe('profile page — what an edit hands the store', () => {
     commit(inputOf(target, COLOR_HEX), '');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    expect(setProperty).toHaveBeenCalledWith('color', null);
+    expect(setProperty).toHaveBeenCalledWith('organization', 'color', null);
   });
 });
 
@@ -929,7 +933,7 @@ describe('profile page — the outcomes of a save', () => {
     const reread = deferred();
     // What the rerun loads bring: the entity is confirmed, and the store holds the stored names again.
     invalidateAll.mockImplementation(() => {
-      box = { ...box, selectedEntity: { ...PARTY, confirmed: true }, current: partyData() };
+      box.set({ selectedEntity: { ...PARTY, confirmed: true }, current: partyData() });
       return reread.promise;
     });
     const target = render({ selectedEntity: PARTY, current: partyData({ name: { en: 'Edited', fi: 'Muokattu' } }) });
@@ -1027,7 +1031,7 @@ describe('profile page — the outcomes of a save', () => {
       failSave();
       readAnswersLocked.mockResolvedValue(true);
       invalidateAll.mockImplementation(async () => {
-        box = { ...box, answersLocked: true };
+        box.set({ answersLocked: true });
       });
       const target = render({ selectedEntity: PARTY, current: partyData() });
       expect(target.querySelector(LOCKED_NOTE)).toBeNull();
@@ -1099,6 +1103,7 @@ describe('profile page — the label of the Save button and where a stored save 
     name: 'Required question',
     info: '',
     type: 'text',
+    isAnswered: answeredByAnyValue,
     required: true,
     customData: {}
   };
@@ -1109,6 +1114,7 @@ describe('profile page — the label of the Save button and where a stored save 
     name: 'Opinion question',
     info: '',
     type: 'text',
+    isAnswered: answeredByAnyValue,
     required: true,
     customData: {}
   };
@@ -1125,9 +1131,9 @@ describe('profile page — the label of the Save button and where a stored save 
   };
 
   /** The candidate's data as the store hands it out, holding `answers`: the saved ones with the draft. */
-  function candidateDataWith(answers: Record<string, { value: unknown }>): ContestantUserData<true> {
+  function candidateDataWith(answers: Record<string, { value: unknown }>): EntityUserData<true> {
     const data = candidateData();
-    return { ...data, entity: { ...data.entity, answers } } as unknown as ContestantUserData<true>;
+    return { ...data, entity: { ...data.entity, answers } } as unknown as EntityUserData<true>;
   }
 
   /** The store's data once the draft holds an answer to the required info question. */
@@ -1136,7 +1142,7 @@ describe('profile page — the label of the Save button and where a stored save 
   /** Make the store's save a stored one that leaves the box as `after` describes before it resolves. */
   function storeOnSave(after: Partial<Box> = {}): void {
     save.mockImplementation(async () => {
-      box = { ...box, hasUnsaved: false, ...after };
+      box.set({ hasUnsaved: false, ...after });
       return { type: 'success', listedPropertySaved: false };
     });
   }
@@ -1257,6 +1263,7 @@ describe('profile page — the note while answers are locked', () => {
     name: 'Required question',
     info: '',
     type: 'text',
+    isAnswered: answeredByAnyValue,
     required: true,
     customData: {}
   };

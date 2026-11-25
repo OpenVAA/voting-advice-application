@@ -1,9 +1,6 @@
-# Plans the whole template root offline. The providers are mocks because the root's stand-in account
-# makes the real provider refuse every credential, and no backend is read. The test loads the root's
-# own terraform.tfvars, so the asserts check the values a forker copies.
+# Plans the whole template root offline. The providers are mocks because the root's stand-in account makes the real provider refuse every credential, and no backend is read. The test loads the root's own terraform.tfvars, so the asserts check the values a forker copies.
 
-# The mocks' generated values are random strings. The provider checks some of the arguments that
-# receive them, so the resources whose ARNs feed such an argument get ARNs of the right form.
+# The mocks' generated values are random strings. The provider checks some of the arguments that receive them, so the resources whose ARNs feed such an argument get ARNs of the right form.
 mock_provider "aws" {
   mock_resource "aws_lb" {
     defaults = {
@@ -143,8 +140,7 @@ run "example_root_plans_production_shaped" {
     error_message = "The container definition's stopTimeout must be 40, from stop_timeout_seconds in terraform.tfvars."
   }
 
-  # A root test cannot reach a module's resources, so module.frontend.aws_wafv2_web_acl.relay is
-  # read through the module's outputs.
+  # A root test cannot reach a module's resources, so module.frontend.aws_wafv2_web_acl.relay is read through the module's outputs.
   assert {
     condition     = module.frontend.relay_web_acl_arn == null && module.frontend.distribution_web_acl_id == null
     error_message = "The relay rate rule must be off: with relay_rate_limit unset there is no aws_wafv2_web_acl.relay and the distribution names no web ACL."

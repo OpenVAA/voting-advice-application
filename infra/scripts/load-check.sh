@@ -2,47 +2,42 @@
 #
 # load-check.sh -- Run the voter-journey load check with k6 and print the capacity figure of the run.
 #
-# What it does. It checks the target, the journey and the steps, then runs k6 2.4.0 from the official `grafana/k6`
-# image, pinned by digest, with `infra/scripts/load-check/voter-journey.js`. Each step is one arrival rate in journeys
-# per minute, held for --step-seconds; the steps run one after the other. k6 writes its summary to <out>/summary.json,
-# and the script then prints:
+# What it does. It checks the target, the journey and the steps, then runs k6 2.4.0 from the official `grafana/k6` image, pinned by digest, with `infra/scripts/load-check/voter-journey.js`. Each step is one arrival rate in journeys per minute, held for --step-seconds; the steps run one after the other. k6 writes its summary to <out>/summary.json, and the script then prints:
+#   ```text
 #   k6_exit=<n>
 #   step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> dropped=<n> met=yes|no   (one per step)
 #   figure_journeys_per_minute=<rate of the highest step that met every threshold with every step below it, or 0>
 #   figure_step=<i or none>
-# k6 exits 99 when a threshold was crossed, which is expected at a step above the capacity, and also when the run was
-# aborted at errors above 5 % for a minute. The method is written in `infra/scripts/load-check/README.md`.
+#   ```
+# k6 exits 99 when a threshold was crossed, which is expected at a step above the capacity, and also when the run was aborted at errors above 5 % for a minute. The method is written in `infra/scripts/load-check/README.md`.
 #
 # What it refuses, each with exit 2 before anything is run:
 #   - a base URL that is neither https://staging.openvaa.org nor http://host.docker.internal:<port>;
 #   - the staging URL without --confirm-target, or with a --confirm-target that is not the base URL;
 #   - steps that do not rise strictly, or a step above --max-rate;
-#   - a journey whose base is not the base URL, or that holds a request to any host but the base host and one
-#     <ref>.supabase.co host, a page or asset request off the base host, a data request off the Supabase host, or a request to
-#     /auth/v1/, /functions/v1/, /api/usage or /_app/immutable/;
+#   - a journey whose base is not the base URL, or that holds a request to any host but the base host and one <ref>.supabase.co host, a page or asset request off the base host, a data request off the Supabase host, or a request to /auth/v1/, /functions/v1/, /api/usage or /_app/immutable/;
 #   - a journey with a data request when SUPABASE_ANON_KEY is empty;
 #   - an --out that already exists.
 #
-# What it does not record: the anon key reaches k6 through the environment, `-e SUPABASE_ANON_KEY` with no value on the
-# command line, and is never printed or written. No response body and no header is written anywhere.
+# What it does not record: the anon key reaches k6 through the environment, `-e SUPABASE_ANON_KEY` with no value on the command line, and is never printed or written. No response body and no header is written anywhere.
 #
 # Usage:
+#   ```sh
 #   infra/scripts/load-check.sh --base-url http://host.docker.internal:5275 \
 #     --journey infra/scripts/load-check/local-journey.json --steps 1 --step-seconds 60 --max-rate 5 --out tmp/run
 #   SUPABASE_ANON_KEY=... infra/scripts/load-check.sh --base-url https://staging.openvaa.org \
 #     --confirm-target https://staging.openvaa.org --journey <journey.json> --steps 5,10,20 --max-rate 20 --out <dir>
 #   infra/scripts/load-check.sh --self-test
+#   ```
 #
 #   --base-url <url>        REQUIRED. https://staging.openvaa.org or http://host.docker.internal:<port>.
-#   --journey <file>        REQUIRED. The journey file: { base, routeId, locale, requests: [{ method, url, kind, body? }] },
-#                           kind being page, asset or data.
+#   --journey <file>        REQUIRED. The journey file: { base, routeId, locale, requests: [{ method, url, kind, body? }] }, kind being page, asset or data.
 #   --steps <list>          REQUIRED. Comma-separated arrival rates in journeys per minute, e.g. 5,10,20.
 #   --step-seconds <n>      OPTIONAL. The length of each step in seconds. Default: 300.
 #   --max-rate <n>          REQUIRED. The highest rate a step may have.
 #   --confirm-target <url>  REQUIRED for staging. Must equal --base-url.
 #   --out <dir>             REQUIRED. A directory that does not exist yet; its parent must. k6 writes summary.json there.
-#   --self-test             Run the refusal cases against a stand-in docker. Needs no Docker and no network.
-#                           Each case prints `self_test <name> PASS|FAIL`.
+#   --self-test             Run the refusal cases against a stand-in docker. Needs no Docker and no network. Each case prints `self_test <name> PASS|FAIL`.
 #   -h, --help              Print this header and exit 0.
 #
 # Exit codes:
@@ -57,6 +52,12 @@ export LC_ALL=C
 
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd -P)"
+SCRIPT_NAME="load-check.sh"
+USAGE_LINE="--base-url <url> --journey <file> --steps <list> --max-rate <n> --out <new dir> [--step-seconds <n>] [--confirm-target <url>] | --self-test | -h | --help"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$SCRIPT_DIR/../../scripts/lib/cli.sh"
+# shellcheck source=../../scripts/lib/self-test.sh
+. "$SCRIPT_DIR/../../scripts/lib/self-test.sh"
 K6_DIR="$SCRIPT_DIR/load-check"
 K6_IMAGE="grafana/k6:2.4.0@sha256:d41bb79cd8de5a7ad619b53570e3712633e8bff0937010a5c6c57a4747e7a276"
 STAGING_URL="https://staging.openvaa.org"
@@ -68,20 +69,6 @@ STEP_SECONDS="300"
 MAX_RATE=""
 CONFIRM_TARGET=""
 OUT=""
-
-usage_line() {
-  echo "usage: load-check.sh --base-url <url> --journey <file> --steps <list> --max-rate <n> --out <new dir> [--step-seconds <n>] [--confirm-target <url>] | --self-test | -h | --help" >&2
-}
-
-print_header() {
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$SCRIPT_PATH"
-}
-
-usage_error() {
-  echo "load-check.sh: $1" >&2
-  usage_line
-  exit 2
-}
 
 # Checks the journey file against the base URL. Prints nothing on success and one reason on failure, exit 1.
 # The journey reaches node as a path, never as text on the command line.
@@ -192,16 +179,6 @@ run_check() {
 ST_CASES=0
 ST_FAILED=0
 ST=""
-
-st_result() {
-  ST_CASES=$((ST_CASES + 1))
-  if [ "$2" = "pass" ]; then
-    echo "self_test $1 PASS"
-  else
-    echo "self_test $1 FAIL"
-    ST_FAILED=$((ST_FAILED + 1))
-  fi
-}
 
 st_cleanup() {
   [ -z "$ST" ] || rm -rf "$ST"

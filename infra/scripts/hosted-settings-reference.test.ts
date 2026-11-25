@@ -3,7 +3,7 @@
  *
  * The names are read from the module's files: every key of `hosted-settings.json` at any depth, a key whose value is `false` or an array included; the keys of the `auth_origin` and `auth_smtp` blocks of `settings.tf`; the attributes of the `auth_rate_limits` object of `variables.tf`; the keys of the `smtp_secret` settings resource of `main.tf`; and the `name` of every secret of the `supabase_edge_function_secrets.this` resource in `function-secrets.tf`, whose `function_secret_names` local must list the same names in the same order. A name counts as listed only as a whole backticked token, so `mfa_totp_enroll_enabled` does not list `mfa_totp_verify_enabled` and a name in prose without backticks lists nothing. An absent page, an absent or unparsable source and a source block that cannot be found are each a problem naming the file, so the check never passes on empty input. The page's order is free; the problems list in the order the names are read from the sources.
  *
- * A row of the settings table is a table line whose second cell, the Setting, begins with a backticked token, the row's name. Its third cell is the Value. Every row's name is a name the sources yield, or one of {@link NON_MODULE_SETTINGS}. Every leaf of `hosted-settings.json` that is not an object, and every default of `auth_rate_limits`, is compared with the leading backticked tokens of its row's Value: a number or a boolean as written, a string as itself and the empty string as `""`, an array as its items in order. A listed name without a row of its own is a problem too.
+ * A row of the settings table is a table line in the section under `## The settings` whose second cell, the Setting, begins with a backticked token, the row's name. Its third cell is the Value. Every row's name is a name the sources yield, or one of {@link NON_MODULE_SETTINGS}. Every leaf of `hosted-settings.json` that is not an object, and every default of `auth_rate_limits`, is compared with the leading backticked tokens of its row's Value: a number or a boolean as written, a string as itself and the empty string as `""`, an array as its items in order. A listed name without a row of its own is a problem too.
  *
  * Every backticked token on the page shaped like a probe check's name, a prefix `api.`, `auth.`, `functions.`, `rows.`, `storage.` or `db.` or the name `no-seed`, is the `name` of a check of `infra/scripts/probe/checks.mjs`, so a how-to-verify cell never cites a check the probe does not run.
  */
@@ -13,12 +13,16 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { CHECKS } from './probe/checks.mjs';
+import { backtickedTokens, tableRowsUnder } from '../../scripts/lib/docTokens.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '../..');
 
 /** The reference page, relative to the repository root. */
 const PAGE_PATH = 'apps/docs/src/routes/(content)/developers-guide/deployment/hosted-settings/+page.md';
+
+/** The heading the page's settings table stands under. */
+const SETTINGS_HEADING = '## The settings';
 
 /** The module's files the names are read from, relative to the repository root. */
 const SOURCE_PATHS = {
@@ -214,32 +218,17 @@ const READERS: ReadonlyArray<{ key: SourceKey; read: (text: string) => SourceNam
 const PROBE_CHECK_SHAPE = /^(?:(?:api|auth|functions|rows|storage|db)\.[a-z0-9]+(?:-[a-z0-9]+)*|no-seed)$/;
 
 /**
- * Every whole text in single backticks on a page.
- *
- * @param page - The page's text.
- * @returns The set of backticked tokens.
- */
-function backtickedTokens(page: string): Set<string> {
-  return new Set(Array.from(page.matchAll(/`([^`\n]+)`/g), (match) => match[1]));
-}
-
-/**
- * The rows of the page's settings table: each table line whose second cell begins with a backticked token.
+ * The rows of the page's settings table, the table under {@link SETTINGS_HEADING}: each row whose second cell begins with a backticked token.
  *
  * @param page - The page's text.
  * @returns Each row's name mapped to the backticked tokens of its Value cell, in order; a name met twice keeps its first row.
  */
 function settingsRows(page: string): Map<string, Array<string>> {
   const rows = new Map<string, Array<string>>();
-  for (const line of page.split('\n')) {
-    if (!line.startsWith('|')) continue;
-    const cells = line.split('|').slice(1, -1);
-    const name = /^\s*`([^`\n]+)`/.exec(cells[1] ?? '')?.[1];
+  for (const cells of tableRowsUnder(page, SETTINGS_HEADING) ?? []) {
+    const name = /^`([^`\n]+)`/.exec(cells[1] ?? '')?.[1];
     if (name === undefined || rows.has(name)) continue;
-    rows.set(
-      name,
-      Array.from((cells[2] ?? '').matchAll(/`([^`\n]+)`/g), (match) => match[1])
-    );
+    rows.set(name, backtickedTokens(cells[2] ?? ''));
   }
   return rows;
 }
@@ -253,7 +242,7 @@ function settingsRows(page: string): Map<string, Array<string>> {
 function hostedSettingsReferenceProblems(input: HostedSettingsReferenceInput): Array<string> {
   const problems: Array<string> = [];
   if (input.page === undefined) problems.push(`${PAGE_PATH}: the page is absent`);
-  const listed = backtickedTokens(input.page ?? '');
+  const listed = new Set(backtickedTokens(input.page ?? ''));
   const rows = settingsRows(input.page ?? '');
   const seen = new Set<string>();
   let sourcesRead = true;
@@ -435,6 +424,8 @@ function pageListing(
   const groups = names.filter((name) => FIXTURE_GROUPS.includes(name));
   return [
     '# Hosted Supabase settings',
+    '',
+    '## The settings',
     '',
     '| Group | Setting | Value |',
     '| ----- | ------- | ----- |',

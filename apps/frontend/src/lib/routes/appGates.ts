@@ -72,14 +72,12 @@ export type AppGate = {
    * @returns `true` when the id is this application's root or sits below it.
    */
   readonly isRoute: (routeId: string) => boolean;
-  /** This application's login page, as a key of the `ROUTE` map. It is one of the entry routes. */
-  readonly loginRoute: Route;
   /**
    * The routes a signed-in caller is sent away from, each as a key of the `ROUTE` map: the screens a visitor signs in or registers through. The handler tests whether the request's route id is the id of one of them.
    */
   readonly entryRoutes: ReadonlyArray<Route>;
   /** Where to send a caller who already has a session and is asking for one of this application's entry routes. It carries no parameter. */
-  readonly whenAuthenticatedOnLogin: GateRedirect;
+  readonly whenAuthenticatedOnEntry: GateRedirect;
   /** Where to send a caller with no session who is asking for a route inside this application's `(protected)` group. */
   readonly whenUnauthenticatedInProtectedGroup: GateRedirect;
 };
@@ -104,16 +102,15 @@ export function isAdminRoute(routeId: string): boolean {
 const CONTESTANT_GATE: AppGate = Object.freeze({
   name: 'Contestant App',
   isRoute: isContestantRoute,
-  loginRoute: 'ContestantAppLogin',
   entryRoutes: Object.freeze([
     'ContestantAppLogin',
-    'ContestantAppSignIn',
+    'ContestantAppLoginEmail',
     'ContestantAppRegister',
-    'ContestantAppRegisterEmail',
-    'ContestantAppRegisterSignIn',
+    'ContestantAppRegisterCodeEmail',
+    'ContestantAppRegisterCodeSignIn',
     'ContestantAppIdentityProviderError'
   ] satisfies ReadonlyArray<Route>),
-  whenAuthenticatedOnLogin: Object.freeze({
+  whenAuthenticatedOnEntry: Object.freeze({
     status: 303,
     route: 'ContestantAppHome',
     params: () => ({})
@@ -134,9 +131,8 @@ const CONTESTANT_GATE: AppGate = Object.freeze({
 const ADMIN_GATE: AppGate = Object.freeze({
   name: 'Admin App',
   isRoute: isAdminRoute,
-  loginRoute: 'AdminAppLogin',
   entryRoutes: Object.freeze(['AdminAppLogin'] satisfies ReadonlyArray<Route>),
-  whenAuthenticatedOnLogin: Object.freeze({
+  whenAuthenticatedOnEntry: Object.freeze({
     status: 303,
     route: 'AdminAppHome',
     params: () => ({})
@@ -172,12 +168,24 @@ export function resolveAppGate(routeId: string): AppGate | undefined {
 /**
  * True when `routeId` is an entry route of the row of the gate table that claims it.
  *
- * The two application layouts use it to withdraw the message that a sign-out could not be confirmed: the gate sends a live session away from an entry route, so a request that reaches one found no session. The request hook makes the same test on the row it has already resolved.
+ * The two application layouts use it to withdraw the message that a sign-out could not be confirmed: the gate sends a live session away from an entry route, so a request that reaches one found no session. The request hook makes the same test through `isEntryRouteOf` on the row it has already resolved.
  *
  * @param routeId - A SvelteKit route id as `page.route.id` gives it, which is `null` on a page with no matched route.
  * @returns `true` when a row claims the id and lists it among its entry routes.
  */
 export function isEntryRoute(routeId: string | null | undefined): boolean {
   if (routeId == null) return false;
-  return resolveAppGate(routeId)?.entryRoutes.some((key) => ROUTE[key] === routeId) ?? false;
+  const gate = resolveAppGate(routeId);
+  return gate ? isEntryRouteOf(gate, routeId) : false;
+}
+
+/**
+ * True when `routeId` is one of `gate`'s entry routes.
+ *
+ * @param gate - A row of the gate table.
+ * @param routeId - A SvelteKit route id, e.g. `event.route.id`.
+ * @returns `true` when the row lists the id among its entry routes.
+ */
+export function isEntryRouteOf(gate: AppGate, routeId: string): boolean {
+  return gate.entryRoutes.some((key) => ROUTE[key] === routeId);
 }

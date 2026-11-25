@@ -106,8 +106,8 @@ CREATE TRIGGER enforce_nomination_confirmation_before_insert_or_update
 BEFORE INSERT OR UPDATE ON public.nominations FOR EACH ROW
 EXECUTE FUNCTION public.enforce_nomination_confirmation ();
 
--- Holds a candidate's nomination to having a parent nomination or naming a requested party, where the election's type requires one. Deferred to the end of the transaction, so that a writer may insert the candidate's row first and attach its party's row in a later statement.
-CREATE CONSTRAINT TRIGGER nominations_parent_required
+-- Holds a candidate's nomination to having a parent nomination or naming a requested party, where the election's nomination shape requires one. Deferred to the end of the transaction, so that a writer may insert the candidate's row first and attach its party's row in a later statement.
+CREATE CONSTRAINT TRIGGER validate_nomination_parent_required
 AFTER INSERT OR UPDATE ON public.nominations
 DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN (
   NEW.candidate_id IS NOT NULL

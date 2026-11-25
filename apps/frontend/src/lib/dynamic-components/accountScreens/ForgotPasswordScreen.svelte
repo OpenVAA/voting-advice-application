@@ -21,7 +21,7 @@
   appName={contestantAppName}
   {sendEntryLink}
   emailSentHref={getRoute.current('ContestantAppEmailSent')}
-  returnHref={getRoute.current('ContestantAppSignIn')}
+  returnHref={getRoute.current('ContestantAppLoginEmail')}
   testId="contestant-forgot-password" />
 ```
 -->
@@ -61,7 +61,7 @@
     const address = email.trim();
     // Emptiness is asked first: the control reports an empty field as invalid too, and the two have different messages.
     if (!address || !emailField?.checkValidity()) {
-      emailError = address ? t('components.input.error.invalidEmail') : t('contestantApp.login.emailRequired');
+      emailError = address ? t('components.input.error.invalidEmail') : t('common.account.emailRequired');
       emailField?.focus();
       return;
     }
@@ -77,15 +77,15 @@
   }
 </script>
 
-<MainContent title={t('contestantApp.resetPassword.title')} data-testid={testId}>
+<MainContent title={t('common.account.resetPassword.title')} data-testid={testId}>
   {#snippet heading()}
     <HeadingGroup>
       <PreHeading>{appName}</PreHeading>
-      <h1 tabindex="-1">{t('contestantApp.resetPassword.title')}</h1>
+      <h1 tabindex="-1">{t('common.account.resetPassword.title')}</h1>
     </HeadingGroup>
   {/snippet}
 
-  <p class="text-center">{t('contestantApp.resetPassword.ingress')}</p>
+  <p class="text-center">{t('common.account.resetPassword.ingress')}</p>
 
   <form id={formId} method="POST" novalidate onsubmit={handleSubmit} class="gap-md flex w-full flex-col">
     <EmailField
@@ -103,7 +103,7 @@
       type="submit"
       form={formId}
       variant="main"
-      text={t('contestantApp.resetPassword.sendLink')}
+      text={t('common.account.resetPassword.sendLink')}
       disabled={!mounted}
       loading={requesting}
       data-testid="forgot-password-submit" />

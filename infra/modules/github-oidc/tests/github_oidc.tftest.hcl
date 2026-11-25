@@ -1,8 +1,6 @@
-# Offline tests of the module's policy documents. The provider is the real one, with fake keys and
-# every account call skipped, so the documents are rendered locally and nothing reaches an account.
+# Offline tests of the module's policy documents. The provider is the real one, with fake keys and every account call skipped, so the documents are rendered locally and nothing reaches an account.
 #
-# A rendered document gives a single action or resource as a string and several as a list, so every
-# Action and Resource is read through flatten([...]).
+# A rendered document gives a single action or resource as a string and several as a list, so every Action and Resource is read through flatten([...]).
 
 provider "aws" {
   region                      = "eu-north-1"
@@ -219,9 +217,7 @@ run "no_state_or_secret_reads" {
 run "creates_carry_request_tags" {
   command = plan
 
-  # The calls that create a resource the root tags. A statement holding any of them must require the
-  # root's Project and Root tags on the request, except the one that grants them on the parent VPC or
-  # security group, which network_parent_scope checks.
+  # The calls that create a resource the root tags. A statement holding any of them must require the root's Project and Root tags on the request, except the one that grants them on the parent VPC or security group, which network_parent_scope checks.
   variables {
     tagged_creates = [
       "ec2:CreateVpc",
@@ -270,9 +266,7 @@ run "creates_carry_request_tags" {
 run "network_parent_scope" {
   command = plan
 
-  # EC2 evaluates the parent of a create, the VPC of a subnet, route table or security group and the
-  # security group of a rule, with the parent's own tags as aws:ResourceTag and no aws:RequestTag, so
-  # the statement that grants a create on the parent tests resource tags alone.
+  # EC2 evaluates the parent of a create, the VPC of a subnet, route table or security group and the security group of a rule, with the parent's own tags as aws:ResourceTag and no aws:RequestTag, so the statement that grants a create on the parent tests resource tags alone.
   assert {
     condition = alltrue([
       for s in jsondecode(aws_iam_policy.deploy_network.policy).Statement :
@@ -299,10 +293,7 @@ run "network_parent_scope" {
 run "edge_tag_scope" {
   command = plan
 
-  # CloudFront and ACM have no key that limits a tag call to a create, so a tag call that tested the
-  # request's tags alone would let the role put the root's tags on any distribution or certificate
-  # and then change or delete it. Every tag call of the edge is allowed only on a resource that
-  # already carries the root's tags, or is created with them, which aws:ResourceTag covers.
+  # CloudFront and ACM have no key that limits a tag call to a create, so a tag call that tested the request's tags alone would let the role put the root's tags on any distribution or certificate and then change or delete it. Every tag call of the edge is allowed only on a resource that already carries the root's tags, or is created with them, which aws:ResourceTag covers.
   variables {
     edge_tag_calls = ["cloudfront:TagResource", "acm:AddTagsToCertificate"]
   }
@@ -324,8 +315,7 @@ run "edge_tag_scope" {
     error_message = "Both edge tag calls must be granted, or the check above examines nothing."
   }
 
-  # CloudFront's developer guide gives CreateDistribution the resource "*", since a distribution's
-  # ARN does not exist before it is created.
+  # CloudFront's developer guide gives CreateDistribution the resource "*", since a distribution's ARN does not exist before it is created.
   assert {
     condition = alltrue([
       for s in jsondecode(aws_iam_policy.deploy_edge.policy).Statement :
@@ -349,9 +339,7 @@ run "edge_tag_scope" {
 run "scaling_scope" {
   command = plan
 
-  # Application Auto Scaling scopes its scalable-target ARNs by an id, not by the service, so the
-  # writes that support them are held to ECS services' desired count by the two condition keys.
-  # Tagging supports neither key and stays on the ARN pattern alone.
+  # Application Auto Scaling scopes its scalable-target ARNs by an id, not by the service, so the writes that support them are held to ECS services' desired count by the two condition keys. Tagging supports neither key and stays on the ARN pattern alone.
   variables {
     scaling_writes = [
       "application-autoscaling:RegisterScalableTarget",
@@ -378,5 +366,48 @@ run "scaling_scope" {
       for s in jsondecode(aws_iam_policy.deploy_scaling.policy).Statement : flatten([s.Action])
     ])))) == 0
     error_message = "Every scaling write must be granted, or the check above examines nothing."
+  }
+}
+
+run "plan_deny_object_reads" {
+  command = plan
+
+  assert {
+    condition = length([
+      for s in jsondecode(aws_iam_policy.plan_deny.policy).Statement : s
+      if s.Effect == "Deny"
+      && toset(flatten([s.Action])) == toset(["s3:GetObject", "s3:GetObjectVersion"])
+      && flatten([try(s.NotResource, [])]) == ["arn:aws:s3:::openvaa-tfstate-000000000000/pipeline/*"]
+      && try(s.Resource, null) == null
+    ]) == 1
+    error_message = "The plan deny must refuse s3:GetObject and s3:GetObjectVersion on every object outside the state bucket's pipeline/ prefix."
+  }
+
+  assert {
+    condition     = startswith(var.pipeline_state_key, "pipeline/")
+    error_message = "The pipeline state key must lie under pipeline/, the one prefix the plan role may read."
+  }
+
+  assert {
+    condition = alltrue([
+      for a in ["dynamodb:GetItem", "logs:GetLogEvents", "logs:FilterLogEvents", "logs:StartQuery", "logs:GetQueryResults", "kinesis:GetRecords", "sqs:ReceiveMessage"] :
+      contains(flatten([
+        for s in jsondecode(aws_iam_policy.plan_deny.policy).Statement : flatten([s.Action])
+        if s.Effect == "Deny" && flatten([try(s.Resource, [])]) == ["*"]
+      ]), a)
+    ])
+    error_message = "The plan deny must still refuse the table, log, stream and queue data reads on every resource."
+  }
+
+  assert {
+    condition = length([
+      for s in jsondecode(aws_iam_policy.plan_deny.policy).Statement : s
+      if s.Effect == "Deny" && contains(flatten([s.Action]), "s3:GetObject")
+      && flatten([try(s.Resource, [])]) == [
+        "arn:aws:s3:::openvaa-tfstate-000000000000/hand/*",
+        "arn:aws:s3:::openvaa-tfstate-000000000000/env:/*",
+      ]
+    ]) == 1
+    error_message = "The plan deny must still refuse the hand-applied and workspace state keys by name."
   }
 }

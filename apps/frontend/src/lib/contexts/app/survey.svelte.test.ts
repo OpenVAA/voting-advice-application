@@ -14,13 +14,13 @@ function handle<TValue>(value: TValue): { current: TValue } {
 }
 
 describe('surveyLink (pure-rune producer)', () => {
-  it('interpolates the sessionId into a configured linkTemplate', () => {
+  it('interpolates the visit id into a configured linkTemplate', () => {
     const cleanup = $effect.root(() => {
       const appSettings = handle({
         survey: { linkTemplate: 'https://survey.example/?s={sessionId}' }
       } as unknown as AppSettings);
-      const sessionId = handle<string | undefined>('abc-123');
-      const link = surveyLink({ appSettings, sessionId });
+      const visitId = handle<string | undefined>('abc-123');
+      const link = surveyLink({ appSettings, visitId });
       expect(link.current).toBe('https://survey.example/?s=abc-123');
     });
     cleanup();
@@ -31,20 +31,20 @@ describe('surveyLink (pure-rune producer)', () => {
       const appSettings = handle({
         survey: { linkTemplate: 'https://survey.example/?s={ sessionId }' }
       } as unknown as AppSettings);
-      const sessionId = handle<string | undefined>('xyz');
-      const link = surveyLink({ appSettings, sessionId });
+      const visitId = handle<string | undefined>('xyz');
+      const link = surveyLink({ appSettings, visitId });
       expect(link.current).toBe('https://survey.example/?s=xyz');
     });
     cleanup();
   });
 
-  it('interpolates an empty string when sessionId is undefined', () => {
+  it('interpolates an empty string when the visit id is undefined', () => {
     const cleanup = $effect.root(() => {
       const appSettings = handle({
         survey: { linkTemplate: 'https://survey.example/?s={sessionId}' }
       } as unknown as AppSettings);
-      const sessionId = handle<string | undefined>(undefined);
-      const link = surveyLink({ appSettings, sessionId });
+      const visitId = handle<string | undefined>(undefined);
+      const link = surveyLink({ appSettings, visitId });
       expect(link.current).toBe('https://survey.example/?s=');
     });
     cleanup();
@@ -53,13 +53,13 @@ describe('surveyLink (pure-rune producer)', () => {
   it('is undefined when no survey.linkTemplate is configured', () => {
     const cleanup = $effect.root(() => {
       const appSettings = handle({ survey: {} } as unknown as AppSettings);
-      const sessionId = handle<string | undefined>('abc');
-      const link = surveyLink({ appSettings, sessionId });
+      const visitId = handle<string | undefined>('abc');
+      const link = surveyLink({ appSettings, visitId });
       expect(link.current).toBeUndefined();
     });
     cleanup();
   });
-  describe("fed by the tracking producer's surveySessionId", () => {
+  describe("fed by the tracking producer's visit id", () => {
     /** The survey link built the way `appContext` builds it, for a deployment in `visitIdMode` with a granted consent. */
     function linkFor(visitIdMode: VisitIdMode): string | undefined {
       const appSettings = handle({
@@ -72,7 +72,7 @@ describe('surveyLink (pure-rune producer)', () => {
         projection: handle({ active: true, consentMode: 'gated' as const, visitIdMode }),
         locale: () => 'en'
       });
-      return surveyLink({ appSettings, sessionId: tracking.surveySessionId }).current;
+      return surveyLink({ appSettings, visitId: tracking.visitId }).current;
     }
 
     it('holds the visit id in visit-id mode memory', () => {

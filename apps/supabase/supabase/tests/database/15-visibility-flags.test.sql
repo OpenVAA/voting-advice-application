@@ -6,7 +6,7 @@
 --
 -- THE DEFAULTS ARE MEASURED, NEVER READ FROM THE FILE. `col_type_is` and a grep over `100-tenancy.sql` both state what the declaration says. The assertions below insert rows inside this transaction and read the column back, which states what the database did.
 --
--- THE NOMINATIONS LOCK IS NOT A COLUMN OF `projects`. It is the app setting `access.nominationsLocked`, and 23-nominations-write.test.sql holds its cells: the three entity-user policies in both directions, and which stored values lock. This file holds one assertion about it, in section 2: no column of `projects` names nominations, so the setting has no second source to disagree with.
+-- THE NOMINATIONS LOCK IS NOT A COLUMN OF `projects`. It is the value `nominationsLocked` of the app setting `access.contestantEditing`, and 23-nominations-write.test.sql holds its cells: the three entity-user policies in both directions, and which stored values lock. This file holds one assertion about it, in section 2: no column of `projects` names nominations, so the setting has no second source to disagree with.
 --
 -- pgTAP SHIPS ITS OWN has_role(). It is a role-existence assertion returning text, and under this estate's `search_path = public, extensions` it SHADOWS ours, so an unqualified one-argument call fails with `function ok(text, unknown) does not exist` rather than as a clean failed assertion. This file calls no permission predicate, but the rule stands for anything added to it: qualify every call `public.has_role(...)`. 13-shim-parity.test.sql is the reference.
 --
@@ -110,7 +110,7 @@ SELECT
         AND table_name = 'projects'
     ),
     '0/true',
-    'No column of projects names nominations: the nominations lock is the app setting access.nominationsLocked and has no column beside it'
+    'No column of projects names nominations: the nominations lock is the app setting access.contestantEditing and has no column beside it'
   );
 
 -- =====================================================================
@@ -560,9 +560,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 7: the repurposed column -- the third term, and the only one that is a RETYPE rather than an addition
+-- Section 7: elections.nomination_shape
 -- =====================================================================
--- `elections.election_type` keeps its name and takes a new meaning (D-16, and the operator's section 8.2 note). What makes the removal of the old meaning COMPLETE is not the tree sweep that accompanies it -- that is the confirmation. It is this: the retired values are not members of the type, so a row carrying one is a PostgreSQL error rather than a stored string. The sweep can only prove the tree is clean today; the assertions below prove the tree cannot become dirty again without the database refusing it.
+-- `elections.nomination_shape` is of the enum `nomination_shape`, so a value that is not one of its four members is a PostgreSQL error rather than a stored string.
 SELECT
   is (
     (
@@ -573,10 +573,10 @@ SELECT
       WHERE
         table_schema = 'public'
         AND table_name = 'elections'
-        AND column_name = 'election_type'
+        AND column_name = 'nomination_shape'
     ),
     'USER-DEFINED|nomination_shape|NO',
-    'The repurposed column is the nomination-shape enum and is NOT NULL'
+    'elections.nomination_shape is the nomination-shape enum and is NOT NULL'
   );
 
 -- Compared as a sorted array rather than as a count, so a fifth member reddens naming itself instead of reddening as an arithmetic surprise.
@@ -615,35 +615,35 @@ SELECT
       WHERE
         table_schema = 'public'
         AND table_name = 'elections'
-        AND column_name = 'election_type'
+        AND column_name = 'nomination_shape'
     ),
     $$'organization_list_and_independents'$$,
     'An election that states no type takes organization_list_and_independents, the column default'
   );
 
--- The three retired values Task 1 DERIVED from the tree -- not the two the canonical documents name. The third lives only in an adapter test fixture, and a rejection grid written against two literals would have left it representable.
+-- Three values that are not members of the enum.
 SELECT
   throws_ok (
-    $$INSERT INTO public.elections (project_id, election_type) SELECT id, 'general' FROM public.projects LIMIT 1$$,
+    $$INSERT INTO public.elections (project_id, nomination_shape) SELECT id, 'general' FROM public.projects LIMIT 1$$,
     '22P02',
     NULL,
-    'The database REJECTS the first retired value -- it is unrepresentable, not merely unused'
+    'The database rejects general, which is not a member of the enum'
   );
 
 SELECT
   throws_ok (
-    $$INSERT INTO public.elections (project_id, election_type) SELECT id, 'local' FROM public.projects LIMIT 1$$,
+    $$INSERT INTO public.elections (project_id, nomination_shape) SELECT id, 'local' FROM public.projects LIMIT 1$$,
     '22P02',
     NULL,
-    'The database REJECTS the second retired value'
+    'The database rejects local, which is not a member of the enum'
   );
 
 SELECT
   throws_ok (
-    $$INSERT INTO public.elections (project_id, election_type) SELECT id, 'presidential' FROM public.projects LIMIT 1$$,
+    $$INSERT INTO public.elections (project_id, nomination_shape) SELECT id, 'presidential' FROM public.projects LIMIT 1$$,
     '22P02',
     NULL,
-    'The database REJECTS the third retired value, the one the canonical documents never recorded'
+    'The database rejects presidential, which is not a member of the enum'
   );
 
 SELECT

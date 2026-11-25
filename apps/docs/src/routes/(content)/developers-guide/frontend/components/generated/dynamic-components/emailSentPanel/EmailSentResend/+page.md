@@ -13,10 +13,14 @@ While seconds are left, and while a request the button made is in flight, the bu
 - `countdownTestId`: The test id of the suffix that counts the seconds. Default: `'email-sent-countdown'`
 - Any valid attributes of a `<div>` element.
 
+### Tracking events
+
+- `emailSent_resend`: Sent when the button is pressed while it is available.
+
 ### Accessibility
 
 - While unavailable the button is `aria-disabled` and still a tab stop. It is never natively `disabled`, which would drop the focus it holds.
-- While seconds are left the count is part of the button's name, and the button is also described by it. The count is not a live region, so it is not announced every second.
+- While seconds are left the count is part of the button's name and nothing else: it is neither the button's description nor a live region, so focus reads it once.
 - While a request is in flight the button is `aria-busy`.
 
 ### Usage

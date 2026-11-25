@@ -1,5 +1,4 @@
-# The number of tasks between applies belongs to Application Auto Scaling: it holds the service
-# between the floor and the ceiling and follows the tasks' average CPU.
+# The number of tasks between applies belongs to Application Auto Scaling: it holds the service between the floor and the ceiling and follows the tasks' average CPU.
 resource "aws_appautoscaling_target" "service" {
   service_namespace  = "ecs"
   scalable_dimension = "ecs:service:DesiredCount"
@@ -27,10 +26,7 @@ resource "aws_appautoscaling_policy" "cpu" {
   }
 }
 
-# One action per timed change of the bounds, such as a raised floor ahead of a known peak and its
-# lowering afterwards. An action changes the scalable target's bounds outside Terraform, so a plan
-# made between a raising and a lowering action shows the minimum as drift, and no apply is made
-# inside such a window.
+# One action per timed change of the bounds, such as a raised floor ahead of a known peak and its lowering afterwards. An action changes the scalable target's bounds outside Terraform, so a plan made between a raising and a lowering action shows the minimum as drift, and no apply is made inside such a window.
 resource "aws_appautoscaling_scheduled_action" "floor" {
   for_each = { for c in var.scheduled_floor_changes : c.name => c }
 

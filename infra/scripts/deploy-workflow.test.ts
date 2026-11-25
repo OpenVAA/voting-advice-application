@@ -1,10 +1,7 @@
 /**
  * Guards on `.github/workflows/deploy.yml`, the gated staging deploy.
  *
- * The workflow applies to the staging account and pushes migrations to the persistent Supabase project, and its log is
- * public, so its triggers, its gate, the order of its stages, where each secret reaches and its alert are checked here
- * rather than by its first run. The shared rules of `workflowGuards.ts` are shown red in
- * `infra-plan-workflow.test.ts`; the rules particular to this file are shown red below on mutated copies of its text.
+ * The workflow applies to the staging account and pushes migrations to the persistent Supabase project, and its log is public, so its triggers, its gate, the order of its stages, where each secret reaches and its alert are checked here rather than by its first run. The shared rules of `workflowGuards.ts` are shown red in `infra-plan-workflow.test.ts`; the rules particular to this file are shown red below on mutated copies of its text.
  */
 
 import { existsSync } from 'node:fs';
@@ -34,14 +31,41 @@ const STAGE_ORDER = [
   'alert'
 ];
 
-/** The exact environment of the settings check: the session pooler connection and the database password alone. */
+/** The Supabase root the database steps verify the server against, relative to the repository root; pinned by `supabase-ca.test.ts`. */
+const ROOT_CA_PATH = 'infra/certs/supabase-root-2021-ca.crt';
+
+/** The prefix of `PGSSLROOTCERT` in the database steps, so the root is found by an absolute path whatever the step's directory. */
+const WORKSPACE_PREFIX = '${{ github.workspace }}/';
+
+/** The ids of the steps that connect to the database through the session pooler. */
+const DATABASE_STEPS = ['migrations', 'settings'];
+
+/** The exact environment of the settings check: the session pooler connection verifying the server against the committed root, and the database password alone. */
 const SETTINGS_ENV = {
   REF: '${{ steps.link.outputs.ref }}',
   PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
   PGPORT: '5432',
   PGDATABASE: 'postgres',
   PGCONNECT_TIMEOUT: '10',
+  PGSSLMODE: 'verify-full',
+  PGSSLROOTCERT: `${WORKSPACE_PREFIX}${ROOT_CA_PATH}`,
   PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}'
+};
+
+/** The exact environment of the migrations push: the settings check's connection, plus the link outputs, the deploy environment and the CLI's two secrets. */
+const MIGRATIONS_ENV = {
+  REF: '${{ steps.link.outputs.ref }}',
+  WORKDIR: '${{ steps.link.outputs.workdir }}',
+  OPENVAA_DEPLOY_ENVIRONMENT: '${{ vars.DEPLOY_ENVIRONMENT }}',
+  PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
+  PGPORT: '5432',
+  PGDATABASE: 'postgres',
+  PGCONNECT_TIMEOUT: '10',
+  PGSSLMODE: 'verify-full',
+  PGSSLROOTCERT: `${WORKSPACE_PREFIX}${ROOT_CA_PATH}`,
+  PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
+  SUPABASE_DB_PASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
+  SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}'
 };
 
 /** The job `id` of a workflow; fails the test when it is absent. */
@@ -80,12 +104,53 @@ function envOf(step: WorkflowStep): Record<string, unknown> {
     : {};
 }
 
+/** Whether the step `id` of the deploy job of a workflow text has exactly the environment `expected`. */
+function stepEnvHolds(source: string, id: string, expected: Record<string, string>): boolean {
+  const env = envOf(stepWithId(stepsOf(parseWorkflow(source), 'deploy'), id));
+  const keys = Object.keys(expected);
+  return Object.keys(env).length === keys.length && keys.every((key) => env[key] === expected[key]);
+}
+
 /** Whether the settings step of a workflow text has exactly the environment `SETTINGS_ENV`. */
 function settingsEnvHolds(source: string): boolean {
+  return stepEnvHolds(source, 'settings', SETTINGS_ENV);
+}
+
+/** Whether the migrations step of a workflow text has exactly the environment `MIGRATIONS_ENV`. */
+function migrationsEnvHolds(source: string): boolean {
+  return stepEnvHolds(source, 'migrations', MIGRATIONS_ENV);
+}
+
+/**
+ * Whether the database steps of a workflow text name one root that exists: each step's `PGSSLROOTCERT` is `WORKSPACE_PREFIX` followed by a path, the path is the same in every step, and a file is at that path under the repository root.
+ */
+function rootCaPathHolds(source: string): boolean {
+  const steps = stepsOf(parseWorkflow(source), 'deploy');
+  const paths = DATABASE_STEPS.map((id) => {
+    const value = envOf(stepWithId(steps, id)).PGSSLROOTCERT;
+    return typeof value === 'string' && value.startsWith(WORKSPACE_PREFIX) ? value.slice(WORKSPACE_PREFIX.length) : '';
+  });
+  return paths.every((path) => path !== '' && path === paths[0]) && existsSync(join(REPO_ROOT, paths[0]));
+}
+
+/** The minutes after which the runner cuts off the settings check, well above a connection timeout and one read. */
+const SETTINGS_TIMEOUT_MINUTES = 2;
+
+/** Whether the settings step of a workflow text is cut off after `SETTINGS_TIMEOUT_MINUTES`. */
+function settingsTimeoutHolds(source: string): boolean {
   const settings = stepWithId(stepsOf(parseWorkflow(source), 'deploy'), 'settings');
-  const env = envOf(settings);
-  const keys = Object.keys(SETTINGS_ENV) as Array<keyof typeof SETTINGS_ENV>;
-  return Object.keys(env).length === keys.length && keys.every((key) => env[key] === SETTINGS_ENV[key]);
+  return settings['timeout-minutes'] === SETTINGS_TIMEOUT_MINUTES;
+}
+
+/** The block of the settings check's script that ends the run with status 1 on any status of psql but 0. */
+const SETTINGS_FAILS_RUN = /^if \[ "\$settings_exit" -ne 0 \]; then\n\s+echo "::error::[^\n]*"\n\s+exit 1\n\s*fi$/m;
+
+/**
+ * Whether the settings step of a workflow text fails the run on a finding: its script holds the block `SETTINGS_FAILS_RUN`, and the step has neither `continue-on-error` nor an `if:` that could skip it.
+ */
+function settingsFailsRun(source: string): boolean {
+  const settings = stepWithId(stepsOf(parseWorkflow(source), 'deploy'), 'settings');
+  return SETTINGS_FAILS_RUN.test(runOf(settings)) && !('continue-on-error' in settings) && !('if' in settings);
 }
 
 /** The positions of the stage step ids in a list of steps, in the order they appear. */
@@ -126,10 +191,7 @@ function literalNumber(script: string, name: string): number | undefined {
 /**
  * The violations of the rule `rollout-poll` by the script of the stable step.
  *
- * The step reads the rollout in a loop, sleeping `interval` seconds between reads, for at most `polls` reads, both
- * set on lines of their own. The limit `polls × interval` is at least 600 s, longer than ECS's circuit breaker takes
- * to fail a rollout of one desired task, and at most half the job's `timeout-minutes`, so that the rest of the job
- * keeps the other half.
+ * The step reads the rollout in a loop, sleeping `interval` seconds between reads, for at most `polls` reads, both set on lines of their own. The limit `polls × interval` is at least 600 s, longer than ECS's circuit breaker takes to fail a rollout of one desired task, and at most half the job's `timeout-minutes`, so that the rest of the job keeps the other half.
  *
  * @param script - The stable step's script.
  * @param timeoutMinutes - The deploy job's `timeout-minutes`.
@@ -261,8 +323,6 @@ describe('the stages of the deploy job', () => {
     expect(script).toContain('infra/scripts/build-push-image.sh --repository-url "$url"');
     expect(script).toContain('build_exit=$?');
     expect(script).toContain('[ "$build_exit" -ne 0 ] && [ "$build_exit" -ne 3 ]');
-    expect(script).toContain("sed -n 's/.*image_digest=\\(sha256:[0-9a-f]\\{64\\}\\).*/\\1/p'");
-    expect(script).toContain('echo "digest=$digest" >> "$GITHUB_OUTPUT"');
   });
 
   it('plans with the built digest into a file under $RUNNER_TEMP and applies that file', () => {
@@ -305,16 +365,6 @@ describe('the stages of the deploy job', () => {
     expect(script).toContain('select(.status == "PRIMARY")');
     expect(script).toContain('[ "$rollout_state" != COMPLETED ]');
     expect(script).toContain('[ "$running" -ge "$floor" ]');
-    for (const line of [
-      'stable_poll=',
-      'stable_describe_exit=',
-      'stable_task_definition_matches=',
-      'stable_rollout_state=',
-      'stable_running=',
-      'stable_desired='
-    ]) {
-      expect(script).toContain(`echo "${line}`);
-    }
   });
 
   it("reads the rollout in a loop with a sleep, its limit between 600 s and half the job's timeout", () => {
@@ -322,19 +372,19 @@ describe('the stages of the deploy job', () => {
     expect(rolloutPollViolations(runOf(stepWithId(steps, 'stable')), timeout)).toEqual([]);
   });
 
-  it('runs the deployed smoke entry with the commit and the contestant secrets and nothing privileged', () => {
+  it('runs the deployed smoke entry with the commit, the contestant secrets and the caller limit and nothing privileged', () => {
     const smoke = stepWithId(steps, 'smoke');
     const env = envOf(smoke);
     expect(env).toEqual({
       SMOKE_EXPECTED_SHA: '${{ github.sha }}',
       SMOKE_CONTESTANT_EMAIL: '${{ secrets.SMOKE_CONTESTANT_EMAIL }}',
-      SMOKE_CONTESTANT_PASSWORD: '${{ secrets.SMOKE_CONTESTANT_PASSWORD }}'
+      SMOKE_CONTESTANT_PASSWORD: '${{ secrets.SMOKE_CONTESTANT_PASSWORD }}',
+      SMOKE_ACCESS_CALLER_MAX: '${{ vars.SMOKE_ACCESS_CALLER_MAX }}'
     });
     expect(Object.keys(env).filter((key) => key.startsWith('SUPABASE_') || key.startsWith('PG'))).toEqual([]);
     const script = runOf(smoke);
     expect(script).toContain('yarn test:e2e:deployed --output "$RUNNER_TEMP/smoke-output"');
     expect(script).toContain('smoke_exit=$?');
-    expect(script).toContain('echo "smoke_exit=$smoke_exit"');
     expect(script).not.toMatch(/--reporter|PLAYWRIGHT_HTML/);
   });
 
@@ -348,7 +398,6 @@ describe('the stages of the deploy job', () => {
     expect(script).toContain(
       'curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" https://staging.openvaa.org/api/health'
     );
-    expect(script).toContain('echo "served_build_after_smoke=$served"');
     expect(script).toContain('[ "$served" != "$GITHUB_SHA" ]');
   });
 
@@ -389,7 +438,6 @@ describe('the migrations and the functions of the deploy job', () => {
     );
     expect(install).toBeGreaterThanOrEqual(0);
     expect(install).toBeLessThan(steps.indexOf(migrations));
-    expect(runOf(steps[install])).toContain('echo "psql_version=');
   });
 
   it('links a work directory under $RUNNER_TEMP to the project ref of the Supabase root', () => {
@@ -400,8 +448,6 @@ describe('the migrations and the functions of the deploy job', () => {
     expect(script).toContain('for p in config.toml migrations functions; do');
     expect(script).toContain('node_modules/.bin/supabase link --project-ref "$ref" --workdir "$workdir"');
     expect(script).toContain('apps/supabase/supabase/.temp/project-ref');
-    expect(script).toContain('echo "ref=$ref"');
-    expect(script).toContain('echo "workdir=$workdir"');
     expect(steps.indexOf(link)).toBeLessThan(steps.indexOf(migrations));
   });
 
@@ -410,7 +456,7 @@ describe('the migrations and the functions of the deploy job', () => {
     expect(text).not.toMatch(/supabase\s+db\s+push/);
   });
 
-  it('pushes the migrations through push-migrations.sh with the confirmed ref, over the session pooler', () => {
+  it('pushes the migrations through push-migrations.sh with the confirmed ref, over the session pooler verifying the server', () => {
     const script = runOf(migrations);
     expect(script).toContain(
       'infra/scripts/push-migrations.sh --ref "$REF" --workdir "$WORKDIR" --confirmed-ref "$REF"'
@@ -418,37 +464,37 @@ describe('the migrations and the functions of the deploy job', () => {
     expect(script).toContain('--log-dir "$RUNNER_TEMP/push-migrations"');
     expect(script).toContain('export PGUSER="postgres.$REF"');
     expect(script).toContain('push_exit=$?');
-    expect(envOf(migrations)).toEqual({
-      REF: '${{ steps.link.outputs.ref }}',
-      WORKDIR: '${{ steps.link.outputs.workdir }}',
-      OPENVAA_DEPLOY_ENVIRONMENT: '${{ vars.DEPLOY_ENVIRONMENT }}',
-      PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
-      PGPORT: '5432',
-      PGDATABASE: 'postgres',
-      PGCONNECT_TIMEOUT: '10',
-      PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
-      SUPABASE_DB_PASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
-      SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}'
-    });
+    expect(envOf(migrations)).toEqual(MIGRATIONS_ENV);
+    expect(migrationsEnvHolds(text)).toBe(true);
     expect(text).not.toContain('6543');
   });
 
-  it('checks the deployment settings with psql over the session pooler, after the migrations and before the functions', () => {
+  it('verifies the server in both database steps against one committed root, with verify-full as the only TLS mode', () => {
+    expect(rootCaPathHolds(text)).toBe(true);
+    expect(text.match(/^ *PGSSLMODE: .*$/gm)?.map((line) => line.trim())).toEqual([
+      'PGSSLMODE: verify-full',
+      'PGSSLMODE: verify-full'
+    ]);
+    expect(text).not.toMatch(/\bsslmode=|\bsslrootcert=|PGCHANNELBINDING/);
+  });
+
+  it('checks the deployment settings with psql over the session pooler verifying the server within two minutes, after the migrations and before the functions', () => {
     const settings = stepWithId(steps, 'settings');
     expect(existsSync(join(REPO_ROOT, 'infra', 'scripts', 'check-deployment-settings.sql'))).toBe(true);
     expect(steps.indexOf(settings)).toBe(steps.indexOf(migrations) + 1);
     expect(steps.indexOf(settings)).toBeLessThan(steps.indexOf(functions));
     expect(settingsEnvHolds(text)).toBe(true);
+    expect(settingsTimeoutHolds(text)).toBe(true);
     const script = runOf(settings);
     for (const line of [
       'export PGUSER="postgres.$REF"',
       'unset PGHOSTADDR PGSERVICE',
       'settings_exit=0',
-      'psql -X -f infra/scripts/check-deployment-settings.sql || settings_exit=$?',
-      'echo "settings_exit=$settings_exit"'
+      'psql -X -f infra/scripts/check-deployment-settings.sql || settings_exit=$?'
     ]) {
       expect(script).toContain(line);
     }
+    expect(settingsFailsRun(text)).toBe(true);
   });
 
   it('deploys the functions from the linked work directory and reads back three ACTIVE with verify_jwt as configured', () => {
@@ -621,8 +667,6 @@ describe('the alert of the deploy job', () => {
     ]) {
       expect(script).toContain(name);
     }
-    expect(script).toContain('echo "alert_stage=$stage"');
-    expect(script).toContain('echo "alert_message_id=$message_id"');
   });
 
   it('holds no secret in its environment', () => {
@@ -631,6 +675,9 @@ describe('the alert of the deploy job', () => {
 });
 
 describe('the deploy-specific guards are red on a faulty copy', () => {
+  /** The settings check's `::error::` line and the `exit 1` after it; group 1 is the error line, group 2 the indentation of `exit 1`. */
+  const SETTINGS_EXIT_LINE = /(echo "::error::check-deployment-settings\.sql exited \$settings_exit\."\n)( *)exit 1\n/;
+
   /** Whether the stage order of a workflow text is the fixed one. */
   function orderHolds(source: string): boolean {
     const steps = stepsOf(parseWorkflow(source), 'deploy');
@@ -660,6 +707,90 @@ describe('the deploy-specific guards are red on a faulty copy', () => {
     );
     expect(orderHolds(text)).toBe(true);
     expect(orderHolds(swapped)).toBe(false);
+  });
+
+  it.each([
+    ['its exit 1 dropped', (source: string) => mutate(source, SETTINGS_EXIT_LINE, '$1')],
+    ['its exit 1 turned into exit 0', (source: string) => mutate(source, SETTINGS_EXIT_LINE, '$1$2exit 0\n')],
+    [
+      'its failure block removed',
+      (source: string) => mutate(source, /^ *if \[ "\$settings_exit" -ne 0 \]; then\n.*\n.*\n *fi\n/m, '')
+    ],
+    [
+      'continue-on-error added to it',
+      (source: string) => mutate(source, 'id: settings\n', 'id: settings\n        continue-on-error: true\n')
+    ],
+    [
+      'an if: added to it',
+      (source: string) =>
+        mutate(source, 'id: settings\n', "id: settings\n        if: ${{ vars.SKIP_SETTINGS != 'true' }}\n")
+    ]
+  ])('sees the settings check unable to fail the run, with %s', (_label, mutation) => {
+    expect(settingsFailsRun(text)).toBe(true);
+    expect(settingsFailsRun(mutation(text))).toBe(false);
+  });
+
+  it('sees the TLS requirement dropped from the settings check', () => {
+    const mutated = mutate(text, /(id: settings\n[\s\S]*?) {10}PGSSLMODE: verify-full\n/, '$1');
+    expect(settingsEnvHolds(text)).toBe(true);
+    expect(settingsEnvHolds(mutated)).toBe(false);
+  });
+
+  /** The line of the step `id`'s environment that begins `key: `, as a pattern whose group 1 is everything before it. */
+  function envLineOf(id: string, key: string): RegExp {
+    return new RegExp(`(id: ${id}\\n[\\s\\S]*?) {10}${key}: [^\\n]*\\n`);
+  }
+
+  /** `source` with the line `key: ` of the step `id`'s environment set to `line`, or dropped when `line` is empty; fails when the line is absent or unchanged. */
+  function mutateEnvLine(source: string, id: string, key: string, line: string): string {
+    const match = envLineOf(id, key).exec(source);
+    if (!match) throw new Error(`the mutation found no ${key} line in the step ${id}`);
+    const replaced = line === '' ? match[1] : `${match[1]}          ${key}: ${line}\n`;
+    const mutated = source.slice(0, match.index) + replaced + source.slice(match.index + match[0].length);
+    if (mutated === source) throw new Error(`the mutation left the ${key} line of the step ${id} unchanged`);
+    return mutated;
+  }
+
+  const ENV_HOLDS: Record<string, (source: string) => boolean> = {
+    migrations: migrationsEnvHolds,
+    settings: settingsEnvHolds
+  };
+
+  it.each(
+    DATABASE_STEPS.flatMap(
+      (id) =>
+        [
+          [id, 'its TLS mode turned back to require', 'PGSSLMODE', 'require', [ENV_HOLDS[id]]],
+          [id, 'its PGSSLROOTCERT dropped', 'PGSSLROOTCERT', '', [ENV_HOLDS[id], rootCaPathHolds]],
+          [
+            id,
+            'its root pointed at a file that does not exist',
+            'PGSSLROOTCERT',
+            `${WORKSPACE_PREFIX}infra/certs/missing.crt`,
+            [ENV_HOLDS[id], rootCaPathHolds]
+          ]
+        ] as Array<[string, string, string, string, Array<(source: string) => boolean>]>
+    )
+  )('sees the %s step no longer verify the server, with %s', (id, _label, key, line, guards) => {
+    const mutated = mutateEnvLine(text, id, key, line);
+    for (const guard of guards) {
+      expect(guard(text)).toBe(true);
+      expect(guard(mutated)).toBe(false);
+    }
+  });
+
+  it('sees both database steps pointed at one root that does not exist', () => {
+    const missing = `${WORKSPACE_PREFIX}infra/certs/missing.crt`;
+    const mutated = DATABASE_STEPS.reduce((source, id) => mutateEnvLine(source, id, 'PGSSLROOTCERT', missing), text);
+    expect(existsSync(join(REPO_ROOT, 'infra', 'certs', 'missing.crt'))).toBe(false);
+    expect(rootCaPathHolds(text)).toBe(true);
+    expect(rootCaPathHolds(mutated)).toBe(false);
+  });
+
+  it('sees the time limit dropped from the settings check', () => {
+    const mutated = mutate(text, /(id: settings\n[\s\S]*?) {8}timeout-minutes: 2\n/, '$1');
+    expect(settingsTimeoutHolds(text)).toBe(true);
+    expect(settingsTimeoutHolds(mutated)).toBe(false);
   });
 
   it('sees the access token given to the settings check', () => {

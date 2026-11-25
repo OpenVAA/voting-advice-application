@@ -9,10 +9,9 @@
  * runtime user-visible `console.warn` string, Playwright test titles, and an ESLint rule
  * `message:`. A regex-only pass over all of them would edit program behaviour.
  *
- * Mirrors the two in-repo codemod precedents (apps/frontend/scripts/store-to-state-codemod.mjs
- * and .../flatten-current-codemod.mjs): `globSync` enumeration with an explicit empty-match
- * hard failure, dry-run by default, `--apply` to write, `--files <glob>` to restrict scope,
- * a warn-only second pass that REPORTS residue without rewriting it, and a final line that
+ * Mirrors the in-repo codemod precedent (apps/frontend/scripts/flatten-current-codemod.mjs):
+ * `globSync` enumeration with an explicit empty-match hard failure, dry-run by default,
+ * `--apply` to write, `--files <glob>` to restrict scope, a warn-only second pass that REPORTS residue without rewriting it, and a final line that
  * always states which mode ran.
  *
  * ── ORDERED MECHANICAL RULES (RESEARCH § Pattern 4, rules 1-7) ───────────────
@@ -229,6 +228,9 @@ const FAMILY_BY_EXT = {
   toml: { hash: true },
   yml: { hash: true },
   yaml: { hash: true },
+  tf: { c: true, hash: true },
+  tfvars: { c: true, hash: true },
+  hcl: { c: true, hash: true },
   // Markdown is prose end to end (exclusion e). Listed with NO comment family so every
   // occurrence in a `.md` file lands in the residue report under `markdown-file`.
   md: {}
@@ -238,7 +240,8 @@ const SCAN_EXTS = Object.keys(FAMILY_BY_EXT);
 const DEFAULT_GLOBS = [
   `apps/**/*.{${SCAN_EXTS.join(',')}}`,
   `packages/**/*.{${SCAN_EXTS.join(',')}}`,
-  `tests/**/*.{${SCAN_EXTS.join(',')}}`
+  `tests/**/*.{${SCAN_EXTS.join(',')}}`,
+  `infra/**/*.{${SCAN_EXTS.join(',')}}`
 ];
 
 // ── The pattern set ───────────────────────────────────────────────────────
@@ -808,7 +811,7 @@ const byExt = raw.filter((f) => {
 let tracked;
 try {
   tracked = new Set(
-    execFileSync('git', ['ls-files', '-z', '--', 'apps', 'packages', 'tests'], {
+    execFileSync('git', ['ls-files', '-z', '--', 'apps', 'packages', 'tests', 'infra'], {
       cwd: REPO_ROOT,
       maxBuffer: 64 * 1024 * 1024
     })

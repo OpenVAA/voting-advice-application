@@ -2,32 +2,20 @@
 #
 # check-destroy-plan.sh -- Check that a saved destroy plan of the staging AWS root destroys that stack and nothing else.
 #
-# The staging AWS root holds one module, `module.frontend`, and every resource it manages lives under that address. A
-# destroy of the root may therefore contain one kind of change only: a `delete` of a managed resource whose address
-# starts with `module.frontend.`. The addresses of those deletes must be exactly the managed addresses of the state,
-# and the state must hold at least one, because a destroy that touches anything else, misses part of the stack or
-# destroys nothing is not the stack's destroy: the first reaches beyond the root, the second leaves resources behind
-# that the next apply or the cost window does not expect, and the third is what a plan against an empty or unread
-# state looks like while the stack still stands.
+# The staging AWS root holds one module, `module.frontend`, and every resource it manages lives under that address. A destroy of the root may therefore contain one kind of change only: a `delete` of a managed resource whose address starts with `module.frontend.`. The addresses of those deletes must be exactly the managed addresses of the state, and the state must hold at least one, because a destroy that touches anything else, misses part of the stack or destroys nothing is not the stack's destroy: the first reaches beyond the root, the second leaves resources behind that the next apply or the cost window does not expect, and the third is what a plan against an empty or unread state looks like while the stack still stands.
 #
 # What it reads, and nothing else:
-#   - the plan as `terraform show -json <plan>` prints it: of each `resource_changes` entry of mode `managed`, its
-#     `address`, its `change.actions` and whether it names a `deposed` object. Entries of mode `data` are not resources
-#     and are not counted. A plan without a `resource_changes` list is not a plan document.
-#   - the state as `terraform state list` prints it: one address per line. A line whose address names a data source,
-#     `data.<type>.<name>` at the root or under any module path, is not counted.
+#   - the plan as `terraform show -json <plan>` prints it: of each `resource_changes` entry of mode `managed`, its `address`, its `change.actions` and whether it names a `deposed` object. Entries of mode `data` are not resources and are not counted. A plan without a `resource_changes` list is not a plan document.
+#   - the state as `terraform state list` prints it: one address per line. A line whose address names a data source, `data.<type>.<name>` at the root or under any module path, is not counted.
 #
 # It prints six lines and nothing of the plan:
-#   destroy_planned=<n>          managed changes whose actions are exactly ["delete"]
-#   destroy_state_resources=<n>  managed resources in the state list
+#   destroy_planned=<n>          managed changes whose actions are exactly ["delete"].
+#   destroy_state_resources=<n>  managed resources in the state list.
 #   destroy_outside_module=<n>   managed changes, other than a no-op, whose address does not start with module.frontend.
-#   destroy_other_actions=<n>    managed changes whose actions are anything but ["delete"] or ["no-op"]
-#   destroy_unmatched=<n>        addresses deleted but not in the state, plus addresses in the state but not deleted
-#   destroy_guard=pass|fail      pass only when destroy_state_resources is above 0, destroy_outside_module,
-#                                destroy_other_actions and destroy_unmatched are 0, and destroy_planned equals
-#                                destroy_state_resources
-# A plan file that is not a plan document prints `destroy_guard=fail` alone. jq's own message is not printed, so that
-# no part of the plan reaches the log.
+#   destroy_other_actions=<n>    managed changes whose actions are anything but ["delete"] or ["no-op"].
+#   destroy_unmatched=<n>        addresses deleted but not in the state, plus addresses in the state but not deleted.
+#   destroy_guard=pass|fail      pass only when destroy_state_resources is above 0, destroy_outside_module, destroy_other_actions and destroy_unmatched are 0, and destroy_planned equals destroy_state_resources.
+# A plan file that is not a plan document prints `destroy_guard=fail` alone. jq's own message is not printed, so that no part of the plan reaches the log.
 #
 # Usage:
 #   infra/scripts/check-destroy-plan.sh --plan-json <file> --state-list <file>
@@ -51,26 +39,15 @@ set -f
 export LC_ALL=C
 
 SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_NAME="check-destroy-plan.sh"
+USAGE_LINE="--plan-json <file> --state-list <file> | -h | --help"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$(dirname "$SCRIPT_PATH")/../../scripts/lib/cli.sh"
 
 PLAN_JSON=""
 STATE_LIST=""
 
-usage_line() {
-  echo "usage: check-destroy-plan.sh --plan-json <file> --state-list <file> | -h | --help" >&2
-}
-
-print_header() {
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$SCRIPT_PATH"
-}
-
-usage_error() {
-  echo "check-destroy-plan.sh: $1" >&2
-  usage_line
-  exit 2
-}
-
-# The four counts of the plan, space-separated: deletes, changes outside the module, changes of another action, and
-# the addresses on one side only of the comparison with the state's managed addresses, given as $state.
+# The four counts of the plan, space-separated: deletes, changes outside the module, changes of another action, and the addresses on one side only of the comparison with the state's managed addresses, given as $state.
 PLAN_COUNTS='
   if type != "object" then error("not a plan document") else . end
   | if (.resource_changes | type) != "array" then error("resource_changes is not a list") else . end
@@ -87,8 +64,7 @@ PLAN_COUNTS='
   | join(" ")
 '
 
-# The managed addresses of a state list, one per line. An address names a data source when, its index keys removed, it
-# continues with `data.` after any number of `module.<name>.` segments, so a `data.` inside a key does not count.
+# The managed addresses of a state list, one per line. An address names a data source when, its index keys removed, it continues with `data.` after any number of `module.<name>.` segments, so a `data.` inside a key does not count.
 state_addresses() {
   awk '
     NF {

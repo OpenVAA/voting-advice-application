@@ -1,31 +1,15 @@
-# One customer-managed policy per concern, all under var.iam_path, each attached to one role by its own
-# role attachment. The plan role is read-only: it holds the AWS-managed read-only policy and an explicit
-# deny, and no write of any kind, the state lock included, so a plan runs without the lock. Two
-# consequences for the roots these roles work on:
-# - The plan role is denied Secrets Manager reads, KMS decryption, DynamoDB item reads, log event reads
-#   and a few other data reads (the plan_deny document lists them), so the root it plans must hold no
-#   secret value that a refresh has to read, and no DynamoDB table item; such a root refers to a secret
-#   by its ARN. Every other read of the AWS-managed read-only policy stays allowed, data reads included:
-#   S3 objects outside the state bucket's denied keys, SSM String parameters, Lambda function and ECS
-#   task definition environments, and CloudFormation templates.
-# - The deploy role gains further permissions only through this module, which is applied by hand, so the
-#   pipeline can never widen its own access.
+# One customer-managed policy per concern, all under var.iam_path, each attached to one role by its own role attachment. The plan role is read-only: it holds the AWS-managed read-only policy and an explicit deny, and no write of any kind, the state lock included, so a plan runs without the lock. Two consequences for the roots these roles work on:
+# - The plan role is denied Secrets Manager reads, KMS decryption, every S3 object outside the state bucket's pipeline/ prefix, log event reads, DynamoDB item reads and a few other data reads (the plan_deny document lists them), so the root it plans must hold no secret value that a refresh has to read, and must read no S3 object outside pipeline/, log event or table item; such a root refers to a secret by its ARN. Every other read of the AWS-managed read-only policy stays allowed, data reads included: SSM String parameters, Lambda function and ECS task definition environments, and CloudFormation templates.
+# - The deploy role gains further permissions only through this module, which is applied by hand, so the pipeline can never widen its own access.
 
 locals {
   pipeline_state_arn = "${var.state_bucket_arn}/${var.pipeline_state_key}"
   pipeline_lock_arn  = "${var.state_bucket_arn}/${var.pipeline_state_key}.tflock"
 }
 
-# State access of the deploy role: an allow-list of one state key and its lock object, so the role can
-# neither read nor write the state of any hand-applied root.
+# State access of the deploy role: an allow-list of one state key and its lock object, so the role can neither read nor write the state of any hand-applied root.
 #
-# The list permission follows the S3 backend documentation, which conditions s3:ListBucket on s3:prefix
-# equal to the state key. It does not admit the backend's own list call. Read in the Terraform source
-# at v1.16.5, internal/backend/remote-state/s3/backend_state.go (function Workspaces) makes one list
-# call, ListObjectsV2 with the prefix "env:/" (the default workspace key prefix and a slash); when that
-# call is refused with AccessDenied under the default prefix, it logs that it is unable to list
-# non-default workspaces and carries on with the default workspace. The state and lock objects are
-# reached by head, get, put and delete calls on their exact keys.
+# The list permission follows the S3 backend documentation, which conditions s3:ListBucket on s3:prefix equal to the state key. It does not admit the backend's own list call. Read in the Terraform source at v1.16.5, internal/backend/remote-state/s3/backend_state.go (function Workspaces) makes one list call, ListObjectsV2 with the prefix "env:/" (the default workspace key prefix and a slash); when that call is refused with AccessDenied under the default prefix, it logs that it is unable to list non-default workspaces and carries on with the default workspace. The state and lock objects are reached by head, get, put and delete calls on their exact keys.
 data "aws_iam_policy_document" "tfstate_pipeline" {
   statement {
     sid       = "ListStateKey"
@@ -94,10 +78,7 @@ resource "aws_iam_policy" "ecr_push" {
   policy      = data.aws_iam_policy_document.ecr_push.json
 }
 
-# Every hand-applied root keeps its state under one prefix, so a root added later is covered by this
-# deny without an edit. The S3 backend keeps the state of a non-default workspace under "env:/" (its
-# default workspace key prefix), outside that prefix, so every workspace key is denied as well: the
-# plan role reads only default-workspace state, and of that only what lies outside the hand prefix.
+# Every hand-applied root keeps its state under one prefix, so a root added later is covered by this deny without an edit. The S3 backend keeps the state of a non-default workspace under "env:/" (its default workspace key prefix), outside that prefix, so every workspace key is denied as well.
 data "aws_iam_policy_document" "plan_deny" {
   statement {
     sid     = "DenyHandAppliedState"
@@ -120,8 +101,15 @@ data "aws_iam_policy_document" "plan_deny" {
     resources = ["*"]
   }
 
-  # Reads of stored data that no refresh of a resource or data source makes: table items, log events,
-  # stream records and queue messages.
+  # The AWS-managed read-only policy reads the objects of every bucket. A plan reads only the pipeline root's state, so no object outside the state bucket's pipeline/ prefix is readable.
+  statement {
+    sid           = "DenyObjectReadsOutsidePipeline"
+    effect        = "Deny"
+    actions       = ["s3:GetObject", "s3:GetObjectVersion"]
+    not_resources = ["${var.state_bucket_arn}/pipeline/*"]
+  }
+
+  # Reads of stored data that no refresh of a resource or data source makes: table items, log events, stream records and queue messages.
   statement {
     sid    = "DenyDataPlaneReads"
     effect = "Deny"
@@ -153,9 +141,7 @@ resource "aws_iam_policy" "plan_deny" {
   policy      = data.aws_iam_policy_document.plan_deny.json
 }
 
-# Attachments are per role. The account-wide exclusive attachment form is not used: it would detach a
-# policy from every other identity in the account. The plan role's two attachments are all it holds, so
-# it can neither take nor delete the pipeline's state lock.
+# Attachments are per role. The account-wide exclusive attachment form is not used: it would detach a policy from every other identity in the account. The plan role's two attachments are all it holds, so it can neither take nor delete the pipeline's state lock.
 resource "aws_iam_role_policy_attachment" "plan_read_only" {
   role       = aws_iam_role.plan.name
   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"

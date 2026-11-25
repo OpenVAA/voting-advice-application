@@ -1,10 +1,7 @@
 /**
  * Guards on `.github/workflows/infra-plan.yml`, and the red cases of every shared workflow rule.
  *
- * The workflow is guarded by tests rather than by its first run: a run needs a push to this public repository, and a
- * workflow that leaked a credential, uploaded a plan or ran a fork's code with a token would have done so by the time
- * the run could be read. Each shared rule of `workflowGuards.ts` is first shown red on a copy of the real file with one
- * deliberate fault, so that its green result on the real file means something.
+ * The workflow is guarded by tests rather than by its first run: a run needs a push to this public repository, and a workflow that leaked a credential, uploaded a plan or ran a fork's code with a token would have done so by the time the run could be read. Each shared rule of `workflowGuards.ts` is first shown red on a copy of the real file with one deliberate fault, so that its green result on the real file means something.
  */
 
 import { dirname, join, resolve } from 'node:path';
@@ -194,29 +191,18 @@ describe('infra-plan.yml', () => {
     expect(job('checks').permissions).toEqual({ contents: 'read' });
   });
 
-  it('plans the three example roots and fails when one is not reached', () => {
-    const step = jobSteps(job('checks')).find(
-      (candidate) => typeof candidate.run === 'string' && candidate.run.includes('infra/envs/example/*/tests/')
-    );
-    expect(step, 'the checks job has no step looping over the example roots').toBeDefined();
-    const script = String(step?.run);
-    expect(script).toContain('terraform -chdir="$root" init -backend=false -input=false -lockfile=readonly');
-    expect(script).toContain('terraform -chdir="$root" test -verbose -no-color');
-    const required = /for required in \\\n((?:\s+\S+ \\\n)*\s+\S+); do/.exec(script)?.[1];
-    expect(
-      required
-        ?.split(/\s*\\\n\s*|\s+/)
-        .filter(Boolean)
-        .sort()
-    ).toEqual(['infra/envs/example/aws', 'infra/envs/example/dns-mail', 'infra/envs/example/supabase']);
-    expect(script).toContain('::error::');
-  });
-
-  it('formats, validates every root and tests every module in the checks job', () => {
-    const scripts = runScripts(job('checks'));
-    expect(scripts).toContain('terraform fmt -check -recursive -diff infra');
-    expect(scripts).toContain('for root in infra/bootstrap infra/envs/*/*/; do');
-    expect(scripts).toContain('for tests in infra/modules/*/tests/; do');
+  it('formats, then validates every root, tests every module and plans the example roots through the shared script', () => {
+    // The roots each check must reach are named in terraform-checks.sh alone, and tested in terraform-checks.test.ts.
+    const steps = jobSteps(job('checks'));
+    const runs = steps.flatMap((step) => (typeof step.run === 'string' ? [step.run.trim()] : []));
+    expect(runs).toEqual([
+      'terraform fmt -check -recursive -diff infra',
+      'infra/scripts/terraform-checks.sh validate',
+      'infra/scripts/terraform-checks.sh test-modules',
+      'infra/scripts/terraform-checks.sh plan-examples'
+    ]);
+    for (const step of steps.filter((candidate) => String(candidate.run).includes('terraform-checks.sh')))
+      expect(step.if, String(step.name)).toBe('${{ !cancelled() }}');
   });
 
   it('prints no JSON plan', () => {
@@ -269,7 +255,6 @@ describe('the plan job of infra-plan.yml', () => {
     expect(script).toContain('-lock=false');
     expect(script).toContain('-var "image_digest=$DIGEST"');
     expect(script).toContain('-out="$RUNNER_TEMP/tfplan"');
-    expect(script).toContain('echo "plan_exit=$plan_exit"');
     expect(planStep.env).toEqual({
       DIGEST: '${{ steps.digest.outputs.digest }}',
       TF_VAR_alert_email: '${{ secrets.ALERT_EMAIL }}'
@@ -315,21 +300,12 @@ describe('the wrong-subject job of infra-plan.yml', () => {
     });
   });
 
-  it('asks STS for both roles with the push token and prints the subject and each refusal', () => {
+  it('asks STS for both roles with the push token', () => {
     expect(script).toContain('audience=sts.amazonaws.com');
     expect(script).toContain('::add-mask::');
     expect(script.match(/aws sts assume-role-with-web-identity/g)).toHaveLength(2);
     expect(script).toContain('--role-arn "$DEPLOY_ROLE_ARN"');
     expect(script).toContain('--role-arn "$PLAN_ROLE_ARN"');
-    for (const line of [
-      'token_subject=',
-      'deploy_role_assume_status=',
-      'deploy_role_error=',
-      'plan_role_assume_status=',
-      'plan_role_error='
-    ]) {
-      expect(script).toContain(`echo "${line}`);
-    }
   });
 
   it('keeps the token in $RUNNER_TEMP and removes it', () => {

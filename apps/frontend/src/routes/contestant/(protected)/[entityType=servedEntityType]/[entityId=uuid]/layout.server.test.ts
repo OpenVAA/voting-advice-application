@@ -6,6 +6,7 @@
  * 1. **The parent decides first.** With a gated parent the load resolves an empty object, builds neither a writer nor a provider, redirects nowhere and signs nobody out. The entity is not read before the parent has resolved.
  * 2. **The entity the URL names is served when the user's list holds it**, a candidate and an organization alike, whether the list holds one entity or several: the load resolves its user data and the question data of the elections it is nominated in.
  * 3. **An entity the user may not edit is refused with one redirect.** An id the list does not hold, a type the list does not hold, an id held under the other type and an entity that has left the list are each redirected to the app root with status 307, with no entity read and no sign-out. A listed entity the read does not find is redirected the same way, and the five redirects are equal in status and location.
+ * 3a. **A list that could not be read** is answered as the refusal is: the load redirects to the app root, reads no entity and signs nobody out.
  * 4. **A refusal cannot loop.** The root load, given the list that made this load refuse an entity, does not redirect back to that entity.
  * 5. **A failed read of the entity** is answered as data, whatever its cause: the load logs it and resolves `{ entityReadFailed: true }`, and nobody is signed out or redirected.
  * 6. **An entity with no nomination** is served like any other: nobody is signed out or redirected, no question is read, and the load resolves the entity's user data with question data that holds no category and no question.
@@ -72,7 +73,7 @@ const ORGANIZATION: UserEntity = { type: 'organization', id: ORGANIZATION_ID, na
 const GATED_PARENT = { gate: 'termsOfUse', user: USER };
 
 /** What the user-level load resolves to for a user past the gates who is listed with the given entities. */
-function parentWith(entities: Array<UserEntity>) {
+function parentWith(entities: Array<UserEntity> | null) {
   return { gate: null, user: USER, entities };
 }
 
@@ -267,6 +268,21 @@ describe('routes/contestant/(protected)/[entityType]/[entityId]/+layout.server.t
     expect(new Set(refusals.map((refusal) => JSON.stringify([refusal?.status, refusal?.location])))).toEqual(
       new Set([JSON.stringify([307, APP_ROOT])])
     );
+    expect(signOut).not.toHaveBeenCalled();
+  });
+});
+
+describe('routes/contestant/(protected)/[entityType]/[entityId]/+layout.server.ts — a list that could not be read', () => {
+  it('redirects to the app root, reads no entity and signs nobody out', async () => {
+    getEntityUserData.mockResolvedValue(entityDataFor(CANDIDATE));
+    getQuestionData.mockResolvedValue(QUESTION_DATA);
+
+    const redirected = await redirectOf(runLoad(makeEvent(paramsOf(CANDIDATE), parentWith(null))));
+
+    expect(redirected).toMatchObject({ status: 307, location: APP_ROOT });
+    expect(createDataWriter).not.toHaveBeenCalled();
+    expect(getEntityUserData).not.toHaveBeenCalled();
+    expect(getQuestionData).not.toHaveBeenCalled();
     expect(signOut).not.toHaveBeenCalled();
   });
 });

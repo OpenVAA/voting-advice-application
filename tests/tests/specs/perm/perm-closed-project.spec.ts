@@ -9,7 +9,7 @@
  *
  * The `afterAll` reopens the project (restore layer 1 of 3; the teardown project and the next run's global setup are layers 2 and 3).
  *
- * The last describe pins the contestant app's configuration as an anonymous visitor of the closed project receives it, through `contestant_app_public_config`. On the login screen: that it offers sign-in alone for an empty registration matrix and Register beside it for the `code` mode and for the `identity_provider` mode, for candidates and for organizations alone; that it says so while answers are locked, and then offers sign-in alone whatever the matrix allows; and that the heading names the app after the served entity types. On the registration page: that Register leads to it, that it shows the one listed mode's panel directly, and that it offers the identity provider's panel for candidates, and for a party alone without asking. For the registration addresses: that the registration page ends on the login screen where no mode is listed — an empty matrix, a row declared for an entity type the project does not serve, and answers locked — and that the two screens a registration code leads to end there where the `code` mode is off. Each of those tests first writes the served entity types and both rows of the matrix, because the write is a merge and a row left out would keep what the test before it wrote. The answers lock is written by one describe, which takes it off again when it ends. Nothing else is written back: the next setup to run replaces the settings row whole.
+ * The last describe pins the contestant app's configuration as an anonymous visitor of the closed project receives it, through `get_public_app_settings`. On the login screen: that it offers sign-in alone for an empty registration matrix and Register beside it for the `code` mode and for the `identity_provider` mode, for candidates and for organizations alone; that it says so while answers are locked, and then offers sign-in alone whatever the matrix allows; and that the heading names the app after the served entity types. On the registration page: that Register leads to it, that it shows the one listed mode's panel directly, and that it offers the identity provider's panel for candidates, and for a party alone without asking. For the registration addresses: that the registration page ends on the login screen where no mode is listed — an empty matrix and answers locked — and that the two screens a registration code leads to end there where the `code` mode is off. Each of those tests first replaces the served entity types whole, each with its registration modes, so nothing a test before it wrote is kept. The answers lock is written by one describe, which takes it off again when it ends. Nothing else is written back: the next setup to run replaces the settings row whole.
  *
  * One state of the login screen and three states of the registration page are scanned in both themes through `declareEntryScans`, which ends in `assertAxeScan`, the scan body the a11y specs share: the one listed mode's panel, the identity provider's panel asking which of the two entity types it registers, and that question after Continue with none chosen. The panel asking the type is also measured at two phone widths, 320 and 390 pixels, in English: no wider than its viewport. Last, under the same settings, every radio of the registration page, of the modes and of the entity types, draws its border, and the provider's panel names each type by its catalogue text.
  *
@@ -17,8 +17,6 @@
  */
 
 import { expect, test } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
 import { createContestantRegisterPage } from '../../fixtures/contestant/contestantRegisterPage.fixture';
 import { createPageGeometry } from '../../fixtures/shared/pageGeometry.fixture';
@@ -26,11 +24,12 @@ import { TIMEOUTS } from '../../helpers';
 import { ADMIN_STORAGE_STATE } from '../../utils/adminCredentials';
 import { buildRoute } from '../../utils/buildRoute';
 import { declareEntryScans } from '../../utils/entryAxeScan';
+import { messageOf, messagesOf } from '../../utils/messages';
 import { PHONE_VIEWPORTS, phoneUse } from '../../utils/phoneViewports';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
+import type { DynamicSettings } from '@openvaa/app-shared';
 import type { Page } from '@playwright/test';
 import type { ContestantRegisterPageFixture } from '../../fixtures/contestant/contestantRegisterPage.fixture';
 
@@ -38,31 +37,31 @@ import type { ContestantRegisterPageFixture } from '../../fixtures/contestant/co
 const CANDIDATE_EMAIL = 'e2e-perm-closed-project-cand-1@test.openvaa.local';
 
 /**
- * The English `dynamic` messages, read from the message source rather than copied, so a copy edit to a message cannot turn this spec into an assertion about a stale string.
+ * The English title of the page a closed voter app shows, read from the message source rather than copied, so a copy edit to a message cannot turn this spec into an assertion about a stale string.
  */
-const DYNAMIC_MESSAGES = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/dynamic.json'), 'utf8')
-).dynamic;
-
-const MAINTENANCE_TITLE: string = DYNAMIC_MESSAGES.voterAppNotAccessible.title;
+const MAINTENANCE_TITLE = messageOf('dynamic', 'voterAppNotAccessible.title');
 
 /** The three names the contestant app shows for itself, by the entity types the project serves. */
-const APP_NAME: { candidate: string; organization: string; candidateAndOrganization: string } =
-  DYNAMIC_MESSAGES.contestantAppName;
+const APP_NAME = messagesOf('dynamic').contestantAppName as {
+  candidate: string;
+  organization: string;
+  candidateAndOrganization: string;
+};
 
 const LOGIN_ROUTE = buildRoute({ route: 'ContestantAppLogin', locale: 'en' });
 const REGISTER_ROUTE = buildRoute({ route: 'ContestantAppRegister', locale: 'en' });
 /** The two screens a checked registration code leads to: the one that asks for an address, and the one that signs in the holder of a used code. */
-const REGISTER_EMAIL_ROUTE = buildRoute({ route: 'ContestantAppRegisterEmail', locale: 'en' });
-const REGISTER_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterSignIn', locale: 'en' });
+const REGISTER_EMAIL_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeEmail', locale: 'en' });
+const REGISTER_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeSignIn', locale: 'en' });
+
+/** The served entity types as the settings store them. */
+type ServedEntityTypes = DynamicSettings['contestantApp']['servedEntityTypes'];
 
 /** Settings that let the identity provider's mode register candidates and organizations, beside the email and code modes for candidates. */
 const PROVIDER_FOR_BOTH_TYPES = {
-  contestantApp: {
-    entityTypes: ['candidate', 'organization'],
-    registrationModes: { candidate: ['identity_provider', 'email', 'code'], organization: ['identity_provider'] }
-  }
-};
+  candidate: { registrationModes: ['identity_provider', 'email', 'code'] },
+  organization: { registrationModes: ['identity_provider'] }
+} satisfies ServedEntityTypes;
 
 /**
  * Open the registration page under settings that let the identity provider register both entity types, and open the provider's option, which asks which type with none chosen.
@@ -131,14 +130,14 @@ test.describe('a project that is not open for voters', () => {
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();
 
     await page.goto('/en/admin/login');
-    await expect(page.getByTestId(testIds.contestant.password.field)).toBeVisible();
+    await expect(page.getByTestId(testIds.shared.account.password.field)).toBeVisible();
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();
   });
 
   test('a candidate can log in and reach the candidate home on a closed project', async ({ page }) => {
     const loginPage = createContestantLoginPage(page);
     await loginPage.goToPage();
-    await loginPage.login(CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
+    await loginPage.login(CANDIDATE_EMAIL, TEST_PASSWORD);
     await expect(page).not.toHaveURL(/\/contestant\/login/);
     await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible();
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();
@@ -168,7 +167,7 @@ test.describe('a project that is not open for voters', () => {
       page
     }) => {
       await client.updateAppSettings({
-        contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: [], organization: [] } }
+        contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } satisfies ServedEntityTypes }
       });
 
       const loginPage = createContestantLoginPage(page);
@@ -187,7 +186,7 @@ test.describe('a project that is not open for voters', () => {
       page
     }) => {
       await client.updateAppSettings({
-        contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: ['code'], organization: [] } }
+        contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['code'] } } satisfies ServedEntityTypes }
       });
 
       const loginPage = createContestantLoginPage(page);
@@ -215,8 +214,7 @@ test.describe('a project that is not open for voters', () => {
     }) => {
       await client.updateAppSettings({
         contestantApp: {
-          entityTypes: ['candidate'],
-          registrationModes: { candidate: ['identity_provider'], organization: [] }
+          servedEntityTypes: { candidate: { registrationModes: ['identity_provider'] } } satisfies ServedEntityTypes
         }
       });
 
@@ -243,8 +241,10 @@ test.describe('a project that is not open for voters', () => {
     }) => {
       await client.updateAppSettings({
         contestantApp: {
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: { candidate: [], organization: ['identity_provider'] }
+          servedEntityTypes: {
+            candidate: { registrationModes: [] },
+            organization: { registrationModes: ['identity_provider'] }
+          } satisfies ServedEntityTypes
         }
       });
 
@@ -265,49 +265,28 @@ test.describe('a project that is not open for voters', () => {
       await expectRefusedToLogin(page, REGISTER_SIGN_IN_ROUTE);
     });
 
-    test('the heading names the app after the served entity types, and a type named twice counts once', async ({
-      page
-    }) => {
+    test('the heading names the app after the served entity types', async ({ page }) => {
       await client.updateAppSettings({
-        contestantApp: { entityTypes: ['organization'], registrationModes: { candidate: [], organization: [] } }
+        contestantApp: { servedEntityTypes: { organization: { registrationModes: [] } } satisfies ServedEntityTypes }
       });
       await page.goto(LOGIN_ROUTE);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(APP_NAME.organization);
 
       await client.updateAppSettings({
         contestantApp: {
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: { candidate: [], organization: [] }
+          servedEntityTypes: {
+            candidate: { registrationModes: [] },
+            organization: { registrationModes: [] }
+          } satisfies ServedEntityTypes
         }
       });
       await page.goto(LOGIN_ROUTE);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(APP_NAME.candidateAndOrganization);
-
-      await client.updateAppSettings({
-        contestantApp: {
-          entityTypes: ['organization', 'candidate', 'candidate'],
-          registrationModes: { candidate: [], organization: [] }
-        }
-      });
-      await page.goto(LOGIN_ROUTE);
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(APP_NAME.candidateAndOrganization);
-    });
-
-    test('a registration row for an entity type the project does not serve opens nothing', async ({ page }) => {
-      await client.updateAppSettings({
-        contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: [], organization: ['code'] } }
-      });
-
-      const loginPage = createContestantLoginPage(page);
-      await loginPage.openEntryDirectly();
-      await loginPage.expectEntryShown();
-      await loginPage.expectRegisterOffered(false);
-      await expectRefusedToLogin(page, REGISTER_ROUTE);
     });
 
     test.describe('while answers are locked', () => {
       test.afterAll(async () => {
-        await client.updateAppSettings({ access: { answersLocked: false } });
+        await client.updateAppSettings({ access: { contestantEditing: 'open' } });
       });
 
       test('the login screen says so to an anonymous visitor, offers sign-in only and refuses every registration address', async ({
@@ -315,12 +294,11 @@ test.describe('a project that is not open for voters', () => {
       }) => {
         // The matrix allows candidates two modes, so the answers lock is the one thing that closes registration.
         await client.updateAppSettings({
-          access: { answersLocked: true },
           contestantApp: {
-            entityTypes: ['candidate'],
-            registrationModes: { candidate: ['email', 'code'], organization: [] }
+            servedEntityTypes: { candidate: { registrationModes: ['email', 'code'] } } satisfies ServedEntityTypes
           }
         });
+        await client.updateAppSettings({ access: { contestantEditing: 'locked' } });
 
         const loginPage = createContestantLoginPage(page);
         await loginPage.openEntryDirectly();
@@ -347,7 +325,7 @@ test.describe('a project that is not open for voters', () => {
         routeId: 'ContestantAppLogin',
         reach: async (page) => {
           await client.updateAppSettings({
-            contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: [], organization: [] } }
+            contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } satisfies ServedEntityTypes }
           });
           const loginPage = createContestantLoginPage(page);
           await loginPage.openEntryDirectly();
@@ -355,7 +333,9 @@ test.describe('a project that is not open for voters', () => {
           await loginPage.expectRegisterOffered(false);
         },
         marker: { testId: testIds.contestant.login.signInLink },
-        alsoShown: [{ testId: testIds.contestant.login.page, attribute: 'data-register-offered', value: 'false' }]
+        alsoShown: [
+          { testId: testIds.contestant.login.page, state: { attribute: 'data-register-offered', value: 'false' } }
+        ]
       },
       {
         // The registration page where the code mode is the one listed: its field directly, with nothing to choose.
@@ -364,14 +344,16 @@ test.describe('a project that is not open for voters', () => {
         routeId: 'ContestantAppRegister',
         reach: async (page) => {
           await client.updateAppSettings({
-            contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: ['code'], organization: [] } }
+            contestantApp: {
+              servedEntityTypes: { candidate: { registrationModes: ['code'] } } satisfies ServedEntityTypes
+            }
           });
           const registerPage = createContestantRegisterPage(page);
           await registerPage.open();
           await registerPage.expectSingleMode('code');
         },
         marker: { testId: testIds.contestant.register.code },
-        alsoShown: [{ testId: testIds.contestant.register.page, attribute: 'data-modes', value: 'code' }]
+        alsoShown: [{ testId: testIds.contestant.register.page, state: { attribute: 'data-modes', value: 'code' } }]
       },
       {
         // The registration page with all three modes listed and the identity provider's chosen, so that its panel is the one open, asking which of the two entity types it registers with none chosen.
@@ -379,7 +361,7 @@ test.describe('a project that is not open for voters', () => {
         name: 'contestant-register-identity-provider',
         routeId: 'ContestantAppRegister',
         reach: async (page) => {
-          await client.updateAppSettings(PROVIDER_FOR_BOTH_TYPES);
+          await client.updateAppSettings({ contestantApp: { servedEntityTypes: PROVIDER_FOR_BOTH_TYPES } });
           await openProviderAskingTheType(page);
         },
         marker: { testId: testIds.contestant.register.entityTypes }
@@ -390,7 +372,7 @@ test.describe('a project that is not open for voters', () => {
         name: 'contestant-register-identity-provider-type-required',
         routeId: 'ContestantAppRegister',
         reach: async (page) => {
-          await client.updateAppSettings(PROVIDER_FOR_BOTH_TYPES);
+          await client.updateAppSettings({ contestantApp: { servedEntityTypes: PROVIDER_FOR_BOTH_TYPES } });
           const registerPage = await openProviderAskingTheType(page);
           await registerPage.pressContinue();
           await registerPage.expectEntityTypesError();
@@ -408,7 +390,7 @@ test.describe('a project that is not open for voters', () => {
         test(`phone ${width}: the identity provider's panel asking which entity type to register does not overflow`, async ({
           page
         }) => {
-          await client.updateAppSettings(PROVIDER_FOR_BOTH_TYPES);
+          await client.updateAppSettings({ contestantApp: { servedEntityTypes: PROVIDER_FOR_BOTH_TYPES } });
           await openProviderAskingTheType(page);
           await createPageGeometry(page).expectNoHorizontalOverflow();
         });
@@ -418,7 +400,7 @@ test.describe('a project that is not open for voters', () => {
     test("the registration page's radios draw their border, and the provider's panel names each entity type from the catalogue", async ({
       page
     }) => {
-      await client.updateAppSettings(PROVIDER_FOR_BOTH_TYPES);
+      await client.updateAppSettings({ contestantApp: { servedEntityTypes: PROVIDER_FOR_BOTH_TYPES } });
       const registerPage = await openProviderAskingTheType(page);
       await registerPage.expectRadiosBordered();
     });

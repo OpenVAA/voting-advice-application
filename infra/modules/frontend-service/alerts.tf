@@ -1,7 +1,6 @@
 # A rollout of this service that ECS marks as failed mails the operator.
 
-# Not encrypted at rest: EventBridge cannot publish to a topic under the AWS-managed SNS key, and the
-# topic carries only the deployment events, no secret.
+# Not encrypted at rest: EventBridge cannot publish to a topic under the AWS-managed SNS key, and the topic carries only the deployment events, no secret.
 resource "aws_sns_topic" "deployments" {
   name = "${local.name}-frontend-deployments"
 }
@@ -50,8 +49,7 @@ resource "aws_sns_topic_policy" "deployments" {
   })
 }
 
-# The subscription stays pending until the owner of the address confirms it from the mail AWS
-# sends, and every re-creation of the topic or the subscription sends a new confirmation.
+# The subscription stays pending until the owner of the address confirms it from the mail AWS sends, and every re-creation of the topic or the subscription sends a new confirmation.
 resource "aws_sns_topic_subscription" "operator" {
   topic_arn = aws_sns_topic.deployments.arn
   protocol  = "email"

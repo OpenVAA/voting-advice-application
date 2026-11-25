@@ -1,7 +1,7 @@
 /**
  * The registration page, mounted for real with the real mode selector and fields against a fake contestant context.
  *
- * The fake context's `appSettings` is reactive behind a getter, as the real accessor is, and each case sets the registration matrix it reads. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `appSettings` is reactive behind a getter, as the real accessor is, and each case sets the registration matrix it reads. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -10,7 +10,7 @@
  * 3. **One mode** — its panel directly, with no group.
  * 4. **The forms** — a form of its own for each panel that has a field, declared as a post, holding one field; the radios in none; Continue tied to the open form.
  * 5. **The email mode** — nothing sent for an empty or unusable address; otherwise one link request and the "email sent" screen.
- * 6. **The code mode** — nothing sent for an empty code; a valid and a used code held and led on; every other answer, and a failed check, shown as one sentence.
+ * 6. **The code mode** — nothing sent for an empty code; a valid and a used code held and led on; a check refused over the attempt limit shown as a sentence naming the wait in minutes; every other answer, and every other failed check, shown as one sentence.
  * 7. **The provider's mode** — a form naming the one type it registers; Continue posts that type to the authorize endpoint and leaves for the provider, keeps its loading form until the page is left, leads a refusal and any other failure to the error screen, and ends the loading form when the page is shown again from the page cache.
  * 8. **The provider's types** — the types the matrix allows the provider's mode, read through the same function as the listed modes: one is named and sent without a question; two are asked as a group of bordered radios with nothing chosen on arrival, Continue with none chosen says so and sends nothing, and the chosen type is sent and kept while the page is shown.
  * 9. **Before the script has loaded** — the main button natively disabled.
@@ -23,6 +23,8 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { TooManyRequestsError } from '$lib/api/base/tooManyRequestsError';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RegistrationMode } from '@openvaa/app-shared';
 import type { RouteOptions } from '$lib/routes';
@@ -34,17 +36,25 @@ type Submission = {
   answer: (result: Record<string, unknown>) => Promise<void>;
 };
 
-const { applyAction, checkInvitationCode, goto, holdEntryCode, leaveFor, localizeHref, sendEntryLink, submissions } =
-  vi.hoisted(() => ({
-    applyAction: vi.fn(),
-    checkInvitationCode: vi.fn(),
-    goto: vi.fn(),
-    holdEntryCode: vi.fn(),
-    leaveFor: vi.fn(),
-    localizeHref: vi.fn((href: string) => href),
-    sendEntryLink: vi.fn(),
-    submissions: new Array<unknown>()
-  }));
+const {
+  applyAction,
+  checkInvitationCode,
+  goto,
+  holdEntryCode,
+  leaveByFullLoad,
+  localizeHref,
+  sendEntryLink,
+  submissions
+} = vi.hoisted(() => ({
+  applyAction: vi.fn(),
+  checkInvitationCode: vi.fn(),
+  goto: vi.fn(),
+  holdEntryCode: vi.fn(),
+  leaveByFullLoad: vi.fn(),
+  localizeHref: vi.fn((href: string) => href),
+  sendEntryLink: vi.fn(),
+  submissions: new Array<unknown>()
+}));
 
 /** The posts the fake `enhance` saw, oldest first. */
 const posts = submissions as Array<Submission>;
@@ -81,34 +91,34 @@ vi.mock('$app/forms', () => ({
 vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), goto }));
 
 // The document's `location` cannot be replaced here, so the departure is observed at the module that performs it.
-vi.mock('$lib/utils/leaveFor', () => ({ leaveFor }));
+vi.mock('$lib/components/preventNavigation/navigationGuards', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  leaveByFullLoad
+}));
 
 // The other members stay the test stubs; a case chooses the locale `localizeHref` puts in front of a path.
 vi.mock('$lib/paraglide/runtime', async (importOriginal) => ({ ...(await importOriginal<object>()), localizeHref }));
 
 type FakeSettings = {
-  contestantApp: { entityTypes: Array<string>; registrationModes: Record<string, Array<RegistrationMode>> };
-  access?: { answersLocked: boolean };
+  contestantApp: { servedEntityTypes: Record<string, { registrationModes: Array<RegistrationMode> }> };
+  access?: { contestantEditing: 'open' | 'nominationsLocked' | 'locked' };
 };
-
-/** The settings the fake context holds. Replaced whole on every write, never changed in place. */
-let heldSettings = $state.raw<FakeSettings>(settingsFor([]));
 
 /** The page's data, as its server load answers it. */
 let heldData: { registered: boolean } = { registered: false };
 
-const context = {
-  t: (key: string) => key,
+/** The fake context. Its settings are replaced whole on every write, never changed in place. */
+const { context, box } = fakeContestantContext({ appSettings: settingsFor([]) }, () => ({
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
   checkInvitationCode,
   holdEntryCode,
-  sendEntryLink,
-  get appSettings() {
-    return heldSettings;
-  }
-};
+  sendEntryLink
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
+
+// The mode selector the page renders sends a tracking event through the app context.
+vi.mock('$lib/contexts/app', () => ({ getAppContext: () => ({ track: () => undefined }) }));
 
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({ t: context.t, darkMode: { current: false } })
@@ -164,10 +174,10 @@ const ADDRESS = 'someone@example.test';
 const TYPED_CODE = 'abcd-efgh-jkmn';
 
 const LOGIN_ROUTE = buildRoute({ route: 'ContestantAppLogin' }, { params: {} });
-const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppSignIn' }, { params: {} });
+const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppLoginEmail' }, { params: {} });
 const EMAIL_SENT_ROUTE = buildRoute({ route: 'ContestantAppEmailSent' }, { params: {} });
-const EMAIL_ENTRY_ROUTE = buildRoute({ route: 'ContestantAppRegisterEmail' }, { params: {} });
-const CODE_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterSignIn' }, { params: {} });
+const EMAIL_ENTRY_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeEmail' }, { params: {} });
+const CODE_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeSignIn' }, { params: {} });
 const FORGOT_PASSWORD_ROUTE = buildRoute({ route: 'ContestantAppForgotPassword' }, { params: {} });
 
 /** The identity provider's error screen for a code. */
@@ -190,15 +200,17 @@ const ALL_MODES: Array<RegistrationMode> = ['identity_provider', 'email', 'code'
 
 /** Settings of a project that serves candidates and allows them the given modes. */
 function settingsFor(modes: Array<RegistrationMode>): FakeSettings {
-  return { contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: modes, organization: [] } } };
+  return { contestantApp: { servedEntityTypes: { candidate: { registrationModes: modes } } } };
 }
 
 /** Settings of a project that serves both entity types: the candidates' row holds the given modes, and the organizations' row the identity provider's mode alone. */
 function settingsForBothTypes(candidateModes: Array<RegistrationMode>): FakeSettings {
   return {
     contestantApp: {
-      entityTypes: ['candidate', 'organization'],
-      registrationModes: { candidate: candidateModes, organization: ['identity_provider'] }
+      servedEntityTypes: {
+        candidate: { registrationModes: candidateModes },
+        organization: { registrationModes: ['identity_provider'] }
+      }
     }
   };
 }
@@ -217,7 +229,7 @@ beforeEach(() => {
   localizeHref.mockImplementation((href: string) => href);
   vi.stubGlobal('fetch', fetchMock);
   fetchMock.mockResolvedValue(answer(200, { authorizeUrl: AUTHORIZE_URL }));
-  heldSettings = settingsFor([]);
+  box.set({ appSettings: settingsFor([]) });
   heldData = { registered: false };
   goto.mockResolvedValue(undefined);
   sendEntryLink.mockResolvedValue(undefined);
@@ -242,7 +254,7 @@ afterEach(() => {
  * @returns The element the page was mounted into.
  */
 function renderUnmounted(modes: Array<RegistrationMode>): HTMLElement {
-  heldSettings = settingsFor(modes);
+  box.set({ appSettings: settingsFor(modes) });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(RegisterPage, { target, props: { data: heldData } as never });
@@ -262,7 +274,7 @@ function render(modes: Array<RegistrationMode>): HTMLElement {
 
 /** Mount the page for the given settings, and run its effects. */
 function renderWith(settings: FakeSettings): HTMLElement {
-  heldSettings = settings;
+  box.set({ appSettings: settings });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(RegisterPage, { target, props: { data: heldData } as never });
@@ -381,7 +393,7 @@ describe('the frame', () => {
   it('follows a matrix that changes under the mounted page', () => {
     const target = render(['email', 'code']);
     choose(target, 'code');
-    heldSettings = settingsFor(['email']);
+    box.set({ appSettings: settingsFor(['email']) });
     flushSync();
     const frame = one(target, FRAME);
     expect(frame.getAttribute('data-modes')).toBe('email');
@@ -565,8 +577,8 @@ describe('the forms', () => {
 
 describe('the email mode', () => {
   it.each<[string, string, string]>([
-    ['an empty field', '', 'contestantApp.login.emailRequired'],
-    ['a field holding spaces alone', '   ', 'contestantApp.login.emailRequired'],
+    ['an empty field', '', 'common.account.emailRequired'],
+    ['a field holding spaces alone', '   ', 'common.account.emailRequired'],
     ['an address the control reports invalid', 'not-an-address', 'components.input.error.invalidEmail']
   ])('sends nothing for %s, says what to enter at the field and focuses it', async (_name, typed, message) => {
     const target = render(['email', 'code']);
@@ -715,6 +727,38 @@ describe('the code mode', () => {
     expect(goto).not.toHaveBeenCalled();
   });
 
+  it.each<[number, number]>([
+    [1, 1],
+    [60, 1],
+    [61, 2],
+    [600, 10]
+  ])(
+    'names a wait of %i s as %i minutes when the check is refused over the attempt limit, keeps the code and focuses the field',
+    async (seconds, minutes) => {
+      checkInvitationCode.mockRejectedValue(new TooManyRequestsError(seconds));
+      const translate = vi.spyOn(context, 't');
+      try {
+        const target = render(['code']);
+        type(target, CODE, TYPED_CODE);
+
+        submit(target);
+        await settle();
+
+        const input = one<HTMLInputElement>(target, CODE);
+        const error = one(target, CODE_ERROR);
+        expect(error.textContent).toContain('contestantApp.register.tooManyAttempts');
+        expect(error.getAttribute('data-reason')).toBe('tooManyAttempts');
+        expect(translate).toHaveBeenCalledWith('contestantApp.register.tooManyAttempts', { minutes });
+        expect(input.value).toBe(TYPED_CODE);
+        expect(document.activeElement).toBe(input);
+        expect(holdEntryCode).not.toHaveBeenCalled();
+        expect(goto).not.toHaveBeenCalled();
+      } finally {
+        translate.mockRestore();
+      }
+    }
+  );
+
   it('shows the same sentence when the same unconfirmed code is checked again', async () => {
     const target = render(['code']);
     type(target, CODE, TYPED_CODE);
@@ -792,7 +836,7 @@ describe("the provider's mode", () => {
     expect(url).toBe(AUTHORIZE_ENDPOINT);
     expect(init.method).toBe('POST');
     expect(JSON.parse(String(init.body))).toEqual({ entityType: 'candidate' });
-    expect(leaveFor.mock.calls).toEqual([[AUTHORIZE_URL]]);
+    expect(leaveByFullLoad.mock.calls).toEqual([[AUTHORIZE_URL]]);
     expect(goto).not.toHaveBeenCalled();
     expect(sendEntryLink).not.toHaveBeenCalled();
     expect(checkInvitationCode).not.toHaveBeenCalled();
@@ -835,7 +879,7 @@ describe("the provider's mode", () => {
 
     request.resolve(answer(200, { authorizeUrl: AUTHORIZE_URL }));
     await settle();
-    expect(leaveFor).toHaveBeenCalledTimes(1);
+    expect(leaveByFullLoad).toHaveBeenCalledTimes(1);
     expect(one<HTMLButtonElement>(target, SUBMIT).disabled).toBe(true);
   });
 
@@ -855,7 +899,7 @@ describe("the provider's mode", () => {
     press(target, SUBMIT);
     await settle();
     expect(goto.mock.calls).toEqual([[errorScreen('mode_not_allowed')]]);
-    expect(leaveFor).not.toHaveBeenCalled();
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
   });
 
   it.each<[string, () => void]>([
@@ -877,7 +921,7 @@ describe("the provider's mode", () => {
     press(target, SUBMIT);
     await settle();
     expect(goto.mock.calls).toEqual([[errorScreen('registration_failed')]]);
-    expect(leaveFor).not.toHaveBeenCalled();
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
   });
 
   it('keeps the loading form after a failure, while the error screen is opened', async () => {
@@ -937,8 +981,10 @@ describe("the provider's types", () => {
   it('names the one type allowed, organizations, asks nothing and sends it', async () => {
     const target = renderWith({
       contestantApp: {
-        entityTypes: ['candidate', 'organization'],
-        registrationModes: { candidate: [], organization: ['identity_provider'] }
+        servedEntityTypes: {
+          candidate: { registrationModes: [] },
+          organization: { registrationModes: ['identity_provider'] }
+        }
       }
     });
     expect(one(target, FRAME).getAttribute('data-modes')).toBe('identity_provider');
@@ -958,7 +1004,7 @@ describe("the provider's types", () => {
     const target = renderWith(settingsForBothTypes(['identity_provider']));
     const form = one(target, PROVIDER_FORM);
     expect(form.getAttribute('data-entity-types')).toBe('candidate organization');
-    expect(form.textContent).toContain('contestantApp.register.identityProvider.intro.both');
+    expect(form.textContent).toContain('contestantApp.register.identityProvider.intro.candidateAndOrganization');
     expect(form.textContent).toContain(PROVIDER_INFO);
 
     const group = one<HTMLFieldSetElement>(target, TYPE_GROUP);
@@ -1002,7 +1048,7 @@ describe("the provider's types", () => {
     await settle();
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(leaveFor).not.toHaveBeenCalled();
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
     expect(goto).not.toHaveBeenCalled();
     const error = one(target, TYPE_ERROR);
     expect(error.getAttribute('role')).toBe('alert');
@@ -1024,7 +1070,7 @@ describe("the provider's types", () => {
     press(target, SUBMIT);
     await settle();
     expect(sentBody()).toEqual({ entityType: 'organization' });
-    expect(leaveFor.mock.calls).toEqual([[AUTHORIZE_URL]]);
+    expect(leaveByFullLoad.mock.calls).toEqual([[AUTHORIZE_URL]]);
   });
 
   it('sends the candidate when the candidate is chosen', async () => {
@@ -1055,7 +1101,7 @@ describe("the provider's types", () => {
   it('asks nothing and lists nothing for the provider while answers are locked', () => {
     const target = renderWith({
       ...settingsForBothTypes(['identity_provider', 'email']),
-      access: { answersLocked: true }
+      access: { contestantEditing: 'locked' }
     });
     expect(one(target, FRAME).getAttribute('data-modes')).toBe('');
     expect(target.querySelectorAll(PROVIDER_FORM)).toHaveLength(0);
@@ -1151,7 +1197,7 @@ describe('the notice for a browser that has confirmed an address', () => {
     expect(login.textContent).toContain('common.login');
     const forgotPassword = one<HTMLAnchorElement>(notice, NOTICE_FORGOT_PASSWORD);
     expect(forgotPassword.getAttribute('href')).toBe(FORGOT_PASSWORD_ROUTE);
-    expect(forgotPassword.textContent).toContain('contestantApp.login.forgotPassword');
+    expect(forgotPassword.textContent).toContain('common.account.forgotPassword');
   });
 
   it('offers a Dismiss that posts to the action dismissRegistered, in a form of its own inside the notice', () => {

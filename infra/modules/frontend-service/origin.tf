@@ -1,5 +1,4 @@
-# The origin behind the CDN: a load balancer that answers 403 to every request that does not carry
-# the origin secret, and forwards the rest to the tasks.
+# The origin behind the CDN: a load balancer that answers 403 to every request that does not carry the origin secret, and forwards the rest to the tasks.
 
 # The zone is read by name, so that it stays with the root that owns it.
 data "aws_route53_zone" "this" {
@@ -17,8 +16,7 @@ resource "aws_acm_certificate" "origin" {
   }
 }
 
-# One validation record per name of the certificate. The records are keyed by those names, which are
-# known before the certificate exists, and read their contents from its validation options.
+# One validation record per name of the certificate. The records are keyed by those names, which are known before the certificate exists, and read their contents from its validation options.
 locals {
   origin_validation_options = {
     for o in aws_acm_certificate.origin.domain_validation_options : o.domain_name => o
@@ -41,8 +39,7 @@ resource "aws_acm_certificate_validation" "origin" {
   validation_record_fqdns = [for r in aws_route53_record.origin_validation : r.fqdn]
 }
 
-# The secret CloudFront sends as the origin header. The load balancer matches header values without
-# regard to case and reads `*` and `?` as wildcards, so the value has letters and digits only.
+# The secret CloudFront sends as the origin header. The load balancer matches header values without regard to case and reads `*` and `?` as wildcards, so the value has letters and digits only.
 resource "random_password" "origin_verify" {
   length  = 48
   special = false
@@ -61,8 +58,7 @@ resource "aws_lb" "this" {
   enable_deletion_protection = false
 }
 
-# A task receives traffic only while /api/health answers 200; a task that stops receiving it gets the
-# deregistration delay to finish the requests it holds.
+# A task receives traffic only while /api/health answers 200; a task that stops receiving it gets the deregistration delay to finish the requests it holds.
 resource "aws_lb_target_group" "app" {
   name                 = "${local.name}-frontend"
   port                 = local.container_port

@@ -18,6 +18,7 @@ import type {
   JobMessage,
   PastJobQueryParams
 } from '$lib/server/admin/jobs/jobStore.type';
+import type { IdentityProviderRegistrationResult } from '$lib/server/contestant/identityProviderRegistration';
 import type { DataApiActionResult } from './actionResult.type';
 import type { AdapterType } from './adapterType.type';
 
@@ -60,6 +61,16 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @returns A `Promise` resolving to an {@link AddressConfirmationResult}. A refused session, any other answer and a failed call all resolve to `refused`.
    */
   requestAddressConfirmation: (opts: RequestAddressConfirmationOptions) => Promise<AddressConfirmationResult>;
+  /**
+   * Post, as the signed-in user, one intent to the endpoint an identity-provider account saves its details through: `save` the identity's own party's names and the address the user typed, `resend` the link of the address awaiting proof, or `acknowledge` the notice shown once after the identity provider found the account. The call carries the session of the client it is made on.
+   *
+   * Never rejects: a failed request and an answer without a result are logged without their content and resolve to `undefined`.
+   * @param opts - The intent and what it carries.
+   * @returns A `Promise` resolving to the endpoint's result, or to `undefined` when it gave none.
+   */
+  registerIdentityProviderAccount: (
+    opts: RegisterIdentityProviderAccountOptions
+  ) => Promise<IdentityProviderRegistrationResult | undefined>;
   /**
    * Sign in the user who claimed an invitation code, with that code and their password, in the project this adapter serves. The session is established on this adapter's own client, so on the server its cookies are written to the response of the request that client belongs to. No token is returned.
    * @param code - The code as typed.
@@ -164,7 +175,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   getEntityUserData: <TNominations extends boolean | undefined>(
     opts: GetEntityUserDataOptions<TNominations>
-  ) => DWReturnType<ContestantUserData<TNominations> | undefined, TType>;
+  ) => DWReturnType<EntityUserData<TNominations> | undefined, TType>;
 
   /**
    * List the entities one of an entity's nominations may be placed under, in the project this adapter serves: the organizations for a candidate, the alliances for an organization. The entity is one the signed-in user edits.
@@ -180,7 +191,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   ) => DWReturnType<Array<NominationParentOption> | undefined, TType>;
 
   ////////////////////////////////////////////////////////////////////
-  // Setting data owned by the user NB. The answer setters (`updateAnswers`/`overwriteAnswers`) return only the updated `LocalizedAnswers` map for synchronization — or {@link UNVERIFIED_ANSWERS}, when the write succeeded but its read-back could not be validated — while the property setter (`updateEntityProperties`) returns the properties it wrote and no others, or says that a changed name was refused, and the nominations setter (`setEntityNominations`) returns the counts of what it stored, or says which of four named refusals it met.
+  // Setting data owned by the user NB. The answer setters (`updateAnswers`/`overwriteAnswers`) return only the updated `LocalizedAnswers` map for synchronization — or {@link UNVERIFIED_ANSWERS}, when the write succeeded but its read-back could not be validated — while the property setter (`updateEntityProperties`) returns the properties it wrote and no others, or says that a changed name was refused, and the nominations setter (`setEntityNominations`) returns the counts of what it stored, or says which of five named refusals it met.
   ////////////////////////////////////////////////////////////////////
 
   /**
@@ -205,7 +216,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * Update editable properties of an entity owned by the user. The properties given are written and no others, so the call carries the properties that changed.
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
-   * @param properties - The properties to store. Which properties an entity has depends on its type, see {@link EditableEntityProps}.
+   * @param properties - The properties to store, of the entity's own type: {@link CandidateEditableProps} or {@link OrganizationEditableProps}.
    * @param locale - The locale the written names are translated to in the result, as `getEntityUserData` translates them.
    * @returns A `Promise` resolving to an {@link UpdateEntityPropertiesResult}, or a `Response` containing one: the properties as stored, or the name-refused result when the backend refuses a changed name because the entity has been confirmed, in which case nothing of the call was stored.
    * @throws An error if no property is given, if `properties.image` is neither `null` nor carries a file, if a property does not belong to the entity's type, if a value does not have the form its property is stored in, or if the write fails for any reason other than a refused name.
@@ -216,9 +227,9 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param nominations - Every nomination the entity is to have, see {@link DesiredNomination}. A stored nomination that is left out is removed.
-   * @param readFrom - The entity's nominations in the write's reach as they were read when `nominations` was computed, each with its `updatedAt`.
-   * @returns A `Promise` resolving to a {@link SetEntityNominationsResult}, or a `Response` containing one: the counts of what was stored, or the refused result naming its reason when the backend refuses the write because the nominations have changed since `readFrom` was read, because a removed nomination has others listed under it, because the caller holds too many unconfirmed parent nominations or because the project's answers are locked, in which case nothing of the call was stored.
-   * @throws An error if the target has no id, if `nominations` or `readFrom` is not a list, or if the write fails for any reason other than the four named refusals.
+   * @param readFrom - The entity's writable nominations as they were read when `nominations` was computed, each with its `updatedAt`.
+   * @returns A `Promise` resolving to a {@link SetEntityNominationsResult}, or a `Response` containing one: the counts of what was stored, or the refused result naming its reason when the backend refuses the write because the nominations have changed since `readFrom` was read, because a removed nomination has others listed under it, because the caller holds too many unconfirmed parent nominations or because the project's answers or nominations are locked, in which case nothing of the call was stored.
+   * @throws An error if the target has no id, if `nominations` or `readFrom` is not a list, or if the write fails for any reason other than the five named refusals.
    */
   setEntityNominations: (opts: SetEntityNominationsOptions) => DWReturnType<SetEntityNominationsResult, TType>;
 
@@ -279,22 +290,26 @@ export interface BasicUserData extends WithUserSettings {
    */
   passwordSet: boolean;
   /**
-   * The state of the account's address, told by `addressStateOf` from the verified user's address, pending address and the identity provider its `app_metadata` names. `none` and `pending` belong to an account an identity provider made that holds only its placeholder address; every other account is `proved`. A pending address that is now another account's reads as `none`, with `pendingEmailTaken` set.
+   * The state of the account's address, told by `addressStateOf` from the verified user's address, pending address and the identity provider its `app_metadata` names. `none` and `pending` belong to an account an identity provider made that holds only its placeholder address; every other account is `proved`. A `pending` state carries the address awaiting proof, shown to its own owner. A pending address that has since become another account's, as the user-level read answers it for the caller alone, reads as `none` with `pendingTaken` set. When that cannot be read, the read of the user's data fails instead.
    */
-  addressState: AddressState;
+  address: AddressState;
   /**
-   * The address awaiting proof by the link mailed to it, shown to its own owner. Set only in the state `pending`, `null` otherwise.
+   * The id of the organization the identity registered through the identity provider in this project, as the user-level read answers it, whether or not the user still edits it. `null` when the identity registered none.
    */
-  pendingEmail: string | null;
+  ownOrganizationId: Id | null;
   /**
-   * Whether the organization the identity registered through the identity provider in this project, named by the record `identity-callback` keeps in the account's `app_metadata`, is among the entities the user edits and has no name with text in the adapter's default locale. `false` for every other organization the user edits, whatever its name.
+   * Whether the organization `ownOrganizationId` names is among the entities the user edits and has no name with text in the adapter's default locale. `false` for every other organization the user edits, whatever its name.
    */
   ownOrganizationUnnamed: boolean;
-  /**
-   * Whether the address the account was waiting to prove has since become another account's, as the user-level read answers it for the caller alone. Only an account that was `pending` reads `true`, and it then reads `addressState` as `none` and `pendingEmail` as `null`. It is always a boolean: when it cannot be read, the read of the user's data fails instead.
-   */
-  pendingEmailTaken: boolean;
 }
+
+/**
+ * One intent posted by `registerIdentityProviderAccount`, with what it carries. A `save` carries the names of the identity's own party, the address the user typed, or both.
+ */
+export type RegisterIdentityProviderAccountOptions =
+  | { intent: 'save'; name?: LocalizedString; shortName?: LocalizedString; email?: string }
+  | { intent: 'resend' }
+  | { intent: 'acknowledge' };
 
 /**
  * The coarse role of a signed-in user, derived from the grant shapes in their access token: `'admin'` when it carries a grant that opens the Admin App, otherwise `'contestant'` when it carries one that opens the Contestant App. An admin grant is tested first, so a user holding both is an `'admin'`.
@@ -347,10 +362,6 @@ export type InvitationClaimResult = {
    * The promises this claim left open.
    */
   skipped: Array<SkippedInvitation>;
-  /**
-   * Whether the user has a password. A user created by a sign-in link has none until they set one.
-   */
-  passwordSet: boolean;
 };
 
 /**
@@ -501,6 +512,10 @@ export type EntityNomination = {
    */
   updatedAt: string;
   /**
+   * Whether a write of the entity's nominations may change the nomination, as the database decides: it is at its election's current round, in an election that admits the entity's type. The nomination editor manages these nominations alone; every other one is shown where nominations are listed and is left as it is by a save.
+   */
+  writable: boolean;
+  /**
    * The entity the nomination is nominated under. Left out for a nomination with no parent.
    */
   parent?: EntityNominationParent;
@@ -552,11 +567,12 @@ export type DesiredNomination = {
  *   - `changed`: the entity's nominations are no longer those the set was computed from: one was created, moved, edited or removed since they were read.
  *   - `hasCandidates`: a nomination the write removes, or moves to another constituency, has other nominations listed under it.
  *   - `tooManyPending`: the write would create a parent's nomination while the caller already holds the most unconfirmed ones a caller may.
- *   - `answersLocked`: the project's answers are locked, and the caller may not edit the project's nominations.
+ *   - `answersLocked`: the project's `access.contestantEditing` is `locked`, and the caller may not edit the project's nominations.
+ *   - `nominationsLocked`: the project's `access.contestantEditing` is `nominationsLocked`, and the caller may not edit the project's nominations.
  */
 export type SetEntityNominationsResult =
   | { type: 'saved'; inserted: number; updated: number; deleted: number; unchanged: number; parentsCreated: number }
-  | { type: 'refused'; reason: 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' };
+  | { type: 'refused'; reason: 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' | 'nominationsLocked' };
 
 /**
  * An election and a constituency of it: the place a nomination is for.
@@ -590,7 +606,7 @@ export type NominationParentOption = {
  * The data of one entity the signed-in user edits. The user-level data is not part of it: it is read once by `getBasicUserData`.
  * @typeParam TNominations - Whether to include the `nominations` property, defaulting to `false`.
  */
-export type ContestantUserData<TNominations extends boolean | undefined = undefined> = {
+export type EntityUserData<TNominations extends boolean | undefined = undefined> = {
   /**
    * The data for the entity the `User` edits, of either served type. Its `name` and `shortName` are translated to one locale.
    */
@@ -606,34 +622,49 @@ export type ContestantUserData<TNominations extends boolean | undefined = undefi
 };
 
 /**
- * The properties a write stored, in the form `getEntityUserData` gives them on the entity. A member is present only when its property was among those written.
+ * The properties a write of a candidate stored, in the form `getEntityUserData` gives them on the entity. A member is present only when its property was among those written.
  */
-export type SavedEntityProps = {
+export type SavedCandidateProps = {
   /**
-   * The stored image, or `null` when the entity has none.
+   * The stored portrait, or `null` when the candidate has none.
    */
   image?: Image | null;
   /**
-   * An organization's name, translated to one locale. Empty when no locale holds a name.
-   */
-  name?: string;
-  /**
-   * An organization's short name, translated to one locale, or `null` when it has none.
-   */
-  shortName?: string | null;
-  /**
-   * An organization's colour, or `null` when it has none.
-   */
-  color?: Colors | null;
-  /**
-   * A candidate's first name.
+   * The first name.
    */
   firstName?: string;
   /**
-   * A candidate's last name.
+   * The last name.
    */
   lastName?: string;
 };
+
+/**
+ * The properties a write of an organization stored, in the form `getEntityUserData` gives them on the entity. A member is present only when its property was among those written.
+ */
+export type SavedOrganizationProps = {
+  /**
+   * The stored logo, or `null` when the organization has none.
+   */
+  image?: Image | null;
+  /**
+   * The name, translated to one locale. Empty when no locale holds a name.
+   */
+  name?: string;
+  /**
+   * The short name, translated to one locale, or `null` when it has none.
+   */
+  shortName?: string | null;
+  /**
+   * The colour, or `null` when it has none.
+   */
+  color?: Colors | null;
+};
+
+/**
+ * The properties a write stored, of the one served type the written entity is.
+ */
+export type SavedEntityProps = SavedCandidateProps | SavedOrganizationProps;
 
 /**
  * What `updateEntityProperties` resolves to, discriminated by `type`.
@@ -671,13 +702,18 @@ export type AdminJobRecord = {
 
 export type SetAnswersOptions = WithTargetEntity & WithAnswerData;
 
-export type SetPropertiesOptions = WithTargetEntity &
-  WithEditableEntityProps & {
-    /**
-     * The locale the written names are translated to in the result. Defaults to the adapter's default locale, as in `getEntityUserData`.
-     */
-    locale?: string;
-  };
+/**
+ * What a write of an entity's properties carries: the entity, and the properties of its own type that changed.
+ */
+export type SetPropertiesOptions = (
+  | (WithTargetEntity<'candidate'> & { properties: CandidateEditableProps })
+  | (WithTargetEntity<'organization'> & { properties: OrganizationEditableProps })
+) & {
+  /**
+   * The locale the written names are translated to in the result. Defaults to the adapter's default locale, as in `getEntityUserData`.
+   */
+  locale?: string;
+};
 
 /**
  * What a write of an entity's nominations carries: the entity, every nomination it is to have, and the nominations the list was computed from. A stored nomination the list leaves out is removed, so an empty list removes them all.
@@ -685,9 +721,9 @@ export type SetPropertiesOptions = WithTargetEntity &
 export type SetEntityNominationsOptions = WithTargetEntity & {
   nominations: ReadonlyArray<DesiredNomination>;
   /**
-   * The entity's nominations that the write may change, as they were read when `nominations` was computed from them: every one of them, and no other. The write is refused as `changed` when the stored ones differ, so that a nomination created, moved or edited since the read is neither removed nor written back.
+   * The entity's writable nominations, as they were read when `nominations` was computed from them: every one of them. Only those whose `writable` is `true` are handed to the database. The write is refused as `changed` when the stored ones differ, so that a nomination created, moved or edited since the read is neither removed nor written back.
    */
-  readFrom: ReadonlyArray<Pick<EntityNomination, 'id' | 'updatedAt'>>;
+  readFrom: ReadonlyArray<Pick<EntityNomination, 'id' | 'updatedAt' | 'writable'>>;
 };
 
 /**
@@ -730,9 +766,10 @@ export type RequestAddressConfirmationOptions = { email: string; locale: string 
  * What a request for an address to be proved comes to.
  * - `sent`: a link was mailed to the address.
  * - `in-use`: the address is another account's.
+ * - `invited`: an open invitation of the project is addressed to it, with nothing mailed. The person is to sign in by email with that invitation instead.
  * - `refused`: anything else, with nothing mailed.
  */
-export type AddressConfirmationResult = 'sent' | 'in-use' | 'refused';
+export type AddressConfirmationResult = 'sent' | 'in-use' | 'invited' | 'refused';
 
 export type GetEntityUserDataOptions<TNominations extends boolean | undefined> = {
   /**
@@ -751,12 +788,12 @@ export type WithTargetId = {
   id: Id;
 };
 
-export type WithTargetEntity = {
+export type WithTargetEntity<TType extends ServedEntityType = ServedEntityType> = {
   target: {
     /**
      * The type of the target entity.
      */
-    type: EntityType;
+    type: TType;
     /**
      * The id of the target entity.
      */
@@ -776,38 +813,59 @@ export type EditableEntityColor = {
 };
 
 /**
- * The properties of an entity that its editor may write, beside its answers. Which of them an entity has depends on its type: `image` belongs to both served types, `name`, `shortName` and `color` to an organization, and `firstName` and `lastName` to a candidate. A write carries the properties that changed and no others.
+ * The image an entity's editor may write: a candidate's portrait or an organization's logo.
  */
-export type EditableEntityProps = {
+type EditableImageProps = {
   /**
-   * The entity's image, a candidate's portrait or an organization's logo, with the file to upload, or `null` to remove the stored image. The database deletes the stored file once the entity no longer names it.
+   * The image with the file to upload, or `null` to remove the stored image. The database deletes the stored file once the entity no longer names it.
    */
   image?: ImageWithFile | null;
+};
+
+/**
+ * The properties of a candidate that its editor may write, beside its answers. A write carries the properties that changed and no others.
+ */
+export type CandidateEditableProps = EditableImageProps & {
   /**
-   * An organization's name by locale. Entries are trimmed and blank ones are not stored; a name with no entry left, or `null`, is stored as no name.
-   */
-  name?: LocalizedString | null;
-  /**
-   * An organization's short name by locale, normalised as `name` is, or `null` to clear it.
-   */
-  shortName?: LocalizedString | null;
-  /**
-   * An organization's colour, or `null` to clear it. A stored colour is replaced whole.
-   */
-  color?: EditableEntityColor | null;
-  /**
-   * A candidate's first name. Surrounding whitespace is not stored.
+   * The first name. Surrounding whitespace is not stored.
    */
   firstName?: string;
   /**
-   * A candidate's last name. Surrounding whitespace is not stored.
+   * The last name. Surrounding whitespace is not stored.
    */
   lastName?: string;
 };
 
-export type WithEditableEntityProps = {
-  properties: EditableEntityProps;
+/**
+ * The properties of an organization that its editor may write, beside its answers. A write carries the properties that changed and no others.
+ */
+export type OrganizationEditableProps = EditableImageProps & {
+  /**
+   * The name by locale. Entries are trimmed and blank ones are not stored; a name with no entry left, or `null`, is stored as no name.
+   */
+  name?: LocalizedString | null;
+  /**
+   * The short name by locale, normalised as `name` is, or `null` to clear it.
+   */
+  shortName?: LocalizedString | null;
+  /**
+   * The colour, or `null` to clear it. A stored colour is replaced whole.
+   */
+  color?: EditableEntityColor | null;
 };
+
+/**
+ * The editable properties of an entity of the given served type.
+ */
+export type EditablePropsOf<TType extends ServedEntityType> = {
+  candidate: CandidateEditableProps;
+  organization: OrganizationEditableProps;
+}[TType];
+
+/**
+ * The name of a property the editor of an entity of either served type may write.
+ */
+export type EditableEntityProperty = keyof CandidateEditableProps | keyof OrganizationEditableProps;
 
 export type UserSettings = {
   language?: string;

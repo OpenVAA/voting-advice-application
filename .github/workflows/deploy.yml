@@ -305,7 +305,10 @@ jobs:
       # job that sets OPENVAA_DEPLOY_ENVIRONMENT to staging, on a deploy ref, and only when it equals --ref. Those
       # checks guard against a mistake; the push is held to this job by SUPABASE_DB_PASSWORD, a secret of the
       # environment. The database is reached through the session pooler on port 5432, whose user name carries the ref;
-      # the transaction pooler is never used.
+      # the transaction pooler is never used. PGSSLMODE=verify-full verifies the server against the Supabase root
+      # committed under infra/certs and pinned by supabase-ca.test.ts, refusing a server that root did not sign or whose
+      # certificate does not name the pooler host; the Supabase CLI reads the same variables. The session pooler offers
+      # no SCRAM channel binding, so none is required.
       - name: "Push the migrations"
         id: migrations
         env:
@@ -316,6 +319,8 @@ jobs:
           PGPORT: "5432"
           PGDATABASE: postgres
           PGCONNECT_TIMEOUT: "10"
+          PGSSLMODE: verify-full
+          PGSSLROOTCERT: ${{ github.workspace }}/infra/certs/supabase-root-2021-ca.crt
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -341,7 +346,11 @@ jobs:
       # can. This step reads it after the push, so it sees the state the functions and the rollout will see, and stops
       # the run before both unless it is true. It writes nothing. Status 3 with an error beginning
       # `check-deployment-settings:` is a finding; status 3 with any other error means the check could not run. The
-      # step holds the database password as PGPASSWORD alone.
+      # step holds the database password as PGPASSWORD alone. PGSSLMODE=verify-full verifies the server against the
+      # Supabase root committed under infra/certs and pinned by supabase-ca.test.ts, refusing a server that root did not
+      # sign or whose certificate does not name the pooler host; the session pooler offers no SCRAM channel binding, so
+      # none is required. The step is cut off after two minutes, so a session holding a lock on the table cannot keep
+      # the run waiting until the job's timeout.
       - name: "Check the deployment settings"
         id: settings
         env:
@@ -350,7 +359,10 @@ jobs:
           PGPORT: "5432"
           PGDATABASE: postgres
           PGCONNECT_TIMEOUT: "10"
+          PGSSLMODE: verify-full
+          PGSSLROOTCERT: ${{ github.workspace }}/infra/certs/supabase-root-2021-ca.crt
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        timeout-minutes: 2
         run: |
           set -uo pipefail
           if [ -z "$PGHOST" ]; then
@@ -549,6 +561,7 @@ jobs:
           SMOKE_EXPECTED_SHA: ${{ github.sha }}
           SMOKE_CONTESTANT_EMAIL: ${{ secrets.SMOKE_CONTESTANT_EMAIL }}
           SMOKE_CONTESTANT_PASSWORD: ${{ secrets.SMOKE_CONTESTANT_PASSWORD }}
+          SMOKE_ACCESS_CALLER_MAX: ${{ vars.SMOKE_ACCESS_CALLER_MAX }}
         run: |
           set -uo pipefail
           smoke_exit=0

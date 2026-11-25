@@ -1,193 +1,328 @@
 /**
- * The two admin feature subtrees' own cookie-array server loaders (see phase 158).
+ * The server load of the Admin App's protected group, driven directly with a fake request context.
  *
- * ## What these loads are for
+ * The load decides in four steps: the session, the admission, the user-level data, the gate. What this file holds:
  *
- * `routes/admin/(protected)/argument-condensation/+layout.ts` and its `question-info` sibling build their Supabase client from data they have SYNCHRONOUSLY, with no `parent()` await for the client. `parent()` does not resolve until the ROOT load has finished, and the root load makes four Supabase round-trips, so a client taken from it would SERIALISE both feature loads behind them. Each subtree's own `+layout.server.ts` — this spec's subject — is what supplies that data. `routes/(voters)/(located)/+layout.server.ts` is the in-tree analog of the shape.
+ * 1. **No session** redirects to the login page with `loginFailed`, and nothing is read.
+ * 2. **Admission is a match of the grants that reach this project against the Admin App's grant shapes.** A session whose token holds neither an admin nor a contestant grant is answered `{ admitted: false }` with no read and no gate, and the project's grants are not asked for. One whose token holds an admin grant is admitted only when the writer's read of the grants that reach this project holds one: an admin of another project only is answered `{ admitted: false }`, and an admin grant beside an editor grant is admitted, and so is a project editor of this project. A read of those grants that fails is answered as a failed read of the user-level data is (5).
+ * 3. **A refused user at home in the Contestant App alone** is answered `{ admitted: false, home: 'contestant' }`, with no user-level data read: a candidate editor here, and an admin of another project whose only grant here is a candidate editor grant. A contestant token whose grants here open neither app, and one whose read of those grants fails, which is logged, are answered `{ admitted: false }`.
+ * 4. **The gate.** An admitted user whose account has no password, on a proved address, gets the set-password gate; one with a password gets none. Either way the answer holds the user-level data and no part of the session.
+ * 5. **A failed read signs nobody out.** A read that answers nothing, or user-level data that does not say as a boolean whether the account has a password, asks the request's client whether a session is left: none redirects to the login page with `loginFailed`; one left ends on a 503 in the reader's language.
+ * 6. **The load reads no `url`, `route` or `params`.** The event's getters for them throw in every case.
  *
- * ## Why this spec exists, and what it would catch
- *
- * Everything a server load returns is serialised into the hydration payload in the HTML body. `cookies.getAll()` yields the request's WHOLE jar, which includes every cookie this application sets `httpOnly: true` — the two OIDC replay/CSRF guards, the PKCE companion, the identity provider's entity-type cookie and its arrival marker. Serialising any of those defeats the flag outright. The filter is therefore a data-protection boundary, and this spec is what makes it a checked one.
- *
- * ⚠ AN ABSENCE-ONLY ASSERTION PASSES TRIVIALLY AGAINST AN EMPTY ARRAY, and an empty array is exactly what a broken filter produces — a spelled prefix literal that stopped matching would empty it, `createServerClient` would find no session, and the server-rendered pass would silently go anonymous with no throw, no log and no failing test. Every case below therefore carries its POSITIVE CONTROL inside the same `expect`: the absences and the forwarded array are compared as one object, so a load that returned `[]` fails on the presence half. A stub load returning `{ supabaseCookies: [] }` passes every absence and fails every presence.
- *
- * ## ⚠ Why the prefix is INJECTED rather than read from the real constant
- *
- * Under this workspace's vitest configuration `SUPABASE_COOKIE_PREFIX` resolves to the three-character `'sb-'` FALLBACK, because `$env/dynamic/public` supplies no `PUBLIC_SUPABASE_URL` in a unit run and `resolveSupabaseCookiePrefix` degrades rather than throwing (it is evaluated at module scope, and a throw there would take the SSR process down at server start). Against that fallback the decoy below — a name that begins with the vendor prefix but is NOT the storage key — genuinely matches, so a spec written against the ambient constant would pass in production and fail here, i.e. it would be environment-dependent. This project treats an intermittently-failing test as a defect, not as a flake to annotate.
- *
- * Mocking the module the loads import the constant FROM removes the environment from the question and makes a strictly STRONGER claim: the decoy case now fails unless the load actually reads `SUPABASE_COOKIE_PREFIX` at request time. A load that spelled `'sb-'` as a literal would ignore the injected storage key, forward the decoy, and be caught here: that is the fail-open shape this spec exists for.
- *
- * ## Both loads, from one file
- *
- * The two loads are byte-identical, and a spec that pinned only one would let the other drift into a second idiom for one problem. Every case runs against both.
+ * `$lib/api/dataWriter` is replaced, so no Supabase client is built; the session check is the writer's. The grant reading is the real one, running on the fake event's session.
  */
 
-import { describe, expect, it, vi } from 'vitest';
-import { COOKIE } from '$lib/cookies';
-import { load as argumentCondensationLoad } from './argument-condensation/+layout.server';
-import { load as questionInfoLoad } from './question-info/+layout.server';
+import { log } from '@openvaa/app-shared';
+import { isHttpError, isRedirect } from '@sveltejs/kit';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { buildRoute } from '$lib/routes';
+import { load } from './+layout.server';
+import type { BasicUserData } from '$lib/api/base/dataWriter.type';
+import type { GrantClaim, GrantShape } from '$lib/auth';
 
-/**
- * The storage key injected in place of the real constant, in the production shape `@supabase/supabase-js` computes (`sb-${hostname.split('.')[0]}-auth-token`). Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
- */
-const { STORAGE_KEY } = vi.hoisted(() => ({ STORAGE_KEY: 'sb-testproject-auth-token' }));
-
-// The seam the two loads import the prefix through — `$lib/api/dataProvider`, never `$lib/supabase/universal`, because the adapter-boundary guard bans the direct module path at every route. Replacing the module here is what makes the decoy case below deterministic AND load-bearing; see the docstring's fourth section for the measurement behind it.
-vi.mock('$lib/api/dataProvider', () => ({ SUPABASE_COOKIE_PREFIX: STORAGE_KEY }));
-
-/** One cookie as the request jar carries it. The real jar also carries `path` and friends; they are present here so the projection has something to drop. */
-type RequestCookie = { name: string; value: string; path: string };
-
-/** The shape either load is driven with. The two loads' generated event types are typed against DIFFERENT route ids, so neither is assignable to the other; this is the surface they genuinely share. */
-type FakeEvent = { cookies: { getAll: () => Array<RequestCookie> } };
-type LoadFn = (event: FakeEvent) => Promise<{ supabaseCookies: Array<{ name: string; value: string }> }>;
-
-/**
- * Every cookie name this application CHOOSES, taken from the one registry that declares them rather than spelled here. A newly registered cookie fails the set assertion below instead of silently escaping the fixture jar.
- */
-const APPLICATION_COOKIE_NAMES = Object.values(COOKIE);
-
-/** A distinctive value per `httpOnly` cookie, so a leak is findable in the serialised payload by substring rather than only by key. */
-function secretValueFor(name: string): string {
-  return `HTTPONLY-SECRET-${name}-MUST-NOT-CROSS`;
-}
-
-/** The application's `httpOnly` cookies as they would arrive in a real admin request's jar. */
-const httpOnlyJarEntries: Array<RequestCookie> = APPLICATION_COOKIE_NAMES.map((name) => ({
-  name,
-  value: secretValueFor(name),
-  path: '/'
+const { createDataWriter, getBasicUserData, getProjectGrants, isSessionGone } = vi.hoisted(() => ({
+  createDataWriter: vi.fn(),
+  getBasicUserData: vi.fn(),
+  getProjectGrants: vi.fn(),
+  isSessionGone: vi.fn()
 }));
 
-/** The values that must never appear anywhere in what a load returns. */
-const FORBIDDEN_VALUES = APPLICATION_COOKIE_NAMES.map(secretValueFor);
+// Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
+vi.mock('$lib/api/dataWriter', () => ({ createDataWriter }));
 
-/** The auth-storage cookie, and the value the positive control looks for. */
-const SENTINEL: RequestCookie = { name: STORAGE_KEY, value: 'the-session-blob', path: '/' };
+const LOGIN_FAILED_ROUTE = buildRoute({ route: 'AdminAppLogin', locale: 'en', errorMessage: 'loginFailed' });
 
-/** A name beginning with the two-character vendor prefix that is NOT the auth storage key. Forwarding it would be the bare-`sb-` over-match the storage-key narrowing exists to close. */
-const DECOY: RequestCookie = { name: 'sb-feature-flags', value: 'decoy-value', path: '/' };
+const ADMIN_GRANT: GrantShape = { scope: 'project', role: 'admin' };
+const CANDIDATE_EDITOR_GRANT: GrantShape = { scope: 'entity', role: 'editor', target_type: 'candidate' };
+const PROJECT_EDITOR_GRANT: GrantShape = { scope: 'project', role: 'editor' };
 
 /**
- * A request context exposing only the surface either load touches. Every call builds its own jar and its own object, so nothing is shared between invocations — which is what the concurrency case leans on.
- * @param jar - The cookies this request arrives with.
- * @returns The fake event.
+ * A well-formed access token carrying the given grant shapes. Its signature is meaningless: the load reads the grants of a session `safeGetSession` has already verified.
+ * @param shapes - The grant shapes the token claims.
+ * @returns The token.
  */
-function eventWithJar(jar: Array<RequestCookie>): FakeEvent {
-  return { cookies: { getAll: () => jar } };
+function accessTokenFor(shapes: ReadonlyArray<GrantShape>): string {
+  return `header.${btoa(JSON.stringify({ grants: claimsFor(shapes) }))}.signature`;
 }
 
 /**
- * The leak report the primary assertion compares. Returned as data rather than asserted piecemeal so the absences and the positive control land in ONE expectation.
- * @param supabaseCookies - What the load returned.
- * @returns The forbidden values that crossed, and the array that did.
+ * The grant claims of the given shapes, as the token and the read of the project's grants both state them.
+ * @param shapes - The grant shapes.
+ * @returns The claims.
  */
-function report(supabaseCookies: Array<{ name: string; value: string }>) {
-  const serialised = JSON.stringify(supabaseCookies);
+function claimsFor(shapes: ReadonlyArray<GrantShape>): Array<GrantClaim> {
+  return shapes.map((shape) => ({
+    scope: shape.scope,
+    target_type: shape.scope === 'entity' ? (shape.target_type ?? 'candidate') : null,
+    target_id: 'proj-1',
+    role: shape.role
+  }));
+}
+
+/** The generated event type names this route's own id and locals; the erased signature below is the surface the load may touch. */
+type FakeEvent = {
+  fetch: typeof fetch;
+  locals: {
+    safeGetSession: () => Promise<{ session: unknown; user: unknown }>;
+  };
+};
+const runLoad = load as unknown as (event: FakeEvent) => Promise<unknown>;
+
+/**
+ * A request context exposing only what the load may touch, whose `url`, `route` and `params` throw when read. The writer's read of the grants that reach this project answers `projectGrants`.
+ * @param grants - The grant shapes of the session's token, or `null` for a request with no session.
+ * @param projectGrants - The grant shapes that reach this project. The token's by default.
+ * @returns The fake event.
+ */
+function makeEvent(
+  grants: ReadonlyArray<GrantShape> | null,
+  projectGrants: ReadonlyArray<GrantShape> = grants ?? []
+): FakeEvent {
+  getProjectGrants.mockResolvedValue(claimsFor(projectGrants));
+  const event: FakeEvent = {
+    fetch: vi.fn() as unknown as typeof fetch,
+    locals: {
+      safeGetSession: async () =>
+        grants === null
+          ? { session: null, user: null }
+          : { session: { access_token: accessTokenFor(grants), expires_at: 1893456000 }, user: { id: 'admin-1' } }
+    }
+  };
+  for (const name of ['url', 'route', 'params']) {
+    Object.defineProperty(event, name, {
+      get: () => {
+        throw new Error(`The load read event.${name}`);
+      }
+    });
+  }
+  return event;
+}
+
+/**
+ * User-level data of an admin.
+ * @param passwordSet - Whether the account has a password.
+ * @returns The user.
+ */
+function adminWith(passwordSet: boolean): BasicUserData {
   return {
-    leaked: FORBIDDEN_VALUES.filter((secret) => serialised.includes(secret)),
-    forwarded: supabaseCookies
+    id: 'admin-1',
+    email: 'admin@example.test',
+    username: 'admin@example.test',
+    role: 'admin',
+    settings: {},
+    termsOfUseAccepted: null,
+    passwordSet,
+    address: { state: 'proved' },
+    ownOrganizationId: null,
+    ownOrganizationUnnamed: false
   };
 }
 
-const LOADS: Array<[string, LoadFn]> = [
-  ['argument-condensation', argumentCondensationLoad as unknown as LoadFn],
-  ['question-info', questionInfoLoad as unknown as LoadFn]
-];
+/**
+ * Run the load and read what it throws.
+ * @param event - The event to run it with.
+ * @returns What it threw, or `undefined` when it returned.
+ */
+async function thrownBy(event: FakeEvent): Promise<unknown> {
+  return runLoad(event).then(
+    () => undefined,
+    (e: unknown) => e
+  );
+}
 
-describe('the registry this spec derives its forbidden set from', () => {
-  it('declares exactly the cookies the fixture jar carries', () => {
-    // If another cookie is registered, this fails and the fixture jar must grow with it, rather than the new cookie escaping the spec unnoticed.
-    expect([...APPLICATION_COOKIE_NAMES].sort()).toEqual([
-      'identity_provider_arrival',
-      'logout-deadline',
-      'logout-pending',
-      'oidc_code_verifier',
-      'oidc_entity_type',
-      'oidc_nonce',
-      'oidc_state',
-      'registered'
-    ]);
-  });
-
-  it('names no cookie any reachable value of the prefix could admit', () => {
-    // `resolveSupabaseCookiePrefix` returns `sb-${…}-auth-token` or, on an unparseable URL, the `'sb-'` fallback. Every value it can produce starts with `sb-`, so no registered application cookie is reachable by the filter under ANY environment — which is why the absences below are environment-independent even though the decoy case is not.
-    expect(APPLICATION_COOKIE_NAMES.filter((name) => name.startsWith('sb-'))).toEqual([]);
-  });
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.resetAllMocks();
 });
 
-describe.each(LOADS)('%s subtree server load — the payload filter', (_feature, load) => {
-  it('forwards exactly the auth-storage cookie, with the httpOnly values absent and the sentinel present in one expectation', async () => {
-    const { supabaseCookies } = await load(eventWithJar([...httpOnlyJarEntries, SENTINEL, DECOY]));
+describe("the Admin App's protected server load", () => {
+  it('redirects to the login page with loginFailed when the request has no session, and reads nothing', async () => {
+    const thrown = await thrownBy(makeEvent(null));
 
-    // ONE expectation, both halves. `leaked: []` alone would pass against `supabaseCookies: []`; `forwarded` is the positive control that makes the empty array fail. `toEqual` is exact on keys, so a forwarded `path` or `httpOnly` also fails here.
-    expect(report(supabaseCookies)).toEqual({
-      leaked: [],
-      forwarded: [{ name: STORAGE_KEY, value: 'the-session-blob' }]
+    expect(isRedirect(thrown) && { status: thrown.status, location: thrown.location }).toEqual({
+      status: 307,
+      location: LOGIN_FAILED_ROUTE
+    });
+    expect(getBasicUserData).not.toHaveBeenCalled();
+  });
+
+  it("sends a candidate editor of this project to the Contestant App's home, and reads no user-level data", async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+
+    await expect(runLoad(makeEvent([CANDIDATE_EDITOR_GRANT]))).resolves.toEqual({
+      admitted: false,
+      home: 'contestant'
+    });
+    expect(getProjectGrants).toHaveBeenCalledTimes(1);
+    expect(getBasicUserData).not.toHaveBeenCalled();
+  });
+
+  it('answers a candidate editor of another project only with admitted false', async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+
+    await expect(runLoad(makeEvent([CANDIDATE_EDITOR_GRANT], []))).resolves.toEqual({ admitted: false });
+    expect(getBasicUserData).not.toHaveBeenCalled();
+  });
+
+  it('answers a candidate editor whose read of the grants that reach this project fails with admitted false, and logs it', async () => {
+    const logged = vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    const event = makeEvent([CANDIDATE_EDITOR_GRANT]);
+    getProjectGrants.mockRejectedValue(new Error('The read failed.'));
+
+    await expect(runLoad(event)).resolves.toEqual({ admitted: false });
+    expect(logged).toHaveBeenCalledTimes(1);
+    expect(isSessionGone).not.toHaveBeenCalled();
+    expect(getBasicUserData).not.toHaveBeenCalled();
+  });
+
+  it('answers an admin of another project only with admitted false, and reads no user-level data', async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+
+    await expect(runLoad(makeEvent([ADMIN_GRANT], []))).resolves.toEqual({ admitted: false });
+    expect(getProjectGrants).toHaveBeenCalledTimes(1);
+    expect(getBasicUserData).not.toHaveBeenCalled();
+  });
+
+  it("sends an admin whose only grant here is a candidate editor grant to the Contestant App's home", async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+
+    await expect(runLoad(makeEvent([ADMIN_GRANT, CANDIDATE_EDITOR_GRANT], [CANDIDATE_EDITOR_GRANT]))).resolves.toEqual({
+      admitted: false,
+      home: 'contestant'
+    });
+    expect(getProjectGrants).toHaveBeenCalledTimes(1);
+    expect(getBasicUserData).not.toHaveBeenCalled();
+  });
+
+  it('answers a failed read of the grants that reach this project, with a session left, with a 503, and signs nobody out', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    const event = makeEvent([ADMIN_GRANT]);
+    getProjectGrants.mockRejectedValue(new Error('The read failed.'));
+    isSessionGone.mockResolvedValue(false);
+
+    const thrown = await thrownBy(event);
+
+    expect(isHttpError(thrown) && { status: thrown.status, body: thrown.body }).toEqual({
+      status: 503,
+      body: { message: 'error.default' }
+    });
+    expect(getBasicUserData).not.toHaveBeenCalled();
+  });
+
+  it('redirects a failed read of the grants that reach this project, with no session left, to the login page with loginFailed', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    const event = makeEvent([ADMIN_GRANT]);
+    getProjectGrants.mockRejectedValue(new Error('The read failed.'));
+    isSessionGone.mockResolvedValue(true);
+
+    const thrown = await thrownBy(event);
+
+    expect(isRedirect(thrown) && { status: thrown.status, location: thrown.location }).toEqual({
+      status: 307,
+      location: LOGIN_FAILED_ROUTE
     });
   });
 
-  it('forwards the chunked and PKCE companion cookies the client writes, and still nothing else', async () => {
-    const chunked: Array<RequestCookie> = [
-      { name: `${STORAGE_KEY}.0`, value: 'chunk-0', path: '/' },
-      { name: `${STORAGE_KEY}.1`, value: 'chunk-1', path: '/' },
-      { name: `${STORAGE_KEY}-code-verifier`, value: 'pkce', path: '/' }
-    ];
+  it('answers a session with no grants with admitted false, and reads nothing', async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
 
-    const { supabaseCookies } = await load(eventWithJar([...httpOnlyJarEntries, ...chunked, DECOY]));
+    await expect(runLoad(makeEvent([]))).resolves.toEqual({ admitted: false });
+    expect(getProjectGrants).not.toHaveBeenCalled();
+    expect(getBasicUserData).not.toHaveBeenCalled();
+  });
 
-    expect(report(supabaseCookies)).toEqual({
-      leaked: [],
-      forwarded: [
-        { name: `${STORAGE_KEY}.0`, value: 'chunk-0' },
-        { name: `${STORAGE_KEY}.1`, value: 'chunk-1' },
-        { name: `${STORAGE_KEY}-code-verifier`, value: 'pkce' }
-      ]
+  it('admits a session with an admin grant beside a candidate editor grant', async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    getBasicUserData.mockResolvedValue(adminWith(true));
+
+    await expect(runLoad(makeEvent([CANDIDATE_EDITOR_GRANT, ADMIN_GRANT]))).resolves.toEqual({
+      admitted: true,
+      gate: null,
+      user: adminWith(true)
     });
   });
 
-  it('excludes a decoy that begins with the vendor prefix but is not the storage key', async () => {
-    // Non-vacuous by construction: the storage-key cookie is in the same jar, so an empty return fails this case too. A load that spelled `'sb-'` rather than reading the constant forwards the decoy and fails here.
-    const { supabaseCookies } = await load(eventWithJar([DECOY, SENTINEL]));
+  it('admits a project editor of this project', async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    getBasicUserData.mockResolvedValue(adminWith(true));
 
-    expect(supabaseCookies).toEqual([{ name: STORAGE_KEY, value: 'the-session-blob' }]);
-  });
-
-  it('returns an empty array, and does not throw, on an empty jar', async () => {
-    await expect(load(eventWithJar([]))).resolves.toEqual({ supabaseCookies: [] });
-  });
-
-  it('returns an empty array when the jar carries only httpOnly cookies', async () => {
-    const { supabaseCookies } = await load(eventWithJar(httpOnlyJarEntries));
-
-    expect(supabaseCookies).toEqual([]);
-  });
-
-  it('keeps two concurrent requests independent — neither jar contributes to the other payload', async () => {
-    const jarA: Array<RequestCookie> = [{ name: STORAGE_KEY, value: 'request-a-session', path: '/' }];
-    const jarB: Array<RequestCookie> = [{ name: STORAGE_KEY, value: 'request-b-session', path: '/' }];
-
-    // Issued together rather than in sequence: the load holds no module-level state, and a load that did would be visible as one request's value appearing in the other's array.
-    const [a, b] = await Promise.all([load(eventWithJar(jarA)), load(eventWithJar(jarB))]);
-
-    expect({ a: a.supabaseCookies, b: b.supabaseCookies }).toEqual({
-      a: [{ name: STORAGE_KEY, value: 'request-a-session' }],
-      b: [{ name: STORAGE_KEY, value: 'request-b-session' }]
+    await expect(runLoad(makeEvent([PROJECT_EDITOR_GRANT]))).resolves.toEqual({
+      admitted: true,
+      gate: null,
+      user: adminWith(true)
     });
   });
-});
 
-describe('the two subtree loads do not diverge', () => {
-  it('returns deep-equal payloads for the same jar', async () => {
-    const jar = [...httpOnlyJarEntries, SENTINEL, DECOY];
+  it('gives an admitted user whose account has no password the set-password gate', async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    getBasicUserData.mockResolvedValue(adminWith(false));
 
-    const [argumentCondensation, questionInfo] = await Promise.all([
-      (argumentCondensationLoad as unknown as LoadFn)(eventWithJar(jar)),
-      (questionInfoLoad as unknown as LoadFn)(eventWithJar(jar))
-    ]);
+    await expect(runLoad(makeEvent([ADMIN_GRANT]))).resolves.toEqual({
+      admitted: true,
+      gate: 'setPassword',
+      user: adminWith(false)
+    });
+  });
 
-    // The byte-level half of this claim is a `diff` in the plan's verify block; this is the behavioural half, and it fails if one file is edited without the other.
-    expect(argumentCondensation).toEqual(questionInfo);
-    expect(argumentCondensation.supabaseCookies).toEqual([{ name: STORAGE_KEY, value: 'the-session-blob' }]);
+  it('gives an admitted user with a password no gate, and returns no part of the session', async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    getBasicUserData.mockResolvedValue(adminWith(true));
+
+    const data = await runLoad(makeEvent([ADMIN_GRANT]));
+
+    expect(data).toEqual({ admitted: true, gate: null, user: adminWith(true) });
+    expect(JSON.stringify(data)).not.toContain('access_token');
+    expect(JSON.stringify(data)).not.toContain('header.');
+  });
+
+  it('answers a failed read with a session left with a 503 in the reader’s language, and signs nobody out', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    getBasicUserData.mockRejectedValue(new Error('The read failed.'));
+    isSessionGone.mockResolvedValue(false);
+
+    const thrown = await thrownBy(makeEvent([ADMIN_GRANT]));
+
+    expect(isHttpError(thrown) && { status: thrown.status, body: thrown.body }).toEqual({
+      status: 503,
+      body: { message: 'error.default' }
+    });
+    expect(isSessionGone).toHaveBeenCalledTimes(1);
+  });
+
+  it('redirects a failed read with no session left to the login page with loginFailed', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    getBasicUserData.mockResolvedValue(undefined);
+    isSessionGone.mockResolvedValue(true);
+
+    const thrown = await thrownBy(makeEvent([ADMIN_GRANT]));
+
+    expect(isRedirect(thrown) && { status: thrown.status, location: thrown.location }).toEqual({
+      status: 307,
+      location: LOGIN_FAILED_ROUTE
+    });
+  });
+
+  it('reads user-level data whose password fact is not a boolean as a failed read', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    getBasicUserData.mockResolvedValue({ ...adminWith(true), passwordSet: undefined });
+    isSessionGone.mockResolvedValue(false);
+
+    const thrown = await thrownBy(makeEvent([ADMIN_GRANT]));
+
+    expect(isHttpError(thrown) && thrown.status).toBe(503);
+  });
+
+  it('reaches its end with no read of url, route or params', async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    getBasicUserData.mockResolvedValue(adminWith(false));
+
+    await expect(runLoad(makeEvent([ADMIN_GRANT]))).resolves.toHaveProperty('gate', 'setPassword');
   });
 });

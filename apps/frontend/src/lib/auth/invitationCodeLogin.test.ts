@@ -1,7 +1,7 @@
 import { configureLogger, log } from '@openvaa/app-shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { invitationCodeLogin } from './invitationCodeLogin';
-import { CONTESTANT_GRANTS } from './roles';
+import { CONTESTANT_GRANTS, readGrants } from './roles';
 import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
 import type { InvitationCodeLoginContext } from './invitationCodeLogin';
 import type { GrantClaim } from './roles';
@@ -9,7 +9,7 @@ import type { GrantClaim } from './roles';
 /**
  * The code-login helper: a code sign-in on the caller's context, then the admission every sign-in goes through.
  *
- * The context is a structural fake, as in the password-login spec. Its token changes only when `refreshSession` is called.
+ * The context is a structural fake, as in the password-login spec. Its token changes only when `refreshSession` is called, and its read of the grants that reach the project answers the token's grants as they are when read.
  */
 
 const CODE = 'ABCD-EFGH-JKLM';
@@ -34,7 +34,7 @@ function contextWith({
   signIn = 'establishes a session',
   grantsBefore = [ENTITY_EDITOR],
   grantsAfterRefresh = grantsBefore,
-  claim = { claimed: [], skipped: [], passwordSet: true }
+  claim = { claimed: [], skipped: [] }
 }: {
   signIn?: 'establishes a session' | 'refuses' | 'throws';
   grantsBefore?: Array<GrantClaim>;
@@ -72,7 +72,8 @@ function contextWith({
       claimInvitations: async () => {
         calls.push('claimInvitations');
         return claim;
-      }
+      },
+      getProjectGrants: async () => readGrants(accessToken)
     }
   };
 }
@@ -98,7 +99,7 @@ describe('invitationCodeLogin', () => {
   });
 
   it('signs in with the code and the password, once, and then runs the admission', async () => {
-    const claim: InvitationClaimResult = { claimed: [], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [], skipped: [] };
     const { context, calls, signInArguments } = contextWith({ claim });
 
     const outcome = await login(context);
@@ -114,7 +115,7 @@ describe('invitationCodeLogin', () => {
   });
 
   it('admits a user whose grant reaches the token only through the refresh after the claim', async () => {
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const { context, calls } = contextWith({ grantsBefore: [], grantsAfterRefresh: [ENTITY_EDITOR], claim });
 
     expect((await login(context)).ok).toBe(true);

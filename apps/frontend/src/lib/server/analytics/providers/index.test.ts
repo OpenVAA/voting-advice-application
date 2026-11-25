@@ -12,7 +12,7 @@ import { createProvider } from './index';
 import type { AnalyticsEvent } from '$lib/analytics/analyticsEvent.type';
 import type { EventName } from '$lib/analytics/events.schema';
 import type { AnalyticsConfig } from '../config';
-import type { ProviderDeps } from './provider.type';
+import type { AnalyticsProviderDeps } from './provider.type';
 
 const HOST = 'https://posthog.example';
 const KEY = 'phc_test_key';
@@ -25,11 +25,11 @@ const SETTINGS = { consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs:
  *
  * @returns The dependencies and what they recorded.
  */
-function recordingDeps(): { deps: ProviderDeps; lines: Array<string>; bodies: Array<string> } {
+function recordingDeps(): { deps: AnalyticsProviderDeps; lines: Array<string>; bodies: Array<string> } {
   const lines: Array<string> = [];
   const bodies: Array<string> = [];
   let n = 0;
-  const deps: ProviderDeps = {
+  const deps: AnalyticsProviderDeps = {
     fetch: (_input, init) => {
       bodies.push(String(init?.body));
       return Promise.resolve(new Response(null, { status: 200 }));
@@ -52,14 +52,14 @@ function recordingDeps(): { deps: ProviderDeps; lines: Array<string>; bodies: Ar
  * @returns The event, carrying the sample's visit id when the sample has one.
  */
 function eventOf(name: EventName): AnalyticsEvent {
-  const sample: { name: string; id?: string; attributes: Record<string, JSONData> } = VALID_EVENTS[name];
+  const sample: { name: string; visitId?: string; attributes: Record<string, JSONData> } = VALID_EVENTS[name];
   const event: AnalyticsEvent = {
     name: sample.name,
     time: 1_792_400_000_000,
     app: 'voter',
     attributes: sample.attributes
   };
-  if (sample.id !== undefined) event.id = sample.id;
+  if (sample.visitId !== undefined) event.visitId = sample.visitId;
   return event;
 }
 

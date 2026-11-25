@@ -23,33 +23,26 @@
  */
 
 import { expect, test } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { RELAY_PATH } from '../../../../apps/frontend/src/lib/analytics/constants';
 import { expectOnlyAllowedDeviceState } from '../../fixtures/shared/deviceStores.fixture';
-import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
+import {
+  CONSENT_PROMPT,
+  createRelayCapture,
+  flushTrackingBuffer,
+  GRANTED_BUTTON,
+  PREFS_KEY
+} from '../../fixtures/shared/relayCapture.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
 import { settleNetworkIdle, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { walkVoterStages } from '../../utils/voterNavigation';
 import type { Page } from '@playwright/test';
 import type { RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
 
-/** The accessible name of the voter app's consent prompt (`common.privacy.dataCollection.title`, the title of DataConsentPopup's Alert). */
-const CONSENT_PROMPT = /collecting usage data/i;
-
-/** The accessible name of the consent control's button that grants consent. */
-const GRANTED_BUTTON = /agree to share my data/i;
-
-/** localStorage key the app persists `userPreferences` under. */
-const PREFS_KEY = 'appContext-userPreferences';
-
 /** The English text of `privacy.analytics.gpc`, read from the message source rather than copied, so a copy edit cannot turn this spec into an assertion about a stale string. */
-const GPC_TEXT: string = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/privacy.json'), 'utf8')
-).privacy.analytics.gpc;
+const GPC_TEXT = messageOf('privacy', 'analytics.gpc');
 
 /** The message of the control's capture assertion, which fails when the relay forwards nothing. */
 const RELAY_INACTIVE_MESSAGE = `no request to the relay path ${RELAY_PATH} was captured without the signal: the server must run with ANALYTICS_PROVIDER=log, as .env.example sets it`;
@@ -66,18 +59,6 @@ async function startToFirstQuestion(page: Page): Promise<void> {
   await walkVoterStages(page, ['question']);
   await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({
     timeout: TIMEOUTS.slowPage
-  });
-}
-
-/**
- * Reach the hidden flush point on the SAME document. The root layout sends the pending batch when the document becomes hidden, so this overrides `document.visibilityState` with `'hidden'` and dispatches `visibilitychange`; it then removes the override, so the real value shows through again, and dispatches the event once more, which marks the page visible.
- */
-async function flushTrackingBuffer(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
-    document.dispatchEvent(new Event('visibilitychange'));
-    Reflect.deleteProperty(document, 'visibilityState');
-    document.dispatchEvent(new Event('visibilitychange'));
   });
 }
 
@@ -122,9 +103,9 @@ test.describe('under Global Privacy Control', () => {
   test('no prompt and no send under the signal', async ({ context, page }) => {
     const capture = createRelayCapture(context);
 
-    // The front page, hydrated: the voter layout has mounted, which is when the consent prompt is queued, and the flush points are registered.
+    // The front page, hydrated.
     await openVoterHome(page);
-    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
+    await waitForNavigationFocusReset(page);
     await expectNoConsentPrompt(page);
     await flushTrackingBuffer(page);
 
@@ -139,7 +120,7 @@ test.describe('under Global Privacy Control', () => {
     // The privacy page, hydrated.
     await page.goto('/en/privacy');
     await expect(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
-    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
+    await waitForNavigationFocusReset(page);
     await expectNoConsentPrompt(page);
     await flushTrackingBuffer(page);
     await settleNetworkIdle(page, { timeoutMs: TIMEOUTS.slowPage });
@@ -158,7 +139,7 @@ test.describe('under Global Privacy Control', () => {
   test('the privacy page says so', async ({ page }) => {
     await page.goto('/en/privacy');
     await expect(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
-    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
+    await waitForNavigationFocusReset(page);
 
     await expect(
       page.getByTestId(testIds.voter.privacy.content),

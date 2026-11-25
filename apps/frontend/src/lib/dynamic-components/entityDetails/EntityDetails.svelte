@@ -48,7 +48,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   let { entity, excludeTabs = [], ...restProps }: EntityDetailsProps = $props();
 
   const ctx = getAppContext();
-  const { appType, startEvent, t } = ctx;
+  const { appType, track, t } = ctx;
   // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   // appType is determined at app boot and does not change at runtime; we read it once at init to decide whether voter context is available.
@@ -131,7 +131,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   });
 
   function handleContentTabChange(tab: ContentTab): void {
-    startEvent('entityDetails_changeTab', { section: tab.id });
+    track('entityDetails_changeTab', { section: tab.id });
   }
 </script>
 

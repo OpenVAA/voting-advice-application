@@ -1,13 +1,8 @@
-# Settings faults for the conformance probe's red run. This file exists only in the throwaway
-# project's root. It plants faults only when `-var fault_set=...` is given on the command line, never
-# from terraform.tfvars; with the default, `none`, it plans nothing.
+# Settings faults for the conformance probe's red run. This file exists only in the throwaway project's root. It plants faults only when `-var fault_set=...` is given on the command line, never from terraform.tfvars; with the default, `none`, it plans nothing.
 #
-# `redirect` plants the site address and the redirect list alone, so the account-access function's
-# refusal of a redirect can be seen while sign-up stays closed. `all` plants every settings fault.
+# `redirect` plants the site address and the redirect list alone, so the account-access function's refusal of a redirect can be seen while sign-up stays closed. `all` plants every settings fault.
 #
-# The revert is an apply with `fault_set` back to `none` and the module's settings resource replaced
-# (`-replace=module.supabase.supabase_settings.this`): destroying the resource below changes nothing
-# on the project, so only the replaced module resource sends the correct values again.
+# The revert is an apply with `fault_set` back to `none` and the module's settings resource replaced (`-replace=module.supabase.supabase_settings.this`): destroying the resource below changes nothing on the project, so only the replaced module resource sends the correct values again.
 
 variable "fault_set" {
   description = "Which settings faults to plant on the throwaway project: none, redirect or all. Given on the command line only."
@@ -21,8 +16,7 @@ variable "fault_set" {
   }
 }
 
-# Each value keeps its JSON type: numbers and booleans are bare, and each object is encoded on its
-# own before a conditional picks between the encoded strings.
+# Each value keeps its JSON type: numbers and booleans are bare, and each object is encoded on its own before a conditional picks between the encoded strings.
 locals {
   fault_auth_redirect = {
     site_url       = "https://planted.invalid"

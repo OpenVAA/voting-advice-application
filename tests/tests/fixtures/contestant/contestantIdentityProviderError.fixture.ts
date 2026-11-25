@@ -1,7 +1,7 @@
 /**
  * @file contestantIdentityProviderError fixture.
  *
- * Function-fixture for the screen an identification failure in the identity provider's flow lands on. The screen shows one of three classes — `cancelled`, `retry` and `noRetry` — chosen by the code on its address, and nothing else of that code.
+ * Function-fixture for the screen an identification failure in the identity provider's flow lands on. The screen shows one of four classes — `cancelled`, `retry`, `noRetry` and `noAccount` — chosen by the code on its address, and nothing else of that code.
  *
  * Surface:
  *  - open(code)              — open the screen by its address with a code, as the callback's redirect does, and wait for it.
@@ -17,32 +17,17 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
 
-/** The three classes the screen can be shown in. */
-export type IdentityProviderErrorClass = 'cancelled' | 'retry' | 'noRetry';
+/** The four classes the screen can be shown in. */
+export type IdentityProviderErrorClass = 'cancelled' | 'retry' | 'noRetry' | 'noAccount';
 
 /** The fragment of the support section on the Help page. */
 const SUPPORT_SECTION = '#support';
-
-/** An English catalogue file's messages, under its one top-level key. */
-function englishCatalogue(namespace: string): Record<string, unknown> {
-  return JSON.parse(fs.readFileSync(path.join(TESTS_DIR, `../../apps/frontend/messages/en/${namespace}.json`), 'utf8'))[
-    namespace
-  ];
-}
-
-/** The screen's sentence for a class, in English, read from the catalogue file. */
-function englishSentence(errorClass: IdentityProviderErrorClass): string {
-  const errors = englishCatalogue('contestantApp.identityProvider').error as Record<string, { content: string }>;
-  return errors[errorClass].content;
-}
 
 export function createContestantIdentityProviderErrorPage(page: Page) {
   const ids = testIds.contestant.identityProviderError;
@@ -124,7 +109,7 @@ export function createContestantIdentityProviderErrorPage(page: Page) {
       await expect(sentence).toBeVisible();
       const link = sentence.getByRole('link');
       await expect(link).toHaveCount(1);
-      await expect(link).toHaveText(englishCatalogue('contestantApp.common').contactSupportLink as string);
+      await expect(link).toHaveText(messageOf('contestantApp.common', 'contactSupportLink'));
       const target = new URL((await link.getAttribute('href')) ?? '', page.url());
       expect(target.pathname).toBe(buildRoute({ route: 'ContestantAppHelp', locale: 'en' }));
       expect(target.hash).toBe(SUPPORT_SECTION);
@@ -144,3 +129,8 @@ export function createContestantIdentityProviderErrorPage(page: Page) {
 }
 
 export type ContestantIdentityProviderErrorPageFixture = ReturnType<typeof createContestantIdentityProviderErrorPage>;
+
+/** The screen's sentence for a class, in English, read from the catalogue file. */
+function englishSentence(errorClass: IdentityProviderErrorClass): string {
+  return messageOf('contestantApp.identityProvider', `error.${errorClass}.content`);
+}

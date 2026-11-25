@@ -20,7 +20,7 @@ import { testIds } from '../../utils/testIds';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
 import type { Page } from '@playwright/test';
 
-/** Why the content under a note cannot be edited, as the note names it in its `data-reason` attribute. The last is the reason the nominations view gives while answers are locked and nominations are not. */
+/** Why the content under a note cannot be edited, as the note names it in its `data-reason` attribute. The last is the reason the nominations view gives while contestant editing is locked, which closes answers and nominations alike. */
 export type NotEditableReason = 'answersLocked' | 'nominationsLocked' | 'nominationsAnswersLocked';
 
 export function createNotEditableNote(page: Page) {

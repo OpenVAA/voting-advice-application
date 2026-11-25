@@ -154,6 +154,10 @@ The project uses Yarn 4 workspaces with these modules:
 
 - `@openvaa/shared-config` - Shared ESLint, TypeScript, and build configs
 
+**Infrastructure**:
+
+- `infra/` - Terraform of a deployment's AWS account, staging zone and mail, and Supabase project (not a workspace). `infra/README.md` is its map
+
 ### Module Resolution & Dependencies
 
 **IDE Resolution**: Uses TypeScript project references in `tsconfig.json` files. You don't need to build dependencies for IDE to resolve imports.
@@ -259,7 +263,7 @@ The schema itself — tables, RLS policies, JWT claims, the bulk import/delete R
 
 ## Common Workflows
 
-**Starting a feature**: `yarn build` first (cached, fast if already built), then read the relevant package README. Frontend components live in the three directories listed under § _Frontend_; backend schema in `apps/supabase/supabase/migrations/`.
+**Starting a feature**: `yarn build` first (cached, fast if already built), then read the relevant package README. Frontend components live in the three directories listed under § _Frontend_; backend schema in `apps/supabase/supabase/schema/` (a change also needs a new appended migration; see `apps/supabase/README.md`).
 
 **Running tests**: `yarn test:unit` for the quick check, `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset` for the full E2E run. The wrapper starts Supabase, serves `identity-callback` with the identity provider's test environment, and starts one fresh dev server with `PUBLIC_PROJECT_ID` set to the project the suite seeds and that environment; at its end it restarts the shared stack (`yarn db:stop`, `yarn db:start`, about 30 s) to put the default edge runtime back, so a run also interrupts anything else using that stack; a plain `yarn dev` serves the **default** project instead, so the specs would drive an application with no elections, no questions and no nominations. The suite creates and owns its own project, so clearing the database is **not** a precondition of a run — and doing it while a run is in flight destroys the state that run depends on.
 
@@ -290,7 +294,7 @@ See `packages/dev-seed/README.md` for authoring custom templates (mixing `fixed[
 
 ### Comment Hygiene
 
-**A comment describes the code as it is now, to someone reading it cold.** Git history records how it got that way; the planning record records why that route was taken. Every comment added or changed under `apps/`, `packages/` and `tests/` obeys four rules:
+**A comment describes the code as it is now, to someone reading it cold.** Git history records how it got that way; the planning record records why that route was taken. Every comment added or changed under `apps/`, `packages/`, `tests/` and `infra/` obeys four rules:
 
 - **No historical narrative.** Don't describe what the code used to do, what was removed or replaced, how a defect was found, or which run, spike or phase diagnosed it. "Previously…", "was changed to…", "after the X refactor…", "this used to race" belong in the commit message.
 - **No planning references beyond the bare form.** When a reference is truly needed, write `see phase N` or `see spike N`. Don't cite `.planning/` paths, section anchors, plan numbers, `D-NN` decision ids or milestone tags.
@@ -331,7 +335,7 @@ Both invariants were diagnosed in this codebase (spikes 031–034) and landed in
 
 ## Deployment
 
-The frontend ships as a Docker container to AWS: an ECS service behind CloudFront, written in Terraform under `infra/` and deployed by the gated pipeline on a push to `deploy/staging` (`.github/workflows/deploy.yml`). The backend is Supabase Cloud, its hosted settings configured by the Terraform module under `infra/modules/supabase`. The deployment guide, `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md`, is the entry point, and `infra/README.md` describes the roots and the pipeline. `docker-compose.dev.yml` is for production build testing only, not development.
+The frontend ships as a Docker container to AWS: an ECS service behind CloudFront, written in Terraform under `infra/` and deployed by the gated pipeline on a push to `deploy/staging` (`.github/workflows/deploy.yml`). The backend is Supabase Cloud, its hosted API and auth settings written by one writer only, the Terraform module under `infra/modules/supabase`, from its `hosted-settings.json`; never set them in the dashboard or with `supabase config push`. The deployment guide, `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md`, is the entry point, and `infra/README.md` describes the roots and the pipeline. `docker-compose.dev.yml` is for production build testing only, not development.
 
 ## Troubleshooting
 

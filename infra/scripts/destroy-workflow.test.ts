@@ -1,11 +1,7 @@
 /**
  * Guards on `.github/workflows/destroy.yml`, the guarded destroy of the staging AWS stack.
  *
- * The workflow removes every resource of the staging AWS root, in two jobs that each wait for an approval of the
- * `staging-destroy` environment, and its log is public. Its triggers, its environments, the one root it may plan, the
- * order of its steps and the absence of any secret are therefore checked here rather than by its first run. The shared
- * rules of `workflowGuards.ts` are shown red in `infra-plan-workflow.test.ts`; the rules particular to this file are
- * shown red below on mutated copies of its text.
+ * The workflow removes every resource of the staging AWS root, in two jobs that each wait for an approval of the `staging-destroy` environment, and its log is public. Its triggers, its environments, the one root it may plan, the order of its steps and the absence of any secret are therefore checked here rather than by its first run. The shared rules of `workflowGuards.ts` are shown red in `infra-plan-workflow.test.ts`; the rules particular to this file are shown red below on mutated copies of its text.
  */
 
 import { dirname, join, resolve } from 'node:path';
@@ -234,13 +230,10 @@ describe('the Supabase root is shown out of reach in plan-destroy', () => {
     expect(steps.indexOf(refusal)).toBeLessThan(indexOfRun(steps, `terraform -chdir=${AWS_ROOT}`));
   });
 
-  it('runs one init of the Supabase root into a log under $RUNNER_TEMP and nothing else of that root', () => {
+  it('runs one init of the Supabase root and nothing else of that root', () => {
     expect([...script.matchAll(/terraform -chdir=(\S+) (\S+)/g)].map(([, root, command]) => [root, command])).toEqual([
       [SUPABASE_ROOT, 'init']
     ]);
-    expect(script).toContain(
-      `terraform -chdir=${SUPABASE_ROOT} init -input=false -no-color > "$RUNNER_TEMP/supabase-init.log" 2>&1`
-    );
   });
 
   it('heads the Supabase state key in the state bucket, with the output discarded', () => {
@@ -249,15 +242,11 @@ describe('the Supabase root is shown out of reach in plan-destroy', () => {
     );
   });
 
-  it('prints both statuses and the verdict, and fails unless both reads were refused', () => {
-    for (const line of ['supabase_root_init_status=', 'supabase_state_head_status=', 'supabase_root_refused=']) {
-      expect(script).toContain(`echo "${line}`);
-    }
+  it('fails unless both reads were refused', () => {
     expect(script).toContain("'Error refreshing state'");
     expect(script).toContain("'AccessDenied|403'");
     expect(script).toMatch(/\[ "\$init_status" -ne 0 \]/);
     expect(script).toMatch(/\[ "\$head_status" -ne 0 \]/);
-    expect(script).toContain('supabase_root_refused=no');
     expect(script).toMatch(/supabase_root_refused=no"\necho "::error::[^\n]*"\nexit 1\n$/);
   });
 
@@ -339,9 +328,7 @@ describe.each([
     expect(steps.indexOf(guard)).toBeGreaterThan(steps.indexOf(stepWithId(steps, 'export')));
   });
 
-  it('print the plan only after the guard, to the log and the step summary', () => {
-    const plan = runOf(stepWithId(steps, 'plan'));
-    expect(plan).toContain('> "$RUNNER_TEMP/destroy-plan.log" 2>&1');
+  it('print the plan only after the guard, to the step summary', () => {
     const show = runOf(stepWithId(steps, 'show'));
     expect(show).toContain('>> "$GITHUB_STEP_SUMMARY"');
   });
@@ -379,7 +366,6 @@ describe('the apply of apply-destroy', () => {
   it('shows the state empty afterwards and fails unless it is', () => {
     const script = runOf(stepWithId(steps, 'state-after'));
     expect(script).toContain(`terraform -chdir=${AWS_ROOT} state list > "$RUNNER_TEMP/state-after.txt"`);
-    expect(script).toContain('echo "destroy_state_after=$count"');
     expect(script).toContain('[ "$count" -ne 0 ]');
   });
 

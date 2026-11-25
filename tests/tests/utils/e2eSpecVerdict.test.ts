@@ -1,7 +1,7 @@
 /**
  * Unit tests for `tests/scripts/e2e-spec-verdict.mjs`, the script that turns a run directory's Playwright report into one exit status.
  *
- * The script is run as a caller runs it: as a process, with the running Node binary, against a `results.json` written into a fresh temporary directory. Every case asserts the exact exit status, and every case that expects a failure also asserts the line that says why, so a failure for the wrong reason is not taken for the right one.
+ * The script is run as a caller runs it: as a process, with the running Node binary, against a `results.json` written into a fresh temporary directory. Every case asserts the exact exit status, and every case that expects a failure also asserts the line that says why, so a failure for the wrong reason is not taken for the right one. How a test is classified is covered by `e2eReport.test.ts`.
  *
  * Run: yarn test:unit:tests e2eSpecVerdict
  */
@@ -15,10 +15,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 const SCRIPTS_DIR = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '../../scripts');
 const SCRIPT = path.join(SCRIPTS_DIR, 'e2e-spec-verdict.mjs');
-const EVIDENCE_SCRIPT = path.join(SCRIPTS_DIR, 'e2e-evidence.mjs');
-
-/** The line both scripts classify a skipped test with. The two must never disagree on a report. */
-const DID_NOT_RUN_RULE = "const declarativeSkip = annotations.includes('skip') || annotations.includes('fixme');";
+const REPORT_MODULE = path.join(SCRIPTS_DIR, 'e2e-report.mjs');
 
 /** An escape character, built at run time so that no control character sits in this file. */
 const ESC = String.fromCharCode(27);
@@ -201,25 +198,15 @@ describe('a test that did not run', () => {
   });
 
   it('fails a run whatever condition flags are given', () => {
-    const r = verdict([runDir(report()), '--no-flaky', '--passed-test', 'first']);
+    const r = verdict([runDir(report()), '--passed-test', 'first', '--skipped-baseline', baselineFile([])]);
     expect(r.status).toBe(1);
     expect(r.out).toMatch(/^VERDICT FAIL: did not run: .*never started/m);
-  });
-
-  it('no longer fails the run alone under --allow-did-not-run', () => {
-    const r = verdict([runDir(report()), '--allow-did-not-run']);
-    expect(r.status).toBe(0);
   });
 
   it('is a declared skip, not a test that did not run, when it carries a fixme annotation', () => {
     const fixme = buildReport({ 'a.spec.ts': [{ title: 'parked', status: 'skipped', annotations: ['fixme'] }] });
     const r = verdict([runDir(fixme)]);
     expect(r.status).toBe(0);
-  });
-
-  it('is the rule tests/scripts/e2e-evidence.mjs uses, written the same way in both scripts', () => {
-    expect(fs.readFileSync(EVIDENCE_SCRIPT, 'utf8')).toContain(DID_NOT_RUN_RULE);
-    expect(fs.readFileSync(SCRIPT, 'utf8')).toContain(DID_NOT_RUN_RULE);
   });
 });
 
@@ -402,7 +389,7 @@ describe('--passed-test', () => {
   });
 });
 
-describe('--no-other-failures', () => {
+describe('a failed test outside the red controls', () => {
   const report = () =>
     buildReport({
       'p.spec.ts': [
@@ -412,40 +399,45 @@ describe('--no-other-failures', () => {
     });
 
   it('exits 1 when a test that matches no --failed-test value failed', () => {
-    const r = verdict([runDir(report()), '--failed-test', 'the red control', '--no-other-failures']);
+    const r = verdict([runDir(report()), '--failed-test', 'the red control']);
     expect(r.status).toBe(1);
     expect(r.out).toMatch(/^VERDICT FAIL: failed outside the red controls: .*an unrelated test/m);
   });
 
-  it('exits 1 with no --failed-test value at all when any test failed', () => {
+  it('exits 1 with no flag at all when any test failed', () => {
     const one = buildReport({ 'p.spec.ts': [{ title: 'only', status: 'unexpected' }] });
-    const r = verdict([runDir(one), '--no-other-failures']);
+    const r = verdict([runDir(one)]);
     expect(r.status).toBe(1);
     expect(r.out).toMatch(/^VERDICT FAIL: failed outside the red controls: .*only/m);
   });
 
+  it('exits 1 when only --passed is given and a test of another spec file failed', () => {
+    const mixed = buildReport({
+      ...TWO_PASSED,
+      'q.spec.ts': [{ title: 'elsewhere', status: 'unexpected' }]
+    });
+    const r = verdict([runDir(mixed), '--passed', 'a.spec.ts']);
+    expect(r.status).toBe(1);
+    expect(r.out).toMatch(/^VERDICT FAIL: failed outside the red controls: .*q\.spec\.ts.*elsewhere/m);
+  });
+
   it('exits 0 when the only failures are the red controls', () => {
-    const r = verdict([
-      runDir(report()),
-      '--failed-test',
-      'the red control',
-      '--failed-test',
-      'an unrelated test',
-      '--no-other-failures'
-    ]);
+    const r = verdict([runDir(report()), '--failed-test', 'the red control', '--failed-test', 'an unrelated test']);
     expect(r.status).toBe(0);
   });
 });
 
-describe('--no-flaky', () => {
-  it('exits 1 naming the flaky test', () => {
+describe('a flaky test', () => {
+  it('exits 1 naming the flaky test, whatever flags are given', () => {
     const report = buildReport({
       'a.spec.ts': [{ title: 'steady', status: 'expected' }],
       'c.spec.ts': [{ title: 'wobbly', status: 'flaky' }]
     });
-    const r = verdict([runDir(report), '--no-flaky']);
-    expect(r.status).toBe(1);
-    expect(r.out).toMatch(/^VERDICT FAIL: flaky: .*c\.spec\.ts.*wobbly/m);
+    for (const flags of [[], ['--passed', 'a.spec.ts'], ['--failed-test', 'wobbly']]) {
+      const r = verdict([runDir(report), ...flags]);
+      expect(r.status).toBe(1);
+      expect(r.out).toMatch(/^VERDICT FAIL: flaky: .*c\.spec\.ts.*wobbly/m);
+    }
   });
 });
 
@@ -470,11 +462,7 @@ describe('a report that holds no test', () => {
 
   it.each([
     ['no flag', () => []],
-    [
-      '--no-other-failures --no-flaky --skipped-baseline <an empty file>',
-      () => ['--no-other-failures', '--no-flaky', '--skipped-baseline', baselineFile([])]
-    ],
-    ['--allow-did-not-run --no-other-failures', () => ['--allow-did-not-run', '--no-other-failures']],
+    ['--skipped-baseline <an empty file>', () => ['--skipped-baseline', baselineFile([])]],
     ['--print-skipped', () => ['--print-skipped']]
   ])('exits 1 under %s', (_name, flags) => {
     const r = verdict([runDir(empty()), ...flags()]);
@@ -531,18 +519,31 @@ describe('a missing or unusable report, and unusable arguments', () => {
     expect(verdict([runDir(buildReport(TWO_PASSED)), '--everything-passed']).status).toBe(2);
   });
 
+  it.each(['--no-other-failures', '--no-flaky', '--allow-did-not-run'])(
+    'exits 2 on %s, a flag that no longer exists because its rule always applies',
+    (flag) => {
+      expect(verdict([runDir(buildReport(TWO_PASSED)), flag]).status).toBe(2);
+    }
+  );
+
   it('exits 2 on a flag without its value', () => {
     expect(verdict([runDir(buildReport(TWO_PASSED)), '--passed']).status).toBe(2);
   });
 });
 
 describe('what the script may do', () => {
-  it('imports nothing but node:fs and node:path, and starts no process and writes no file', () => {
-    const source = fs.readFileSync(SCRIPT, 'utf8');
-    const imports = [...source.matchAll(/^import .* from '([^']+)';$/gm)].map((m) => m[1]).sort();
-    expect(imports).toEqual(['node:fs', 'node:path']);
-    expect(source).not.toMatch(
-      /child_process|\bspawn|\bexec(Sync|File)?\(|\bfork\(|writeFile|appendFile|createWriteStream|mkdirSync|rmSync|unlinkSync|renameSync|copyFile/
-    );
-  });
+  it.each([
+    ['e2e-spec-verdict.mjs', SCRIPT, ['./e2e-report.mjs', 'node:fs', 'node:path']],
+    ['e2e-report.mjs', REPORT_MODULE, ['node:fs', 'node:path']]
+  ])(
+    '%s imports only node:fs, node:path and the shared report module, and starts no process and writes no file',
+    (_name, file, expected) => {
+      const source = fs.readFileSync(file, 'utf8');
+      const imports = [...source.matchAll(/^import .* from '([^']+)';$/gm)].map((m) => m[1]).sort();
+      expect(imports).toEqual(expected);
+      expect(source).not.toMatch(
+        /child_process|\bspawn|\bexec(Sync|File)?\(|\bfork\(|writeFile|appendFile|createWriteStream|mkdirSync|rmSync|unlinkSync|renameSync|copyFile/
+      );
+    }
+  );
 });

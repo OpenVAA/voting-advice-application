@@ -1,7 +1,7 @@
 /**
  * `StoredSettingsSchema` — the stored shape of the `app_settings.settings` JSONB column.
  *
- * Covers the `{}` case the column's `'{}'::jsonb` default and the provider's `PGRST116` branch both produce, a representative real payload (the package's own shipped `dynamicSettings`), the locale-object notification fields, one unknown-key rejection per nesting level (top level, `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp` and `contestantApp.registrationModes`), the one member of `analytics` and the stored provider member it rejects, the two list members of `contestantApp` — what parses, what each parses to, and the path each rejection names — and the two keys `access.nominationsLocked` and `entities.hideIfMissingAnswers.organization`, with their shipped defaults.
+ * Covers the `{}` case the column's `'{}'::jsonb` default and the provider's `PGRST116` branch both produce, a representative real payload (the package's own shipped `dynamicSettings`), the locale-object notification fields, one unknown-key rejection per nesting level (top level, `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp`, `contestantApp.servedEntityTypes` and `contestantApp.servedEntityTypes.candidate`), the one member of `analytics` and the stored provider member it rejects, `contestantApp.servedEntityTypes` — what parses, what it parses to, and the path each rejection names — the key `access.contestantEditing` with the values it accepts and refuses, and the key `entities.hideIfMissingAnswers.organization`.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -84,6 +84,7 @@ describe('StoredSettingsSchema', () => {
     expect(result.success).toBe(false);
     const flagged = new Set(result.success === false ? result.error.issues.map((issue) => issue.path[0]) : []);
     expect([...flagged]).toEqual(['analytics']);
+    expect(result.success === false && result.error.issues[0]).toMatchObject({ keys: ['platform'] });
     const remainder = Object.fromEntries(Object.entries(stored).filter(([key]) => !flagged.has(key)));
     const retry = StoredSettingsSchema.safeParse(remainder);
     expect(retry.success === false ? retry.error.issues : retry.success).toBe(true);
@@ -99,17 +100,6 @@ describe('StoredSettingsSchema', () => {
     });
     expect(result.success === false ? result.error.issues : result.success).toBe(true);
     expect(result.success && result.data.matching?.minimumAnswers).toBe(1);
-  });
-
-  it('LEVEL 2: rejects `platform` as an unknown key inside `analytics`', () => {
-    // The member is strict like the rest of this schema, so a stored provider object is an unknown key, not a tolerated one.
-    const result = StoredSettingsSchema.safeParse({
-      analytics: { platform: { name: 'x', code: 'y' }, trackEvents: true }
-    });
-    expect(result.success).toBe(false);
-    expect(result.success === false && result.error.issues[0]?.message).toMatch(/Unrecognized key/);
-    expect(result.success === false && result.error.issues[0]?.path).toEqual(['analytics']);
-    expect(result.success === false && result.error.issues[0]).toMatchObject({ keys: ['platform'] });
   });
 
   it('LEVEL 1: rejects an unknown key at the top level', () => {
@@ -157,13 +147,29 @@ describe('StoredSettingsSchema', () => {
     expect(result.success === false && result.error.issues[0]?.path).toEqual(['contestantApp']);
   });
 
-  it('LEVEL 3: rejects an unknown key inside `contestantApp.registrationModes`', () => {
+  it('LEVEL 3: rejects an unknown key inside `contestantApp.servedEntityTypes`', () => {
     const result = StoredSettingsSchema.safeParse({
-      contestantApp: { registrationModes: { candidate: ['email'], bogusRow: [] } }
+      contestantApp: {
+        servedEntityTypes: { candidate: { registrationModes: ['email'] }, faction: { registrationModes: [] } }
+      }
+    });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.error.issues[0]?.code).toBe('unrecognized_keys');
+    expect(result.success === false && result.error.issues[0]?.path).toEqual(['contestantApp', 'servedEntityTypes']);
+    expect(result.success === false && result.error.issues[0]).toMatchObject({ keys: ['faction'] });
+  });
+
+  it('LEVEL 4: rejects an unknown key inside `contestantApp.servedEntityTypes.candidate`', () => {
+    const result = StoredSettingsSchema.safeParse({
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['email'], bogusMember: 1 } } }
     });
     expect(result.success).toBe(false);
     expect(result.success === false && result.error.issues[0]?.message).toMatch(/Unrecognized key/);
-    expect(result.success === false && result.error.issues[0]?.path).toEqual(['contestantApp', 'registrationModes']);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual([
+      'contestantApp',
+      'servedEntityTypes',
+      'candidate'
+    ]);
   });
 
   it('rejects a wrong-typed leaf — `matching.minimumAnswers` as a string', () => {
@@ -173,52 +179,34 @@ describe('StoredSettingsSchema', () => {
   });
 });
 
-describe('StoredSettingsSchema — the nominations lock and the organization key of hideIfMissingAnswers', () => {
-  it('accepts `access.nominationsLocked` as a boolean and reads it back', () => {
-    const locked = StoredSettingsSchema.safeParse({ access: { nominationsLocked: true } });
-    expect(locked.success === false ? locked.error.issues : locked.data).toEqual({
-      access: { nominationsLocked: true }
-    });
-    const unlocked = StoredSettingsSchema.safeParse({ access: { nominationsLocked: false } });
-    expect(unlocked.success === false ? unlocked.error.issues : unlocked.data).toEqual({
-      access: { nominationsLocked: false }
-    });
+describe('StoredSettingsSchema — contestant editing and the organization key of hideIfMissingAnswers', () => {
+  it.each(['open', 'nominationsLocked', 'locked'])('reads `access.contestantEditing` %s back unchanged', (value) => {
+    const stored = { access: { contestantEditing: value } };
+    const result = StoredSettingsSchema.safeParse(stored);
+    expect(result.success === false ? result.error.issues : result.data).toEqual(stored);
   });
 
-  it('rejects a wrong-typed `access.nominationsLocked`, at the member', () => {
-    const result = StoredSettingsSchema.safeParse({ access: { nominationsLocked: 'true' } });
+  it.each([true, 'true', 'unlocked', null])('rejects `access.contestantEditing` %s at its path', (value) => {
+    const result = StoredSettingsSchema.safeParse({ access: { contestantEditing: value } });
     expect(result.success).toBe(false);
-    expect(result.success === false && result.error.issues[0]?.path).toEqual(['access', 'nominationsLocked']);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual(['access', 'contestantEditing']);
   });
 
-  it('still rejects an unknown key inside `access`', () => {
-    const result = StoredSettingsSchema.safeParse({ access: { nominationsLocked: true, bogusLock: true } });
-    expect(result.success).toBe(false);
-    expect(result.success === false && result.error.issues[0]?.path).toEqual(['access']);
-    expect(result.success === false && result.error.issues[0]).toMatchObject({ keys: ['bogusLock'] });
+  it('rejects the lock booleans `access.answersLocked` and `access.nominationsLocked`', () => {
+    for (const key of ['answersLocked', 'nominationsLocked']) {
+      const result = StoredSettingsSchema.safeParse({ access: { [key]: true } });
+      expect(result.success).toBe(false);
+      expect(result.success === false && result.error.issues[0]?.path).toEqual(['access']);
+    }
   });
 
-  it('accepts `entities.hideIfMissingAnswers.organization` as a boolean, beside the candidate key and alone', () => {
-    const both = StoredSettingsSchema.safeParse({
+  it('reads `access.contestantEditing` and both keys of `entities.hideIfMissingAnswers` back unchanged', () => {
+    const stored = {
+      access: { contestantEditing: 'nominationsLocked' },
       entities: { hideIfMissingAnswers: { candidate: false, organization: true } }
-    });
-    expect(both.success === false ? both.error.issues : both.data).toEqual({
-      entities: { hideIfMissingAnswers: { candidate: false, organization: true } }
-    });
-    const alone = StoredSettingsSchema.safeParse({ entities: { hideIfMissingAnswers: { organization: false } } });
-    expect(alone.success === false ? alone.error.issues : alone.data).toEqual({
-      entities: { hideIfMissingAnswers: { organization: false } }
-    });
-  });
-
-  it('rejects a wrong-typed `entities.hideIfMissingAnswers.organization`, at the member', () => {
-    const result = StoredSettingsSchema.safeParse({ entities: { hideIfMissingAnswers: { organization: 1 } } });
-    expect(result.success).toBe(false);
-    expect(result.success === false && result.error.issues[0]?.path).toEqual([
-      'entities',
-      'hideIfMissingAnswers',
-      'organization'
-    ]);
+    };
+    const result = StoredSettingsSchema.safeParse(stored);
+    expect(result.success === false ? result.error.issues : result.data).toEqual(stored);
   });
 
   it('still rejects an unknown key inside `entities.hideIfMissingAnswers`', () => {
@@ -229,133 +217,101 @@ describe('StoredSettingsSchema — the nominations lock and the organization key
     expect(result.success === false && result.error.issues[0]?.path).toEqual(['entities', 'hideIfMissingAnswers']);
     expect(result.success === false && result.error.issues[0]).toMatchObject({ keys: ['alliance'] });
   });
-
-  it('ships both keys switched off', () => {
-    expect(dynamicSettings.access).toMatchObject({ nominationsLocked: false });
-    expect(dynamicSettings.entities.hideIfMissingAnswers).toMatchObject({ organization: false });
-  });
 });
 
-describe('StoredSettingsSchema — the served entity types and the registration-mode matrix', () => {
-  it('collapses repeats and puts both lists in canonical order', () => {
+describe('StoredSettingsSchema — the served entity types', () => {
+  it('puts each registration list in canonical order with no repeats', () => {
     const result = StoredSettingsSchema.safeParse({
       contestantApp: {
-        entityTypes: ['organization', 'candidate', 'candidate'],
-        registrationModes: { candidate: ['code', 'email', 'code'], organization: [] }
+        servedEntityTypes: {
+          candidate: { registrationModes: ['code', 'identity_provider', 'email', 'code'] },
+          organization: { registrationModes: [] }
+        }
       }
     });
     expect(result.success === false ? result.error.issues : result.success).toBe(true);
     expect(result.success && result.data.contestantApp).toEqual({
-      entityTypes: ['candidate', 'organization'],
-      registrationModes: { candidate: ['email', 'code'], organization: [] }
-    });
-  });
-
-  it('puts a full registration row in the order identity_provider, email, code', () => {
-    const result = StoredSettingsSchema.safeParse({
-      contestantApp: { registrationModes: { candidate: ['code', 'identity_provider', 'email', 'identity_provider'] } }
-    });
-    expect(result.success === false ? result.error.issues : result.success).toBe(true);
-    expect(result.success && result.data.contestantApp).toEqual({
-      registrationModes: { candidate: ['identity_provider', 'email', 'code'] }
-    });
-  });
-
-  it('accepts a wholly empty matrix and reads it back as declared', () => {
-    const result = StoredSettingsSchema.safeParse({ contestantApp: { registrationModes: {} } });
-    expect(result.success === false ? result.error.issues : result.success).toBe(true);
-    expect(result.success && result.data.contestantApp).toEqual({ registrationModes: {} });
-  });
-
-  it('accepts one empty row and reads it back as declared', () => {
-    const result = StoredSettingsSchema.safeParse({ contestantApp: { registrationModes: { candidate: [] } } });
-    expect(result.success === false ? result.error.issues : result.success).toBe(true);
-    expect(result.success && result.data.contestantApp).toEqual({ registrationModes: { candidate: [] } });
-  });
-
-  it('accepts one empty cell beside a non-empty row and reads both back as declared', () => {
-    const result = StoredSettingsSchema.safeParse({
-      contestantApp: {
-        entityTypes: ['candidate', 'organization'],
-        registrationModes: { candidate: ['email'], organization: [] }
+      servedEntityTypes: {
+        candidate: { registrationModes: ['identity_provider', 'email', 'code'] },
+        organization: { registrationModes: [] }
       }
     });
-    expect(result.success === false ? result.error.issues : result.success).toBe(true);
-    expect(result.success && result.data.contestantApp).toEqual({
-      entityTypes: ['candidate', 'organization'],
-      registrationModes: { candidate: ['email'], organization: [] }
-    });
   });
 
-  it('accepts a row for a type the project does not serve and stores it as declared', () => {
+  it('accepts a single served type with no modes and reads it back as declared', () => {
     const result = StoredSettingsSchema.safeParse({
-      contestantApp: { entityTypes: ['candidate'], registrationModes: { organization: ['email'] } }
+      contestantApp: { servedEntityTypes: { organization: { registrationModes: [] } } }
     });
     expect(result.success === false ? result.error.issues : result.success).toBe(true);
     expect(result.success && result.data.contestantApp).toEqual({
-      entityTypes: ['candidate'],
-      registrationModes: { organization: ['email'] }
+      servedEntityTypes: { organization: { registrationModes: [] } }
     });
   });
 
-  it('keeps a stored `questions` member beside the two lists', () => {
+  it('keeps a stored `questions` member beside the served entity types', () => {
     const result = StoredSettingsSchema.safeParse({
-      contestantApp: { questions: { hideHero: true }, entityTypes: ['organization'] }
+      contestantApp: { questions: { hideHero: true }, servedEntityTypes: { organization: { registrationModes: [] } } }
     });
     expect(result.success === false ? result.error.issues : result.success).toBe(true);
     expect(result.success && result.data.contestantApp).toEqual({
       questions: { hideHero: true },
-      entityTypes: ['organization']
+      servedEntityTypes: { organization: { registrationModes: [] } }
     });
   });
 
-  it('rejects an empty list of served entity types, at the list', () => {
-    const result = StoredSettingsSchema.safeParse({ contestantApp: { entityTypes: [] } });
-    expect(result.success).toBe(false);
-    expect(result.success === false && result.error.issues[0]?.code).toBe('too_small');
-    expect(result.success === false && result.error.issues[0]?.path).toEqual(['contestantApp', 'entityTypes']);
+  it('reads an invalid `questions` member as absent and keeps the served entity types beside it', () => {
+    const result = StoredSettingsSchema.safeParse({
+      contestantApp: {
+        questions: { hideHero: 'yes' },
+        servedEntityTypes: { organization: { registrationModes: ['email'] } }
+      }
+    });
+    expect(result.success === false ? result.error.issues : result.success).toBe(true);
+    expect(result.success && result.data.contestantApp?.questions).toBeUndefined();
+    expect(result.success && result.data.contestantApp?.servedEntityTypes).toEqual({
+      organization: { registrationModes: ['email'] }
+    });
   });
 
-  it('rejects an entity type outside the vocabulary, at the member', () => {
-    const result = StoredSettingsSchema.safeParse({ contestantApp: { entityTypes: ['faction'] } });
+  it('rejects a member that serves no type, at the member', () => {
+    const result = StoredSettingsSchema.safeParse({ contestantApp: { servedEntityTypes: {} } });
     expect(result.success).toBe(false);
-    expect(result.success === false && result.error.issues[0]?.code).toBe('invalid_value');
-    expect(result.success === false && result.error.issues[0]?.path).toEqual(['contestantApp', 'entityTypes', 0]);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual(['contestantApp', 'servedEntityTypes']);
   });
 
-  it('rejects the whole list when one of several types is unknown, and never filters it out', () => {
-    const result = StoredSettingsSchema.safeParse({ contestantApp: { entityTypes: ['candidate', 'alliance'] } });
-    expect(result.success).toBe(false);
-    expect(result.success === false && result.error.issues[0]?.path).toEqual(['contestantApp', 'entityTypes', 1]);
-  });
-
-  it('rejects a registration mode outside the vocabulary, at the member', () => {
-    const result = StoredSettingsSchema.safeParse({ contestantApp: { registrationModes: { candidate: ['sms'] } } });
+  it('rejects a registration mode outside the vocabulary, at the mode, and never filters it out', () => {
+    const result = StoredSettingsSchema.safeParse({
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['email', 'sms'] } } }
+    });
     expect(result.success).toBe(false);
     expect(result.success === false && result.error.issues[0]?.code).toBe('invalid_value');
     expect(result.success === false && result.error.issues[0]?.path).toEqual([
       'contestantApp',
-      'registrationModes',
+      'servedEntityTypes',
       'candidate',
-      0
+      'registrationModes',
+      1
     ]);
   });
 
-  it('rejects a matrix row for an entity type outside the vocabulary, as an unrecognised key at the matrix', () => {
-    const result = StoredSettingsSchema.safeParse({ contestantApp: { registrationModes: { faction: ['email'] } } });
+  it('rejects an entry without `registrationModes`, at the entry', () => {
+    const result = StoredSettingsSchema.safeParse({ contestantApp: { servedEntityTypes: { candidate: {} } } });
     expect(result.success).toBe(false);
-    expect(result.success === false && result.error.issues[0]?.code).toBe('unrecognized_keys');
-    expect(result.success === false && JSON.stringify(result.error.issues[0])).toMatch(/faction/);
-    expect(result.success === false && result.error.issues[0]?.path).toEqual(['contestantApp', 'registrationModes']);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual([
+      'contestantApp',
+      'servedEntityTypes',
+      'candidate',
+      'registrationModes'
+    ]);
   });
 
   it.each([
-    ['entityTypes', { entityTypes: null }, ['contestantApp', 'entityTypes']],
-    ['registrationModes', { registrationModes: null }, ['contestantApp', 'registrationModes']],
+    ['servedEntityTypes', { servedEntityTypes: null }, ['contestantApp', 'servedEntityTypes']],
+    ['an entry', { servedEntityTypes: { candidate: null } }, ['contestantApp', 'servedEntityTypes', 'candidate']],
     [
-      'a registration row',
-      { registrationModes: { candidate: null } },
-      ['contestantApp', 'registrationModes', 'candidate']
+      'a registration list',
+      { servedEntityTypes: { candidate: { registrationModes: null } } },
+      ['contestantApp', 'servedEntityTypes', 'candidate', 'registrationModes']
     ]
   ])('rejects `null` for %s as an invalid type, at the member', (_, contestantApp, path) => {
     const result = StoredSettingsSchema.safeParse({ contestantApp });

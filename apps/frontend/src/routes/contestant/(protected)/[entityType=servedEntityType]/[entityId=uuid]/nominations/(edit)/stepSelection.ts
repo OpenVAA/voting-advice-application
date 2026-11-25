@@ -3,7 +3,9 @@
  *
  * The order of the steps is decided by the shared ordering module of `$lib/routes`, asked the Contestant App's way: over the elections that admit the entity's type, never implying an election from `elections.disallowSelection`, taking a single election held in the chosen constituencies as implied, and passing over both steps for a single election with a single constituency. This module maps the module's outcomes to the editor's three addresses and holds no ordering rule of its own.
  *
- * What the entity's nominations change is asked of `startingSelectionOf` and `constituencyChoiceOf` of `$lib/contestant/nominations`, and counted nowhere else: the elections that are chosen on arrival, the constituency that is selected on arrival, and the elections that have no constituency to choose because the entity holds several nominations in them. Such an election is left out of the question the ordering module is asked, and its nominations are kept as they are stored.
+ * What the entity's nominations change is asked of `startingSelectionOf` and `constituencyChoiceOf` of `$lib/contestant/nominations`, and counted nowhere else: the elections that are chosen on arrival, the constituencies that are selected on arrival, and the elections that have no constituency to choose because the entity holds several nominations in them. Such an election is left out of the question the ordering module is asked, and its nominations are kept as they are stored.
+ *
+ * An entity that chooses several constituencies in one election, an organization, has no such election: in every chosen election it chooses one or more constituencies, the address carries each of them with its election, and every stored nomination of it is selected on arrival in its own constituency. Two elections that share a constituency group therefore each hold their own constituencies. Any other entity chooses one constituency in each election.
  *
  * WHO CALLS IT: the page loads of the three steps, with the temporary data root of `selectionDataOf`, and the pages of the three steps, with the values they read from the context in their own scope. Every function takes values and returns fresh ones.
  *
@@ -19,18 +21,21 @@ import {
   constituenciesStepOutcome,
   electionsHeldIn,
   electionsStepOutcome,
-  mostSpecificConstituency,
   NOMINATION_CONSTITUENCY_PARAM,
+  NOMINATION_CONTEST_PARAM,
   NOMINATION_ELECTION_PARAM,
+  selectionDataOf,
   usesSingleConstituencyGroup
 } from '$lib/routes';
-import { selectionDataOf } from '../nominationFacts';
 import type { Id } from '@openvaa/core';
-import type { Constituency, ConstituencyGroup, DataRoot, Election } from '@openvaa/data';
+import type { Constituency, DataRoot, Election } from '@openvaa/data';
 import type { NominationContest } from '$lib/api/base/dataWriter.type';
 import type { NominationContestFacts } from '$lib/contestant/nominations';
-import type { Route, SelectionInput } from '$lib/routes';
-import type { NominationFacts, RootSelectionData } from '../nominationFacts';
+import type { RootSelectionData, Route, SelectionInput } from '$lib/routes';
+import type { NominationScope } from '../nominationScope';
+
+/** What joins the election's id and the constituency's id in a value of `NOMINATION_CONTEST_PARAM`. */
+const CONTEST_SEPARATOR = ':';
 
 /** A step of the editor. */
 export type EditorStep = 'elections' | 'constituencies' | 'details';
@@ -48,6 +53,8 @@ export type NominationSelection = {
   electionIds: Array<Id>;
   /** The ids of the chosen constituencies, each once. */
   constituencyIds: Array<Id>;
+  /** For an entity that chooses several constituencies in one election: the ids of the constituencies chosen in each election, by the election's id, each of them also in `constituencyIds`. An election it holds no entry for has none chosen. Left out where the chosen constituencies are read for every chosen election alike: for an entity that chooses one in each election, while a constituency group is chosen first, and for an address that carries no election with its constituency. */
+  constituencyIdsByElection?: Record<Id, Array<Id>>;
 };
 
 /** A step and the selection its address is to carry. */
@@ -57,7 +64,7 @@ export type StepForward = {
 };
 
 /** The values every decision of a step is made from. */
-export type StepFacts = {
+export type StepInput = {
   /** The application settings. */
   appSettings: AppSettings;
   /** The data root that holds the elections and the constituencies. */
@@ -66,9 +73,14 @@ export type StepFacts = {
   admissible: Array<Election>;
   /** The selection, holding only ids that name something the entity may choose. */
   selection: NominationSelection;
-  /** The entity's nominations in the editor's reach. */
+  /** The entity's writable nominations. */
   nominations: ReadonlyArray<NominationContestFacts>;
+  /** Whether the entity chooses several constituencies in one election. Left out, it chooses one in each. */
+  severalConstituencies?: boolean;
 };
+
+/** The values every decision of a step is made from, apart from the entity's nominations and what they change. */
+export type SelectionFacts = Omit<StepInput, 'nominations' | 'severalConstituencies'>;
 
 /** A nomination as a list of an entity's nominations holds it: its id and where it stands. */
 export type IdentifiedNomination = NominationContestFacts & {
@@ -81,7 +93,7 @@ export type StepParentData = RootSelectionData & {
   /** The user-level gate that is pending, or `null`. */
   gate?: unknown;
   /** The facts of the entity's nominations, when they are known. */
-  nominationFacts?: NominationFacts;
+  nominationScope?: NominationScope;
   /** The data of the entity the address names, with its nominations as the entity-level load read them. */
   contestantUserData?: { nominations?: ReadonlyArray<IdentifiedNomination> | null } | null;
 };
@@ -90,15 +102,17 @@ export type StepParentData = RootSelectionData & {
 export type ConstituencyStepChoice = {
   /** The ids of the elections the selector is handed, in the order the elections are offered: the chosen elections that have a constituency to choose, and every admissible election while a constituency group is chosen first. */
   toChoose: Array<Id>;
-  /** The ids of the chosen elections that have no selector because the entity holds several nominations in them, in the order the elections are offered. Empty while a constituency group is chosen first. */
+  /** The ids of the chosen elections that have no selector because the entity holds several nominations in them, in the order the elections are offered. Empty while a constituency group is chosen first, and for an entity that chooses several constituencies in one election. */
   kept: Array<Id>;
-  /** The id of the constituency to select on arrival, by the id of an election the selector is handed: the one the address names for it, and otherwise that of the entity's one nomination in it. */
-  onArrival: Record<Id, Id>;
+  /** The ids of the constituencies to select on arrival, by the id of an election the selector is handed. For an entity that chooses one constituency in each election, at most one: the one the address names for it, and otherwise that of the entity's one nomination in it. For an entity that chooses several, those of the address that the election is held in, and otherwise those of the entity's nominations in it. */
+  onArrival: Record<Id, Array<Id>>;
+  /** Whether the selector takes several constituencies in each election. */
+  severalConstituencies: boolean;
 };
 
 /** What the details step is shown with. */
 export type DetailsStepContests = {
-  /** One election and constituency for each chosen election that takes a constituency, in the order the elections are offered. */
+  /** The elections and constituencies chosen: one for each chosen election that takes a constituency, or, for an entity that chooses several constituencies in one election, each chosen constituency of it. In the order the elections are offered, and within an election in the data root's order of its constituencies. */
   contests: Array<NominationContest>;
   /** The ids of the chosen elections whose nominations are kept as they are stored, in the order the elections are offered. */
   keptElectionIds: Array<Id>;
@@ -113,28 +127,71 @@ export function emptySelection(): NominationSelection {
 }
 
 /**
- * The selection an address carries in the editor's two search params, unmatched: each id once, in the address's order. A repeated param is read in both of its forms, `name=a&name=b` and `name[0]=a&name[1]=b`.
+ * The selection an address carries in the editor's search params, unmatched: each id once, in the address's order. A repeated param is read in both of its forms, `name=a&name=b` and `name[0]=a&name[1]=b`. A constituency the address carries with its election is one of the chosen constituencies too, after those it carries alone. A value of the param for an election and a constituency that names no two ids is dropped.
  * @param url - The address.
- * @returns A fresh selection.
+ * @returns A fresh selection. It holds `constituencyIdsByElection` where the address carries an election with its constituency.
  */
 export function selectionOfAddress(url: URL): NominationSelection {
   const parsed = qs.parse(url.search.replace(/^\?/, ''));
+  const byElection = constituenciesByElectionOf(idsOf(parsed[NOMINATION_CONTEST_PARAM]));
+  return withConstituenciesByElection(
+    {
+      electionIds: idsOf(parsed[NOMINATION_ELECTION_PARAM]),
+      constituencyIds: idsOf(parsed[NOMINATION_CONSTITUENCY_PARAM])
+    },
+    byElection
+  );
+}
+
+/**
+ * The selection as search params for a route builder: each list under the editor's own name, and no param for an empty list. Where the selection holds the constituencies of each election, each of them is carried with its election, and the constituency param carries only the chosen constituencies that no election holds.
+ * @param selection - The selection.
+ * @returns A fresh object.
+ */
+export function selectionSearch({
+  electionIds,
+  constituencyIds,
+  constituencyIdsByElection
+}: NominationSelection): Record<string, Array<string>> {
+  const pairs = Object.entries(constituencyIdsByElection ?? {}).flatMap(([electionId, ids]) =>
+    ids.map((constituencyId) => `${electionId}${CONTEST_SEPARATOR}${constituencyId}`)
+  );
+  const paired = new Set(Object.values(constituencyIdsByElection ?? {}).flat());
+  const unpaired = constituencyIds.filter((id) => !paired.has(id));
   return {
-    electionIds: idsOf(parsed[NOMINATION_ELECTION_PARAM]),
-    constituencyIds: idsOf(parsed[NOMINATION_CONSTITUENCY_PARAM])
+    ...(electionIds.length ? { [NOMINATION_ELECTION_PARAM]: [...electionIds] } : {}),
+    ...(unpaired.length ? { [NOMINATION_CONSTITUENCY_PARAM]: unpaired } : {}),
+    ...(pairs.length ? { [NOMINATION_CONTEST_PARAM]: pairs } : {})
   };
 }
 
 /**
- * The selection as search params for a route builder: each list under the editor's own name, and no param for an empty list.
- * @param selection - The selection.
- * @returns A fresh object.
+ * The selection that chooses the contests given, and the elections given as kept as they are stored: each election once, and each constituency once, in the order given. For an entity that chooses several constituencies in one election it holds the constituencies of each election too, so that two elections that share a constituency each keep their own.
+ * @param contests - The elections and constituencies chosen.
+ * @param keptElectionIds - The ids of the elections chosen with no constituency, whose nominations are kept as they are stored.
+ * @param severalConstituencies - Whether the entity chooses several constituencies in one election.
+ * @returns A fresh selection.
  */
-export function selectionSearch({ electionIds, constituencyIds }: NominationSelection): Record<string, Array<string>> {
-  return {
-    ...(electionIds.length ? { [NOMINATION_ELECTION_PARAM]: [...electionIds] } : {}),
-    ...(constituencyIds.length ? { [NOMINATION_CONSTITUENCY_PARAM]: [...constituencyIds] } : {})
+export function selectionOfContests({
+  contests,
+  keptElectionIds = [],
+  severalConstituencies
+}: {
+  contests: ReadonlyArray<NominationContest>;
+  keptElectionIds?: ReadonlyArray<Id>;
+  severalConstituencies?: boolean;
+}): NominationSelection {
+  const selection = {
+    electionIds: [...new Set([...contests.map((contest) => contest.electionId), ...keptElectionIds])],
+    constituencyIds: [...new Set(contests.map((contest) => contest.constituencyId))]
   };
+  if (!severalConstituencies) return selection;
+  const byElection: Record<Id, Array<Id>> = {};
+  for (const { electionId, constituencyId } of contests) {
+    const ids = (byElection[electionId] ??= []);
+    if (!ids.includes(constituencyId)) ids.push(constituencyId);
+  }
+  return { ...selection, constituencyIdsByElection: byElection };
 }
 
 /**
@@ -163,39 +220,40 @@ export function stepAddress({
 }
 
 /**
- * The nominations of an entity that the editor manages, among those a load read for it: those the facts name.
+ * The nominations of an entity that the editor manages, among those a load read for it: the writable ones the facts name.
  * @param nominations - The entity's nominations, as the entity-level load read them.
  * @param facts - The facts of the entity's nominations.
  * @returns A fresh list, in the order given. Empty when either is not known.
  */
-export function reachedNominationsOf<TNomination extends { id: Id }>(
+export function managedNominationsOf<TNomination extends { id: Id }>(
   nominations: ReadonlyArray<TNomination> | null | undefined,
-  facts: NominationFacts | undefined
+  facts: NominationScope | undefined
 ): Array<TNomination> {
   if (!nominations || !facts) return [];
-  const inReach = new Set(facts.inReachNominationIds);
-  return nominations.filter((nomination) => inReach.has(nomination.id));
+  const writable = new Set(facts.writableNominationIds);
+  return nominations.filter((nomination) => writable.has(nomination.id));
 }
 
 /**
- * The values a step's page load decides from: a temporary data root built from the root load's data, the elections the facts admit, the selection of the address with every id that names nothing admissible dropped, and the entity's nominations in the editor's reach.
+ * The values a step's page load decides from: a temporary data root built from the root load's data, the elections the facts admit, the selection of the address with every id that names nothing admissible dropped, and the entity's writable nominations.
  * @param parentData - The data of the step's parent loads.
  * @param url - The step's address.
  * @returns The values, or `undefined` while a gate is pending, while the facts are not known and when the root load's data could not be read: nothing is decided then.
  */
-export function stepFactsOf({ parentData, url }: { parentData: StepParentData; url: URL }): StepFacts | undefined {
-  if (parentData.gate !== null || !parentData.nominationFacts) return undefined;
+export function stepInputOf({ parentData, url }: { parentData: StepParentData; url: URL }): StepInput | undefined {
+  if (parentData.gate !== null || !parentData.nominationScope) return undefined;
   const selectionData = selectionDataOf(parentData);
   if (!selectionData) return undefined;
   const { appSettings, dataRoot } = selectionData;
-  const admissibleIds = new Set(parentData.nominationFacts.admissibleElectionIds);
+  const admissibleIds = new Set(parentData.nominationScope.admissibleElectionIds);
   const admissible = dataRoot.elections.filter((election) => admissibleIds.has(election.id));
   return {
     appSettings,
     dataRoot,
     admissible,
     selection: matchedSelection({ appSettings, dataRoot, admissible, selection: selectionOfAddress(url) }),
-    nominations: reachedNominationsOf(parentData.contestantUserData?.nominations, parentData.nominationFacts)
+    nominations: managedNominationsOf(parentData.contestantUserData?.nominations, parentData.nominationScope),
+    severalConstituencies: parentData.nominationScope.severalConstituencies
   };
 }
 
@@ -209,16 +267,23 @@ export function matchedSelection({
   dataRoot,
   admissible,
   selection
-}: Omit<StepFacts, 'nominations'>): NominationSelection {
+}: SelectionFacts): NominationSelection {
   const electionIds = new Set(admissible.map((election) => election.id));
   const groups = admissible.flatMap((election) => election.constituencyGroups);
   const first = usesSingleConstituencyGroup({ appSettings, constituencyGroups: dataRoot.constituencyGroups });
   if (first) groups.push(first);
   const constituencyIds = new Set(groups.flatMap((group) => group.constituencies.map((c) => c.id)));
-  return {
+  const matched = {
     electionIds: selection.electionIds.filter((id) => electionIds.has(id)),
     constituencyIds: selection.constituencyIds.filter((id) => constituencyIds.has(id))
   };
+  if (!selection.constituencyIdsByElection) return matched;
+  const byElection: Record<Id, Array<Id>> = {};
+  for (const [electionId, ids] of Object.entries(selection.constituencyIdsByElection)) {
+    const kept = ids.filter((id) => constituencyIds.has(id));
+    if (electionIds.has(electionId) && kept.length) byElection[electionId] = kept;
+  }
+  return { ...matched, constituencyIdsByElection: byElection };
 }
 
 /**
@@ -226,19 +291,22 @@ export function matchedSelection({
  * @param facts - The values the step decides from.
  * @returns The step the address forwards to, or `undefined` when the election step is shown.
  */
-export function electionsAddressForward(facts: StepFacts): StepForward | undefined {
+export function electionsAddressForward(facts: StepInput): StepForward | undefined {
   const outcome = electionsStepOutcome(selectionInputOf(facts));
   if (outcome.action === 'show') return undefined;
   if (outcome.action === 'done')
     return {
       step: 'details',
-      selection: { electionIds: outcome.electionIds ?? [], constituencyIds: outcome.constituencyIds ?? [] }
+      selection: withConstituenciesByElection(
+        { electionIds: outcome.electionIds ?? [], constituencyIds: outcome.constituencyIds ?? [] },
+        facts.selection.constituencyIdsByElection
+      )
     };
   return {
     step: 'constituencies',
     selection: {
-      electionIds: outcome.electionIds ?? facts.selection.electionIds,
-      constituencyIds: facts.selection.constituencyIds
+      ...facts.selection,
+      electionIds: outcome.electionIds ?? facts.selection.electionIds
     }
   };
 }
@@ -248,13 +316,16 @@ export function electionsAddressForward(facts: StepFacts): StepForward | undefin
  * @param facts - The values the step decides from.
  * @returns A fresh selection.
  */
-export function electionsStepSelection({ selection, nominations }: StepFacts): NominationSelection {
-  return {
-    electionIds: selection.electionIds.length
-      ? [...selection.electionIds]
-      : startingSelectionOf(nominations).map((starting) => starting.electionId),
-    constituencyIds: [...selection.constituencyIds]
-  };
+export function electionsStepSelection({ selection, nominations }: StepInput): NominationSelection {
+  return withConstituenciesByElection(
+    {
+      electionIds: selection.electionIds.length
+        ? [...selection.electionIds]
+        : startingSelectionOf(nominations).map((starting) => starting.electionId),
+      constituencyIds: [...selection.constituencyIds]
+    },
+    selection.constituencyIdsByElection
+  );
 }
 
 /**
@@ -264,14 +335,13 @@ export function electionsStepSelection({ selection, nominations }: StepFacts): N
  * @param facts - The values the step decides from.
  * @returns The step the address forwards to, or `undefined` when the constituency step is shown.
  */
-export function constituenciesAddressForward(facts: StepFacts): StepForward | undefined {
+export function constituenciesAddressForward(facts: StepInput): StepForward | undefined {
   const { selection } = facts;
   const constituencyFirst = !!facts.appSettings.elections?.startFromConstituencyGroup;
   const { toChoose, kept } = constituencyFirst
     ? { toChoose: selection.electionIds, kept: [] }
     : choiceAmong(facts, constituenciesStepSelection(facts).electionIds);
-  if (kept.length && !toChoose.length)
-    return { step: 'details', selection: { electionIds: kept, constituencyIds: [...selection.constituencyIds] } };
+  if (kept.length && !toChoose.length) return { step: 'details', selection: { ...selection, electionIds: kept } };
 
   const outcome = constituenciesStepOutcome(
     selectionInputOf({ ...facts, selection: { electionIds: toChoose, constituencyIds: selection.constituencyIds } })
@@ -280,10 +350,13 @@ export function constituenciesAddressForward(facts: StepFacts): StepForward | un
   if (outcome.action === 'done')
     return {
       step: 'details',
-      selection: {
-        electionIds: [...new Set([...(outcome.electionIds ?? []), ...kept])],
-        constituencyIds: outcome.constituencyIds ?? []
-      }
+      selection: withConstituenciesByElection(
+        {
+          electionIds: [...new Set([...(outcome.electionIds ?? []), ...kept])],
+          constituencyIds: outcome.constituencyIds ?? []
+        },
+        selection.constituencyIdsByElection
+      )
     };
   return { step: 'elections', selection };
 }
@@ -293,22 +366,25 @@ export function constituenciesAddressForward(facts: StepFacts): StepForward | un
  * @param facts - The values the step decides from.
  * @returns A fresh selection.
  */
-export function constituenciesStepSelection({ admissible, selection }: StepFacts): NominationSelection {
+export function constituenciesStepSelection({ admissible, selection }: StepInput): NominationSelection {
   const implied = !selection.electionIds.length && admissible.length === 1;
-  return {
-    electionIds: implied ? [admissible[0].id] : [...selection.electionIds],
-    constituencyIds: [...selection.constituencyIds]
-  };
+  return withConstituenciesByElection(
+    {
+      electionIds: implied ? [admissible[0].id] : [...selection.electionIds],
+      constituencyIds: [...selection.constituencyIds]
+    },
+    selection.constituencyIdsByElection
+  );
 }
 
 /**
  * What the constituency step is shown with, beside its selection: the elections its selector is handed, the elections that have a section in a selector's place, and the constituency to select on arrival for each election the selector is handed.
  *
- * The constituency of an election on arrival is the one the address names for it, and otherwise that of the entity's one nomination in it. A stored constituency is looked up for its own election, so two elections that share their constituencies each start from their own. While a constituency group is chosen first the one selector is over that group, and it shows a constituency as selected only where the group holds it.
+ * The constituency of an election on arrival is the one the address names for it, and otherwise that of the entity's one nomination in it. For an entity that chooses several constituencies in one election they are every constituency of the address the election is held in, and otherwise those of all its nominations in it; where the address carries each election with its constituencies, only those it carries with that election are read. A stored constituency is looked up for its own election, so two elections that share their constituencies each start from their own. While a constituency group is chosen first the one selector is over that group, and it shows a constituency as selected only where the group holds it.
  * @param facts - The values the step decides from.
  * @returns A fresh object.
  */
-export function constituenciesStepChoice(facts: StepFacts): ConstituencyStepChoice {
+export function constituenciesStepChoice(facts: StepInput): ConstituencyStepChoice {
   const { appSettings, dataRoot, admissible, selection, nominations } = facts;
   const singleGroup = usesSingleConstituencyGroup({ appSettings, constituencyGroups: dataRoot.constituencyGroups });
   const choice = singleGroup
@@ -320,20 +396,55 @@ export function constituenciesStepChoice(facts: StepFacts): ConstituencyStepChoi
 
   const named = constituenciesOf(dataRoot, selection.constituencyIds);
   const starting = startingSelectionOf(nominations);
-  const onArrival: Record<Id, Id> = {};
+  const onArrival: Record<Id, Array<Id>> = {};
   for (const election of toChoose) {
-    const storedId = starting.find(({ electionId }) => electionId === election.id)?.constituencyId;
-    const constituency =
-      mostSpecificConstituency({ election, constituencies: named }) ??
-      mostSpecificConstituency({ election, constituencies: storedId ? constituenciesOf(dataRoot, [storedId]) : [] });
-    if (constituency) onArrival[election.id] = constituency.id;
+    const storedIds = starting.find(({ electionId }) => electionId === election.id)?.constituencyIds ?? [];
+    const constituencies = facts.severalConstituencies
+      ? constituenciesOnArrivalOf({
+          election,
+          named: constituenciesOf(dataRoot, chosenConstituencyIdsIn(selection, election.id)),
+          stored: constituenciesOf(dataRoot, storedIds)
+        })
+      : constituencyOnArrivalOf({ election, named, stored: constituenciesOf(dataRoot, storedIds) });
+    if (constituencies.length) onArrival[election.id] = constituencies.map((constituency) => constituency.id);
   }
 
   return {
     toChoose: toChoose.map((election) => election.id),
     kept: admissible.filter((election) => choice.kept.includes(election.id)).map((election) => election.id),
-    onArrival
+    onArrival,
+    severalConstituencies: !!facts.severalConstituencies
   };
+}
+
+/** For an entity that chooses one constituency in each election: the one of the address that the election resolves to, and otherwise that of its one stored nomination in the election. */
+function constituencyOnArrivalOf({
+  election,
+  named,
+  stored
+}: {
+  election: Election;
+  named: Array<Constituency>;
+  stored: Array<Constituency>;
+}): Array<Constituency> {
+  const constituency =
+    election.getMostSpecificConstituency(named) ??
+    (stored.length === 1 ? election.getMostSpecificConstituency(stored) : undefined);
+  return constituency ? [constituency] : [];
+}
+
+/** For an entity that chooses several constituencies in one election: those of the address that the election is held in, and otherwise those of its stored nominations in the election. */
+function constituenciesOnArrivalOf({
+  election,
+  named,
+  stored
+}: {
+  election: Election;
+  named: Array<Constituency>;
+  stored: Array<Constituency>;
+}): Array<Constituency> {
+  const fromAddress = election.getApplicableConstituencies(named);
+  return fromAddress.length ? fromAddress : election.getApplicableConstituencies(stored);
 }
 
 /**
@@ -343,7 +454,7 @@ export function constituenciesStepChoice(facts: StepFacts): ConstituencyStepChoi
  * @param facts - The values the step decides from.
  * @returns The contests and the kept elections, or the step the address forwards to.
  */
-export function detailsAddressOutcome(facts: StepFacts): DetailsStepContests | StepForward {
+export function detailsAddressOutcome(facts: StepInput): DetailsStepContests | StepForward {
   let selection = facts.selection;
   if (!selection.electionIds.length) {
     const entry = electionsAddressForward(facts);
@@ -364,28 +475,36 @@ export function detailsAddressOutcome(facts: StepFacts): DetailsStepContests | S
  * @param facts - The settings, the data root and the admissible elections. The selection is not read.
  * @returns `false` when the editor's entry leads straight to the details step with nothing chosen.
  */
-export function hasSelectionStep(facts: Omit<StepFacts, 'selection' | 'nominations'>): boolean {
+export function hasSelectionStep(facts: Omit<SelectionFacts, 'selection'>): boolean {
   return electionsAddressForward({ ...facts, selection: emptySelection(), nominations: [] })?.step !== 'details';
 }
 
 /**
- * The contests of a selection: each chosen election, in the order the elections are offered, with its one constituency or the one of the chosen constituencies it takes.
- * @param facts - The data root, the admissible elections and the selection.
+ * The contests of a selection: each chosen election, in the order the elections are offered, with its one constituency or the one of the chosen constituencies it takes. For an entity that chooses several constituencies in one election, an election with several constituencies takes every constituency chosen for it that it is held in, each a contest of its own, in the data root's order: those the selection holds for that election where it holds the constituencies of each election, and otherwise every chosen one.
+ * @param facts - The data root, the admissible elections, the selection and whether the entity chooses several constituencies in one election.
  * @returns The contests, or `undefined` when no election is chosen or a chosen election has several constituencies and none of them is chosen.
  */
 export function contestsOf({
   dataRoot,
   admissible,
-  selection
-}: Pick<StepFacts, 'dataRoot' | 'admissible' | 'selection'>): Array<NominationContest> | undefined {
+  selection,
+  severalConstituencies
+}: Pick<StepInput, 'dataRoot' | 'admissible' | 'selection' | 'severalConstituencies'>):
+  Array<NominationContest> | undefined {
   const chosen = admissible.filter((election) => selection.electionIds.includes(election.id));
   if (!chosen.length) return undefined;
   const constituencies = constituenciesOf(dataRoot, selection.constituencyIds);
   const contests: Array<NominationContest> = [];
   for (const election of chosen) {
-    const constituency = election.singleConstituency ?? mostSpecificConstituency({ election, constituencies });
-    if (!constituency) return undefined;
-    contests.push({ electionId: election.id, constituencyId: constituency.id });
+    const taken = election.singleConstituency
+      ? [election.singleConstituency]
+      : severalConstituencies
+        ? election.getApplicableConstituencies(
+            constituenciesOf(dataRoot, chosenConstituencyIdsIn(selection, election.id))
+          )
+        : [election.getMostSpecificConstituency(constituencies)].filter((c): c is Constituency => !!c);
+    if (!taken.length) return undefined;
+    for (const constituency of taken) contests.push({ electionId: election.id, constituencyId: constituency.id });
   }
   return contests;
 }
@@ -395,7 +514,7 @@ export function contestsOf({
  * @param facts - The values the page read, with the elections chosen on it and the constituencies of its address as the selection.
  * @returns The step and the selection its address carries.
  */
-export function afterElections(facts: StepFacts): StepForward {
+export function afterElections(facts: StepInput): StepForward {
   const { selection } = facts;
   if (facts.appSettings.elections?.startFromConstituencyGroup) return { step: 'details', selection };
   const forward = constituenciesAddressForward(facts);
@@ -407,7 +526,7 @@ export function afterElections(facts: StepFacts): StepForward {
  * @param facts - The values the page read, with the elections of its address and the constituencies chosen on it as the selection.
  * @returns The step and the selection its address carries, or `undefined` when a constituency group is chosen first and no admissible election is held in the chosen constituencies: the step is not left. While a constituency group is chosen first, the selection carries the chosen constituencies followed by those they stand for.
  */
-export function afterConstituencies(facts: Omit<StepFacts, 'nominations'>): StepForward | undefined {
+export function afterConstituencies(facts: SelectionFacts): StepForward | undefined {
   const { selection } = facts;
   if (!facts.appSettings.elections?.startFromConstituencyGroup) return { step: 'details', selection };
   const constituencies = constituenciesStoodFor({
@@ -448,11 +567,9 @@ export function constituenciesStoodFor({
   for (const election of elections) {
     const groups = election.constituencyGroups;
     if (groups.some((group) => constituencies.some(({ id }) => group.data.constituencyIds.includes(id)))) continue;
-    for (const group of groups) {
-      for (const constituency of constituencies) {
-        const implied = impliedIn(group, constituency);
-        if (implied) found.set(implied.id, implied);
-      }
+    for (const constituency of constituencies) {
+      const implied = election.getImpliedConstituency(constituency);
+      if (implied) found.set(implied.id, implied);
     }
   }
   return [...found.values()];
@@ -468,18 +585,50 @@ export function constituenciesOf(dataRoot: DataRoot, ids: ReadonlyArray<Id>): Ar
   return dataRoot.constituencies.filter((constituency) => ids.includes(constituency.id));
 }
 
-/** The constituency of a group that a constituency is or lies in. `undefined` when the group holds none, and when it holds several of the constituency's line, which name no single one. */
-function impliedIn(group: ConstituencyGroup, constituency: Constituency): Constituency | undefined {
-  try {
-    return group.getImpliedConstituency(constituency) ?? undefined;
-  } catch {
-    return undefined;
-  }
+/** Which of the elections given have a constituency to choose, and which hold several of the entity's nominations and are kept as stored. */
+function choiceAmong(
+  { nominations, severalConstituencies }: Pick<StepInput, 'nominations' | 'severalConstituencies'>,
+  electionIds: ReadonlyArray<Id>
+) {
+  return constituencyChoiceOf({
+    chosenElectionIds: electionIds,
+    nominations,
+    severalConstituencies: !!severalConstituencies
+  });
 }
 
-/** Which of the elections given have a constituency to choose, and which hold several of the entity's nominations and are kept as stored. */
-function choiceAmong({ nominations }: Pick<StepFacts, 'nominations'>, electionIds: ReadonlyArray<Id>) {
-  return constituencyChoiceOf({ chosenElectionIds: electionIds, nominations });
+/** The ids of the constituencies a selection chooses for an election: those it holds for the election where it holds the constituencies of each election, and otherwise every chosen one. */
+function chosenConstituencyIdsIn(selection: NominationSelection, electionId: Id): Array<Id> {
+  if (!selection.constituencyIdsByElection) return selection.constituencyIds;
+  return selection.constituencyIdsByElection[electionId] ?? [];
+}
+
+/** A selection with the constituencies of each election given, each of them also among its chosen constituencies, after those it holds. The selection as it is where none are given. */
+function withConstituenciesByElection(
+  selection: NominationSelection,
+  byElection: Record<Id, Array<Id>> | undefined
+): NominationSelection {
+  if (!byElection) return selection;
+  const copy = Object.fromEntries(Object.entries(byElection).map(([electionId, ids]) => [electionId, [...ids]]));
+  return {
+    ...selection,
+    constituencyIds: [...new Set([...selection.constituencyIds, ...Object.values(copy).flat()])],
+    constituencyIdsByElection: copy
+  };
+}
+
+/** The constituencies of each election, from the values of the param that carries an election with its constituency. `undefined` when no value names two ids. */
+function constituenciesByElectionOf(values: Array<string>): Record<Id, Array<Id>> | undefined {
+  const byElection: Record<Id, Array<Id>> = {};
+  for (const value of values) {
+    const at = value.indexOf(CONTEST_SEPARATOR);
+    const electionId = value.slice(0, at);
+    const constituencyId = value.slice(at + 1);
+    if (at < 0 || !electionId || !constituencyId) continue;
+    const ids = (byElection[electionId] ??= []);
+    if (!ids.includes(constituencyId)) ids.push(constituencyId);
+  }
+  return Object.keys(byElection).length ? byElection : undefined;
 }
 
 /** The values of a search param as a list of ids: every non-empty string, each once. */
@@ -489,12 +638,7 @@ function idsOf(value: unknown): Array<Id> {
 }
 
 /** The input of the shared ordering module, asked the Contestant App's way. */
-function selectionInputOf({
-  appSettings,
-  dataRoot,
-  admissible,
-  selection
-}: Omit<StepFacts, 'nominations'>): SelectionInput {
+function selectionInputOf({ appSettings, dataRoot, admissible, selection }: SelectionFacts): SelectionInput {
   return {
     dataRoot,
     elections: admissible,

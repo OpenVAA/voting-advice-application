@@ -7,67 +7,6 @@
  */
 import { log } from '@openvaa/app-shared';
 
-/** The name of the event adapter-node emits on the process once its server has closed. */
-const SHUTDOWN_EVENT = 'sveltekit:shutdown';
-
-/** The signals adapter-node stops the server on. */
-const STOP_SIGNALS = ['SIGTERM', 'SIGINT'] as const;
-
-/** The message the line is written with. */
-const MESSAGE = 'The server is exiting after its stop.';
-
-/**
- * A count of the requests the server is handling.
- *
- * The count is approximate: a request leaves when its `resolve` returns, and a streamed body can still be sending after that.
- */
-export type InFlightCounter = {
-  /** Count one more request in flight. */
-  enter(): void;
-  /** Count one request fewer. The count never goes below zero. */
-  leave(): void;
-  /** How many requests are in flight. */
-  count(): number;
-};
-
-/** Something the shutdown listeners can be attached to and removed from, by default the process. */
-export type SignalTarget = {
-  once(event: string, listener: (...args: Array<unknown>) => void): unknown;
-  removeListener(event: string, listener: (...args: Array<unknown>) => void): unknown;
-};
-
-/** The fields of the line. */
-type ShutdownFields = {
-  /** The reason adapter-node gives with its event: `SIGTERM`, `SIGINT` or `IDLE`. */
-  reason: string | null;
-  /** The first stop signal the process received, or `null` when it stopped without one. */
-  signal: string | null;
-  /** The requests in flight when that signal arrived, or `null` when there was none. */
-  inFlightAtSignal: number | null;
-  /** The milliseconds from that signal to the event, or `null` when there was no signal. */
-  drainMs: number | null;
-};
-
-/**
- * Create a counter of the requests in flight, starting at zero.
- *
- * The count is approximate for a streamed body, which can outlive `resolve`.
- *
- * @returns The counter.
- */
-export function createInFlightCounter(): InFlightCounter {
-  let inFlight = 0;
-  return {
-    enter: () => {
-      inFlight += 1;
-    },
-    leave: () => {
-      inFlight = Math.max(0, inFlight - 1);
-    },
-    count: () => inFlight
-  };
-}
-
 /**
  * Write one line when the target emits `sveltekit:shutdown`.
  *
@@ -117,3 +56,64 @@ export function registerShutdownLog(
   for (const { signal, listener } of signalListeners) target.once(signal, listener);
   target.once(SHUTDOWN_EVENT, onShutdown);
 }
+
+/**
+ * Create a counter of the requests in flight, starting at zero.
+ *
+ * The count is approximate for a streamed body, which can outlive `resolve`.
+ *
+ * @returns The counter.
+ */
+export function createInFlightCounter(): InFlightCounter {
+  let inFlight = 0;
+  return {
+    enter: () => {
+      inFlight += 1;
+    },
+    leave: () => {
+      inFlight = Math.max(0, inFlight - 1);
+    },
+    count: () => inFlight
+  };
+}
+
+/**
+ * A count of the requests the server is handling.
+ *
+ * The count is approximate: a request leaves when its `resolve` returns, and a streamed body can still be sending after that.
+ */
+export type InFlightCounter = {
+  /** Count one more request in flight. */
+  enter(): void;
+  /** Count one request fewer. The count never goes below zero. */
+  leave(): void;
+  /** How many requests are in flight. */
+  count(): number;
+};
+
+/** Something the shutdown listeners can be attached to and removed from, by default the process. */
+export type SignalTarget = {
+  once(event: string, listener: (...args: Array<unknown>) => void): unknown;
+  removeListener(event: string, listener: (...args: Array<unknown>) => void): unknown;
+};
+
+/** The fields of the line. */
+type ShutdownFields = {
+  /** The reason adapter-node gives with its event: `SIGTERM`, `SIGINT` or `IDLE`. */
+  reason: string | null;
+  /** The first stop signal the process received, or `null` when it stopped without one. */
+  signal: string | null;
+  /** The requests in flight when that signal arrived, or `null` when there was none. */
+  inFlightAtSignal: number | null;
+  /** The milliseconds from that signal to the event, or `null` when there was no signal. */
+  drainMs: number | null;
+};
+
+/** The name of the event adapter-node emits on the process once its server has closed. */
+export const SHUTDOWN_EVENT = 'sveltekit:shutdown';
+
+/** The signals adapter-node stops the server on. */
+const STOP_SIGNALS = ['SIGTERM', 'SIGINT'] as const;
+
+/** The message the line is written with. */
+const MESSAGE = 'The server is exiting after its stop.';

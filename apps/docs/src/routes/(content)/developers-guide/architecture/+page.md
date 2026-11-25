@@ -11,7 +11,7 @@ OpenVAA is a monorepo of Yarn workspaces: every directory under `packages/` and 
   - [`@openvaa/filters`](https://github.com/OpenVAA/voting-advice-application/tree/main/packages/filters) — filtering entities by their properties and answers
 - Application
   - [`@openvaa/app-shared`](https://github.com/OpenVAA/voting-advice-application/tree/main/packages/app-shared) — settings and utilities shared by the frontend and the dev tooling
-  - [`@openvaa/frontend`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend) — the SvelteKit app: the voter app, the [Contestant app](/developers-guide/contestant-app/pre-registration-and-invitation) and the [Admin app](/developers-guide/admin-app)
+  - [`@openvaa/frontend`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend) — the SvelteKit app: the voter app, the [Contestant app](/developers-guide/contestant-app/invitation) and the [Admin app](/developers-guide/admin-app)
   - [`@openvaa/supabase`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase) — the [backend](/developers-guide/backend/intro): schema, migrations, row-level security policies, Edge Functions and pgTAP tests
 - LLM features, used by the Admin app
   - [`@openvaa/llm`](https://github.com/OpenVAA/voting-advice-application/tree/main/packages/llm)

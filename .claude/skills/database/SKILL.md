@@ -1,6 +1,6 @@
 ---
 name: database
-description: 'Domain expert for the OpenVAA Supabase backend: 21-table PostgreSQL schema with JSONB localization, 108 RLS policies over a single grant model (four scopes, two role levels, a 23-member permission enum and one user_can predicate), JWT claims via Access Token Hook, invitations that promise a grant ahead of time, nominations held to their election's type, written by an entity's editor through one function or stated by an admin's invitation, 3 Edge Functions, bulk import/delete RPCs with external_id-based idempotent upsert, a 2603-assertion pgTAP estate, storage bucket configuration, and a frozen baseline migration followed by appended numbered migrations listed in a manifest. Activate when working in apps/supabase/ or packages/supabase-types/, writing migrations, RLS policies, database functions, pgTAP tests, or understanding the Supabase auth and service layer.'
+description: 'Domain expert for the OpenVAA Supabase backend: 21-table PostgreSQL schema with JSONB localization, 108 RLS policies over a single grant model (four scopes, two role levels, a 23-member permission enum and one user_can predicate), JWT claims via Access Token Hook, invitations that promise a grant ahead of time, nominations held to their election's nomination shape, written by an entity's editor through one function or stated by an admin's invitation, 3 Edge Functions, bulk import/delete RPCs with external_id-based idempotent upsert, a pgTAP estate of 64 files planning 2940 assertions, storage bucket configuration, and a frozen baseline migration, after which a schema change is an appended numbered migration listed in a manifest. Activate when working in apps/supabase/ or packages/supabase-types/, writing migrations, RLS policies, database functions, pgTAP tests, or understanding the Supabase auth and service layer.'
 targets:
   - apps/supabase/
   - packages/supabase-types/
@@ -14,15 +14,15 @@ Supabase backend with a PostgreSQL schema of 21 tables in `public` and 4 in `pri
 via accounts and projects.
 All content tables reference `projects` via `project_id` FK with `ON DELETE CASCADE`.
 
-Every count in this section was measured on 2026-10-11, and the pgTAP counts on 2026-10-18; § _Freshness
-Record_ names the command behind each. A count is a snapshot: re-run its command before relying on it.
+Every count in this section was measured on 2026-11-20; § _Freshness Record_ names the command behind
+each. A count is a snapshot: re-run its command before relying on it.
 
 - JSONB localization for all user-facing text (name, short_name, info) using locale-keyed objects
 - GoTrue authentication; authority is rows of `public.grants` (four scopes, two roles), read by
   row-level security for `(SELECT auth.uid())` and projected into the JWT by the Access Token Hook for
   the frontend's app-entry gates
 - 108 RLS policies (93 in `public`, 15 in `storage`) enforcing tenant isolation
-- Nominations: an election's type (`nomination_shape`, four members) says which entity types it
+- Nominations: an election's nomination shape (`nomination_shape`, four members) says which entity types it
   admits; an entity's editor writes the entity's whole set through `set_entity_nominations`
   (Schema Conventions § 7, RLS and Auth Patterns § 9)
 - Invitations: a row of `public.invitations` promises one grant; `create_invitations` seeds, stating
@@ -31,8 +31,8 @@ Record_ names the command behind each. A count is a snapshot: re-run its command
   its project allows for that type (RLS and Auth Patterns § 10)
 - 3 Edge Functions: `account-access`, `identity-callback`, `send-email`
 - Bulk import/delete RPCs with external_id-based idempotent upsert
-- 2603 pgTAP assertions in 47 files: 46 files declare plans summing to 2594, and `00-helpers.test.sql`
-  runs 9 under `no_plan()` (53,569 lines in all)
+- 64 pgTAP files: 63 declare plans summing to 2940, and `00-helpers.test.sql` runs its smoke tests
+  under `no_plan()` (62,480 lines in all)
 - Schema files: `apps/supabase/supabase/schema/` (29 SQL files, `000-enums.sql` through
   `900-test-helpers.sql`, numbered by **concern**: `0xx` types and functions, `1xx` content tables,
   `200` indexes, `3xx` auth and RLS, `400` storage, `5xx` RPCs, `900` test helpers)
@@ -40,21 +40,24 @@ Record_ names the command behind each. A count is a snapshot: re-run its command
 **The migrations are frozen: a schema change is appended, never edited in.** `supabase/schema/` is the
 hand-edited current view of the schema, organised by concern; `config.toml` sets
 `[db.migrations] schema_paths = []`, so the CLI **never** reads it. `supabase/migrations/` is what a
-database is built from: the frozen baseline `00001_initial_schema.sql` and, after it, appended
-migrations named by the next five-digit version, an underscore and a name (for example
+database is built from: the frozen baseline `00001_initial_schema.sql` (today the only file; the
+manifest's `baseline.commit` names the commit whose `schema/` it was generated from, tagged
+`schema-baseline-00001`) and, after it, appended migrations named by the next five-digit version, an underscore and a name (for example
 `00002_add_example.sql`); `supabase db reset` and `supabase db push` apply them in version order. Each
 is listed with its sha256 in `supabase/migrations.manifest.json`, and a listed migration is never
-edited. A file that `supabase migration new` names with a timestamp is renamed to the next number. So a
-schema change is **one commit with three parts** -- the `schema/` edit, the numbered migration, and its
-manifest line -- after which `yarn check:schema-equivalence` builds one database from `schema/` and
-one from the migrations and fails when they differ; it needs Docker and is not part of
-`yarn lint:check`. **A gate keeps the migrations frozen**: `yarn assert:schema-migration-parity`, a
-link of `yarn lint:check`, fails when a listed migration's bytes change, when a migration has no
-manifest line, and when versions repeat, go down or leave a gap; `yarn schema:regenerate` refuses and
-prints the three steps. Two obligations no tool enforces: **read the migration you wrote** in that same
-commit, and run `yarn db:types` so `packages/supabase-types/` matches. The two storage buckets are
-created by the migration; a deployment's own rows are written by `infra/scripts/bootstrap.sql`. Full
-treatment: `apps/supabase/README.md`.
+edited. A file that `supabase migration new` names with a timestamp is renamed to the next number. A
+migration opens with a `WHAT IT ADDS.` or `WHAT IT CHANGES.` paragraph and a `WHAT IT LEAVES.`
+paragraph, which state its delta against the previous migration; the full description of a function it
+re-issues stays in `schema/`. So a schema change is **one commit with three parts** -- the `schema/`
+edit, the numbered migration, and its manifest line -- after which `yarn check:schema-equivalence`
+builds one database from `schema/` and one from the migrations and fails when they differ; it needs
+Docker, and runs in CI in the `sql-lint` job. **A gate keeps the migrations frozen**:
+`yarn assert:migrations-frozen`, a link of `yarn lint:check`, fails when a listed migration's
+bytes change, when a migration has no manifest line, and when versions repeat, go down or leave a gap.
+Two obligations no tool enforces: **read
+the migration you wrote** in that same commit, and run `yarn db:types` so `packages/supabase-types/`
+matches. The two storage buckets are created by the migration; a deployment's own rows are written by
+`infra/scripts/bootstrap.sql`. Full treatment: `apps/supabase/README.md`.
 
 ## Schema Conventions
 
@@ -124,21 +127,22 @@ treatment: `apps/supabase/README.md`.
    (candidate_id, organization_id, faction_id, alliance_id) with a CHECK constraint enforcing
    exactly one is NOT NULL. A generated `entity_type` column derives from whichever FK is set.
    `parent_nomination_id` enables hierarchy. The `validate_nomination()` trigger enforces the
-   election-type rule, parent-child type rules and election/constituency/round consistency. Source:
+   nomination-shape rule, parent-child type rules and election/constituency/round consistency. Source:
    `011-validation-functions.sql` and `104-nominations.sql`.
-   - **The election type decides who may be nominated.** `elections.election_type` is a
+   - **The nomination shape decides who may be nominated.** `elections.nomination_shape` is a
      `public.nomination_shape`: `organization_only`, `candidate_only`, `organization_list` or
      `organization_list_and_independents`, the last being the column's default.
-     `public.nomination_shape_rule(shape, entity_type)` is the matrix, stated ONCE in SQL: it answers
-     `admitted`, `parent_required` or `refused`, and NULL for a pair it does not name, which every caller
-     treats as a refusal. A function that needs the answer asks it, never a copy. The TypeScript
+     `public.nomination_shape_rule(shape, entity_type)` is the matrix, stated ONCE in SQL: it answers a
+     member of the enum `public.nomination_admission` (`admitted`, `parent_required` or `refused`), so a
+     misspelt literal compared with it raises `22P02`, and NULL for a pair it does not name, which every
+     caller treats as a refusal. A function that needs the answer asks it, never a copy. The TypeScript
      statement of the same matrix is `isNominableInShape` / `allowedParentTypes` in `@openvaa/data`
      (the data skill), and `packages/data/README.md` § _Nomination rules: the data model and the
      database_ compares the two.
    - **The row rule.** `validate_nomination` refuses, on INSERT and UPDATE and for every writer (the
-     service role and `bulk_import` included), a row whose entity type its election's type does not
-     admit: `Nomination shape refused: …`, SQLSTATE `23514`. Changing an election's type re-checks
-     nothing; a later write of a row the new type refuses is refused.
+     service role and `bulk_import` included), a row whose entity type its election's nomination shape does not
+     admit: `Nomination shape refused: …`, SQLSTATE `23514`. Changing an election's nomination shape re-checks
+     nothing; a later write of a row the new shape refuses is refused.
    - **The constituency rule.** `validate_nomination` also refuses, for every writer, a row whose
      constituency no constituency group of its election holds (`election_constituency_groups` joined to
      `constituency_group_constituencies`): `Nomination constituency <id> is no constituency of its
@@ -147,22 +151,25 @@ treatment: `apps/supabase/README.md`.
      edited after its constituency is unlinked. A writer links an election to its constituencies before
      it inserts a nomination there (`bulk_import`'s link keys, Service Patterns § 2).
      `54-nomination-constituency-rule.test.sql` pins it.
-   - **The end-of-transaction rule.** `nominations_parent_required` is the schema's one CONSTRAINT
-     TRIGGER, `DEFERRABLE INITIALLY DEFERRED`: where the matrix answers `parent_required` (a candidate
-     in an `organization_list` election), the row must, when the transaction ends, have a parent
-     nomination or `requestedParentOrganization` in `custom_data`: `Nomination parent required: …`,
+   - **The end-of-transaction rule.** `validate_nomination_parent_required` is the schema's one
+     CONSTRAINT TRIGGER, named as its function and `DEFERRABLE INITIALLY DEFERRED`: where the matrix
+     answers `parent_required` (a candidate in an `organization_list` election), the row must, when the
+     transaction ends, have a parent nomination or ask for one, as
+     `public.nomination_requests_parent(custom_data)` answers (`requestedParentOrganization` in
+     `custom_data`): `Nomination parent required: …`,
      `23514`. Deferred so that a writer may insert the candidate's row, then its party's, then link
      them. Its function re-reads the row by id and never judges the row the queued event carries.
    - **Forcing the deferred rule.** A function that must report that refusal inside its own call runs
-     `SET CONSTRAINTS public.nominations_parent_required IMMEDIATE;` and then
-     `SET CONSTRAINTS public.nominations_parent_required DEFERRED;` before it returns. The second
+     `SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE;` and then
+     `SET CONSTRAINTS public.validate_nomination_parent_required DEFERRED;` before it returns. The second
      statement is not optional: while the constraint is immediate, a candidate's row without a parent is
      refused at its own statement. In a pgTAP file, which never commits, the rule does not fire by
      itself: assert it through `set_entity_nominations`, or with `SET CONSTRAINTS ALL IMMEDIATE` inside
      the asserted statement, and leave no statement in the mode IMMEDIATE.
    - `custom_data.requestedParentOrganization` holds the typed name of a parent that is not in the
      system, a party for a candidate and an alliance for an organization. A row that carries it cannot
-     be confirmed (`enforce_nomination_confirmation`, rule 1, which is judged before an edit turns the
+     be confirmed (`enforce_nomination_confirmation`, rule 1, which asks the same
+     `nomination_requests_parent`, and which is judged before an edit turns the
      confirmation off — so an UPDATE that adds the key to a confirmed row must state `confirmed` false
      in the same statement, as `set_entity_nominations` does).
 
@@ -171,7 +178,7 @@ treatment: `apps/supabase/README.md`.
    - `validate_answers_jsonb` on candidates and organizations (BEFORE INSERT OR UPDATE)
    - `enforce_external_id_immutability` on all 11 content tables (BEFORE UPDATE)
    - `validate_nomination`, `enforce_nomination_entity_columns` and `enforce_nomination_confirmation`
-     on nominations (BEFORE INSERT OR UPDATE), and the constraint trigger `nominations_parent_required`
+     on nominations (BEFORE INSERT OR UPDATE), and the constraint trigger `validate_nomination_parent_required`
      (AFTER INSERT OR UPDATE, deferred to the end of the transaction; § 7)
    - `validate_question_type_change` on questions (BEFORE UPDATE)
    - `enforce_entity_immutability` on the four entity tables (BEFORE UPDATE OF the protected columns and
@@ -273,34 +280,47 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
    - Source: `apps/supabase/supabase/schema/301-auth-functions.sql`, `302-rls.sql`, `400-storage.sql`.
    - **Policy-only hops live in the `private` schema** (162-REVIEW WR-01): `entity_project_id`,
      `is_child_nominee`, `entity_has_confirmed_nomination`, `nomination_entities_confirmed`,
-     `election_project_id`, `constituency_group_project_id`, `project_nominations_locked`,
-     `project_answers_locked`, `nomination_exists_in_contest`, `caller_nominated_in_contest`,
-     `caller_unconfirmed_originated_count` -- eleven, the census at the end of
-     `07-rpc-security.test.sql` § 8d (`'11/0/11'`).
+     `election_project_id`, `constituency_group_project_id`, `project_contestant_editing`,
+     `nomination_exists_in_contest`, `caller_nominated_in_contest`,
+     `caller_unconfirmed_originated_count` -- ten, the census at the end of
+     `07-rpc-security.test.sql` § 8d (`'10/0/10'`).
      `private.nomination_id_in_contest` lives beside them and is not policy-only:
      `private.parent_nomination_resolved` asks it, for both nomination writers, for the id of a parent's
      nomination the caller cannot read (no parent first, then the oldest, then the lowest id).
-     Two more definer functions in `private` answer a fact about the caller rather than a policy
+     Three more definer functions in `private` answer a fact about the caller rather than a policy
      question, and are executable by `authenticated` alone: `private.caller_password_set` and
-     `private.caller_pending_email_taken`, both read by `get_user_entities` (§ 9).
+     `private.caller_pending_email_taken`, both read by `get_caller_account_state`, and
+     `private.caller_registered_organization`, read by `get_user_entities` (§ 9).
      A SECURITY DEFINER function in `public` is a PostgREST RPC endpoint, and these answer questions RLS
      refuses the caller. `private` is not an exposed schema; `anon`/`authenticated` keep USAGE + EXECUTE so
      policies (which run as the caller) can still call them. Always call them qualified (`private.x(...)`).
      `07-rpc-security.test.sql` § 8c holds three censuses of the definer functions left in `public`:
-     six that `anon` can execute (`contestant_app_public_config`, `project_open_for_voters`,
+     six that `anon` can execute (`get_public_app_settings`, `project_open_for_voters`,
      `storage_path_can`, `storage_path_is_public`, `user_can`, `user_has_account_grant`); for
      `authenticated`, eleven: the same six plus `claim_invitations`, `get_entity_basic_data`,
-     `get_entity_nominations`, `get_nomination_parent_options` and `get_user_project_grants`; and fourteen that `service_role` can
-     execute and neither API role can (`address_confirmation_release`, `address_confirmation_request`,
-     `address_holds_open_invitation`, `delete_storage_object`,
-     `identity_entity_find_or_create`, the seven `invitation_*` helpers, `recovery_link_request`, `resolve_email_variables`).
-     `identity_entity_find_or_create(p_user_id, p_project_id, p_entity_type, p_first_name, p_last_name, p_identity_metadata)` serialises
-     an identity provider's first sign-ins of one user with `pg_advisory_xact_lock` keyed on
-     `hashtext('identity-entity:' || p_user_id)`, reads the user's `registered_entities` record inside that lock,
-     and answers `found`, `gone` or `created`, writing the entity, its editor grant and the record in the same
-     transaction for `created` only; on every answer it also merges `p_identity_metadata` (strings set, nulls
-     removed, `registered_entities` refused; default `{}`, which writes nothing) into the user's
-     `raw_app_meta_data` under the same lock (`56-identity-entity-find-or-create.test.sql`). The censuses leave out trigger functions and
+     `get_entity_nominations`, `get_nomination_parent_options` and `get_user_project_grants`; and sixteen that `service_role` can
+     execute and neither API role can (`delete_storage_object`, `email_confirmation_release`,
+     `email_confirmation_request`, `email_invitation_hold`, `identity_account_find`,
+     `identity_entity_find_or_create`, `identity_provider_entity_types`, the seven `invitation_*` helpers,
+     `recovery_link_request`, `resolve_email_variables`). Two of the seven `invitation_*` helpers,
+     `invitation_link_witness_open` and `invitation_link_witness`, are not in `schema/` or the migration:
+     `apps/supabase/supabase/tests/fixtures/invitation-link-witness.psql` installs them, with their table
+     `private.invitation_link_witness`, into a test database only (`00z-invitation-link-witness.test.sql`
+     for pgTAP, the E2E setup for an E2E run), so the census counts them there and a deployment holds
+     neither.
+     `identity_entity_find_or_create(p_user_id, p_project_id, p_entity_type, p_first_name, p_last_name, p_identity_metadata)`
+     (every argument required, none defaulted) serialises an identity provider's first sign-ins of one
+     user with `SELECT ... FOR UPDATE` on the user's row of `auth.users`, reads the user's row of
+     `private.identity_registrations` for the project and the type under that lock, and answers `found`,
+     `gone` or `created`, writing the registration, the entity and its editor grant in the same
+     transaction for `created` only. Before anything is written it compares the account's stored
+     `identity_match_value` with the one `p_identity_metadata` carries and refuses another value
+     (`42501`, `the account is bound to another identity`). On every answer it merges
+     `p_identity_metadata` (strings set, nulls removed; `{}` writes
+     nothing) into the user's `raw_app_meta_data` under the same lock
+     (`56-identity-entity-find-or-create.test.sql`). `private.identity_registrations` (primary key
+     `user_id, project_id, entity_type`) is readable by no API role, the service role included.
+     The censuses leave out trigger functions and
      `test_`-prefixed helpers. A new definer function in `public` reddens the first two when an API role
      can execute it, and the third when it is left to the service role, so it is added to one of them on
      purpose.
@@ -316,16 +336,21 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `set_entity_nominations` and `create_invitations` ask all three, and no copy of their rules exists
      in SQL. Each carries its own `REVOKE ... FROM PUBLIC, anon` and `GRANT ... TO authenticated,
      service_role`: the blanket grant of `301-auth-functions.sql` reaches only the functions defined
-     before it. `46-nomination-write-helpers.test.sql` pins them.
-   - `contestant_app_public_config(project_id)` (`106-app-settings.sql`) is the one of them **no policy
+     before it. A fourth, `private.nomination_parent_target(p_kind, p_stored_parent, p_stored_custom,
+     p_requested_name)` (IMMUTABLE), answers the `parent_nomination_id` and `custom_data` a nomination
+     is to hold for a parent of kind `keep`, `other`, `entity` or `none`, so both writers turn a parent
+     into a row alike; each still resolves an `entity` parent through `parent_nomination_resolved`.
+     `46-nomination-write-helpers.test.sql` pins all four.
+   - `get_public_app_settings(project_id)` (`106-app-settings.sql`) is the one of them **no policy
      reaches**. The frontend adapter calls it when the caller can read no `app_settings` row of a
      project that is closed for voters, which is the normal state while contestants register. It
-     answers one `jsonb` object holding exactly `access.contestantApp`, `access.answersLocked`,
-     `contestantApp.entityTypes`, `contestantApp.registrationModes` and `analytics.trackEvents`, raw and unvalidated, and the same all-null object for a
+     answers one `jsonb` object holding exactly `access.contestantApp`, `access.contestantEditing`,
+     `contestantApp.servedEntityTypes` and `analytics.trackEvents`, each as stored when its shape is one
+     the frontend's parse accepts and otherwise the string `"invalid"`, and the same all-null object for a
      project with no row, a project that declares nothing and an id that names no project.
      `anon_select_app_settings` is not widened by it. A later anon-readable value is added as a member
      of that object, at its storage path, never as a second function.
-     `38-contestant-app-public-config.test.sql` pins the surface.
+     `38-get-public-app-settings.test.sql` pins the surface.
 
 5. **Standard 5-policy pattern** for project-scoped content tables:
    - `anon_select_{table}` -- USING (`project_open_for_voters(project_id)`) TO anon
@@ -350,8 +375,8 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `project.edit_project_settings`; INSERT/DELETE ask `account.manage_projects` at account scope.
    - The four entity tables add an `entity_update_own_{table}` policy asking
      `user_can('entity', id, 'entity.edit_answers', '<the table's entity type>'::public.entity_type)`
-     and, in USING and WITH CHECK, `AND NOT private.project_answers_locked(project_id)` (the answers lock,
-     below).
+     and, in USING and WITH CHECK, `private.project_contestant_editing(project_id) <> 'locked'` (contestant
+     editing, below).
    - `nominations` carries three INSERT policies: `admin_insert_nominations`, `entity_insert_nominations`
      and `entity_insert_parent_nominations` (the placeholder-parent path, with its guards), and two
      DELETE policies: `admin_delete_nominations` and `entity_delete_nominations`, the entity's own
@@ -365,26 +390,31 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      for an alliance's. All four entity editor roles hold `nomination.create_parent`. The cap of 10
      unconfirmed originated parent nominations is by user (`created_by`) and counts rows the caller
      inserted for an organization or an alliance it edits itself.
-   - **The nominations lock is an app setting.** `private.project_nominations_locked(project_id)` reads
-     `access.nominationsLocked` from the project's `app_settings` row, and `entity_insert_nominations`,
-     `entity_insert_parent_nominations`, `entity_update_nominations` and `entity_delete_nominations` each
-     hold `AND NOT` it. The admin policies do not ask it. Only the JSON boolean `true` locks: no row, no key, the string "true" and a
-     JSON null are unlocked, and an id that names no project is locked. The row is written under
-     `project.edit_app_settings`, which ProjectEditor holds, so a project editor can lock and unlock.
-     The frontend reads the same key as the contestant context's `nominationsLocked`.
-   - **The answers lock is the other app setting, and it binds every entity-scope write.**
-     `private.project_answers_locked(project_id)`, the twin of the nominations lock's helper, reads
-     `access.answersLocked` with the same truth table. While it holds, an entity's own editor writes nothing
-     of the entity: it is a conjunct of the four `entity_update_own_*` policies and of the four entity-scope
-     nomination policies (beside the nominations lock); `storage_path_can` refuses an entity-scope write,
-     reading the key inline so no second definer call is nested in it; and `upsert_answers` and
-     `set_entity_nominations` refuse with `42501` and `<function>: answers are locked in this project` a
-     caller that does not hold `project.edit_entities` / `project.edit_nominations` on the project, so the
-     data writer can tell the lock from a row it may not write. **Project grant holders pass it**: no
-     admin, project-scope or storage project-scope policy reads it, so a project editor and a project admin
-     keep editing answers, profiles, nominations and files while answers are locked.
-     `55-answers-lock.test.sql` asserts both sides on every site. The frontend reads the same key as the
-     contestant context's `answersLocked`.
+   - **Contestant editing is one app setting.** `access.contestantEditing` in the project's
+     `app_settings` row is `'open'` (the default), `'nominationsLocked'` or `'locked'`, read by
+     `private.project_contestant_editing(project_id)`: the stored word, `'open'` for no row, no key and
+     any value that is not one of the three words as a JSON string, and `'locked'` for an id that names no
+     project. The key is parsed in one place, the IMMUTABLE invoker helper
+     `private.contestant_editing_in(settings)` (`106-app-settings.sql`), which every reader of it asks. The row is written under `project.edit_app_settings`, which ProjectEditor holds, so a
+     project editor can lock and unlock. `@openvaa/app-shared` reads the same key
+     (`getContestantEditing`, `CONTESTANT_EDITING`).
+     - **`'nominationsLocked'` and `'locked'` stop an entity's nominations.** `entity_insert_nominations`,
+       `entity_insert_parent_nominations`, `entity_update_nominations` and `entity_delete_nominations`
+       each ask `= 'open'`; `set_entity_nominations` refuses a caller without
+       `project.edit_nominations` on the project before it reads the set: with `OV006` and
+       `set_entity_nominations: nominations are locked in this project` under `'nominationsLocked'`,
+       with `OV002` and `set_entity_nominations: editing is locked in this project` under `'locked'`.
+     - **`'locked'` stops every entity-scope write.** The four `entity_update_own_*` policies ask
+       `<> 'locked'`; `storage_path_can` refuses an entity-scope write, reading the key through the invoker
+       helper `private.contestant_editing_in`, so no second definer call is nested in it; `upsert_answers` refuses a caller without
+       `project.edit_entities` on the project with `OV002` and `upsert_answers: answers are locked in
+       this project`, so the data writer can tell the lock from a row it may not write by the code; and
+       `private.registration_mode_allowed_in` allows no registration, so no open candidate or
+       organization invitation is valid, earns a link or is claimed while it holds (§ 10).
+     - **Project grant holders pass it**: no admin, project-scope or storage project-scope policy reads
+       it, so a project editor and a project admin keep editing answers, profiles, nominations and files
+       whatever it says. `55-answers-lock.test.sql` asserts both sides on every site, and
+       `23-nominations-write.test.sql` § 10 holds the helper's truth table.
    - `feedback`: anon and authenticated INSERT WITH CHECK (true) -- submission is open by design; the
      read and delete sides ask `feedback.read` / `feedback.manage`.
    - Join tables (`constituency_group_constituencies`, `election_constituency_groups`): SELECT delegates
@@ -425,16 +455,21 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      array holds one entry per candidate and per organization the caller edits in that project, each
      with the card fields (`entity_type`, `id`, `first_name` and `last_name` or `name`, `short_name`,
      `image`, `color`, `confirmed`), candidates first and each type by id. A caller with no entity
-     still gets one row, with an empty array: the top level is for facts about the caller, and every
-     per-entity fact sits inside `entities`. Factions and alliances have no arm. The two facts about the
-     caller are `password_set`, whether the caller's own account holds a password, answered by
+     still gets one row, with an empty array. Factions and alliances have no arm. Beside `entities`
+     the object holds `organization` only when the caller's identity registered an organization in the
+     project through an identity provider: its id, as `private.caller_registered_organization(p_project_id)`
+     reads it from `private.identity_registrations` for `auth.uid()`, whether or not the caller still
+     edits it (`503-entity-rpcs.sql`, SECURITY DEFINER, `authenticated` alone).
+   - `get_caller_account_state()` answers the facts about the caller's own account, one `jsonb` object
+     of exactly two keys: `password_set`, whether the caller's own account holds a password, answered by
      `private.caller_password_set()`, and `pending_email_taken`, whether the address the caller's own
      account is changing to (`auth.users.email_change`, non-empty) is already another account's address,
      compared trimmed and lower-cased, answered by `private.caller_pending_email_taken()` (false with no
-     pending address and with no caller). Both are in `301-auth-functions.sql`, SECURITY DEFINER with
-     an empty search_path, executable by `authenticated` alone, and take no argument, so neither says
-     anything about an address or an account the caller merely names. The Contestant App's set-password
-     gate reads `password_set` on every load; `36-entity-identity.test.sql` pins both.
+     pending address and with no caller). It is SECURITY INVOKER and `authenticated` alone may execute
+     it; the two helpers are in `301-auth-functions.sql`, SECURITY DEFINER with an empty search_path,
+     executable by `authenticated` alone, and take no argument, so neither says anything about an
+     address or an account the caller merely names. The set-password gates of the Contestant App and
+     the Admin App read `password_set`; `36-entity-identity.test.sql` pins both functions.
    - `get_entity_user_data(p_project_id, p_entity_type, p_entity_id)` returns the editable row of one
      such entity, at most one row. For an entity that is not the caller's, a type that does not match
      the id, another project's entity and an id that does not exist it returns NO ROW. Neither
@@ -443,7 +478,11 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      one such candidate or organization, confirmed or not, as ONE `jsonb` array ordered by
      `sort_order` (nulls last) and then `id`. Each element is an allow-list built key by key: `id`,
      `election_id`, `election_name`, `constituency_id`, `constituency_name`, `election_round`,
-     `election_symbol`, `confirmed`, `custom_data` and `parent` -- a JSON null, or exactly
+     `election_symbol`, `confirmed`, `custom_data`, `updated_at`, `writable` and `parent` -- `writable`
+     is `private.nomination_writable(n, e, entity_type)`, whether `set_entity_nominations` may write the
+     nomination (the election's current round, null read as 1, and a nomination shape that answers
+     `admitted` or `parent_required` for the entity's type), stated once so a client never re-derives it;
+     `parent` is a JSON null, or exactly
      `entity_type`, `entity_id`, `name` and `short_name` of the entity the parent nomination nominates. The two
      names and the parent's are the localized columns as stored. **An empty array means "your entity
      has no nomination"; `NULL` means "no such entity for you"** -- a NULL parameter, a faction or an
@@ -468,7 +507,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `private.caller_entity_ids` gate on the named entity, so a project admin is refused.
      `44-nomination-parent-options.test.sql` pins it; the frontend's one caller is the data writer's
      `getNominationParentOptions`.
-   - **The write: `set_entity_nominations(p_entity_type, p_entity_id, p_nominations)`.** The whole set
+   - **The write: `set_entity_nominations(p_entity_type, p_entity_id, p_nominations, p_expected_versions)`.** The whole set
      of one candidate's or organization's nominations in one call, SECURITY INVOKER with
      `search_path = ''`, EXECUTE granted to `authenticated` by name (the catalogue also lists
      `service_role`, through Supabase's default privileges; `anon` is refused). It inserts what the
@@ -482,16 +521,40 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      It asks `private.nomination_list_checked` for the array, `private.nomination_object_checked` for
      each object's shape before its own row checks, and `private.parent_nomination_resolved` for an
      `entity` parent (RLS and Auth Patterns § 4).
-     - Its reach is the entity's nominations the caller can read, at their election's current round,
-       in an election whose type admits the entity's type. A nomination in reach that the set does not
-       name is deleted; every other one is left alone, and an `id` that names one is refused.
+     - It writes the writable nominations: those of the entity the caller can read for which
+       `private.nomination_writable` holds. A writable nomination that the set does not name is deleted;
+       every other one is left alone, and an `id` that names one is refused.
+     - `p_expected_versions` is required: a JSON object mapping the id of every writable nomination to
+       its `updated_at`, as `get_entity_nominations` states both on the elements whose `writable` is
+       true (`{}` for none); anything else is refused with `22023`. A writable nomination it does not
+       name, an id it names that is no writable nomination, and a differing `updated_at` refuse the call
+       with `OV003` and `set_entity_nominations: the nominations have changed since they were read`, so
+       a set computed from an older read deletes nothing created since and writes back nothing changed
+       since.
+     - An entity may hold several nominations of one election, at different constituencies or under
+       different parents, whatever its type. What bounds them is the uniqueness key
+       `nominations_entity_parent_contest_key` (a second nomination of the entity under the same parent
+       at the same contest, `23505`) and the contest rules of `validate_nomination`.
      - Its own refusals are `22023` (a malformed argument or object, the message beginning
-       `set_entity_nominations: ` and naming `p_nominations[<index>]`) and `42501` (no
-       'nomination.edit' on the entity; `set_entity_nominations: answers are locked in this project` for a
-       caller without `project.edit_nominations` on the project while its answers are locked, asked right
-       after the first and before the set is read; a row that could not be written). The guards' refusals pass
-       through: `23503` for a removed or moved nomination with nominations listed under it, `P0001`
-       beginning `A caller may originate at most ` for the cap, `23514` for the two election-type rules and the constituency rule.
+       `set_entity_nominations: ` and naming `p_nominations[<index>]`), `42501` (no
+       'nomination.edit' on the entity; a row that could not be written), `OV002`
+       (`set_entity_nominations: editing is locked in this project` for a caller without
+       `project.edit_nominations` on the project while contestant editing is `'locked'`) and `OV006`
+       (`set_entity_nominations: nominations are locked in this project` for the same caller while it is
+       `'nominationsLocked'`), both asked right after the first and before the set is read, `OV003` (the
+       writable nominations as stored are not the ones read) and `OV005` (a removed or moved nomination
+       has nominations listed under it, asked of the SECURITY DEFINER
+       `private.nominations_listed_under(uuid[])` before the delete, so the parent foreign key never
+       fires). The guards' refusals pass through: `OV004` beginning `A caller may originate at most `
+       for the cap, `23514` for the two nomination-shape rules and the constituency rule.
+     - **The refusal codes.** The six refusals the frontend tells apart carry SQLSTATEs of class `OV`,
+       which no PostgreSQL error uses: `OV001` the frozen name (`enforce_entity_immutability`), `OV002`
+       contestant editing `'locked'` (`upsert_answers`, `set_entity_nominations`), `OV003` the changed
+       writable nominations, `OV004` the pending-parent cap (`enforce_nomination_confirmation`), `OV005`
+       listed-under and `OV006` contestant editing `'nominationsLocked'` (`set_entity_nominations`). The
+       data writer exports them as `REFUSAL_CODES` and matches on the code alone, never on the message;
+       each is asserted with `throws_ok(..., 'OV00n')`. A new refusal the app must recognise takes the
+       next code.
      - **RLS refuses an UPDATE and a DELETE silently**, so the function reads the row count of each and
        raises `42501` on a shortfall. A function that writes under invoker rights and reports success
        must do the same.
@@ -513,8 +576,8 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
        runs two calls in parallel), and a move leaves behind the parent's nomination an earlier call
        created at the old contest.
      - `43-set-entity-nominations.test.sql` pins it; the frontend's one caller is the data writer's
-       `setEntityNominations`, which maps the `23503` and the cap's `P0001` to the named refusals
-       `hasCandidates` and `tooManyPending`. The call is listed as scoped by identity in
+       `setEntityNominations`, which maps `OV003`, `OV005`, `OV004`, `OV002` and `OV006` to the named
+       refusals `changed`, `hasCandidates`, `tooManyPending`, `answersLocked` and `nominationsLocked`. The call is listed as scoped by identity in
        `scripts/assert-project-scoped-queries.mjs`: the function takes no project.
    - The first two are SECURITY INVOKER, `LANGUAGE sql`, with no parameter default, refused to `anon` by
      privilege. Both resolve the caller's entities through
@@ -544,15 +607,17 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
    - `identity-callback` never asks which entities a user edits: one user may edit several, given
      by an administrator or claimed from invitations. It asks whether the one entity the identity
      registered is still its own, and creates it when there is none, in ONE call of
-     `identity_entity_find_or_create` (§ 4): one transaction under a per-user advisory lock. The
-     function reads the id the account's `app_metadata.registered_entities[<project>][<type>]`
-     names inside the lock and confirms it by the user's `(entity, <type>, <that id>, editor)`
-     grant and the row in the entity table of that type, in the project. No record: it creates the
-     entity, its editor grant and the record in the same transaction, so first sign-ins of one
-     identity that arrive together make one entity, and no entity is ever left without its grant.
-     A record whose grant or row is gone: `gone`, which the Edge Function answers as `no_entity`,
+     `identity_entity_find_or_create` (§ 4): one transaction under the row lock of the user's
+     `auth.users` row. The function reads the entity id the user's row of
+     `private.identity_registrations` names for the project and the type, under that lock, and
+     confirms it by the user's `(entity, <type>, <that id>, editor)` grant and the row in the entity
+     table of that type, in the project. No registration: it writes the registration, the entity and
+     its editor grant in the same transaction, so first sign-ins of one identity that arrive together
+     make one entity, and no entity is ever left without its grant. A registration whose grant or row
+     is gone: `gone`, which the Edge Function answers as `no_entity`,
      and nothing is created, so identifying again does not undo an administrator's removal.
-     `findOrCreateOutcome` (`functions/identity-callback/ownEntity.ts`) reads the answer and throws
+     The answer is `{result, entity_id}` and nothing else. `findOrCreateOutcome`
+     (`functions/identity-callback/ownEntity.ts`) reads it and throws
      (`ERR_ENTITY_RESOLVE_FAILED`) on any other shape, as the Edge Function does on a reported error.
 
 10. **Invitations: a promise mirrors a grant, and the claim is the one function that fulfils it.**
@@ -585,11 +650,12 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       the auth schema's users table (`auth.uid()`'s row), never the token's `email` claim, and takes no address, user
       id or invitation id. An account whose `raw_app_meta_data` names an `identity_provider` claims
       nothing, whatever its confirmed address: the identity provider created it, and its address does
-      not decide who the person is (`39-invitations.test.sql` § 24). It claims the open rows addressed to that address and the code rows bound
+      not decide who the person is (`39e-invitations-recovery-identity-provider.test.sql` § 24). It claims the open rows addressed to that address and the code rows bound
       to it, each row by itself: a candidate that already has an editor is skipped
       (`candidate_has_editor`) and stays open; an entity no longer in the row's project is skipped
       (`target_not_in_project`); a grant the caller already holds marks the row claimed without a
-      second grant. It returns `{claimed, skipped, password_set}`.
+      second grant. It returns `{claimed, skipped}`; whether the account holds a password is
+      `get_caller_account_state`'s answer (§ 9).
     - **The claim cannot know HOW an address was confirmed.** It is sound only while the auth service
       refuses public sign-up and confirms by mail: `config.toml` `[auth] enable_signup = false` and
       `[auth.email] enable_confirmations = true`, held locally by `yarn assert:auth-signup-closed`
@@ -599,39 +665,52 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       refresh, then gates (`apps/frontend/src/lib/auth/sessionAdmission.ts` and the auth callback).
     - **The helpers behind `account-access` are in `public` and executable by `service_role` only**:
       `invitation_code_status`, `invitation_link_request`, `invitation_link_release`,
-      `invitation_code_claimant_email`, `invitation_link_witness_open`, `invitation_link_witness`,
-      `recovery_link_request`, `address_confirmation_request`, `address_confirmation_release` and
-      `address_holds_open_invitation`. Each is SECURITY DEFINER and checks nothing about its caller, so EXECUTE
+      `invitation_code_claimant_email`, `recovery_link_request`, `email_confirmation_request`,
+      `email_confirmation_release` and `email_invitation_hold`, with the two witness functions
+      `invitation_link_witness_open` and `invitation_link_witness` where the test-only
+      `tests/fixtures/invitation-link-witness.psql` is installed (§ 4); `account-access` reads a
+      missing witness function (PostgREST `PGRST202`, Postgres `42883`) as no witness. Each is SECURITY DEFINER and checks nothing about its caller, so EXECUTE
       is revoked from `PUBLIC`, `anon` and `authenticated` by name: published to an API role, the code
       check is a code oracle and the link request an account oracle that also writes.
     - **The registration-mode condition.** An open invitation for a candidate or an organization is
       honoured only under the mode its binding names (`code` for a row with a code hash, `email` for a
       row bound to an address), for its target type, as the project's stored
-      `contestantApp.registrationModes` allows. `private.invitation_mode_allowed(invitations)`
+      `contestantApp.servedEntityTypes` allows. `private.invitation_mode_allowed(invitations)`
       (`506-invitation-rpcs.sql`) states it once and asks `private.registration_mode_allowed(project,
       type, mode)`, which reads the settings row and asks the IMMUTABLE rule
       `private.registration_mode_allowed_in(settings, type, mode)` (both in `301-auth-functions.sql`;
-      false for a project with no row). `invitation_code_status`, `invitation_link_request`,
+      false for a project with no row, and false for every type and mode while `access.contestantEditing`
+      is `'locked'`). While the project's `access.contestantApp` is the JSON boolean `false`
+      (`private.project_contestant_app_closed`), `invitation_mode_allowed` refuses every entity-scope
+      row, of any type; a project-scope row, which leads to the Admin App, is allowed. Open is stated once by `private.invitation_is_open(invitations)`, and an open,
+      allowed invitation addressed to an address by `private.email_holds_allowed_invitation(project,
+      email)`, which the link and recovery requests ask. `invitation_code_status`, `invitation_link_request`,
       `recovery_link_request` and `claim_invitations` treat a refused row as absent (`unknown`; no
       address; neither claimed nor skipped). Project-scope, faction and alliance rows are not judged,
       claimed rows are never judged, and `create_invitations` does not ask. A project that stores no
-      matrix honours no candidate or organization invitation (the shipped default allows nothing;
-      `seed.sql`'s default project stores a matrix that allows `email` and `code` for candidates and
-      nothing for organizations): a pgTAP file with projects of its own writes a matrix in its setup.
+      `servedEntityTypes` honours no candidate or organization invitation (the shipped default allows
+      nothing; `seed.sql`'s default project serves candidates alone and allows them `email` and `code`):
+      a pgTAP file with projects of its own writes the setting in its setup.
       `45-registration-mode-matrix.test.sql` is the rule's truth table, and
-      `packages/dev-seed/tests/registrationModeMatrixParity.test.ts` holds the client's
-      `isRegistrationModeAllowed` to the same table.
+      `packages/app-shared/src/settings/contestantAppSettings.matrix.test.ts` holds the client's
+      `isRegistrationModeAllowed` (`@openvaa/app-shared`) to the same table. The identity provider's
+      entry asks the same rule through `public.identity_provider_entity_types(p_project_id)` (service
+      role only): `candidate` and `organization`, in that order, where the project allows the mode
+      `identity_provider` for the type, and an empty array while the Contestant App is off;
+      `59-identity-provider-entry.test.sql` pins it and the closed app.
     - **`recovery_link_request(p_project_id, p_email)`** answers `{email, mail}` with `mail`
       `recovery` for a user with that confirmed address holding a grant that reaches the project
       (`private.email_holds_grant_in_project`, shared with `invitation_link_request`: a project-scope
       grant on the project, an entity-scope grant on one of its entities, any global-scope grant, or an
       account-scope grant on the project's account, whatever the role), `sign-in` for an
       address with no such user and an open, allowed invitation, and null otherwise. A non-null answer
-      takes the address's `link:` and `link-address:` slots, the same slots a link request takes, so
+      takes the address's `link:` and `link-address:` slots through `private.email_link_slots_take`, the
+      same slots a link request takes, so
       the two requests are limited together and a later link of either kind stops an earlier unopened one; the caller sends
       exactly one mail of that kind or gives the slot back with `invitation_link_release`. It creates
       no account and binds no address.
-    - **Limits live in `private.invitation_throttle`** and are keyed on what a request is about: one
+    - **Limits live in `private.access_throttle`**, taken through `private.access_throttle_take` (an
+      advisory lock per key serialises concurrent takes), and are keyed on what a request is about: one
       mail per address per project per 60 s (`link:`), twenty mails per address per day in every
       project together (`link-address:`), one binding per code row per 60 s and five bindings to
       another address per code row per day (`code-bind:<invitation id>`), ten claimant look-ups per
@@ -640,19 +719,23 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       does not depend on whether the typed address is invited or holds a grant. An unknown code is defended by its 60 bits alone; nothing counts
       those look-ups. The keys on a caller are `confirm:<user id>`, below, and
       `caller:<project id>:<address, the IPv4 address of an IPv4-mapped one, or the /64 of another IPv6
-      address>`, which `invitation_caller_take`
-      takes for the address the Edge Function read from `cf-connecting-ip`: thirty invitation operations
-      per caller per project per ten minutes, trusted only when `deployment_settings.behind_cloudflare`
+      address>`, which `access_caller_take`
+      takes for the address the Edge Function read from `cf-connecting-ip`: `deployment_settings.access_caller_max`
+      (30 by default) anonymous account-access operations per caller per project per ten minutes, trusted only when `deployment_settings.behind_cloudflare`
       is true, no row for an untrusted, absent or unparseable address or an unknown project, and each
       take, after its own slot, deletes the other `caller:` rows whose window has ended, skipping rows
-      another transaction has locked (`FOR UPDATE SKIP LOCKED`), so two takes never wait on each other
-      (migration `00024`). Service role only;
-      `59-invitation-caller-limit.test.sql` pins it.
-    - **`address_confirmation_request(p_project_id, p_user_id, p_email)`** decides whether one
+      another transaction has locked (`FOR UPDATE SKIP LOCKED`), so two takes never wait on each other.
+      Service role only; `59-access-caller-limit.test.sql` pins it. No key holds an email address in
+      clear: every email address enters a key through `private.email_hash` (sha256 hex of the address trimmed
+      and lower-cased), and the `link:` key is stated once by `private.email_link_slot_key`. Deleting an
+      invitation deletes its `link:`, `code-bind:` and `code:` keys (trigger `cleanup_access_throttle`,
+      function `public.cleanup_access_throttle_on_delete`); deleting an entity deletes its entity-scope
+      invitations (`cleanup_grants_on_delete`, which also deletes its grants).
+    - **`email_confirmation_request(p_project_id, p_user_id, p_email)`** decides whether one
       address-confirmation mail may go to an address for a signed-in account. Neither slot is per
       project: a project the request names freely would hand a caller a fresh budget per project id. It
-      answers false, writing nothing, unless the user's `registered_entities` record (in
-      `raw_app_meta_data`, written by the service role alone) names `p_project_id`; then it takes the
+      answers false, writing nothing, unless `private.identity_registrations` holds a row of the user in
+      `p_project_id` (written by `identity_entity_find_or_create` alone); then it takes the
       account's slot (`confirm:<user id>`, ten per 15 minutes, counted even when refused) and the
       address's slot (`confirm-address:<sha256 hex>`, one per 60 s), and answers true only when both
       were taken. The address's slot is not the link mails' `link:` slot: a change-of-address link
@@ -660,15 +743,20 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       its own. The operation that sends that mail tells its caller whether the address is another
       account's, so the account's own slot keeps it from being a bulk address oracle. A null or blank
       argument answers false and writes nothing; it writes nothing but the two throttle rows, and
-      `address_confirmation_release(p_email)` gives the address's slot back. Service role only;
-      `48-address-confirmation-request.test.sql` pins both.
-    - **`address_holds_open_invitation(p_project_id, p_email)`** answers whether an OPEN invitation of
-      the project holds the address, trimmed and lower-cased, as its `email` or its `pending_email`:
-      `claimed_at IS NULL` and no `expires_at` or one in the future; the registration-mode matrix is
-      not asked. A null argument or a blank address answers false; it writes nothing. `confirm-address`
-      asks it after `address_confirmation_request` has taken both slots and answers `in-use` on true,
-      so an identity provider's account, which claims no invitation, cannot take an invited address.
-      Service role only; `57-address-holds-open-invitation.test.sql` (`AOI: `) pins it.
+      `email_confirmation_release(p_email)` gives the address's slot back. Service role only;
+      `48-email-confirmation-request.test.sql` pins both.
+    - **`email_invitation_hold(p_project_id, p_email) -> text`** answers which hold an OPEN invitation
+      of the project (`private.invitation_is_open`: `claimed_at IS NULL` and no `expires_at` or one in
+      the future) has on the address, trimmed and lower-cased, as its `email` or its `pending_email`:
+      `allowed` when at least one such row is one `private.invitation_mode_allowed` honours, `held` when
+      such rows exist and none is honoured (its mode is off, or the Contestant App is closed for an
+      entity row), `none` otherwise, a null argument and a blank address included; it writes nothing.
+      It differs from `private.email_holds_allowed_invitation`, which reads `email` alone and answers
+      only the first case. `confirm-address` asks it after `email_confirmation_request` has taken both
+      slots and answers `invited` on `allowed` and `in-use` on `held`, so an identity provider's account,
+      which claims no invitation, cannot take an invited address, and is pointed to the invitation only
+      when the project would honour it. Service role only; `57-email-invitation-hold.test.sql` (`AOI: `)
+      pins it.
     - **`create_invitations(p_project_id, p_invitations, p_confirm_entity)`: the call states the
       confirmation.** `p_confirm_entity` is required and has no DEFAULT, there is no two-argument form,
       and `NULL` is refused (`create_invitations: p_confirm_entity must be true or false`). `true`
@@ -696,12 +784,16 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       `... could not be written as stated` on a difference. Refused with `22023`: the key on a
       project-scope item or for a faction or an alliance, one entity's nominations on two items, and an
       invited entity that is no entity of the project the caller can read (so an unreadable entity and an absent id get the same refusal), or a parent that is no entity of the project. A call that wrote a nomination
-      forces `nominations_parent_required` after its last item. Each item answers `entity_confirmed`
+      forces `validate_nomination_parent_required` after its last item. Each item answers `entity_confirmed`
       (null on a project-scope item) and, when it stated the key, `nominations` =
       `{"inserted","updated","unchanged","parents_created"}`.
     - **The map is asked when the row is written and not again**: a claim honours a promise whose
       seeder has since lost authority, and a promise is withdrawn by deleting the unclaimed row.
-    - `39-invitations.test.sql` holds all of the above but the `nominations` key, which
+    - The `39a-` to `39e-invitations-*.test.sql` files hold all of the above but the `nominations` key
+      (`39a-invitations-seeding`: the authority map, seeding and the code; `39b-invitations-claim`: the
+      claim; `39c-invitations-service-helpers`: the service-role helpers, the limits, the witness and
+      exposure; `39d-invitations-registration-mode`: the registration-mode condition;
+      `39e-invitations-recovery-identity-provider`: recovery and the identity provider's account), which
       `47-invitation-nominations.test.sql` holds with the confirmation's states and the answer;
       `07-rpc-security.test.sql` § 8c and
       `25-matrix-conformance.test.sql` hold the censuses the model moved.
@@ -725,14 +817,20 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
    - `account-access`: ANONYMOUS by design for four of its five operations (called with the anon
      key and no user token); the fifth, `confirm-address`, takes the caller's OWN access token and
      acts for that account alone. It decides no authority in TypeScript either: it asks the
-     database. One `POST` endpoint, every body carrying `operation` and `project_id` -- the project
-     comes from the REQUEST, and the function reads none from its environment. `check-code` answers `valid` / `used` / `unknown`
+     database. One `POST` endpoint, every body carrying `operation` and `project_id`. It serves the
+     deployment's one project, `PUBLIC_PROJECT_ID`, as `send-email` does: a request whose `project_id`
+     names another project is answered with the bad-request answer before any operation is read
+     (`isDeploymentProject`, `functions/_shared/deploymentProject.ts`, which send-email shares), and an unset variable answers every request with the
+     internal error. `check-code` answers `valid` / `used` / `unknown`
      from `invitation_code_status`. `request-link` answers `{ accepted: true }` ALWAYS and BEFORE
      any work (`EdgeRuntime.waitUntil`), so status, body and timing say nothing about an address;
      `invitation_link_request` then decides whom a mail may go to (one per address per 60 s).
      `request-recovery` answers the same way, before any work, and then asks
      `recovery_link_request`: for `recovery` it mints a `recovery` token for the existing account
-     (`generateLink({ type: 'recovery' })`) and mails the recovery mail; for `sign-in` it does what
+     (`generateLink({ type: 'recovery' })`) and mails the recovery mail, which names the control
+     that asks for a new link by the frontend catalogue's `common.account.forgotPassword` label
+     (`RECOVERY_MAIL_TEMPLATES`, `apps/supabase/supabase/functions/account-access/mailTemplates.ts`; its test reads the label from
+     `apps/frontend/messages/<locale>/common.json`); for `sign-in` it does what
      `request-link` does; for null it stops. `code-sign-in` asks `invitation_code_claimant_email` and
      the auth service's password grant; it does not ask the registration-mode matrix. All of these
      are `service_role`-only functions in `506-invitation-rpcs.sql`. A link is issued
@@ -747,25 +845,28 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `confirm-address` (`addressConfirmation.ts`) proves a typed address for an account an
      identity provider made, still on its placeholder: with no accepted token it answers 401
      `unauthenticated`; an account whose `app_metadata` names no `identity_provider`, or whose
-     address is no longer the placeholder, a project its `registered_entities` record does not
-     name, and a typed address on the placeholder domain are `refused` before any slot. It then
-     takes the account's `confirm:` slot and the address's `confirm-address:` slot, neither per
-     project, through `address_confirmation_request` (both, or `refused`), asks
-     `address_holds_open_invitation` whether an open invitation of the project holds the address
-     (true is `in-use`, slot given back: the account claims no invitation, so the invited person
-     signs in by email), asks the auth
+     address is no longer the placeholder, and a typed address on the placeholder domain
+     (`isPlaceholderEmail`) are `refused` before any slot. It then takes the account's `confirm:`
+     slot and the address's `confirm-address:` slot, neither per project, through
+     `email_confirmation_request` (both, or `refused`; the database takes none for a project the
+     account's `private.identity_registrations` rows do not name), asks
+     `email_invitation_hold` which hold an open invitation of the project has on the address
+     (`allowed` is `invited`, slot given back: the account claims no invitation, so the invited person
+     signs in by email; `held`, an invitation the project would not honour, is `in-use`, slot given
+     back), asks the auth
      service for `generateLink` `email_change_current` and `email_change_new` (an `email_exists`
      answer is `in-use`, slot given back), verifies the current address's token itself (which
      leaves the typed address pending and changes nothing else) and mails the new address's
      `type=email_change` link. The typed address is never written to the account: it becomes the
-     account's only when that link is opened. The one admin update carrying an address
+     account's only when that link is opened. The answers are `sent`, `in-use`, `invited`, `refused`
+     and `unauthenticated`. The one admin update carrying an address
      (`restoreAddress`) puts the account's own placeholder back when verifying the current token
      answered with a session, i.e. the change completed alone because the auth service's secure
      email change (`double_confirm_changes`) is off; the request is then `refused` and nothing is
-     mailed. That setting is a required deployment setting. The `in-use` answer is the one address-existence
-     answer, given to a signed-in caller about their own typed address behind both slots; it says
-     that another account holds the address or that an open invitation does, and the second is an
-     invitation-existence answer ACCEPTED as a residual under the same bounds. The auth
+     mailed. That setting is a required deployment setting. The `in-use` and `invited` answers are the
+     address-existence answers, given to a signed-in caller about their own typed address behind both
+     slots: `in-use` says that another account holds the address, `invited` that an open invitation
+     does, an invitation-existence answer ACCEPTED as a residual under the same bounds. The auth
      service answers the same question to an account's own `PUT /auth/v1/user` with an address
      another account holds (422 `email_exists`), outside these slots; that oracle is ACCEPTED as a
      residual (no auth hook runs before a user's own email change; a hosted project's per-IP limit
@@ -774,29 +875,37 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `x-identity-callback-secret` header, or with a value other than
      `IDENTITY_CALLBACK_SERVER_SECRET` (constant-time compare, `serverCredential.ts`), is answered
      401 `refused` before the body, the configuration or the token is read. Body:
-     `{ id_token, project_id (uuid, required), entity_type? }`; the project comes from the REQUEST
-     and the function reads none from its environment. It verifies the JWE/JWT, decides the entity
-     type from the project's stored registration-mode matrix BEFORE any account or row is touched
-     (`registrationMatrix.ts`; the authority, the frontend's checks only select), finds the account
-     by `app_metadata.identity_match_value` or creates it by `generateLink({ type: 'invite' })` on
-     a placeholder address (no password, no `createUser`); a failed invite is followed by a look-up
-     of the account on the placeholder, so a request that lost the race to create the account goes
-     on with the one another request made. It then finds or creates the identity's own entity
-     through ONE call of `identity_entity_find_or_create` (RLS and Auth Patterns § 9): one
-     transaction under a per-user advisory lock, which creates a confirmed candidate or an
-     unconfirmed nameless organization with its editor grant and the `registered_entities` record,
-     and writes the identity metadata the function hands it under the same lock. No admin update of
+     `{ id_token, project_id (uuid, required), intent?, entity_type? }`; the project comes from the REQUEST
+     and the function reads none from its environment. It verifies the JWE/JWT and, BEFORE any
+     account or row is touched, asks `public.identity_provider_entity_types(p_project_id)` which
+     entity types the project lets an identity provider register (the rule is the database's,
+     `private.registration_mode_allowed`, and the answer is empty while the Contestant App is off);
+     `registrationMatrix.ts` only reads that answer (`allowedEntityTypes`) and chooses among it
+     (`resolveEntityType`), and a type outside it is `mode_not_allowed`. It finds the account
+     through `public.identity_account_find(p_match_value, p_placeholder_email)` (by
+     `app_metadata.identity_match_value`, else by the placeholder address) or creates it by
+     `generateLink({ type: 'invite' })` on a placeholder address (no password, no `createUser`); a
+     failed invite is followed by the same look-up, so a request that lost the race to create the
+     account goes on with the one another request made. It then finds or creates the identity's own
+     entity through ONE call of `identity_entity_find_or_create` (RLS and Auth Patterns § 9): one
+     transaction under the row lock of the account's `auth.users` row, which creates a confirmed
+     candidate or an unconfirmed nameless organization with its editor grant and its row of
+     `private.identity_registrations`, and writes the identity metadata the function hands it under
+     the same lock; its `42501` for an account bound to another identity is answered `refused`. No admin update of
      the function carries `app_metadata`, because the auth service writes the whole of
      `app_metadata` from the copy it read when the update began; its one admin update confirms the
      placeholder of an account it has just created. Only THEN does it generate a `magiclink` for the
      account's current address, so the session the caller makes already carries the grant. It
      AUTHENTICATES an identity and has its entity grant written; it authorises nothing.
-     `app_metadata` holds exactly `identity_provider`, `identity_match_prop`,
-     `identity_match_value` and `registered_entities` (`appMetadata.ts`); the identity metadata the
-     Edge Function hands the database function carries no record, and sends `hetu` and `birthdate`
-     as null, which removes them. Every answer is one closed `result` (`requestContract.ts`):
-     `created`, `found`, `no_entity` (200, with `token`), `refused` (401), `mode_not_allowed` (403),
-     `invalid_token` (401), `bad_request` (400), `configuration` (500), `unavailable` (503).
+     `app_metadata` holds exactly `identity_provider`, `identity_match_prop` and
+     `identity_match_value` (`appMetadata.ts`); the registrations are never part of it, and the
+     identity metadata the Edge Function hands the database function sends `hetu` and `birthdate` as
+     null, which removes them. Every answer is one closed `result` (`requestContract.ts`):
+     `created`, `found`, `no_entity`, `signed_in` (200, with `token`), `refused` (401),
+     `mode_not_allowed` (403), `no_account` (404), `invalid_token` (401), `bad_request` (400),
+     `configuration` (500), `unavailable` (503). A request with `intent: 'sign_in'` creates
+     nothing: after the token is verified it signs in only the account that already holds this
+     identity's match value, answering `signed_in`, and answers `no_account` when there is none.
    - `send-email`: gated as above; resolves per-recipient email variables in the configured
      project and sends via SMTP (nodemailer).
 
@@ -841,8 +950,8 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      question through `storage_path_can` -> `user_can`, and **1** -- `anon_select_public_assets` --
      routes through `storage_path_is_public`, because anon has no `auth.uid()`, so it holds no grant row
      and `user_can` denies it by construction. **None routes through neither.**
-   - `storage_path_can` refuses an entity-scope write while the project's answers are locked (RLS and
-     Auth Patterns § 6); a project-scope write and every read are unaffected.
+   - `storage_path_can` refuses an entity-scope write while the project's `access.contestantEditing`
+     is `'locked'` (RLS and Auth Patterns § 6); a project-scope write and every read are unaffected.
    - ⚠ No storage policy names `user_can` in its own `pg_policies` expression; the reach is through
      `storage_path_can`. Anything measuring that partition must compute reach TRANSITIVELY.
    - Storage cleanup (162.1): `delete_storage_object()` deletes ONE object per call via
@@ -907,20 +1016,25 @@ p_template_subject)` is SECURITY DEFINER (reads auth.users). For each user: look
      `IDENTITY_PROVIDER_CLIENT_ID`, `IDENTITY_PROVIDER_ISSUER` (the last two through
      `requireVerifyClaimBinding`, § 6) and `IDENTITY_CALLBACK_SERVER_SECRET`, the server's
      credential, which the frontend server holds too (`$lib/server/constants`) and sends in
-     `x-identity-callback-secret`; it is read only for a request that carries the header, so an
+     `x-identity-callback-secret` (the route `apps/frontend/src/routes/api/oidc/callback/+server.ts`
+     reads the secret, and `apps/frontend/src/lib/server/auth/identityCallback.ts` makes the call;
+     `apps/supabase/supabase/functions/identity-callback/flowConformance.test.ts` reads both files); it is read only for a request that carries the header, so an
      anonymous call is refused before any configuration is read. No `PUBLIC_PROJECT_ID` and no
      `SITE_URL`: the project is the request's, and the sign-in token is handed to the caller, not
-     mailed. `account-access` -- `SITE_URL`, `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM`
-     (and no project variable: its project is the request's); `send-email` -- `PUBLIC_PROJECT_ID`,
+     mailed. `account-access` -- `PUBLIC_PROJECT_ID` (the one project it serves; a request for
+     another is refused), `SITE_URL`, `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM`; `send-email` -- `PUBLIC_PROJECT_ID`,
      `SMTP_HOST`, `SMTP_PORT`, and `SMTP_FROM` (always the sender; a request `from` is refused
      unless it equals it -- 162-REVIEW WR-02).
    - `envConfig.ts` exists once, in `apps/supabase/supabase/functions/_shared/`, the directory for
      modules more than one function uses. Each function imports it as `../_shared/envConfig.ts`, and
      the bundler includes it in every function whose entry point does. `_shared/` holds no
      `index.ts`, so it is never served or deployed as a function. Its test is
-     `apps/supabase/supabase/functions/_shared/envConfig.test.ts`. `placeholderAddress.ts` lives
-     beside it; the frontend's `identityProviderAccount.ts` keeps its own copy of the placeholder
-     domain, and `_shared/placeholderAddress.test.ts` holds the two equal.
+     `apps/supabase/supabase/functions/_shared/envConfig.test.ts`. Beside it, each with its test:
+     `deploymentProject.ts` (`isDeploymentProject`), `placeholderEmail.ts` (`placeholderEmailFor`, `isPlaceholderEmail`; the frontend's
+     `identityProviderAccount.ts` keeps its own copy of the placeholder domain, and
+     `_shared/placeholderEmail.test.ts` holds the two equal), `guards.ts` (`isUuid`, `isPlainObject`),
+     `constantTimeEqual.ts`, `actionLink.ts` (`actionLinkToken`) and `mailTransport.ts`
+     (`smtpTransportConfig`, `configuredSender`).
    - The defect this replaced: a `Deno.env.get('X') || fallback` chain fell back from `SITE_URL` to
      the Supabase API host, so an unset variable addressed candidate invite links at the API origin
      -- a link the recipient cannot use, from a deployment that reported no error at all.
@@ -946,16 +1060,19 @@ p_template_subject)` is SECURITY DEFINER (reads auth.users). For each user: look
 
 ## pgTAP Testing Conventions
 
-1. **Test infrastructure**: pgTAP extension loaded in `00-helpers.test.sql`. **47** files in
-   `apps/supabase/supabase/tests/database/` (`00` to `47`; there is no file `13`), alphabetically
-   ordered execution: `00-helpers` is the persistent-helper phase and runs its own smoke tests under
-   `no_plan()`, and the other **46** declare plans summing to **2594**. A run reports
-   `Files=47, Tests=2603` (the difference of 9 is `00-helpers`). Run with
+1. **Test infrastructure**: pgTAP extension loaded in `00-helpers.test.sql`. **64** files in
+   `apps/supabase/supabase/tests/database/` (`00` to `59`, with `00z` and the five `39a` to `39e`;
+   there is no file `13` and no `39`), in byte order of their names: `00-helpers` is the
+   persistent-helper phase and runs its own smoke tests under `no_plan()`, `00z-invitation-link-witness`
+   applies the test-only fixture `../fixtures/invitation-link-witness.psql` outside a transaction (so
+   every later file finds `private.invitation_link_witness` and its two functions; the file is listed
+   in `.prettierignore` because it holds a psql `\ir`), and the other **63** declare plans summing to
+   **2940**, `00z` included. A run reports those plus `00-helpers`' `no_plan()` assertions. Run with
    `supabase db reset` to reload helpers, then `supabase test db`. The largest file is
-   `39-invitations.test.sql`, `plan (329)`; `07-rpc-security.test.sql` is `plan (44)`.
-   - `39-invitations.test.sql` counts only the `private.invitation_link_witness` records it opens, so
-     the rows an E2E run leaves there (no teardown removes them) do not redden it. For the per-file
-     plans, read them from the files:
+   `23-nominations-write.test.sql`, `plan (141)`; `07-rpc-security.test.sql` is `plan (44)`.
+   - `39c-invitations-service-helpers.test.sql` counts only the `private.invitation_link_witness`
+     records it opens, so the rows an E2E run leaves there (no teardown removes them) do not redden
+     it. For the per-file plans, read them from the files:
    `git grep -n -E "^  plan \(" -- 'apps/supabase/supabase/tests/database/*.test.sql'`.
    - The suite is run on a freshly reset database by every gate, so it is shown green on migrations
      plus `seed.sql` only; a run on a database that holds seeded or E2E data is unmeasured.
@@ -1058,16 +1175,16 @@ scalar-subquery form, or the common-column set. Those are review items, not gate
 ## Key Source Locations
 
 - Schema files (the hand-edited source): `apps/supabase/supabase/schema/000-enums.sql` through `900-test-helpers.sql` (29 files)
-- Migrations (what `db reset` and `db push` apply, never edited once listed): `apps/supabase/supabase/migrations/` (1 file, the frozen baseline `00001_initial_schema.sql`), listed with their sha256 in `apps/supabase/supabase/migrations.manifest.json`
-- Invitations: `apps/supabase/supabase/schema/305-invitations.sql` (table, policies, code functions), `506-invitation-rpcs.sql` (seeding with the stated confirmation and nominations, the claim, the `service_role` helpers, the throttle and witness tables)
+- Migrations (what `db reset` and `db push` apply, never edited once listed): `apps/supabase/supabase/migrations/` (1 file, the frozen baseline `00001_initial_schema.sql`), listed with their sha256 in `apps/supabase/supabase/migrations.manifest.json`, whose `baseline.commit` is tagged `schema-baseline-00001`
+- Invitations: `apps/supabase/supabase/schema/305-invitations.sql` (table, policies, code functions), `506-invitation-rpcs.sql` (seeding with the stated confirmation and nominations, the claim, the `service_role` helpers, `private.access_throttle` and `private.identity_registrations`); the test-only witness: `apps/supabase/supabase/tests/fixtures/invitation-link-witness.psql`
 - Schema linter: `apps/supabase/scripts/lint-schema.mjs` (`yarn db:lint:sql`)
 - RLS policies: `apps/supabase/supabase/schema/302-rls.sql` (main), `303-column-grants.sql` (column restrictions), `400-storage.sql` (storage policies)
 - Auth hooks: `apps/supabase/supabase/schema/301-auth-functions.sql`
 - Validation triggers (nominations, entity immutability, entity type list, entity colour): `apps/supabase/supabase/schema/011-validation-functions.sql`
 - Edge Functions: `apps/supabase/supabase/functions/account-access/`, `identity-callback/`, `send-email/`
 - Bulk RPCs: `apps/supabase/supabase/schema/501-bulk-operations.sql`
-- pgTAP tests: `apps/supabase/supabase/tests/database/` (47 files, `00-helpers` through `47-invitation-nominations`)
-- Nominations: `apps/supabase/supabase/schema/104-nominations.sql` (table, triggers, the constraint trigger), `011-validation-functions.sql` (the matrix and the trigger functions), `301-auth-functions.sql` (the `private` guards), `302-rls.sql` (the policies), `503-entity-rpcs.sql` (`get_entity_nominations`, `get_nomination_parent_options`, `set_entity_nominations`, and the three private write rules `nomination_list_checked`, `nomination_object_checked` and `parent_nomination_resolved`)
+- pgTAP tests: `apps/supabase/supabase/tests/database/` (64 files, `00-helpers` through `59-identity-provider-entry`)
+- Nominations: `apps/supabase/supabase/schema/104-nominations.sql` (table, triggers, the constraint trigger), `011-validation-functions.sql` (the matrix and the trigger functions), `301-auth-functions.sql` (the `private` guards), `302-rls.sql` (the policies), `503-entity-rpcs.sql` (`get_entity_nominations`, `get_nomination_parent_options`, `set_entity_nominations`, `private.nomination_writable`, and the four private write rules `nomination_list_checked`, `nomination_object_checked`, `parent_nomination_resolved` and `nomination_parent_target`)
 - Supabase config: `apps/supabase/supabase/config.toml`
 - Generated types: `packages/supabase-types/src/database.ts`
 - Column/property maps: `packages/supabase-types/src/column-map.ts` (COLUMN_MAP, PROPERTY_MAP)
@@ -1077,7 +1194,7 @@ scalar-subquery form, or the common-column set. Those are review items, not gate
 
 - JSONB localization storage `{"en": "...", "fi": "..."}` maps to TypeScript `LocalizedValue` -- the data skill owns the TypeScript type; this skill owns the SQL storage format and `get_localized()` function.
 - DB enums (entity_type, question_type, category_type) must stay in sync with the data package's TypeScript equivalents (ENTITY_TYPE, QUESTION_TYPE, QUESTION_CATEGORY_TYPE).
-- The nomination-shape matrix is stated twice, in `public.nomination_shape_rule` here and in `nominationShape.ts` of the data package (the data skill owns it). The four names of `NOMINATION_SHAPE` are held equal to the members of the enum `nomination_shape`, and a grid over the same sixteen cells is asserted on each side: `nominationShape.test.ts` and the election-type section of `08-triggers.test.sql`. A change to one statement changes the other in the same commit.
+- The nomination-shape matrix is stated twice, in `public.nomination_shape_rule` here and in `nominationShape.ts` of the data package (the data skill owns it). The four names of `NOMINATION_SHAPE` are held equal to the members of the enum `nomination_shape`, and a grid over the same sixteen cells is asserted on each side: `nominationShape.test.ts` and the nomination-shape section of `08-triggers.test.sql`. A change to one statement changes the other in the same commit.
 - `packages/supabase-types/` provides the bridge: `database.ts` has generated Row/Insert/Update types per table; `column-map.ts` has bidirectional COLUMN_MAP (snake_case DB -> camelCase TS) and PROPERTY_MAP (reverse). Only maps columns where names differ (e.g., sort_order -> order, first_name -> firstName). Used by frontend data adapters.
 
 ## Reference Files
@@ -1110,7 +1227,7 @@ entity link column and that column's entries in § 8's protected lists are remov
 **Updated 2026-10-06** (Phase 171, plan 171-02): `contestant_app_public_config` added. RLS and Auth
 Patterns § 4 names the six anon-executable definer functions the § 8c census holds and describes the
 new one; `schema-reference.md` and `rls-policy-map.md` carry its row, and the latter lists
-`38-contestant-app-public-config.test.sql` among the tests.
+`38-contestant-app-public-settings.test.sql` among the tests.
 
 **Updated 2026-10-06** (Phase 173, plan 173-02): the caller's entities are a list. RLS and Auth
 Patterns § 9 describes `get_user_entities` (one `jsonb` object with an `entities` array, one row even
@@ -1219,14 +1336,14 @@ The Edge Function directories, the linter's three lists and the ratified list we
 by this entry.
 
 **Updated 2026-10-11** (Phase 177, plan 177-21): nominations an entity defines. Schema Conventions § 7
-describes the election type and its four members, the matrix in `nomination_shape_rule`, the row rule,
+describes the nomination shape and its four members, the matrix in `nomination_shape_rule`, the row rule,
 the end-of-transaction rule as the schema's one constraint trigger and how a function forces it, and
 the requested-name key; § 8 lists the nomination triggers. RLS and Auth Patterns § 4 names
 `nomination_id_in_contest` and the eleven functions of the `authenticated` census; § 6 describes
 `entity_delete_nominations`, the pairing of the parent policy by caller type and the four policies
 that hold the lock; § 9 describes `get_nomination_parent_options` and `set_entity_nominations` and
 states the parent of `get_entity_nominations` with its four keys. `schema-reference.md` carries the
-`election_type` row, the nominations table's foreign-key action, `created_by` and uniqueness key, the
+`nomination_shape` row, the nominations table's foreign-key action, `created_by` and uniqueness key, the
 four nomination triggers and the rows of the new functions; `rls-policy-map.md` carries the delete
 policy, the organization editor's cell of `nomination.create_parent`, the two paragraphs on the new
 functions and four rows of its test table. The rows of the tables above for policies, pgTAP files,
@@ -1243,7 +1360,7 @@ date:
 | pgTAP assertions | 2312 in a run; 2303 planned in 43 files | the `Files=44, Tests=2312` line of the gate driver's pgTAP row on a freshly reset database; `git grep -h -E "^  plan \(" -- 'apps/supabase/supabase/tests/database/*.test.sql'`, summed |
 | lines of the pgTAP files | 46,693 | `cat` of the 44 files piped to `wc -l` |
 | definer functions of `public` that `anon` / `authenticated` can execute, trigger functions and test helpers apart | 6 / 10 | `pg_proc` where `prosecdef`, with `has_function_privilege` for the two roles, less the trigger functions and `test_grants_claim` |
-| the default of `elections.election_type` | `organization_list_and_independents` | `information_schema.columns` for the column |
+| the default of `elections.nomination_shape` | `organization_list_and_independents` | `information_schema.columns` for the column |
 | constraint triggers on `public.nominations` | 1, `nominations_parent_required`, deferrable and initially deferred | `pg_trigger` for the table, `tgdeferrable` and `tginitdeferred` |
 | permissions of the entity `editor` of an organization | seven, `nomination.create_parent` among them | `select unnest(public.grant_role_permissions('entity','editor','organization'))` |
 
@@ -1346,6 +1463,50 @@ the `app_metadata` write made after the call without the record; the bullet on `
 compensating delete are gone with the modules `candidateRecord.ts`, `organizationRecord.ts` and
 `entityGrant.ts`. `schema-reference.md`'s grant-key paragraph no longer names `writeEntityGrant`. No count
 was re-measured.
+
+**Updated 2026-11-20** (review fixes of the backend slice): contestant editing, the registrations table,
+the identity provider's entry, the renamed email helpers and throttle, the test-only witness and the
+nomination write. Schema Conventions § 7 and § 8 name `nomination_admission`, `nomination_requests_parent`
+and the constraint trigger `validate_nomination_parent_required`; RLS and Auth Patterns § 4 the ten
+policy-only helpers, the three censuses of `07-rpc-security.test.sql` § 8c as they stand,
+`identity_entity_find_or_create` under the account's row lock with `private.identity_registrations`,
+`nomination_parent_target` and `get_public_app_settings`; § 6 `access.contestantEditing` and
+`private.project_contestant_editing`; § 9 `get_user_entities`' `organization`, `get_caller_account_state`,
+`writable`, `p_expected_versions` and several nominations per election; § 10 the 39a-39e files,
+`email_*`, `private.access_throttle`, the closed Contestant App and `identity_provider_entity_types`;
+Service Patterns § 1 and § 7 `account-access`'s `PUBLIC_PROJECT_ID`, `identity_account_find`, the
+`invited` answer and the six modules of `_shared/`. `schema-reference.md` and `rls-policy-map.md` carry
+the same names. Measured on this date:
+
+| Statement | Value | Command |
+|---|---|---|
+| pgTAP files | 64, 63 of them with a plan | `git ls-files 'apps/supabase/supabase/tests/database/*.test.sql' \| wc -l`; `git grep -L -E "^  plan \(" -- 'apps/supabase/supabase/tests/database/*.test.sql'` |
+| planned pgTAP assertions | 2940 | `git grep -h -E "^  plan \(" -- 'apps/supabase/supabase/tests/database/*.test.sql'`, summed |
+| lines of the pgTAP files | 62,480 | `git ls-files 'apps/supabase/supabase/tests/database/*.test.sql' \| xargs cat \| wc -l` |
+| tables the schema creates in `public` and `private` | 21 and 4 (`access_throttle`, `deployment_settings`, `feedback_rate_limits`, `identity_registrations`) | `git grep -h -E "^CREATE TABLE" -- apps/supabase/supabase/schema` |
+| policies the schema creates | 108 | `git grep -h -E '^CREATE POLICY' -- apps/supabase/supabase/schema \| wc -l` |
+| functions the schema creates in `private` | 40 | `git grep -h -E '^CREATE (OR REPLACE )?FUNCTION private\.' -- apps/supabase/supabase/schema \| wc -l` |
+| schema files, migration files, manifest entries | 29, 1, 1 | `git ls-files apps/supabase/supabase/schema \| wc -l`; the same over `migrations`; `migrations.length` of the manifest |
+| the definer censuses (anon / authenticated / service role) and the policy-only helper census | 6 / 11 / 15; `10/0/10` | the literal lists of § 8c and § 8d of `07-rpc-security.test.sql` |
+| files in `functions/_shared/` | 12: six modules and their tests | `git ls-files apps/supabase/supabase/functions/_shared` |
+
+No pgTAP run was made for this entry, so the run total is not stated.
+
+**Updated 2026-11-21** (review follow-up): the refusal codes. RLS and Auth Patterns § 6 and § 9 state the
+`OV001`–`OV006` refusal codes, `get_user_entities` without the account's facts and
+`private.nominations_listed_under`; § 10 states that `'locked'` contestant editing closes registration.
+`schema-reference.md` and `rls-policy-map.md` carry the same. Migration `00002_refusal_codes.sql` makes
+the change. Re-measured on this date: 2964 planned pgTAP assertions, 42 functions created in `private`,
+and 2 migration files and manifest entries; no other count was re-measured and no pgTAP run was made.
+
+**Updated 2026-11-21** (PR 898 review fixes): the drift audit reported `DRIFT 2 commits, 3 files` under
+`apps/supabase/` since `0d9c1535`. `f90940ca` moved the label the recovery mail names from
+`contestantApp.login.forgotPassword` to `common.account.forgotPassword` (`mailTemplates.ts`'s comment and
+its test's catalogue read); `7034cab9` moved the frontend's call of `identity-callback` into
+`apps/frontend/src/lib/server/auth/identityCallback.ts`, leaving the secret's read in the callback route,
+and `flowConformance.test.ts` now reads both. Service Patterns § 1 names the label and § 7 the two
+frontend files. No schema, policy, function or pgTAP file changed, so no count was re-measured and
+`schema-reference.md` and `rls-policy-map.md` are unchanged.
 
 ### What changed under the targets, and what it did to this skill
 

@@ -1,21 +1,20 @@
 /**
- * @file Composition root for the contestant-nominations spec.
+ * @file Composition root for the contestant-nominations specs.
  *
- * Consumed by `specs/perm/contestant-nominations.spec.ts`: the editor of a candidate and of a party defining, changing and removing the entity's nominations, on the `perm-contestant-nominations` dataset.
+ * Consumed by the specs of `specs/perm/perm-contestant-nominations/`: the editor of a candidate and of a party defining, changing and removing the entity's nominations, on the `perm-contestant-nominations` dataset.
  *
  * Surface:
- *   - `test`   — Playwright test extended with the page fixtures the spec speaks in.
+ *   - `test`   — Playwright test extended with the page fixtures the specs speak in.
  *   - `expect` — re-exported from @playwright/test.
- *   - `setNominations`, `addNomination`, `clearWrittenNominations`, `setNominationsLocked`, `setAnswersLocked`, `setElectionSelectionDisallowed`, `setElectionType`, `setEntityConfirmed`, `setAnswers` — the state steps a test begins with.
- *   - `nominationsOf`, `electionTypeOf`, `entityConfirmedOf` — what the database holds, read with the service role, for a test that asserts what a step or a save stored.
- *   - `deleteNominationsWithDescendants` — the delete the steps above remove nominations with, for the state steps of another dataset whose entities the application writes nominations for.
+ *   - `startFrom`, `setNominations`, `addNomination`, `clearWrittenNominations`, `setContestantEditing`, `setElectionSelectionDisallowed`, `setNominationShape`, `setEntityConfirmed`, `setAnswers` — the state steps a test begins with.
+ *   - `nominationsOf` — the nominations the database holds for an entity, read with the service role, for a test that asserts what a step or a save stored.
  *   - `contestantNominationsPagesOf(page)` — the entity-pages, home, nomination-editor and nominations fixtures over a page, for code that is handed a page alone, as a scan entry's `reach` is.
  *
- * The spec's body holds no locator: a step it needs is a method of a fixture registered here.
+ * A spec's body holds no locator: a step it needs is a method of a fixture registered here.
  *
  * The state steps stand in for the administrator: each writes with the service role, past the rules that bind an entity's own editor, and writes only what it is given. Every test calls the step for each row or setting it reads before it opens a page, so that it passes when it is run again and when it is run alone. They are plain functions and not fixtures, so that code which is handed a page and nothing else can call them too. Each accepts the entities, elections and constituencies of the dataset and no other, and each throws under its own name when a read or a write fails.
  *
- * The rule of an election's type binds the service role too: a step that writes a nomination its election's type refuses throws with the database's refusal, and writes nothing.
+ * The rule of an election's nomination shape binds the service role too: a step that writes a nomination its election's shape refuses throws with the database's refusal, and writes nothing.
  *
  * A nomination a step writes carries an external id under the dataset's prefix. A nomination the application writes carries none: `setNominations` removes those of one entity and `clearWrittenNominations` those of every entity of the dataset. A nomination is never removed while another stands under it: the one that stands under it is removed first.
  *
@@ -38,18 +37,27 @@ import {
   NOMINATION_ENTITIES,
   OPINION_QUESTION_EXTERNAL_IDS,
   REQUIRED_INFO_QUESTION_EXTERNAL_ID,
-  SEEDED_ELECTION_TYPES,
+  SEEDED_NOMINATION_SHAPES,
   SEEDED_NOMINATIONS
 } from '../../utils/permContestantNominationsData';
+import {
+  attempt,
+  clearWrittenNominations as clearWrittenNominationsOfEntities,
+  deleteNominationsWithDescendants,
+  ENTITY_TABLES,
+  questionId,
+  readRows,
+  setContestantEditing,
+  setNominationShape as setElectionNominationShape
+} from '../../utils/permStateSteps';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { createNavMenu } from '../shared/navMenu.fixture';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
+import type { Enums } from '@openvaa/supabase-types';
 import type { Page } from '@playwright/test';
-import type {
-  ElectionTypeName,
-  NominationContestTarget,
-  NominationEntityTarget
-} from '../../utils/permContestantNominationsData';
+import type { NominationContestTarget, NominationEntityTarget } from '../../utils/permContestantNominationsData';
+import type { Row } from '../../utils/permStateSteps';
+import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
 import type { NavMenuFixture } from '../shared/navMenu.fixture';
 import type { PageGeometryFixture } from '../shared/pageGeometry.fixture';
 import type { ContestantEntityHomePageFixture } from './contestantEntityHomePage.fixture';
@@ -81,7 +89,7 @@ type ContestantNominationsFixtures = {
   pageGeometry: PageGeometryFixture;
 };
 
-/** Playwright's `test`, extended with the page fixtures of the contestant-nominations spec. */
+/** Playwright's `test`, extended with the page fixtures of the contestant-nominations specs. */
 export const test = base.extend<ContestantNominationsFixtures>({
   contestantEntityHomePage: async ({ page }, use) => {
     await use(createContestantEntityHomePage(page, new SupabaseAdminClient()));
@@ -113,6 +121,8 @@ export const test = base.extend<ContestantNominationsFixtures>({
 });
 
 export { expect };
+
+export { setContestantEditing } from '../../utils/permStateSteps';
 
 /**
  * The page fixtures a scan entry's `reach` speaks in, built over the page it is handed. They are the fixtures the `test` object offers under the same names.
@@ -182,15 +192,6 @@ export interface StoredNomination {
   requestedParent: string | null;
 }
 
-type Row = Record<string, unknown>;
-
-/** The table of an entity type and the column of `nominations` that refers to it. */
-const TABLES = Object.freeze({
-  candidate: { table: 'candidates', nominationColumn: 'candidate_id' },
-  organization: { table: 'organizations', nominationColumn: 'organization_id' },
-  alliance: { table: 'alliances', nominationColumn: 'alliance_id' }
-});
-
 /** The key of a nomination's custom data that holds a party name its editor typed. */
 const REQUESTED_PARENT_KEY = 'requestedParentOrganization';
 
@@ -208,165 +209,15 @@ interface ImportedNomination {
 }
 
 /**
- * Run a read or a write and name the step in what it throws.
- * @throws With the step's name, what was attempted and the cause.
+ * Put an entity of the dataset into the state most tests begin from: editing is open, and the entity's nominations are put into `nominations` as `setNominations` puts them. A test that needs a lock or another row states it after this step.
+ *
+ * @param entity - The entity the session's user edits.
+ * @param nominations - The state the entity's nominations are put into.
+ * @throws If a write fails, or as `setNominations` throws.
  */
-async function attempt<TResult>(step: string, what: string, action: () => Promise<TResult>): Promise<TResult> {
-  try {
-    return await action();
-  } catch (error) {
-    throw new Error(`${step}: ${what} failed: ${error instanceof Error ? error.message : String(error)}`, {
-      cause: error
-    });
-  }
-}
-
-/**
- * The rows of a table of the suite's project that match the filters.
- * @throws If the read fails.
- */
-async function readRows(
-  admin: SupabaseAdminClient,
-  step: string,
-  table: string,
-  filters: Record<string, unknown>
-): Promise<Array<Row>> {
-  const found = await admin.findData(table, filters);
-  if (found.type !== 'success') throw new Error(`${step}: reading ${table} failed: ${found.cause}`);
-  return found.data ?? [];
-}
-
-/**
- * @throws If the entity is not one of the dataset's.
- */
-function assertEntityOfDataset(step: string, entity: NominationEntityTarget): void {
-  const known = NOMINATION_ENTITIES.some(
-    (candidate) => candidate.entityType === entity.entityType && candidate.externalId === entity.externalId
-  );
-  if (!known) {
-    throw new Error(
-      `${step}: the ${entity.entityType} ${entity.externalId} is not an entity of the contestant-nominations dataset`
-    );
-  }
-}
-
-/**
- * @throws If the election is not one of the dataset's.
- */
-function assertElectionOfDataset(step: string, electionExternalId: string): void {
-  if (!Object.hasOwn(SEEDED_ELECTION_TYPES, electionExternalId)) {
-    throw new Error(`${step}: ${electionExternalId} is not an election of the contestant-nominations dataset`);
-  }
-}
-
-/**
- * The row of an entity of the dataset.
- * @throws If the entity is not of the dataset, or if its row is not found.
- */
-async function entityRowOf(admin: SupabaseAdminClient, step: string, entity: NominationEntityTarget): Promise<Row> {
-  assertEntityOfDataset(step, entity);
-  const rows = await readRows(admin, step, TABLES[entity.entityType].table, {
-    external_id: { $eq: entity.externalId }
-  });
-  if (rows.length !== 1) throw new Error(`${step}: the ${entity.entityType} ${entity.externalId} was not found`);
-  return rows[0];
-}
-
-/**
- * The row of an election of the dataset.
- * @throws If the election is not of the dataset, or if its row is not found.
- */
-async function electionRowOf(admin: SupabaseAdminClient, step: string, electionExternalId: string): Promise<Row> {
-  assertElectionOfDataset(step, electionExternalId);
-  const rows = await readRows(admin, step, 'elections', { external_id: { $eq: electionExternalId } });
-  if (rows.length !== 1) throw new Error(`${step}: the election ${electionExternalId} was not found`);
-  return rows[0];
-}
-
-/**
- * Every nomination row of an entity.
- */
-async function nominationRowsOf(
-  admin: SupabaseAdminClient,
-  step: string,
-  entity: NominationEntityTarget,
-  entityId: string
-): Promise<Array<Row>> {
-  return readRows(admin, step, 'nominations', {
-    [TABLES[entity.entityType].nominationColumn]: { $eq: entityId }
-  });
-}
-
-/**
- * Delete nominations by id, with every nomination that stands under one of them, however deep. A nomination is deleted only once nothing stands under it any more.
- * @param admin - A service-role client of the suite's project.
- * @param step - The name of the state step that deletes, for the message of what it throws.
- * @param nominationIds - The ids of the nominations to delete.
- * @throws If a read or a delete fails, or if a delete removes another number of rows than it named.
- */
-export async function deleteNominationsWithDescendants(
-  admin: SupabaseAdminClient,
-  step: string,
-  nominationIds: ReadonlyArray<string>
-): Promise<void> {
-  // Each nomination to delete, and the nomination it stands under when that one is deleted too.
-  const parentOf = new Map<string, string | null>();
-  let frontier = [...new Set(nominationIds)];
-  while (frontier.length) {
-    for (const id of frontier) if (!parentOf.has(id)) parentOf.set(id, null);
-    const children = await readRows(admin, step, 'nominations', { parent_nomination_id: { $in: frontier } });
-    const next: Array<string> = [];
-    for (const child of children) {
-      const id = String(child.id);
-      if (!parentOf.has(id)) next.push(id);
-      parentOf.set(id, String(child.parent_nomination_id));
-    }
-    frontier = next;
-  }
-
-  while (parentOf.size) {
-    const stoodUnder = new Set([...parentOf.values()].filter((id) => id !== null));
-    const leaves = [...parentOf.keys()].filter((id) => !stoodUnder.has(id));
-    if (!leaves.length) throw new Error(`${step}: the nominations to delete stand under one another in a circle`);
-    const result = await attempt(step, 'deleting nominations', () =>
-      admin.bulkDelete({ nominations: { ids: leaves } })
-    );
-    const deleted = (result.nominations as { deleted?: number } | undefined)?.deleted;
-    if (deleted !== leaves.length) {
-      throw new Error(`${step}: ${leaves.length} nomination(s) were to be deleted and ${deleted} were`);
-    }
-    for (const id of leaves) parentOf.delete(id);
-  }
-}
-
-/**
- * Write nominations through the import, each whole: a member that is not given is stored as empty.
- * @throws If the import fails, which it does for a row the election's type refuses.
- */
-async function importNominations(
-  admin: SupabaseAdminClient,
-  step: string,
-  projectId: unknown,
-  nominations: ReadonlyArray<ImportedNomination>
-): Promise<void> {
-  if (typeof projectId !== 'string') throw new Error(`${step}: the project of the dataset could not be read`);
-  await attempt(step, 'importing nominations', () =>
-    admin.bulkImport({
-      nominations: nominations.map((nomination) => ({
-        external_id: nomination.externalId,
-        project_id: projectId,
-        [nomination.entity.entityType]: { external_id: nomination.entity.externalId },
-        election: { external_id: nomination.contest.electionExternalId },
-        constituency: { external_id: nomination.contest.constituencyExternalId },
-        election_round: nomination.electionRound ?? NOMINATION_ELECTION_ROUND,
-        election_symbol: nomination.electionSymbol ?? null,
-        parent_nomination: nomination.parentExternalId ? { external_id: nomination.parentExternalId } : null,
-        custom_data: nomination.requestedParent ? { [REQUESTED_PARENT_KEY]: nomination.requestedParent } : null,
-        sort_order: nomination.sortOrder ?? null,
-        confirmed: nomination.confirmed
-      }))
-    })
-  );
+export async function startFrom(entity: EntityGrantTarget, nominations: NominationsState): Promise<void> {
+  await setContestantEditing('open');
+  await setNominations(entity, nominations);
 }
 
 /**
@@ -378,7 +229,7 @@ async function importNominations(
  *
  * @param entity - An entity of the dataset.
  * @param state - The state the entity's nominations are put into.
- * @throws If the entity is not of the dataset, if a read or a write fails, or if an election's type as it is now refuses a seeded row.
+ * @throws If the entity is not of the dataset, if a read or a write fails, or if an election's nomination shape as it is now refuses a seeded row.
  */
 export async function setNominations(entity: NominationEntityTarget, state: NominationsState): Promise<void> {
   const step = 'setNominations';
@@ -424,7 +275,7 @@ export async function setNominations(entity: NominationEntityTarget, state: Nomi
  * @param entity - An entity of the dataset.
  * @param contest - The election and constituency of the dataset the nomination is in.
  * @param nomination - The row's external id, and its confirmation, symbol, parent and election round when it has them.
- * @throws If the entity, the contest or the external id is not the dataset's, if the external id is a seeded row's, if a nomination with a typed party name is to be confirmed, or if the write fails, which it does for a row the election's type refuses.
+ * @throws If the entity, the contest or the external id is not the dataset's, if the external id is a seeded row's, if a nomination with a typed party name is to be confirmed, or if the write fails, which it does for a row the election's nomination shape refuses.
  */
 export async function addNomination(
   entity: NominationEntityTarget,
@@ -471,51 +322,7 @@ export async function addNomination(
  * @throws If a read or a delete fails.
  */
 export async function clearWrittenNominations(): Promise<void> {
-  const step = 'clearWrittenNominations';
-  const admin = new SupabaseAdminClient();
-  const written: Array<string> = [];
-
-  for (const entityType of ['candidate', 'organization', 'alliance'] as const) {
-    const externalIds = NOMINATION_ENTITIES.filter((entity) => entity.entityType === entityType).map(
-      (entity) => entity.externalId
-    );
-    const entities = await readRows(admin, step, TABLES[entityType].table, { external_id: { $in: externalIds } });
-    if (!entities.length) continue;
-    const rows = await readRows(admin, step, 'nominations', {
-      [TABLES[entityType].nominationColumn]: { $in: entities.map((entity) => String(entity.id)) }
-    });
-    written.push(...rows.filter((row) => row.external_id == null).map((row) => String(row.id)));
-  }
-
-  if (written.length) await deleteNominationsWithDescendants(admin, step, written);
-}
-
-/**
- * Lock or unlock the nominations of every entity of the suite's project, as an administrator would: the one setting `access.nominationsLocked` is written and no other.
- *
- * A test that locks the nominations unlocks them in a `finally`, because the setting is the project's and every later test reads it. The step after a flip is a full page load.
- *
- * @param on - Whether nominations are locked.
- * @throws If the write fails.
- */
-export async function setNominationsLocked(on: boolean): Promise<void> {
-  await attempt('setNominationsLocked', 'writing the setting', () =>
-    new SupabaseAdminClient().updateAppSettings({ access: { nominationsLocked: on } })
-  );
-}
-
-/**
- * Lock or unlock the answers of every entity of the suite's project, as an administrator would: the one setting `access.answersLocked` is written and no other.
- *
- * A test that locks the answers unlocks them in a `finally`, because the setting is the project's and every later test reads it. The step after a flip is a full page load.
- *
- * @param on - Whether answers are locked.
- * @throws If the write fails.
- */
-export async function setAnswersLocked(on: boolean): Promise<void> {
-  await attempt('setAnswersLocked', 'writing the setting', () =>
-    new SupabaseAdminClient().updateAppSettings({ access: { answersLocked: on } })
-  );
+  await clearWrittenNominationsOfEntities(NOMINATION_ENTITIES);
 }
 
 /**
@@ -533,21 +340,16 @@ export async function setElectionSelectionDisallowed(on: boolean): Promise<void>
 }
 
 /**
- * Change the type of an election of the dataset, as an administrator would. Nothing else of the election is changed.
+ * Change the nomination shape of an election of the dataset, as an administrator would. Nothing else of the election is changed.
  *
- * A nomination stored under the old type is not checked again: it stays as it is, and only a later write of it is judged by the new type. The caller puts the seeded type back in a `finally`, because every later test reads it, and the step after a flip is a full page load.
+ * A nomination stored under the old shape is not checked again: it stays as it is, and only a later write of it is judged by the new shape. The caller puts the seeded shape back in a `finally`, because every later test reads it, and the step after a flip is a full page load.
  *
  * @param electionExternalId - The `external_id` of an election of the dataset.
- * @param type - The type the election is given.
+ * @param shape - The nomination shape the election is given.
  * @throws If the election is not of the dataset, or if a read or the write fails.
  */
-export async function setElectionType(electionExternalId: string, type: ElectionTypeName): Promise<void> {
-  const step = 'setElectionType';
-  const admin = new SupabaseAdminClient();
-  const election = await electionRowOf(admin, step, electionExternalId);
-  await attempt(step, 'writing the type', () =>
-    admin.update('elections', String(election.id), { election_type: type })
-  );
+export async function setNominationShape(electionExternalId: string, shape: Enums<'nomination_shape'>): Promise<void> {
+  await setElectionNominationShape(electionExternalId, shape, Object.keys(SEEDED_NOMINATION_SHAPES));
 }
 
 /**
@@ -567,7 +369,7 @@ export async function setEntityConfirmed(entity: NominationEntityTarget, on: boo
   const admin = new SupabaseAdminClient();
   const row = await entityRowOf(admin, step, entity);
   await attempt(step, 'writing the confirmation', () =>
-    admin.update(TABLES[entity.entityType].table, String(row.id), { confirmed: on })
+    admin.update(ENTITY_TABLES[entity.entityType].table, String(row.id), { confirmed: on })
   );
 }
 
@@ -599,7 +401,7 @@ export async function setAnswers(entity: NominationEntityTarget, answers: Answer
   for (const externalId of answers.opinions) stored[await questionId(admin, step, externalId)] = { value: '3' };
 
   await attempt(step, 'writing the answers', () =>
-    admin.update(TABLES[entity.entityType].table, String(row.id), { answers: stored })
+    admin.update(ENTITY_TABLES[entity.entityType].table, String(row.id), { answers: stored })
   );
 }
 
@@ -679,34 +481,81 @@ function orderKeyOf(nomination: StoredNomination): string {
 }
 
 /**
- * The type the database holds for an election of the dataset.
- *
- * @param electionExternalId - The `external_id` of an election of the dataset.
- * @throws If the election is not of the dataset, or if the read fails.
+ * The row of an entity of the dataset.
+ * @throws If the entity is not of the dataset, or if its row is not found.
  */
-export async function electionTypeOf(electionExternalId: string): Promise<string> {
-  const election = await electionRowOf(new SupabaseAdminClient(), 'electionTypeOf', electionExternalId);
-  return String(election.election_type);
+async function entityRowOf(admin: SupabaseAdminClient, step: string, entity: NominationEntityTarget): Promise<Row> {
+  assertEntityOfDataset(step, entity);
+  const rows = await readRows(admin, step, ENTITY_TABLES[entity.entityType].table, {
+    external_id: { $eq: entity.externalId }
+  });
+  if (rows.length !== 1) throw new Error(`${step}: the ${entity.entityType} ${entity.externalId} was not found`);
+  return rows[0];
 }
 
 /**
- * Whether the database holds an entity of the dataset as confirmed.
- *
- * @param entity - An entity of the dataset.
- * @throws If the entity is not of the dataset, or if the read fails.
+ * @throws If the entity is not one of the dataset's.
  */
-export async function entityConfirmedOf(entity: NominationEntityTarget): Promise<boolean> {
-  const row = await entityRowOf(new SupabaseAdminClient(), 'entityConfirmedOf', entity);
-  return row.confirmed === true;
+function assertEntityOfDataset(step: string, entity: NominationEntityTarget): void {
+  const known = NOMINATION_ENTITIES.some(
+    (candidate) => candidate.entityType === entity.entityType && candidate.externalId === entity.externalId
+  );
+  if (!known) {
+    throw new Error(
+      `${step}: the ${entity.entityType} ${entity.externalId} is not an entity of the contestant-nominations dataset`
+    );
+  }
 }
 
 /**
- * The id of a question of the suite's project, by its external id.
- * @throws If the question is not found.
+ * Every nomination row of an entity.
  */
-async function questionId(admin: SupabaseAdminClient, step: string, externalId: string): Promise<string> {
-  const rows = await readRows(admin, step, 'questions', { external_id: { $eq: externalId } });
-  const id = rows[0]?.id;
-  if (typeof id !== 'string') throw new Error(`${step}: the question ${externalId} was not found`);
-  return id;
+async function nominationRowsOf(
+  admin: SupabaseAdminClient,
+  step: string,
+  entity: NominationEntityTarget,
+  entityId: string
+): Promise<Array<Row>> {
+  return readRows(admin, step, 'nominations', {
+    [ENTITY_TABLES[entity.entityType].nominationColumn]: { $eq: entityId }
+  });
+}
+
+/**
+ * Write nominations through the import, each whole: a member that is not given is stored as empty.
+ * @throws If the import fails, which it does for a row the election's nomination shape refuses.
+ */
+async function importNominations(
+  admin: SupabaseAdminClient,
+  step: string,
+  projectId: unknown,
+  nominations: ReadonlyArray<ImportedNomination>
+): Promise<void> {
+  if (typeof projectId !== 'string') throw new Error(`${step}: the project of the dataset could not be read`);
+  await attempt(step, 'importing nominations', () =>
+    admin.bulkImport({
+      nominations: nominations.map((nomination) => ({
+        external_id: nomination.externalId,
+        project_id: projectId,
+        [nomination.entity.entityType]: { external_id: nomination.entity.externalId },
+        election: { external_id: nomination.contest.electionExternalId },
+        constituency: { external_id: nomination.contest.constituencyExternalId },
+        election_round: nomination.electionRound ?? NOMINATION_ELECTION_ROUND,
+        election_symbol: nomination.electionSymbol ?? null,
+        parent_nomination: nomination.parentExternalId ? { external_id: nomination.parentExternalId } : null,
+        custom_data: nomination.requestedParent ? { [REQUESTED_PARENT_KEY]: nomination.requestedParent } : null,
+        sort_order: nomination.sortOrder ?? null,
+        confirmed: nomination.confirmed
+      }))
+    })
+  );
+}
+
+/**
+ * @throws If the election is not one of the dataset's.
+ */
+function assertElectionOfDataset(step: string, electionExternalId: string): void {
+  if (!Object.hasOwn(SEEDED_NOMINATION_SHAPES, electionExternalId)) {
+    throw new Error(`${step}: ${electionExternalId} is not an election of the contestant-nominations dataset`);
+  }
 }

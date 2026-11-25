@@ -18,6 +18,7 @@
 import { DataRoot } from '@openvaa/data';
 import { createRawSnippet, flushSync, mount, unmount, untrack } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { Snippet } from 'svelte';
 import type { Mock, MockInstance } from 'vitest';
@@ -67,52 +68,55 @@ const ADA: UserEntity = {
   confirmed: false
 };
 
-const state = $state<{ entities: ReadonlyArray<UserEntity>; version: number }>({ entities: [], version: 0 });
-
 let dataRoot = new DataRoot();
+/** Counts the writes to the data root, which the fake's `dataRoot` reads so that a write reaches its readers. */
+let dataRootVersion = $state(0);
 
 /** One object for both import paths of the contestant context: what the gate reads, and what the root page and the views below it read. */
-const context = {
-  appType: { current: 'contestant' },
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  startEvent: () => undefined,
-  logout: async () => undefined,
-  acceptTermsOfUse: async () => ({ type: 'success' }),
-  setDataRoot: (updater: (dr: DataRoot) => void) =>
-    untrack(() => {
-      updater(dataRoot);
-      state.version++;
-    }),
-  appSettings: {
-    admin: { email: 'support@example.org' },
-    contestantApp: { entityTypes: ['candidate', 'organization'] },
-    results: { cardContents: { candidate: [], organization: [] } },
-    analytics: { trackEvents: false }
+const { context, box } = fakeContestantContext(
+  {
+    entities: [] as ReadonlyArray<UserEntity>,
+    appSettings: {
+      admin: { email: 'support@example.org' },
+      contestantApp: {
+        servedEntityTypes: { candidate: { registrationModes: [] }, organization: { registrationModes: [] } }
+      },
+      results: { cardContents: { candidate: [], organization: [] } },
+      analytics: { trackEvents: false }
+    },
+    locale: 'en',
+    answersLocked: false,
+    unansweredRequiredInfoQuestions: [],
+    unansweredOpinionQuestions: []
   },
-  // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
-  analyticsGate: {
-    current: {
-      projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
-      globalPrivacyControl: false,
-      trackEvents: false,
-      consent: undefined
+  () => ({
+    appType: { current: 'contestant' },
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    track: () => undefined,
+    logout: async () => undefined,
+    acceptTermsOfUse: async () => ({ type: 'success' }),
+    setDataRoot: (updater: (dr: DataRoot) => void) =>
+      untrack(() => {
+        updater(dataRoot);
+        dataRootVersion++;
+      }),
+    // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
+    analyticsPolicy: {
+      current: {
+        projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
+        globalPrivacyControl: false,
+        trackEvents: false,
+        consent: undefined
+      }
+    },
+    userData: { savedEntityData: undefined, init: () => undefined },
+    user: { email: 'user@example.org' },
+    get dataRoot() {
+      void dataRootVersion;
+      return dataRoot;
     }
-  },
-  locale: 'en',
-  answersLocked: false,
-  unansweredRequiredInfoQuestions: [],
-  unansweredOpinionQuestions: [],
-  userData: { savedEntityData: undefined, init: () => undefined },
-  user: { email: 'user@example.org' },
-  get entities() {
-    return state.entities;
-  },
-  get dataRoot() {
-    void state.version;
-    return dataRoot;
-  }
-};
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 vi.mock('$lib/contexts/contestant/contestantContext.svelte', () => ({ getContestantContext: () => context }));
@@ -197,7 +201,7 @@ afterEach(() => {
   requestFocus.mockClear();
   cancels.length = 0;
   dataRoot = new DataRoot();
-  state.entities = [];
+  box.set({ entities: [] });
 });
 
 /**
@@ -313,7 +317,7 @@ describe('contestant protected layout — a view replaced without a navigation',
     { view: 'select' as const, name: 'the selection screen', title: 'contestantApp.entitySelection.title' },
     { view: 'nothingToEdit' as const, name: 'the "nothing to edit" view', title: 'contestantApp.nothingToEdit.title' }
   ])('moves focus to the heading of $name when it replaces a gate', async ({ view, title }) => {
-    state.entities = view === 'select' ? [ZOE, ADA] : [];
+    box.set({ entities: view === 'select' ? [ZOE, ADA] : [] });
     const { target, rerun } = render(gatedData(), rootPage(view));
     const focus = spyOnFocus();
 
@@ -369,7 +373,7 @@ describe('contestant protected layout — a view replaced without a navigation',
 
 describe('contestant protected layout — a view replaced while a navigation is in flight', () => {
   it('requests no focus move: the navigation moves focus itself when it completes', async () => {
-    state.entities = [ZOE, ADA];
+    box.set({ entities: [ZOE, ADA] });
     const { target, rerun } = render(gatedData(), rootPage('select'));
     navigating.to = { url: new URL(`http://localhost/contestant/candidate/${ZOE.id}`) };
 

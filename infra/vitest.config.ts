@@ -1,14 +1,14 @@
 /**
  * Vitest config for the unit tests of the infrastructure scripts, `infra/scripts/**\/*.test.ts`.
  *
- * `infra/` is not a workspace, so turbo does not reach this config. The root `test:unit` script runs it as a link of its
- * chain, through `yarn test:unit:infra`, and `scripts/assert-unit-test-coverage.mjs` fails `yarn test:unit` when that
- * link is missing.
+ * `infra/` is not a workspace, so turbo does not reach this config. The root `test:unit` script runs it as a link of its chain, through `yarn test:unit:infra`, and `scripts/assert-unit-test-coverage.mjs` fails `yarn test:unit` when that link is missing.
  *
  * To run it alone, or one file of it:
  *
- *   yarn test:unit:infra
- *   yarn test:unit:infra probe-hosted
+ * ```sh
+ * yarn test:unit:infra
+ * yarn test:unit:infra probe-hosted
+ * ```
  */
 
 import { fileURLToPath } from 'node:url';

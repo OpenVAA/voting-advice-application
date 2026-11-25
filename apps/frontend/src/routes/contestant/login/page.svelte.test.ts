@@ -1,12 +1,13 @@
 /**
  * The login screen, mounted for real against a fake contestant context.
  *
- * The fake context's `t` returns its key, its `getRoute` builds routes with the real `buildRoute` over the stubbed page's address, as the real one does, and its `appSettings` and `answersLocked` are reactive behind getters, as the real accessors are. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `t` returns its key, its `getRoute` builds routes with the real `buildRoute` over the stubbed page's address, as the real one does, and its `appSettings` and `answersLocked` are reactive behind getters, as the real accessors are. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
  * 1. **The frame** — the screen's marker and what it states about itself, a heading that can take focus and holds the app's name, and no field.
  * 2. **The entries** — "Sign in with email" always, "Register" exactly when a registration mode is listed, each a link that works with no script.
+ * 2b. **Signing in with the identity provider** — offered while the provider's mode is served, locked answers included; a post of the sign-in intent to the authorize endpoint, and the departure it answers.
  * 3. **While answers are locked** — the sentence, and no "Register".
  * 4. **The notice** — a sentence for each reason a visitor is sent here with, from the address bar or from the page's load, and nothing for any other text in the address bar; the heading names it as its description while it is shown.
  * 5. **A deep link's target** — carried on by the first entry as it is, and by nothing else.
@@ -17,48 +18,48 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RouteOptions } from '$lib/routes';
 
-const { goto } = vi.hoisted(() => ({ goto: vi.fn() }));
+const { goto, leaveByFullLoad } = vi.hoisted(() => ({ goto: vi.fn(), leaveByFullLoad: vi.fn() }));
 
 // The other members stay the resolvable stubs: components the page reaches import them too.
 vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), goto }));
 
+// The document's `location` cannot be replaced here, so the departure is observed at the module that performs it.
+vi.mock('$lib/components/preventNavigation/navigationGuards', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  leaveByFullLoad
+}));
+
 type Modes = Array<'identity_provider' | 'email' | 'code'>;
 
-const settings = $state<{
-  entityTypes: Array<'candidate' | 'organization'>;
-  candidate: Modes;
-  organization: Modes;
-  answersLocked: boolean;
-  voterApp: boolean;
-}>({
-  entityTypes: ['candidate', 'organization'],
-  candidate: ['email', 'code'],
-  organization: [],
+/** The settings the fake context answers with, as the facts the cases vary. */
+const DEFAULT_SETTINGS = {
+  entityTypes: ['candidate', 'organization'] as Array<'candidate' | 'organization'>,
+  candidate: ['email', 'code'] as Modes,
+  organization: [] as Modes,
   answersLocked: false,
   voterApp: false
-});
+};
 
-const context = {
-  t: (key: string) => key,
+const { context, box } = fakeContestantContext(DEFAULT_SETTINGS, (held) => ({
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {}, url: page.url }) },
   appCustomization: { current: {} },
   darkMode: { current: false },
   get appSettings() {
+    const settings = held.current;
     return {
       contestantApp: {
-        entityTypes: settings.entityTypes,
-        registrationModes: { candidate: settings.candidate, organization: settings.organization }
+        servedEntityTypes: Object.fromEntries(
+          settings.entityTypes.map((entityType) => [entityType, { registrationModes: settings[entityType] }])
+        )
       },
-      access: { answersLocked: settings.answersLocked, voterApp: settings.voterApp }
+      access: { contestantEditing: settings.answersLocked ? 'locked' : 'open', voterApp: settings.voterApp }
     };
-  },
-  get answersLocked() {
-    return settings.answersLocked;
   }
-};
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -107,9 +108,26 @@ const NOTICE = '[data-testid="login-notice"]';
 const LOCKED_INFO = '[data-testid="login-answers-locked-info"]';
 const HELP = '[data-testid="login-help-link"]';
 const VOTER_APP = '[data-testid="login-voter-app-link"]';
+const PROVIDER_SIGN_IN = '[data-testid="login-identity-provider-sign-in"]';
+
+const AUTHORIZE_ENDPOINT = '/api/oidc/authorize';
+const AUTHORIZE_URL = 'https://provider.example/authorize?request=signed';
+
+const fetchMock = vi.fn();
+
+/** A response of the authorize endpoint. */
+function answer(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+}
+
+/** Let the press's promises settle and the DOM follow. */
+async function settle(): Promise<void> {
+  for (let i = 0; i < 5; i += 1) await Promise.resolve();
+  flushSync();
+}
 
 const LOGIN_ADDRESS = 'http://localhost/en/contestant/login';
-const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppSignIn' }, { params: {} });
+const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppLoginEmail' }, { params: {} });
 const REGISTER_ROUTE = buildRoute({ route: 'ContestantAppRegister' }, { params: {} });
 
 let teardown: Array<() => void> = [];
@@ -120,13 +138,11 @@ function setAddress(address: string): void {
 }
 
 beforeEach(() => {
-  settings.entityTypes = ['candidate', 'organization'];
-  settings.candidate = ['email', 'code'];
-  settings.organization = [];
-  settings.answersLocked = false;
-  settings.voterApp = false;
+  box.current = DEFAULT_SETTINGS;
   setAddress(LOGIN_ADDRESS);
   goto.mockResolvedValue(undefined);
+  vi.stubGlobal('fetch', fetchMock);
+  fetchMock.mockResolvedValue(answer(200, { authorizeUrl: AUTHORIZE_URL }));
   // Every message shown is also logged as an error: keep the log out of the test output.
   vi.spyOn(log, 'error').mockImplementation(() => undefined);
 });
@@ -137,6 +153,7 @@ afterEach(() => {
   setAddress('http://localhost/');
   vi.restoreAllMocks();
   vi.resetAllMocks();
+  vi.unstubAllGlobals();
 });
 
 /** What the page's server load answers. */
@@ -207,7 +224,7 @@ describe('the frame', () => {
   });
 
   it('names the app after the entity types the project serves', () => {
-    settings.entityTypes = ['organization'];
+    box.set({ entityTypes: ['organization'] });
     const target = render();
     expect(one(target, 'h1').textContent?.trim()).toBe('dynamic.contestantAppName.organization');
   });
@@ -255,14 +272,14 @@ describe('the entries', () => {
     ['the code mode alone', ['code']],
     ["the identity provider's mode alone", ['identity_provider']]
   ])('offers Register for %s', (_, modes) => {
-    settings.candidate = modes;
+    box.set({ candidate: modes });
     const target = render();
     expect(one(target, FRAME).getAttribute('data-register-offered')).toBe('true');
     expect(target.querySelectorAll(REGISTER)).toHaveLength(1);
   });
 
   it('offers sign-in alone where no mode is listed: no Register, no "Or" and nothing in their place', () => {
-    settings.candidate = [];
+    box.set({ candidate: [] });
     const target = render();
     expect(one(target, FRAME).getAttribute('data-register-offered')).toBe('false');
     expect(one(target, SIGN_IN).getAttribute('href')).toBe(SIGN_IN_ROUTE);
@@ -274,26 +291,17 @@ describe('the entries', () => {
   });
 
   it("offers Register where the identity provider's mode is allowed for organizations alone", () => {
-    settings.candidate = [];
-    settings.organization = ['identity_provider'];
+    box.set({ candidate: [], organization: ['identity_provider'] });
     const target = render();
     expect(one(target, FRAME).getAttribute('data-register-offered')).toBe('true');
     expect(one(target, REGISTER).getAttribute('href')).toBe(REGISTER_ROUTE);
   });
 
-  it('offers no Register for a mode of an entity type the project does not serve', () => {
-    settings.entityTypes = ['candidate'];
-    settings.candidate = [];
-    settings.organization = ['code'];
-    const target = render();
-    expect(target.querySelector(REGISTER)).toBeNull();
-  });
-
   it('follows the registration modes when they change', () => {
-    settings.candidate = [];
+    box.set({ candidate: [] });
     const target = render();
     expect(target.querySelector(REGISTER)).toBeNull();
-    settings.candidate = ['code'];
+    box.set({ candidate: ['code'] });
     flushSync();
     expect(one(target, FRAME).getAttribute('data-register-offered')).toBe('true');
     expect(target.querySelectorAll(REGISTER)).toHaveLength(1);
@@ -301,19 +309,113 @@ describe('the entries', () => {
   });
 
   it('leads nowhere else: not to the forgot-password page', () => {
-    settings.candidate = ['identity_provider', 'email', 'code'];
+    box.set({ candidate: ['identity_provider', 'email', 'code'] });
     const target = render();
     const addresses = Array.from(target.querySelectorAll('a[href]')).map((link) => link.getAttribute('href'));
     expect(addresses).not.toContain(buildRoute({ route: 'ContestantAppForgotPassword' }, { params: {} }));
     expect(target.querySelector('[data-testid="login-show"]')).toBeNull();
     expect(target.querySelector('[data-testid="login-forgot-password-link"]')).toBeNull();
-    expect(target.textContent).not.toContain('contestantApp.login.forgotPassword');
+    expect(target.textContent).not.toContain('common.account.forgotPassword');
+  });
+});
+
+describe('signing in with the identity provider', () => {
+  it("is offered after the email entry while the provider's mode is served, as a button and not a link", () => {
+    box.set({ candidate: ['identity_provider', 'email'] });
+    const target = render();
+    const button = one<HTMLButtonElement>(target, PROVIDER_SIGN_IN);
+    expect(button.tagName).toBe('BUTTON');
+    expect(button.getAttribute('type')).toBe('button');
+    expect(labelOf(button)).toBe('contestantApp.login.signInWithIdentityProvider');
+    expect(button.disabled).toBe(false);
+    expect(precedes(one(target, SIGN_IN), button), 'it follows the email entry').toBe(true);
+    expect(precedes(button, one(target, REGISTER)), 'it comes before Register').toBe(true);
+  });
+
+  it('is offered for the provider served to organizations alone', () => {
+    box.set({ candidate: ['email'], organization: ['identity_provider'] });
+    expect(render().querySelectorAll(PROVIDER_SIGN_IN)).toHaveLength(1);
+  });
+
+  it('is offered while answers are locked, when nothing offers registration', () => {
+    box.set({ candidate: ['identity_provider'], answersLocked: true });
+    const target = render();
+    expect(target.querySelector(REGISTER)).toBeNull();
+    expect(target.querySelectorAll(PROVIDER_SIGN_IN)).toHaveLength(1);
+  });
+
+  it("is not offered where the provider's mode is served for no type", () => {
+    const target = render();
+    expect(target.querySelector(PROVIDER_SIGN_IN)).toBeNull();
+    expect(target.textContent).not.toContain('contestantApp.login.signInWithIdentityProvider');
+  });
+
+  it('is disabled until the page has mounted', () => {
+    box.set({ candidate: ['identity_provider'] });
+    expect(one<HTMLButtonElement>(renderUnmounted(), PROVIDER_SIGN_IN).disabled).toBe(true);
+  });
+
+  it('posts the sign-in intent, and no type, to the authorize endpoint and leaves for the address it answers', async () => {
+    box.set({ candidate: ['identity_provider'] });
+    const target = render();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe(AUTHORIZE_ENDPOINT);
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(String(init.body))).toEqual({ intent: 'sign_in' });
+    expect(leaveByFullLoad.mock.calls).toEqual([[AUTHORIZE_URL]]);
+    expect(goto).not.toHaveBeenCalled();
+    expect(one<HTMLButtonElement>(target, PROVIDER_SIGN_IN).disabled).toBe(true);
+  });
+
+  it('sends nothing more for a second press while the page is being left', async () => {
+    box.set({ candidate: ['identity_provider'] });
+    fetchMock.mockReturnValue(new Promise(() => undefined));
+    const target = render();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each<[string, () => void]>([
+    ['a refusal', () => fetchMock.mockResolvedValue(answer(403, { error: 'mode_not_allowed' }))],
+    ['a failed request', () => fetchMock.mockRejectedValue(new TypeError('offline'))],
+    ['an answer with no address', () => fetchMock.mockResolvedValue(answer(200, {}))]
+  ])('leads to the error screen with registration_failed on %s', async (_name, arrange) => {
+    box.set({ candidate: ['identity_provider'] });
+    arrange();
+    const target = render();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
+    expect(goto.mock.calls).toEqual([
+      [buildRoute({ route: 'ContestantAppIdentityProviderError', error: 'registration_failed' }, { params: {} })]
+    ]);
+  });
+
+  it('ends the loading form when the page is restored from the page cache', async () => {
+    box.set({ candidate: ['identity_provider'] });
+    fetchMock.mockReturnValue(new Promise(() => undefined));
+    const target = render();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+    expect(one<HTMLButtonElement>(target, PROVIDER_SIGN_IN).disabled).toBe(true);
+
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    flushSync();
+    expect(one<HTMLButtonElement>(target, PROVIDER_SIGN_IN).disabled).toBe(false);
   });
 });
 
 describe('while answers are locked', () => {
   it('says so under the title, and offers sign-in alone', () => {
-    settings.answersLocked = true;
+    box.set({ answersLocked: true });
     const target = render();
     const frame = one(target, FRAME);
     expect(frame.getAttribute('data-answers-locked')).toBe('true');
@@ -334,7 +436,7 @@ describe('while answers are locked', () => {
 
   it('follows the answers lock when it changes', () => {
     const target = render();
-    settings.answersLocked = true;
+    box.set({ answersLocked: true });
     flushSync();
     expect(one(target, FRAME).getAttribute('data-answers-locked')).toBe('true');
     expect(target.querySelectorAll(LOCKED_INFO)).toHaveLength(1);
@@ -505,7 +607,7 @@ describe('the links under the entries', () => {
   it('leads to the voter app only where it is accessible', () => {
     const target = render();
     expect(target.querySelector(VOTER_APP)).toBeNull();
-    settings.voterApp = true;
+    box.set({ voterApp: true });
     flushSync();
     one(target, VOTER_APP).click();
     expect(goto).toHaveBeenCalledWith(buildRoute({ route: 'Home' }, { params: {} }), { invalidateAll: true });

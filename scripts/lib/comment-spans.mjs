@@ -44,6 +44,9 @@
 // hash : `#` to end of line
 // sql  : `--` to end of line
 //
+// Terraform and HCL (`tf`, `tfvars`, `hcl`) take both `#` and `//` line comments and `/* */`
+// blocks, so they carry the `c` and `hash` families together.
+//
 // `css` and `scss` were ADDED by plan 153-11 under operator ruling D7b, and their arrival
 // order is load-bearing rather than incidental: the ruling required the first-party sweep of
 // `apps/frontend/src/app.css` to land FIRST, so the rule they enable was never live against a
@@ -67,7 +70,10 @@ export const FAMILY_BY_EXT = {
   sh: { hash: true },
   bash: { hash: true },
   yaml: { hash: true },
-  yml: { hash: true }
+  yml: { hash: true },
+  tf: { c: true, hash: true },
+  tfvars: { c: true, hash: true },
+  hcl: { c: true, hash: true }
 };
 
 export function extensionOf(relPath) {

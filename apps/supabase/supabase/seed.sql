@@ -49,7 +49,7 @@ ON CONFLICT (id) DO NOTHING;
 --
 -- Created OPEN FOR VOTERS. The column defaults to the closed direction, which is the safe answer for a project nobody has spoken for; this project is the one a `yarn db:reset` stack serves, and without the value here that stack renders an empty voter application.
 --
--- Nominations are unlocked: the lock is the app setting `access.nominationsLocked`, and the settings row below does not hold the key.
+-- Contestant editing is open: the setting is `access.contestantEditing`, and the settings row below does not hold the key.
 INSERT INTO
   projects (
     id,
@@ -70,13 +70,13 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Default app_settings for the default project
 --
--- Candidates may register by email or code: the shipped `registrationModes` allows nothing, and without the value here a candidate invitation created on this stack could not be used. A stored `contestantApp` replaces the default one whole, so the other members restate the shipped defaults.
+-- Candidates may register by email or code on the local stack.
 INSERT INTO
   app_settings (project_id, settings)
 VALUES
   (
     '00000000-0000-0000-0000-000000000001',
-    '{"contestantApp": {"questions": {"hideHero": false, "hideVideo": false}, "entityTypes": ["candidate"], "registrationModes": {"candidate": ["email", "code"], "organization": []}}}'::jsonb
+    '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}}}}'::jsonb
   )
 ON CONFLICT (project_id) DO NOTHING;
 

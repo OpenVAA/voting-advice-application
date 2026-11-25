@@ -22,9 +22,9 @@ import type { Component } from 'svelte';
 const { fakeT } = vi.hoisted(() => {
   /** The first sentences that name an address, as the fake `t` writes them: their key, then the address in bold, as their translations hold it. */
   const withAddress: Record<string, string> = {
-    'contestantApp.emailSent.intro.signInTo': 'contestantApp.emailSent.intro.signInTo <strong>{email}</strong>',
-    'contestantApp.emailSent.intro.recoveryTo': 'contestantApp.emailSent.intro.recoveryTo <strong>{email}</strong>',
-    'contestantApp.emailSent.support': 'contestantApp.emailSent.support {contactSupportLink}'
+    'common.account.emailSent.intro.signInTo': 'common.account.emailSent.intro.signInTo <strong>{email}</strong>',
+    'common.account.emailSent.intro.recoveryTo': 'common.account.emailSent.intro.recoveryTo <strong>{email}</strong>',
+    'common.account.emailSent.support': 'common.account.emailSent.support {contactSupportLink}'
   };
   return {
     fakeT: (key: string, params?: Record<string, unknown>): string =>
@@ -48,7 +48,10 @@ vi.mock('$lib/contexts/app', () => ({
     appType: { current: 'contestant' },
     t: fakeT,
     getRoute: { current: (route: string) => `/route/${route}` },
-    appSettings: { admin: { email: 'support@example.test' }, contestantApp: { entityTypes: ['candidate'] } }
+    appSettings: {
+      admin: { email: 'support@example.test' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    }
   })
 }));
 
@@ -292,9 +295,9 @@ describe('EmailSentPanel — the sentences', () => {
     const target = render(EmailSentPanel, { wording: 'signIn', email: 'someone@example.org' });
 
     expect(sentencesOf(target)).toEqual([
-      'contestantApp.emailSent.intro.signInTo someone@example.org',
-      'contestantApp.emailSent.notFound.withAddress',
-      'contestantApp.emailSent.newest'
+      'common.account.emailSent.intro.signInTo someone@example.org',
+      'common.account.emailSent.notFound.withAddress',
+      'common.account.emailSent.newest'
     ]);
     const address = target.querySelector<HTMLElement>(ADDRESS);
     expect(address?.tagName).toBe('STRONG');
@@ -307,13 +310,13 @@ describe('EmailSentPanel — the sentences', () => {
     const target = render(EmailSentPanel, { wording: 'signIn', email: 'someone@example.org' });
 
     expect(target.querySelector('dl, dt, dd')).toBeNull();
-    expect(target.textContent).not.toContain('contestantApp.emailSent.sentTo');
+    expect(target.textContent).not.toContain('common.account.emailSent.sentTo');
   });
 
   it('names the address in bold in the recovery sentence for the recovery wording', () => {
     const target = render(EmailSentPanel, { wording: 'recovery', email: 'someone@example.org' });
 
-    expect(sentencesOf(target)[0]).toBe('contestantApp.emailSent.intro.recoveryTo someone@example.org');
+    expect(sentencesOf(target)[0]).toBe('common.account.emailSent.intro.recoveryTo someone@example.org');
     expect(target.querySelector(ADDRESS)?.parentElement).toBe(target.querySelector('p'));
   });
 
@@ -321,21 +324,21 @@ describe('EmailSentPanel — the sentences', () => {
     const target = render(EmailSentPanel, { wording: 'code' });
 
     expect(sentencesOf(target)).toEqual([
-      'contestantApp.emailSent.intro.code',
-      'contestantApp.emailSent.notFound.withoutAddress',
-      'contestantApp.emailSent.newest'
+      'common.account.emailSent.intro.code',
+      'common.account.emailSent.notFound.withoutAddress',
+      'common.account.emailSent.newest'
     ]);
     expect(target.querySelector(ADDRESS)).toBeNull();
-    expect(target.textContent).not.toContain('contestantApp.emailSent.sentTo');
+    expect(target.textContent).not.toContain('common.account.emailSent.sentTo');
   });
 
   it('shows the code wording without an address even when one is given', () => {
     const target = render(EmailSentPanel, { wording: 'code', email: 'someone@example.org' });
 
     expect(sentencesOf(target)).toEqual([
-      'contestantApp.emailSent.intro.code',
-      'contestantApp.emailSent.notFound.withoutAddress',
-      'contestantApp.emailSent.newest'
+      'common.account.emailSent.intro.code',
+      'common.account.emailSent.notFound.withoutAddress',
+      'common.account.emailSent.newest'
     ]);
     expect(target.querySelector(ADDRESS)).toBeNull();
     expect(target.textContent).not.toContain('someone@example.org');
@@ -344,10 +347,10 @@ describe('EmailSentPanel — the sentences', () => {
   it('shows the sentence that names no address for an address that is blank', () => {
     const target = render(EmailSentPanel, { wording: 'signIn', email: '   ' });
 
-    expect(sentencesOf(target)[0]).toBe('contestantApp.emailSent.intro.signIn');
+    expect(sentencesOf(target)[0]).toBe('common.account.emailSent.intro.signIn');
     expect(target.querySelector(ADDRESS)).toBeNull();
     expect(target.querySelector('strong')).toBeNull();
-    expect(sentencesOf(target)).toContain('contestantApp.emailSent.notFound.withoutAddress');
+    expect(sentencesOf(target)).toContain('common.account.emailSent.notFound.withoutAddress');
   });
 
   it('renders the address as text that is neither translated nor hyphenated, inside the first sentence', () => {
@@ -377,12 +380,12 @@ describe('EmailSentPanel — the sentences', () => {
   it('adds the asked-again sentence, with its test id, after the others', () => {
     const target = render(EmailSentPanel, { wording: 'signIn', email: 'someone@example.org', askedAgain: true });
 
-    expect(target.querySelector(ASKED_AGAIN)?.textContent?.trim()).toBe('contestantApp.emailSent.askedAgain');
+    expect(target.querySelector(ASKED_AGAIN)?.textContent?.trim()).toBe('common.account.emailSent.askedAgain');
     expect(sentencesOf(target)).toEqual([
-      'contestantApp.emailSent.intro.signInTo someone@example.org',
-      'contestantApp.emailSent.notFound.withAddress',
-      'contestantApp.emailSent.newest',
-      'contestantApp.emailSent.askedAgain'
+      'common.account.emailSent.intro.signInTo someone@example.org',
+      'common.account.emailSent.notFound.withAddress',
+      'common.account.emailSent.newest',
+      'common.account.emailSent.askedAgain'
     ]);
   });
 
@@ -402,7 +405,7 @@ describe('EmailSentPanel — support and Send again', () => {
     const sentence = target.querySelector<HTMLElement>(SUPPORT_SENTENCE);
     expect(sentence?.tagName).toBe('P');
     expect(sentence?.textContent?.trim()).toBe(
-      'contestantApp.emailSent.support contestantApp.common.contactSupportLink'
+      'common.account.emailSent.support contestantApp.common.contactSupportLink'
     );
     const links = sentence?.querySelectorAll('a');
     expect(links).toHaveLength(1);
@@ -449,13 +452,13 @@ describe('EmailSentPanel — the status region', () => {
   it('holds the requested message when a new email was asked for', () => {
     const target = render(EmailSentPanel, { wording: 'signIn', status: 'requested' });
 
-    expect(target.querySelector(STATUS)?.textContent?.trim()).toBe('contestantApp.emailSent.resendRequested');
+    expect(target.querySelector(STATUS)?.textContent?.trim()).toBe('common.account.emailSent.resendRequested');
   });
 
   it('holds the ready message when a new email can be asked for', () => {
     const target = render(EmailSentPanel, { wording: 'code', status: 'ready' });
 
-    expect(target.querySelector(STATUS)?.textContent?.trim()).toBe('contestantApp.emailSent.resendReady');
+    expect(target.querySelector(STATUS)?.textContent?.trim()).toBe('common.account.emailSent.resendReady');
   });
 
   it('changes the text of the same region when the status changes', () => {
@@ -466,11 +469,11 @@ describe('EmailSentPanel — the status region', () => {
     props.status = 'requested';
     flushSync();
     expect(target.querySelector(STATUS)).toBe(region);
-    expect(region?.textContent?.trim()).toBe('contestantApp.emailSent.resendRequested');
+    expect(region?.textContent?.trim()).toBe('common.account.emailSent.resendRequested');
 
     props.status = 'ready';
     flushSync();
     expect(target.querySelector(STATUS)).toBe(region);
-    expect(region?.textContent?.trim()).toBe('contestantApp.emailSent.resendReady');
+    expect(region?.textContent?.trim()).toBe('common.account.emailSent.resendReady');
   });
 });

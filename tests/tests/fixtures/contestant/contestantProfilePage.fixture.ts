@@ -58,6 +58,7 @@ import { testIds } from '../../utils/testIds';
 import { createMultilingualTextField } from '../shared/multilingualTextFieldFixture.fixture';
 import { createNavMenu } from '../shared/navMenu.fixture';
 import { createPageGeometry, MIN_TARGET_SIZE } from '../shared/pageGeometry.fixture';
+import type { ServedEntityType } from '@openvaa/app-shared';
 import type { Dialog, Locator, Page } from '@playwright/test';
 
 /**
@@ -196,10 +197,7 @@ export function createContestantProfilePage(page: Page) {
     /**
      * Assert that the identity section is shown for an entity of `entityType`, with its name fields in `nameState`.
      */
-    async expectIdentity(props: {
-      entityType: 'candidate' | 'organization';
-      nameState: ProfileNameState;
-    }): Promise<void> {
+    async expectIdentity(props: { entityType: ServedEntityType; nameState: ProfileNameState }): Promise<void> {
       await expect(identity).toBeVisible({ timeout: TIMEOUTS.page });
       await expect(identity).toHaveAttribute('data-entity-type', props.entityType);
       await expect(identity).toHaveAttribute('data-name-state', props.nameState);

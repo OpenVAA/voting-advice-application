@@ -30,8 +30,8 @@ const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-answer
 /** The registration page and the two screens a registration code leads to. The dataset allows candidates the email and the code mode, so the answers lock is the one thing that closes them. */
 const REGISTRATION_ROUTES = [
   'ContestantAppRegister',
-  'ContestantAppRegisterEmail',
-  'ContestantAppRegisterSignIn'
+  'ContestantAppRegisterCodeEmail',
+  'ContestantAppRegisterCodeSignIn'
 ] as const;
 
 /** A settled address on the contestant login page, whatever search parameters it carries. */
@@ -137,7 +137,7 @@ test.describe('perm-answers-locked (surfaces 2 + 3 — authenticated)', () => {
     const note = createNotEditableNote(page);
 
     // The page is opened while answers can be edited, and the answer is changed from the seeded middle choice.
-    await admin.updateAppSettings({ access: { answersLocked: false } });
+    await admin.updateAppSettings({ access: { contestantEditing: 'open' } });
     try {
       await questionsOverview.goToPage();
       await questionsOverview.goToQuestion(/\[QU-OPIN-L5-1\]/);
@@ -146,13 +146,13 @@ test.describe('perm-answers-locked (surfaces 2 + 3 — authenticated)', () => {
       await questionPage.expectContinueEnabled();
 
       // Answers are locked while the page is open. The save is refused.
-      await admin.updateAppSettings({ access: { answersLocked: true } });
+      await admin.updateAppSettings({ access: { contestantEditing: 'locked' } });
       await questionPage.clickContinue();
       await note.expectNote('answersLocked');
       await questionPage.expectNoSaveFailure();
     } finally {
       // The lock is left on as the dataset sets it, whether or not the test passed.
-      await admin.updateAppSettings({ access: { answersLocked: true } });
+      await admin.updateAppSettings({ access: { contestantEditing: 'locked' } });
     }
   });
 });

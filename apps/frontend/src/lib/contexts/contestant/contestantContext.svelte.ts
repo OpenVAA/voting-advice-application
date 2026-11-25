@@ -1,24 +1,22 @@
-import { log } from '@openvaa/app-shared';
+import { CONTESTANT_EDITING, getContestantEditing, log } from '@openvaa/app-shared';
 import { DEFAULT_NOMINATION_SHAPE } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, onMount, setContext } from 'svelte';
-import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { EntryFlowHolder } from '$lib/auth/entryFlow';
 import { heardLogoutAnnouncement, listenForLogoutAnnouncements } from '$lib/auth/logoutAnnouncement';
-import { discardGuardedEdits, leaveByFullLoad, leaveUnasked } from '$lib/components/preventNavigation/navigationGuards';
+import { discardGuardedEdits, leaveTo, leaveUnasked } from '$lib/components/preventNavigation/navigationGuards';
 import { nominationEntryOfferedOf } from '$lib/contestant/nominations';
 import { hasNomination, requiredInfoQuestionsOf, taskStateOf, unansweredQuestionsOf } from '$lib/contestant/tasks';
 import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
 import { isNameEditable, isRequiredNameMissing } from '$lib/contestant/utils/nameRule';
 import { contestantHomeRoute } from '$lib/routes';
-import { removeDuplicates } from '$lib/utils/removeDuplicates';
-import { contestantUserDataState } from './contestantUserDataState.svelte';
+import { entityUserDataState } from './entityUserDataState.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
-import { rollUpQuestionCategories } from '../utils/questionRollup';
+import { contestsOfNominations, rollUpQuestionCategories } from '../utils/questionRollup';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, NominationShape, QuestionCategory } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
@@ -55,29 +53,14 @@ type QuestionBlocksShape = {
 };
 
 /**
- * The blocks of an entity that is asked no opinion question, and of no entity.
- * @returns A new, empty set of blocks.
- */
-function noQuestionBlocks(): QuestionBlocksShape {
-  return {
-    blocks: [],
-    get questions() {
-      return [];
-    },
-    getByCategory: () => undefined,
-    getByQuestion: () => undefined
-  };
-}
-
-/**
- * The candidate context (orchestrator) as a Svelte 5 CLASS (`ContestantContextProvider`).
+ * The contestant context (orchestrator) as a Svelte 5 CLASS (`ContestantContextProvider`).
  * Constructed via `new ContestantContextProvider()` inside `initContestantContext()`, at component-init time.
  *
  * ── Shape decision ──────────────────────────────────────────────────────────
  * NO consumer spreads `contestantContext` (`{ ...contestantContext }` / `...getContestantContext()` / `...userData` → zero hits). So its OWN members are exposed as plain PROTOTYPE GETTERS (the natural class shape) — contestantContext does NOT need the own-enumerable discipline. The own-enumerable concern applies ONLY to the INHERITED appContext + authContext members, which arrive already own-enumerable from the AppContextProvider + AuthContextProvider instances and are forwarded onto this instance rather than spread into it.
  *
  * ── logout override (LANDMINE) ───────────────────────────────────────────────
- * `logout` is declared on ContestantContext (the surface) and wraps the inherited authContext logout: it asks nothing, because its caller holds what the user answered; it signs out, lets a page's guard discard what it holds, navigates to the login page with the guards stood down, and resets. A reason it is given, such as `loggedOutAutomatically` at the end of a logout count, goes to the login page as its `errorMessage`, so the login screen says why; overlapping calls are one logout, with the first call's reason. A sign-out that fails does none of what follows it: `logoutFailed` turns true for the layout to show the message, the page and its edits stay, the promise rejects, and the next logout clears the flag when it starts. Because field initializers run BEFORE the constructor body, an arrow-FIELD `logout` would be CLOBBERED by `Object.assign(this, this.#authContext)`. So `logout` is exposed as a PROTOTYPE GETTER delegating to a private `#logout` arrow — prototype members are NOT own-enumerable, so `Object.assign` does NOT overwrite them.
+ * `logout` is declared on ContestantContext (the surface) and wraps the inherited authContext logout: it asks nothing, because its caller holds what the user answered; it signs out, lets a page's guard discard what it holds, navigates to the login page with the guards stood down, and resets. A reason it is given, such as `loggedOutAutomatically` at the end of a logout count, goes to the login page as its `errorMessage`, so the login screen says why; overlapping calls are one logout, with the first call's reason. A sign-out that fails does none of what follows it: the auth context's `logoutFailed`, forwarded here, turns true for the layout to show the message, the page and its edits stay, the promise rejects, and the next logout clears the flag when it starts. Because field initializers run BEFORE the constructor body, an arrow-FIELD `logout` would be CLOBBERED by `Object.assign(this, this.#authContext)`. So `logout` is exposed as a PROTOTYPE GETTER delegating to a private `#logout` arrow — prototype members are NOT own-enumerable, so `Object.assign` does NOT overwrite them.
  *
  * ── A sign-out the tab's client reports ──────────────────────────────────────
  * When the tab's client reports a sign-out made elsewhere and no logout of this context runs, the context lets a page's guard discard what it holds and resets, so the user's drafts are removed and none is stored again; a page that reads as signed in then goes to the login page as `logout` does, with the guards stood down. The login page carries `loggedOutElsewhere` as its `errorMessage`, so the login screen says the user was logged out in another tab or window, only when, at the client's `SIGNED_OUT` report, this document had heard another tab announce the `start` of its Log out with no `end` since, no more than `LOGOUT_IN_FLIGHT_CAP_MS` before, or its `end` no more than `LOGOUT_ANNOUNCEMENT_WINDOW_MS` before; any other such sign-out, such as one the auth client makes by itself when it finds the session gone or a refresh refused, goes to the login page with no reason. A sign-out this document makes while this context's `logout` runs changes nothing here: `logout` does what follows it. Any other sign-out this document makes, such as the Admin App's load signing out a user who is no administrator on a link from this app, resets, so the handles go before the drafts do and no edit stores them again.
@@ -86,16 +69,16 @@ function noQuestionBlocks(): QuestionBlocksShape {
  * `isAuthenticated` is a PROTOTYPE GETTER that re-reads the auth context's live accessor on every access, and it is left out of the `Object.assign` of the auth members. A copied value would be the one read at construction, so a sign-in or a sign-out that keeps this context mounted would never reach a consumer.
  *
  * ── Destructure-trap contract ────────────────────────────────────────────────
- * This context is the canonical example of the destructure trap (CLAUDE.md Context Destructuring Rule; the push-based `$state` mirrors below are what keeps it from firing). Class prototype getters preserve the contract: reads via `ctx.X` re-invoke the getter in the tracking scope, so updates after data load propagate. Do NOT regress to destructured-capture or a pull-chain.
+ * This context is the canonical example of the destructure trap (CLAUDE.md Context Destructuring Rule; the push-based `$state` mirrors below are what keeps it from firing). Class prototype getters preserve the contract: reads via `ctx.X` re-invoke the getter in the tracking scope, so updates after data load propagate.
  *
  * ── User-level data beside the entity store ──────────────────────────────────
  * `user`, `entities`, `selectedEntity`, `homeRoute` and `nominations` are reactive accessors derived from `page.data` and `page.params`: who is signed in, what they may edit, which of those the route names, where "home" leads from the current page, and the nominations the entity-level load read for the entity on the page. `userData` holds the one entity being edited and stays a stable reference. The five follow the same contract: read `ctx.X`, never destructure.
  *
  * ── The task state ───────────────────────────────────────────────────────────
- * `taskState` is one `$derived.by` that reads its inputs in its own scope and hands their values to the pure `taskStateOf`. Whether the entity has a nomination comes from the page data, so it is right on the server and on the first frame; the counts come from the store and the question lists, and count only while the store holds the entity the route names. `tasks`, `nextStep` and `previewOpen` are that state's own members, and `profileComplete` is its `allComplete`.
+ * `taskState` is one `$derived.by` that reads its inputs in its own scope and hands their values to the pure `taskStateOf`. Whether the entity has a nomination comes from the page data, so it is right on the server and on the first frame; the counts come from the store and the question lists, and count only while the store holds the entity the route names.
  *
  * ── The entry flow ───────────────────────────────────────────────────────────
- * `entryFlow` is what the screens that lead to a mailed link keep between them: a registration code with the status its check answered, and the one link request the "email sent" screen can repeat. It is held by the private `EntryFlowHolder` `#entryFlow` of this instance, built with `#requestLink`, and nothing else. The server builds one context for each render, so a field of the instance is one visitor's alone, where a binding of the module would be every visitor's. It is written whole by `holdEntryCode`, `sendEntryLink` (which `resendEntryLink` calls) and `clearEntryFlow`, which forward to the holder, cleared by `#reset` on logout, and gone when the tab reloads. `sendEntryLink` is the one way a screen asks for a link: it resolves alike for a request that succeeded, failed or never answered, and holds nothing of an answer, so no screen can show what the server did with an address. `entryFlow` is a reactive accessor replaced whole on every write: read `ctx.entryFlow`, never destructure. The four functions and the three writer forwards beside them are stable.
+ * `entryFlow` is what the screens that lead to a mailed link keep between them: a registration code with the status its check answered, and the one link request the "email sent" screen can repeat. It is held by the private `EntryFlowHolder` `#entryFlow` of this instance, built with `#requestLink`, and nothing else. The server builds one context for each render, so a field of the instance is one visitor's alone, where a binding of the module would be every visitor's. It is written whole by `holdEntryCode`, `sendEntryLink` (which `resendEntryLink` calls) and `clearEntryFlow`, which forward to the holder, cleared by `#reset` on logout, and gone when the tab reloads. `sendEntryLink` is the one way a screen asks for a link: it resolves alike for a request that succeeded, failed or never answered, and holds nothing of an answer, so no screen can show what the server did with an address. `entryFlow` is a reactive accessor replaced whole on every write: read `ctx.entryFlow`, never destructure. The four functions and the writer forward beside them are stable.
  *
  * ── Field-init order ─────────────────────────────────────────────────────────
  * The stable refs / persisted handles / `$state` / `$derived` fields + the `#userData` composite are field initializers (run in declaration order BEFORE the constructor body). `#userData` is declared AFTER `#answersLocked` + `#locale` because its getter-thunks read them, and `#loadedEntityType` AFTER `#userData` because it reads the store. `#taskState` is declared below the unanswered lists and the name flag it reads. The 3 `$effect` blocks, the two member forwards and two `onMount`s are installed in the CONSTRUCTOR — legal because contestantContext is constructed during component init, an effect context. One `onMount` subscribes to the sign-outs the tab's client reports and the other listens for the Log out announcements of the other tabs; each stops when the layout that built the context is destroyed.
@@ -103,24 +86,6 @@ function noQuestionBlocks(): QuestionBlocksShape {
  * @internal — test seam — do not construct directly; requires effect context; use `initContestantContext()`. Calling `new ContestantContextProvider()` outside `initContestantContext()` bypasses the `CONTEXT_KEY` double-init guard and will throw `effect_orphan` outside a component `<script>` or `$effect.root`.
  * @throws When constructed outside a Svelte effect context (effect_orphan).
  */
-/**
- * The objects a data root holds for a list of ids, each looked up on its own: an id the data root does not hold is logged and left out.
- * @param ids - The ids, as the entity's nominations name them.
- * @param lookup - The data root's lookup, which throws for an id it does not hold.
- * @param label - What the objects are for, in the log line.
- * @returns The objects found, in the order of the ids.
- */
-function resolvedOf<TObject>(ids: ReadonlyArray<Id>, lookup: (id: Id) => TObject, label: string): Array<TObject> {
-  return ids.flatMap((id) => {
-    try {
-      return [lookup(id)];
-    } catch (e) {
-      log.error(`[contestantContext ${label}] A nomination names an object the data root does not hold: ${e}`);
-      return [];
-    }
-  });
-}
-
 export class ContestantContextProvider implements ContestantContext {
   ////////////////////////////////////////////////////////////
   // Inheritance from other Contexts + STABLE refs (field initializers — they run BEFORE the $derived/producer field initializers below in declaration order, so those can read them; the appContext + authContext members are reproduced via `Object.assign(this, this.#appContext)` + `Object.assign(this, this.#authContext)` in the constructor).
@@ -141,16 +106,18 @@ export class ContestantContextProvider implements ContestantContext {
   get #dataRoot(): AppContext['dataRoot'] {
     return this.#appContext.dataRoot;
   }
-  // The private handle the logout override delegates to (replaces the former `const { logout: _logout } = authContext`).
+  // The private handle the logout override delegates to.
   #authLogout = this.#authContext.logout;
 
   ////////////////////////////////////////////////////////////////////
   // User data, authentication and the two locks
   ////////////////////////////////////////////////////////////////////
 
-  #answersLocked = $derived(!!this.#appSettings.access.answersLocked);
+  #contestantEditing = $derived(getContestantEditing(this.#appSettings));
 
-  #nominationsLocked = $derived(!!this.#appSettings.access.nominationsLocked);
+  #answersLocked = $derived(this.#contestantEditing === CONTESTANT_EDITING.Locked);
+
+  #nominationsLocked = $derived(this.#contestantEditing !== CONTESTANT_EDITING.Open);
 
   // The user-level data, beside the store that holds the entity being edited. All four derive from `page`, so they need no push from a layout, are right on the server and on first paint, and are empty on pages outside the protected tree, whose page data holds neither key.
   #user = $derived(page.data.user ?? undefined);
@@ -172,7 +139,7 @@ export class ContestantContextProvider implements ContestantContext {
   #homeRoute = $derived(this.#getRoute.current(contestantHomeRoute(page.params)));
 
   // userData composite producer — declared AFTER #answersLocked + #locale because the getter-thunks read them. The thunks are lazy, so this is safe.
-  #userData = contestantUserDataState({
+  #userData = entityUserDataState({
     answersLocked: () => this.#answersLocked,
     dataWriter: prepareDataWriter,
     locale: () => this.#locale
@@ -184,9 +151,6 @@ export class ContestantContextProvider implements ContestantContext {
   // What the entry flow holds between its screens: a checked registration code, the one link request that can be repeated, both, or nothing. A field of the instance, because the server builds one context for each render and a binding of the module would be shared by every visitor it renders for. Replaced whole on every write, and written to no storage, cookie, URL or history state.
   #entryFlow = new EntryFlowHolder((request) => this.#requestLink(request));
 
-  // Whether the last logout's sign-out failed, for the contestant layout to tell the user.
-  #logoutFailed = $state(false);
-
   ////////////////////////////////////////////////////////////////////
   // Properties matching those in the VoterContext
   ////////////////////////////////////////////////////////////////////
@@ -195,10 +159,7 @@ export class ContestantContextProvider implements ContestantContext {
 
   #constituenciesSelectable = $derived(this.#dataRoot.elections?.some((e) => !e.singleConstituency));
 
-  // A pull-chain `$derived.by` pattern (via helper stores) does NOT propagate reactive invalidation correctly to cross-module consumers — measured by console trace: the selectedElections/opinionQuestions derivations evaluated ONCE at component-init with pre-data values and never re-ran after the protected layout `$effect` populated dataRoot + userData.
-  // Root mechanism: Svelte 5 tracks reactive reads from within a tracking scope, but a DESTRUCTURED context-object property (`const { opinionQuestions } = ctx`) captures the getter's INITIAL return value as a plain local binding — the consumer's `$effect` reading `opinionQuestions.length` thereafter has no live reactive source. The `$derived` chain did recompute internally, but downstream reads via the destructured property saw only the pre-data snapshot.
-  //
-  // So selectedElections/selectedConstituencies + the downstream question chain are push-based `$state` mirrors updated by a single `$effect`. `$state` reads through context getters propagate correctly. Consumers MUST read `ctx.X` directly rather than destructure; inline derivations take the place of a helper-store pull chain (the helpers remain for voterContext).
+  // The selected elections and constituencies, and the question lists below them, are `$state` mirrors written by one `$effect`, so a consumer that reads `ctx.X` sees every update (CLAUDE.md § Context Destructuring Rule).
   #selectedElections = $state<Array<Election>>([]);
   #selectedConstituencies = $state<Array<Constituency>>([]);
   // Whether the entity has nominations and the data root holds elections, but none of the nominations names one of them: the entity is then asked no question, as the server's gates read it, and is not left waiting for lists that never come.
@@ -282,8 +243,6 @@ export class ContestantContextProvider implements ContestantContext {
     });
   });
 
-  #profileComplete = $derived(this.#taskState.allComplete);
-
   ////////////////////////////////////////////////////////////
   // Inherited appContext members (declared for `implements ContestantContext`; INSTALLED via `Object.assign(this, this.#appContext)` in the constructor from the own-enumerable AppContextProvider instance). Definite-assignment `!`.
   ////////////////////////////////////////////////////////////
@@ -303,12 +262,11 @@ export class ContestantContextProvider implements ContestantContext {
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
   readonly startPageview!: AppContext['startPageview'];
-  readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
   readonly submitAllEvents!: AppContext['submitAllEvents'];
   readonly resetAllEvents!: AppContext['resetAllEvents'];
   readonly setPageVisible!: AppContext['setPageVisible'];
-  readonly analyticsGate!: AppContext['analyticsGate'];
+  readonly analyticsPolicy!: AppContext['analyticsPolicy'];
   readonly sendFeedback!: AppContext['sendFeedback'];
   readonly setDataConsent!: AppContext['setDataConsent'];
   readonly setFeedbackStatus!: AppContext['setFeedbackStatus'];
@@ -318,10 +276,11 @@ export class ContestantContextProvider implements ContestantContext {
   readonly popupQueue!: AppContext['popupQueue'];
 
   ////////////////////////////////////////////////////////////
-  // Inherited authContext members (declared for `implements ContestantContext`; INSTALLED via `Object.assign(this, this.#authContext)` in the constructor from the own-enumerable AuthContextProvider instance). `logout` and `isAuthenticated` are NOT declared here — contestantContext exposes each through a prototype getter (below).
+  // Inherited authContext members (declared for `implements ContestantContext`; INSTALLED via `Object.assign(this, this.#authContext)` in the constructor from the own-enumerable AuthContextProvider instance). `logout`, `isAuthenticated` and `logoutFailed` are NOT declared here — contestantContext exposes each through a prototype getter (below).
   ////////////////////////////////////////////////////////////
 
   readonly setPassword!: AuthContext['setPassword'];
+  readonly clearLogoutFailure!: AuthContext['clearLogoutFailure'];
 
   constructor() {
     ////////////////////////////////////////////////////////////
@@ -334,10 +293,11 @@ export class ContestantContextProvider implements ContestantContext {
 
     // Use inheritContextMembers (NOT Object.assign) so the bare reactive accessors (appSettings / dataRoot / locale) as LIVE accessors; Object.assign would snapshot and freeze their reactivity for consumers.
     inheritContextMembers(this, this.#appContext);
-    // `isAuthenticated` is left out as well: copying it would freeze the value read at construction, so a sign-in or a sign-out that keeps this context mounted would never reach a consumer. It is forwarded live by the prototype getter below, and assigning to that getter-only accessor here would throw as `logout` does.
+    // `isAuthenticated` and `logoutFailed` are left out as well: copying either would freeze the value read at construction, so a change that keeps this context mounted would never reach a consumer. Each is forwarded live by a prototype getter below, and assigning to that getter-only accessor here would throw as `logout` does.
     const {
       logout: _inheritedLogout,
       isAuthenticated: _inheritedIsAuthenticated,
+      logoutFailed: _inheritedLogoutFailed,
       ...authContextRest
     } = this.#authContext;
     Object.assign(this, authContextRest);
@@ -355,13 +315,7 @@ export class ContestantContextProvider implements ContestantContext {
         this.#nominationsNameNoElection = false;
         return;
       }
-      const elections = removeDuplicates(
-        resolvedOf(
-          current.nominations.map((n) => n.electionId),
-          (id) => dr.getElection(id),
-          'selectedElections'
-        )
-      );
+      const { elections } = contestsOfNominations({ dataRoot: dr, nominations: current.nominations });
       this.#selectedElections = elections;
       this.#nominationsNameNoElection = current.nominations.length > 0 && elections.length === 0;
     });
@@ -373,13 +327,10 @@ export class ContestantContextProvider implements ContestantContext {
         this.#selectedConstituencies = [];
         return;
       }
-      this.#selectedConstituencies = removeDuplicates(
-        resolvedOf(
-          current.nominations.map((n) => n.constituencyId),
-          (id) => dr.getConstituency(id),
-          'selectedConstituencies'
-        )
-      );
+      this.#selectedConstituencies = contestsOfNominations({
+        dataRoot: dr,
+        nominations: current.nominations
+      }).constituencies;
     });
 
     $effect(() => {
@@ -474,16 +425,10 @@ export class ContestantContextProvider implements ContestantContext {
     return prepareDataWriter().checkInvitationCode(...args);
   };
 
-  requestSignInLink = (
-    ...args: Parameters<DataWriter['requestSignInLink']>
-  ): ReturnType<DataWriter['requestSignInLink']> => {
-    return prepareDataWriter().requestSignInLink(...args);
-  };
-
-  requestPasswordRecovery = (
-    ...args: Parameters<DataWriter['requestPasswordRecovery']>
-  ): ReturnType<DataWriter['requestPasswordRecovery']> => {
-    return prepareDataWriter().requestPasswordRecovery(...args);
+  registerIdentityProviderAccount = (
+    ...args: Parameters<DataWriter['registerIdentityProviderAccount']>
+  ): ReturnType<DataWriter['registerIdentityProviderAccount']> => {
+    return prepareDataWriter().registerIdentityProviderAccount(...args);
   };
 
   ////////////////////////////////////////////////////////////////////
@@ -566,15 +511,9 @@ export class ContestantContextProvider implements ContestantContext {
   #loggingOut: Promise<void> | undefined;
 
   #runLogout = async (reason?: ContestantLoginError): Promise<void> => {
-    this.#logoutFailed = false;
     const loginRoute = this.#loginRoute(reason);
     const addressBefore = page.url.href;
-    try {
-      await this.#authLogout();
-    } catch (e) {
-      this.#logoutFailed = true;
-      throw e;
-    }
+    await this.#authLogout();
     this.#discardGuardedEdits();
     await this.#leaveToLogin(loginRoute, addressBefore);
     this.#reset();
@@ -618,31 +557,12 @@ export class ContestantContextProvider implements ContestantContext {
   };
 
   /**
-   * Go to the login page after the session has ended, with the guards stood down. The browser always leaves: a navigation that did not move it, or that rejected, is followed by the reset and a full load of the login page.
+   * Go to the login page after the session has ended, with the guards stood down. The browser always leaves: a navigation that did not move it, or that rejected, is followed by the reset and a full load of the login page. The reset comes first because the drafts must go before the document does, and nothing after the full load runs.
    * @param loginRoute - The login page's address.
    * @param addressBefore - The address the page stood at when the session ended.
    */
-  #leaveToLogin = async (loginRoute: string, addressBefore: string): Promise<void> => {
-    await leaveUnasked(async () => {
-      let moved = false;
-      try {
-        await goto(loginRoute, { invalidateAll: true });
-        moved = page.url.href !== addressBefore;
-      } catch (e) {
-        // A rejection can come after the address changed, so the address says nothing here.
-        log.error(`Error navigating after logout: ${(e as Error)?.message}`);
-      }
-      if (!moved) {
-        // A page that did not move would go on reading as signed in, with no session behind it. The drafts must go before the document does, and nothing after the full load runs.
-        this.#reset();
-        await leaveByFullLoad(loginRoute);
-      }
-    });
-  };
-
-  clearLogoutFailure = (): void => {
-    this.#logoutFailed = false;
-  };
+  #leaveToLogin = (loginRoute: string, addressBefore: string): Promise<void> =>
+    leaveUnasked(() => leaveTo(loginRoute, addressBefore, this.#reset));
 
   /**
    * Utility for resetting all data. Note that `isAuthenticated` is not reset, because it's derived from `page.data.session`
@@ -688,9 +608,9 @@ export class ContestantContextProvider implements ContestantContext {
   get entryFlow() {
     return this.#entryFlow.flow;
   }
-  // No setter: the flag is written by the logout and `clearLogoutFailure` alone.
+  // Re-reads the auth context's live accessor on every access, so the read stays reactive. No setter: the flag is written by the auth context's logout and `clearLogoutFailure` alone.
   get logoutFailed() {
-    return this.#logoutFailed;
+    return this.#authContext.logoutFailed;
   }
   get opinionQuestionCategories() {
     return this.#opinionQuestionCategories;
@@ -703,18 +623,6 @@ export class ContestantContextProvider implements ContestantContext {
   }
   get taskState() {
     return this.#taskState;
-  }
-  get tasks() {
-    return this.#taskState.tasks;
-  }
-  get nextStep() {
-    return this.#taskState.nextStep;
-  }
-  get previewOpen() {
-    return this.#taskState.previewOpen;
-  }
-  get profileComplete() {
-    return this.#profileComplete;
   }
   get questionBlocks() {
     return this.#questionBlocks;
@@ -760,4 +668,19 @@ export function getContestantContext(): ContestantContext {
 export function initContestantContext(): ContestantContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'initContestantContext() called for a second time');
   return setContext<ContestantContext>(CONTEXT_KEY, new ContestantContextProvider());
+}
+
+/**
+ * The blocks of an entity that is asked no opinion question, and of no entity.
+ * @returns A new, empty set of blocks.
+ */
+function noQuestionBlocks(): QuestionBlocksShape {
+  return {
+    blocks: [],
+    get questions() {
+      return [];
+    },
+    getByCategory: () => undefined,
+    getByQuestion: () => undefined
+  };
 }

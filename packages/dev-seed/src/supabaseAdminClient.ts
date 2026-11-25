@@ -8,6 +8,7 @@
  * Bulk-import routing note: `bulk_import` RPC's `processing_order` accepts exactly 11 of 16 non-system tables. `accounts`, `projects`, `feedback`, `constituency_group_constituencies`, `election_constituency_groups` are NOT in that list. The two join tables arrive as link keys of `elections` and `constituency_groups` items, which `bulk_import` writes before any nomination and `bulkImport` below sends; callers route the other three elsewhere (writer strips accounts/projects, feedback via direct upsert). This file does not enforce the routing — it is a thin RPC wrapper.
  */
 
+import { SETTINGS_REPLACED_WHOLE } from '@openvaa/app-shared';
 import { createClient } from '@supabase/supabase-js';
 import { assertLocalSupabaseUrl } from './localSupabaseUrl';
 import { importLinkFor, planLinks } from './template/linkSentinels';
@@ -18,9 +19,10 @@ import {
   NON_COLUMN_FIELDS,
   resolveCollectionName
 } from './template/permittedKeys';
+import type { Enums } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { LocalityGuardOptions } from './localSupabaseUrl';
-import type { LinkPlanEntry, LinkTarget } from './template/linkSentinels';
+import type { JsonbRefTable, LinkPlanEntry } from './template/linkSentinels';
 
 /**
  * Stable UUID for the default test project, from seed.sql.
@@ -36,13 +38,20 @@ export const TEST_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
  */
 export const E2E_PROJECT_ID = '00000000-0000-0000-0000-0000000000e2';
 
+/**
+ * The account the E2E project belongs to.
+ *
+ * Distinct from the default account for the reason {@link E2E_PROJECT_ID} is distinct from the default project: an account grant the suite writes on its project's account must not reach the default project. {@link SupabaseAdminClient.ensureProject} creates the row and attaches the E2E project to it.
+ */
+export const E2E_ACCOUNT_ID = '00000000-0000-0000-0000-0000000000e2';
+
 /** Canonical 8-4-4-4-12 lower-case hexadecimal uuid. */
 const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /**
- * The account row every project created by {@link SupabaseAdminClient.ensureProject} is attached to.
+ * The account row every project created by {@link SupabaseAdminClient.ensureProject} is attached to, except the E2E project, which belongs to {@link E2E_ACCOUNT_ID}.
  *
- * `seed.sql` inserts it unconditionally, so it is present in any database migrations have run against, and reusing it is what keeps project creation from needing an account-creation path.
+ * `seed.sql` inserts it unconditionally, so it is present in any database migrations have run against.
  */
 const DEFAULT_ACCOUNT_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -103,12 +112,10 @@ export interface FindDataResult {
 }
 
 /** The entity tables an invitation's promise can name. */
-export type InvitationTargetType = 'candidate' | 'organization' | 'faction' | 'alliance';
+export type InvitationTargetType = Enums<'entity_type'>;
 
 /** The fields every item of an invitation batch may carry, whatever its scope. */
 interface InvitationSeedCommon {
-  /** The promised role; the SQL function defaults it to `editor`. */
-  role?: 'admin' | 'editor';
   /** The invited address. An item without one gets a generated code. */
   email?: string;
   /** An ISO timestamp after which the invitation cannot be claimed. Absent means it does not expire. */
@@ -127,20 +134,13 @@ export type InvitationNominationParent =
 /** A JSON object, the one shape besides null that `create_invitations` takes for a nomination's localized and presentation columns. */
 type InvitationNominationObject = Record<string, unknown>;
 
-/**
- * One nomination of the invited entity, in the keys `create_invitations` reads. Every id is a uuid of the batch's project.
- *
- * An object with an `id` updates that nomination of the invited entity, and a column it does not state keeps its stored value; an object without one creates a nomination. `confirmed` is stated on every object.
- */
-export interface InvitationNominationSeed {
-  /** A nomination of the invited entity to update; absent creates one. */
-  id?: string;
+/** The columns of {@link InvitationNominationSeed} besides its `id` and `parent`. */
+interface InvitationNominationSeedBase {
   election_id: string;
   constituency_id: string;
   /** An integer; absent means the election's current round. */
   election_round?: number;
   election_symbol?: string | null;
-  parent: InvitationNominationParent;
   confirmed: boolean;
   name?: InvitationNominationObject | null;
   short_name?: InvitationNominationObject | null;
@@ -155,10 +155,31 @@ export interface InvitationNominationSeed {
   custom_data?: Record<string, unknown>;
 }
 
+/**
+ * One nomination of the invited entity, in the keys `create_invitations` reads. Every id is a uuid of the batch's project.
+ *
+ * An object with an `id` updates that nomination of the invited entity, and a column it does not state keeps its stored value; an object without one creates a nomination. `confirmed` is stated on every object.
+ */
+export type InvitationNominationSeed = InvitationNominationSeedBase &
+  (
+    | {
+        /** A nomination of the invited entity to update. */
+        id: string;
+        parent: InvitationNominationParent;
+      }
+    | {
+        id?: never;
+        /** A created nomination has no stored parent to keep. */
+        parent: Exclude<InvitationNominationParent, { kind: 'keep' }>;
+      }
+  );
+
 /** A promise on one entity, named by exactly one of its row id and its `external_id` in the project. */
 export type EntityInvitationSeedItem = InvitationSeedCommon & {
   /** `entity` is the SQL function's default scope. */
   scope?: 'entity';
+  /** The promised role; the SQL function defaults it to `editor`, the one role an entity-scope invitation can promise. */
+  role?: 'editor';
 } & (
     | {
         target_type: 'candidate' | 'organization';
@@ -173,11 +194,13 @@ export type EntityInvitationSeedItem = InvitationSeedCommon & {
   ) &
   ({ target_id: string; external_id?: never } | { external_id: string; target_id?: never });
 
-/** A promise on the project the batch is seeded in. */
+/** A promise on the project the batch is seeded in. The project is always the client's own, so the item names no target. */
 export type ProjectInvitationSeedItem = InvitationSeedCommon & {
   scope: 'project';
+  /** The promised role; the SQL function defaults it to `editor`. */
+  role?: Enums<'grant_role_type'>;
   target_type?: never;
-  target_id?: string;
+  target_id?: never;
   external_id?: never;
 };
 
@@ -187,10 +210,10 @@ export type InvitationSeedItem = EntityInvitationSeedItem | ProjectInvitationSee
 /** One element of the array `create_invitations` returns, in the order of the items. */
 export interface SeededInvitation {
   id: string;
-  scope: 'project' | 'entity';
+  scope: Extract<Enums<'grant_scope_type'>, 'project' | 'entity'>;
   target_type: InvitationTargetType | null;
   target_id: string;
-  role: 'admin' | 'editor';
+  role: Enums<'grant_role_type'>;
   /** The invited address, trimmed and lower-cased; null on a code invitation. */
   email: string | null;
   expires_at: string | null;
@@ -229,6 +252,32 @@ function resolveFieldName(field: string): string {
 }
 
 /**
+ * The {@link SETTINGS_REPLACED_WHOLE} paths that `settings` names, each as a payload that sets only that path to `null`.
+ *
+ * `jsonb_recursive_merge` replaces a non-object base whole, so merging one of these payloads before the settings themselves makes the stored value at that path exactly the one `settings` states.
+ */
+function replacedWholeClearPayloads(settings: Record<string, unknown>): Array<Record<string, unknown>> {
+  const payloads: Array<Record<string, unknown>> = [];
+  for (const path of SETTINGS_REPLACED_WHOLE) {
+    const segments = path.split('.');
+    let node: unknown = settings;
+    let named = true;
+    for (const segment of segments) {
+      if (!node || typeof node !== 'object' || Array.isArray(node) || !Object.hasOwn(node, segment)) {
+        named = false;
+        break;
+      }
+      node = (node as Record<string, unknown>)[segment];
+    }
+    if (!named || node === undefined) continue;
+    let payload: unknown = null;
+    for (const segment of [...segments].reverse()) payload = { [segment]: payload };
+    payloads.push(payload as Record<string, unknown>);
+  }
+  return payloads;
+}
+
+/**
  * Read a row's answer payload — under {@link ANSWERS_BY_EXTERNAL_ID_KEY} and no other spelling.
  *
  * ⚠ **`row.answers_by_external_id` is NOT a second legal spelling, and there is deliberately no fallback to it here.** It is not functional in either direction:
@@ -243,18 +292,36 @@ function readAnswersByExternalId(row: Record<string, unknown>): Record<string, u
 }
 
 /**
- * The three `external_id`-lookup failure messages, verbatim.
+ * The two `external_id`-lookup failure messages, verbatim.
  *
- * These are the operator-facing contract: triage greps for `linkJoinTables: failed to find <noun>`. Held as three separate literals — rather than one interpolated `${noun}` — precisely so each stays greppable in the source now that one helper covers all four lookups. Changing a word here changes nothing functionally and breaks triage.
+ * These are the operator-facing contract: triage greps for `linkQuestionScopes: failed to find <noun>`. Held as separate literals — rather than one interpolated `${noun}` — so each stays greppable in the source. Changing a word here changes nothing functionally and breaks triage.
  */
-const LINK_LOOKUP_ERRORS: Record<
-  'elections' | 'constituency_groups' | 'constituencies',
-  (id: string, m: string) => string
-> = {
-  elections: (id, m) => `linkJoinTables: failed to find election ${id}: ${m}`,
-  constituency_groups: (id, m) => `linkJoinTables: failed to find constituency_group ${id}: ${m}`,
-  constituencies: (id, m) => `linkJoinTables: failed to find constituency ${id}: ${m}`
+const LINK_LOOKUP_ERRORS: Record<JsonbRefTable, (id: string, m: string) => string> = {
+  elections: (id, m) => `linkQuestionScopes: failed to find election ${id}: ${m}`,
+  constituencies: (id, m) => `linkQuestionScopes: failed to find constituency ${id}: ${m}`
 };
+
+/** A table {@link SupabaseAdminClient.resolveExternalId} reads a row id from. */
+type ExternalIdTable = JsonbRefTable | 'candidates' | 'organizations';
+
+/**
+ * The failure message of an `external_id` lookup: prefixed by the caller when one is named, else the table's `LINK_LOOKUP_ERRORS` message.
+ */
+function lookupErrorMessage({
+  table,
+  externalId,
+  caller,
+  message
+}: {
+  table: ExternalIdTable;
+  externalId: string;
+  caller?: string;
+  message: string;
+}): string {
+  if (caller !== undefined) return `${caller}: failed to find ${table} row ${externalId}: ${message}`;
+  if (table === 'elections' || table === 'constituencies') return LINK_LOOKUP_ERRORS[table](externalId, message);
+  return `resolveExternalId: failed to find ${table} row ${externalId}: ${message}`;
+}
 
 /**
  * Build a supabase-js client with the service-role key, behind the locality guard.
@@ -283,7 +350,7 @@ export function createServiceRoleClient(
 /**
  * Admin-client base for the dev-seed package.
  *
- * Narrow bulk-write surface: bulkImport, bulkDelete, createInvitations, importAnswers, linkJoinTables, updateAppSettings. Auth / email / legacy E2E query helpers live in the tests/ subclass.
+ * Narrow bulk-write surface: bulkImport, bulkDelete, createInvitations, importAnswers, linkQuestionScopes, updateAppSettings. Auth / email / legacy E2E query helpers live in the tests/ subclass.
  *
  * `client` and `projectId` are `protected` (not `private`) so the tests/subclass can reuse the Supabase REST client for its auth helpers without re-creating a second client.
  */
@@ -317,17 +384,13 @@ export class SupabaseAdminClient {
    * @throws Error if the RPC call fails
    */
   async bulkImport(data: Record<string, Array<unknown>>): Promise<Record<string, unknown>> {
-    // Non-column fields to strip (handled separately). `NON_COLUMN_FIELDS` and `COLLECTION_NON_COLUMNS` were declared inline here; they now live in `./template/permittedKeys` with the same contents and a one-line reason beside each entry, so the strip decision and the permission decision are one declaration. The stripping behaviour below is unchanged.
+    // `NON_COLUMN_FIELDS` and `COLLECTION_NON_COLUMNS` (`./template/permittedKeys`) declare what is stripped, beside the permission decision.
     //
     // ⚠ `elections.constituencyGroups` / `.constituency_groups` and `constituency_groups.constituencies` are stripped here, but `LINK_SENTINELS` is the authority for whether they are PERMITTED. See the note on `COLLECTION_NON_COLUMN_LIST` in `./template/permittedKeys`.
     //
     // An election's constituency groups and a constituency group's constituencies, under any key form `LINK_SENTINELS` accepts, are sent as the item's `bulk_import` link key (`importLinkFor`), so `bulk_import` writes both join tables before it writes a nomination.
 
-    // The four ENTITY tables plus `nominations`, all of which carry `confirmed boolean NOT NULL DEFAULT false`. Every entity and every nomination is visible today, so a seeded row has to carry the confirmed value or it vanishes from the voter app the moment 162-08 makes the column a term of public read. An explicit value from a template is honoured exactly as the publication default honours one, so a template can still seed an unconfirmed row as a negative control.
-    //
-    // ⚠ `nominations` JOINED THIS SET IN 162-12, AND ITS DEFAULT IS THE OPPOSITE OF THE OLD BEHAVIOUR. The column was `unconfirmed boolean DEFAULT false`, so every seeded nomination was EFFECTIVELY CONFIRMED without saying so; D-11c flips it to `confirmed boolean NOT NULL DEFAULT false`, so a seeded nomination that says nothing is now INVISIBLE to the voter application. This one line is what keeps that from happening, and it is the reason no template file was edited: thirty templates would each have grown a line the next new template would forget. The property is asserted over a real rebuilt database in both directions -- more than 250 rows seeded, zero unconfirmed -- and was observed RED against the commit that flipped the column before this line was added.
-    //
-    // ⚠ DECLARED AS ITS OWN SET, and as of 162-16 it is the only such set. It once sat beside a sibling set of ten tables that stamped the retired per-row publication column, and the two were kept apart deliberately: a single set governing two columns would have silently written `confirmed` onto six tables that do not have it. That sibling went with its column; this one is the replacement and stands alone.
+    // The four entity tables and `nominations` carry `confirmed boolean NOT NULL DEFAULT false`, and `confirmed` is a term of public read, so a seeded row that states nothing is given `confirmed: true`; an explicit value from a template is kept, so a template can seed an unconfirmed control.
     //
     // For `candidates`, as for the other three entity tables, this default is the whole entity-side condition of public read: a row that is confirmed, reached by a confirmed nomination and in a project open for voters is visible to the voter app's anon client. A template that must keep an entity hidden states `confirmed: false` on the row, as `e2e/base` does for its `ca-aa-hidden` and `ca-aa-unregistered` controls.
     //
@@ -551,82 +614,60 @@ export class SupabaseAdminClient {
   }
 
   // ---------------------------------------------------------------------------
-  // M:N join table linking
+  // Question scoping
   // ---------------------------------------------------------------------------
 
   /**
-   * Populate the JSONB scoping columns of question categories and questions after bulk_import.
+   * Populate the JSONB scoping columns (`election_ids`, `constituency_ids`) of question categories and questions after bulk_import.
    *
-   * The two constituency join tables are not written here: `bulk_import` writes them from the link keys `bulkImport` sends, before any nomination, and the `join` entries of the plan are passed over.
+   * The two constituency join tables are not written here: `bulk_import` writes them from the link keys `bulkImport` sends, before any nomination.
    *
-   * ⚠ **The resolution set is NOT declared here.** It is `LINK_SENTINELS` in `./template/linkSentinels`, and this method ITERATES it via that module's pure `planLinks`. The alternative is four hard-coded blocks kept beside the const; a pair could be permitted without being handled. Now the loop that permits a `(collection, key)` pair is the loop that resolves it, so adding a pair to the const cannot leave it unresolved — and the const cannot grow silently, because `tests/template/linkSentinels.test.ts` holds it to a hand-enumerated expectation.
-   *
-   * To add a link kind, edit `LINK_SENTINELS` — not this method. A new `LinkTarget.kind` is a COMPILE error here (the `never` arm below), never a silent runtime miss.
-   *
-   * ⚠ **That guarantee covers the collection as well as the target kind, and only because the switch below is on `entry.kind` — a top-level discriminant — so the collection and the target narrow together.**
-   * Laundering `entry.collection` through `as` casts instead lets a rule such as `{ collections: ['organizations'], target: { kind: 'join', … } }` compile clean and then die as `TypeError: LINK_LOOKUP_ERRORS[table] is not a function`, MASKING the real lookup failure. The pairing itself is checked at the declaration: `LinkSentinelRule` is a union over the two target kinds.
+   * ⚠ **The resolution set is NOT declared here.** It is the `jsonb` rules of `LINK_SENTINELS` in `./template/linkSentinels`, and this method ITERATES them via that module's pure `planLinks`, so adding a `jsonb` pair to the const cannot leave it unresolved — and the const cannot grow silently, because `tests/template/linkSentinels.test.ts` holds it to a hand-enumerated expectation. To add a scoping link, edit `LINK_SENTINELS` — not this method.
    *
    * This method owns only the I/O: `external_id` → UUID lookups and the JSONB column update.
    *
    * @param data - The same dataset passed to bulkImport
    */
-  async linkJoinTables(data: Record<string, Array<unknown>>): Promise<void> {
+  async linkQuestionScopes(data: Record<string, Array<unknown>>): Promise<void> {
     for (const entry of planLinks(data as Record<string, Array<Record<string, unknown>>>)) {
-      switch (entry.kind) {
-        case 'join':
-          // Written by bulk_import from the item's link key.
-          break;
-        case 'jsonb':
-          await this.updateJsonbRefs(entry, entry.target);
-          break;
-        default: {
-          // Exhaustiveness arm: a new `LinkTarget.kind` fails to compile here rather than being silently skipped at seed time. It covers the whole ENTRY, not just its target, so the collection is exhausted with it.
-          const exhaustive: never = entry;
-          throw new Error(`linkJoinTables: unhandled link target ${JSON.stringify(exhaustive)}`);
-        }
-      }
+      await this.updateJsonbRefs(entry);
     }
   }
 
   /**
    * Resolve one `external_id` to its row UUID within this project.
    *
-   * @param table - The table to look in; also selects the failure message.
+   * @param table - The table to look in.
    * @param externalId - The `external_id` to resolve.
+   * @param caller - Name of the public method making the call; it prefixes the error text. Without one, a scoping-link table's error is its greppable `LINK_LOOKUP_ERRORS` message.
    * @returns The row's UUID.
-   * @throws Error if the lookup fails, with the greppable message verbatim.
+   * @throws Error if the lookup fails.
    */
-  private async resolveExternalId(
-    table: 'elections' | 'constituency_groups' | 'constituencies',
-    externalId: string
-  ): Promise<string> {
+  protected async resolveExternalId(table: ExternalIdTable, externalId: string, caller?: string): Promise<string> {
     const { data: row, error } = await this.client
       .from(table)
       .select('id')
       .eq('external_id', externalId)
       .eq('project_id', this.projectId)
       .single();
-    if (error) throw new Error(LINK_LOOKUP_ERRORS[table](externalId, error.message));
+    if (error) throw new Error(lookupErrorMessage({ table, externalId, caller, message: error.message }));
     return row.id;
   }
 
   /**
-   * The `jsonb` arm: overwrite a scoping column on the declaring row.
+   * Overwrite a scoping column on the declaring row.
    *
-   * `planLinks` never emits a jsonb entry with an empty id list, so this cannot clear a column that meant "all".
+   * `planLinks` never emits an entry with an empty id list, so this cannot clear a column that meant "all".
    *
    * @param entry - The planned link.
-   * @param target - `entry.target`, narrowed to the jsonb variant.
    */
-  private async updateJsonbRefs(
-    entry: Extract<LinkPlanEntry, { kind: 'jsonb' }>,
-    target: Extract<LinkTarget, { kind: 'jsonb' }>
-  ): Promise<void> {
+  private async updateJsonbRefs(entry: LinkPlanEntry): Promise<void> {
+    const { target } = entry;
     const ids: Array<string> = [];
     for (const refExternalId of entry.refExternalIds) {
       ids.push(await this.resolveExternalId(entry.refTable, refExternalId));
     }
-    // No cast: the entry is narrowed to the `jsonb` arm, whose collection type is `JsonbParentCollection` — the two tables that carry a scoping column.
+    // No cast: the entry's collection type is `JsonbParentCollection` — the two tables that carry a scoping column.
     const { error: updateError } = await this.client
       .from(entry.collection)
       .update({ [target.column]: ids })
@@ -634,7 +675,7 @@ export class SupabaseAdminClient {
       .eq('project_id', this.projectId);
     if (updateError) {
       throw new Error(
-        `linkJoinTables: failed to update ${entry.collection} ${entry.parentExternalId} ${target.column}: ${updateError.message}`
+        `linkQuestionScopes: failed to update ${entry.collection} ${entry.parentExternalId} ${target.column}: ${updateError.message}`
       );
     }
   }
@@ -654,24 +695,34 @@ export class SupabaseAdminClient {
    *
    * Order matters: `app_settings.project_id` is a foreign key to `public.projects`, so the project row is written first.
    *
-   * No `accounts` row is created. `seed.sql` inserts the default account unconditionally, and this attaches to it.
+   * A project is attached to the default account, which `seed.sql` inserts unconditionally, except {@link E2E_PROJECT_ID}: that project is attached to {@link E2E_ACCOUNT_ID}, whose `accounts` row this creates, so an account grant on the suite's account stops at the suite's project. The attachment is written by an unconditional update as well, so an E2E project created on the default account is moved to its own.
    *
    * @param projectId - The project to ensure. Defaults to this client's configured project.
    * @throws Error if either write fails, naming which of the two it was.
    */
   async ensureProject(projectId?: string): Promise<void> {
     const id = projectId ?? this.projectId;
+    const accountId = id === E2E_PROJECT_ID ? E2E_ACCOUNT_ID : DEFAULT_ACCOUNT_ID;
+
+    if (accountId === E2E_ACCOUNT_ID) await this.ensureE2eAccount(id);
 
     const { error: projectError } = await this.client.from('projects').upsert(
       {
         id,
-        account_id: DEFAULT_ACCOUNT_ID,
+        account_id: accountId,
         name: `Project ${id}`,
         default_locale: 'en'
       },
       { onConflict: 'id', ignoreDuplicates: true }
     );
     if (projectError) throw new Error(`ensureProject: failed to upsert the projects row: ${projectError.message}`);
+
+    if (accountId === E2E_ACCOUNT_ID) {
+      const { error: accountError } = await this.client.from('projects').update({ account_id: accountId }).eq('id', id);
+      if (accountError) {
+        throw new Error(`ensureProject: failed to attach the project to its account: ${accountError.message}`);
+      }
+    }
 
     // Open the project to voters, as a SEPARATE unconditional update rather than as a column on the upsert above.
     //
@@ -689,6 +740,19 @@ export class SupabaseAdminClient {
     if (settingsError) {
       throw new Error(`ensureProject: failed to upsert the app_settings row: ${settingsError.message}`);
     }
+  }
+
+  /**
+   * Create the E2E account's `accounts` row if it is not already there.
+   *
+   * @param projectId - The project being ensured; it names the failure.
+   * @throws Error if the write fails.
+   */
+  private async ensureE2eAccount(projectId: string): Promise<void> {
+    const { error } = await this.client
+      .from('accounts')
+      .upsert({ id: E2E_ACCOUNT_ID, name: 'E2E Account' }, { onConflict: 'id', ignoreDuplicates: true });
+    if (error) throw new Error(`ensureProject: failed to upsert the accounts row of ${projectId}: ${error.message}`);
   }
 
   /**
@@ -717,7 +781,7 @@ export class SupabaseAdminClient {
   /**
    * Deep-merge partial settings into the app_settings.settings JSONB column.
    *
-   * Uses the merge_jsonb_column RPC for recursive deep merge. Callers only need to send the settings they want to change.
+   * Uses the merge_jsonb_column RPC for recursive deep merge. Callers only need to send the settings they want to change. A member at a path of `SETTINGS_REPLACED_WHOLE` (`@openvaa/app-shared`), today only `contestantApp.servedEntityTypes`, is replaced whole instead: when `partialSettings` names it, a first merge sets that path to `null` and the second stores exactly the value given, so a served type the stored map has and the new one leaves out is dropped. The two merges are separate writes, so a failed second one leaves the member `null`.
    *
    * Baseline test-setup no longer calls this method: it lives in the `@openvaa/dev-seed` e2e template's `app_settings.fixed[]` block, and in the per-variant filesystem templates at `tests/tests/setup/templates/variant-*.ts`. Do not reintroduce
    * `updateAppSettings({ ... })` blocks into `tests/tests/setup/*.setup.ts`.
@@ -742,15 +806,15 @@ export class SupabaseAdminClient {
 
     if (fetchError) throw new Error(`updateAppSettings: failed to fetch app_settings: ${fetchError.message}`);
 
-    // Deep merge via RPC
-    const { error } = await this.client.rpc('merge_jsonb_column', {
-      p_table_name: 'app_settings',
-      p_column_name: 'settings',
-      p_row_id: row.id,
-      p_partial_data: partialSettings
-    });
-
-    if (error) throw new Error(`updateAppSettings: merge failed: ${error.message}`);
+    for (const payload of [...replacedWholeClearPayloads(partialSettings), partialSettings]) {
+      const { error } = await this.client.rpc('merge_jsonb_column', {
+        p_table_name: 'app_settings',
+        p_column_name: 'settings',
+        p_row_id: row.id,
+        p_partial_data: payload
+      });
+      if (error) throw new Error(`updateAppSettings: merge failed: ${error.message}`);
+    }
   }
 
   /**

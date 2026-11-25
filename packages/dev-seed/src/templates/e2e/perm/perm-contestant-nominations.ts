@@ -18,12 +18,12 @@
  *   - `qu-info-req` is a required, editable info question. `qu-opin-all` is in a category scoped to no election; `qu-opin-list` is in a category scoped to `el-list` and `qu-opin-open` in one scoped to `el-open`. No question and no category states an entity type, so each is asked of candidates and of organizations.
  *   - No entity is seeded with an answer.
  *
- * Settings: `MINIMAL_BASE_APP_SETTINGS`, with the `contestantApp` root restated. The Contestant App serves both entity types; `entityTypes` is a list, and a stored list replaces the default one whole, so the root is stated complete. Neither lock is on: `access.answersLocked` is stated off and `access.nominationsLocked` is not stated, which is off.
+ * Settings: `MINIMAL_BASE_APP_SETTINGS`, with `EDITOR_CONTESTANT_APP_SETTINGS` as the `contestantApp` root, so the Contestant App serves both entity types. Editing is open: `access.contestantEditing` is stated `'open'`.
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-contestant-nominations-'`. Row external_ids are bare; nested references are prefixed. The ids are semantic slugs with hyphens, which no generator emits: a generated id is a type code, an underscore and a zero-padded number.
  */
 
-import { LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
+import { EDITOR_CONTESTANT_APP_SETTINGS, LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
 import type { Template } from '../../../template/types';
 
 const P = 'e2e-perm-contestant-nominations-';
@@ -43,7 +43,7 @@ export const permContestantNominationsTemplate: Template = {
           fi: '[EL-LIST] Aluevaalit'
         },
         short_name: { en: 'EL-LIST' },
-        election_type: 'organization_list',
+        nomination_shape: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
@@ -54,7 +54,7 @@ export const permContestantNominationsTemplate: Template = {
         external_id: 'el-open',
         name: { en: '[EL-OPEN] National Election', fi: '[EL-OPEN] Valtakunnalliset vaalit' },
         short_name: { en: 'EL-OPEN' },
-        election_type: 'organization_list_and_independents',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 1,
         multiple_rounds: false,
@@ -65,7 +65,7 @@ export const permContestantNominationsTemplate: Template = {
         external_id: 'el-cand',
         name: { en: '[EL-CAND] Presidential Election', fi: '[EL-CAND] Presidentinvaalit' },
         short_name: { en: 'EL-CAND' },
-        election_type: 'candidate_only',
+        nomination_shape: 'candidate_only',
         election_date: '2026-06-15',
         sort_order: 2,
         multiple_rounds: false,
@@ -358,17 +358,7 @@ export const permContestantNominationsTemplate: Template = {
         external_id: 'app-settings',
         settings: {
           ...MINIMAL_BASE_APP_SETTINGS,
-          contestantApp: {
-            questions: {
-              hideHero: false,
-              hideVideo: false
-            },
-            entityTypes: ['candidate', 'organization'],
-            registrationModes: {
-              candidate: ['email', 'code'],
-              organization: []
-            }
-          }
+          contestantApp: EDITOR_CONTESTANT_APP_SETTINGS
         }
       }
     ]

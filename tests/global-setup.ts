@@ -1,5 +1,10 @@
 import path from 'path';
 import { assertServedApp, FAILURE_HEADLINE } from './tests/support/preflight';
+import {
+  describeServedProject,
+  SERVED_PROJECT_ATTRIBUTE,
+  SERVED_PROJECT_PLACEHOLDER
+} from './tests/support/servedProject';
 import { resolveE2eProjectId, SupabaseAdminClient } from './tests/utils/supabaseAdminClient';
 import { TESTS_DIR } from './tests/utils/testsDir';
 import type { FullConfig } from '@playwright/test';
@@ -12,23 +17,7 @@ import type { FullConfig } from '@playwright/test';
  * This hook was measured to run on every invocation shape that executes specs — a full run, `--project=X`, `--grep` (including a `--grep` that matches nothing), and `--shard`. It deliberately does NOT run on `--list`, which `tests/README.md` advertises as usable without a dev server; the config-load orphan-probe guard in `playwright.config.ts` covers that path instead.
  *
  * There is no bypass here by design: no environment variable skips the gate and there is no CI early return. `FRONTEND_PORT` is the legitimate escape hatch — it points the suite at the operator's OWN server on another port, which the gate then verifies rather than trusts.
- *
- * Ordering note: the `webServer` entry (the mock OIDC issuer) starts BEFORE this hook in every run. So a failing preflight has already spawned that issuer — Playwright tears it down cleanly, no orphan process, no operator action. Expected, not a leak.
  */
-/**
- * The attribute the served application publishes its configured project id on, and the placeholder `app.html` declares it with.
- *
- * Both literals are the harness's half of a two-sided contract whose other half is `apps/frontend/src/app.html` plus the `transformPageChunk` in `apps/frontend/src/hooks.server.ts`. An UNSUBSTITUTED placeholder is therefore not an edge case to tolerate: it is the exact signature of a substitution that stopped happening, and reading it as agreement would turn this gate into decoration. {@link assertServedProject} treats it as a mismatch, and so does an absent attribute.
- */
-const SERVED_PROJECT_ATTRIBUTE = 'data-project-id';
-const SERVED_PROJECT_PLACEHOLDER = '%projectId%';
-
-/** Extracts the served project id, or `null` when the document carries no such attribute at all. */
-function extractServedProjectId(html: string): string | null {
-  const match = new RegExp(`${SERVED_PROJECT_ATTRIBUTE}="([^"]*)"`).exec(html);
-  return match ? match[1].trim().toLowerCase() : null;
-}
-
 /**
  * SERVED-PROJECT GATE — asserts the application under test queries the project this suite seeds.
  *
@@ -44,14 +33,16 @@ async function assertServedProject(args: { baseURL: string; expectedProjectId: s
 
   const res = await fetch(baseURL, { redirect: 'follow' });
   const html = await res.text();
-  const served = extractServedProjectId(html);
+  const reading = describeServedProject(html);
+  const served =
+    reading.kind === 'served' ? reading.projectId : reading.kind === 'placeholder' ? SERVED_PROJECT_PLACEHOLDER : null;
 
   const reason =
-    served === null
+    reading.kind === 'absent'
       ? `the served document carries no ${SERVED_PROJECT_ATTRIBUTE} attribute, so the project it queries cannot be established`
-      : served === SERVED_PROJECT_PLACEHOLDER.toLowerCase()
+      : reading.kind === 'placeholder'
         ? `the served document still carries the literal ${SERVED_PROJECT_PLACEHOLDER} placeholder, so the server never substituted its configured project id`
-        : served === expectedProjectId
+        : reading.projectId === expectedProjectId
           ? null
           : 'the served application queries a different project than this suite seeds';
 

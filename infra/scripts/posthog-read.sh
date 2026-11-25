@@ -2,66 +2,53 @@
 #
 # posthog-read.sh -- Ask the PostHog EU project one of four fixed questions and print the answer as named counts.
 #
-# The relay's absence checks are reads of what PostHog stored. This script makes each read one repeatable command whose
-# output is a few `ph_<name>=<value>` lines, so a read can be recorded as evidence without an event, a property value
-# or the key ever being shown.
+# The relay's absence checks are reads of what PostHog stored. This script makes each read one repeatable command whose output is a few `ph_<name>=<value>` lines, so a read can be recorded as evidence without an event, a property value or the key ever being shown.
 #
-# What it does. One HTTPS request to the EU app host, https://eu.posthog.com, with the personal API key as a Bearer
-# token:
-#   settings      GET  /api/projects/<id>/         prints ph_anonymize_ips=true|false
-#   probe-count   POST /api/projects/<id>/query/   prints ph_probe_events=<n>: events whose `questionId` property
-#                                                  equals the probe id, in the window
-#   window-count  POST /api/projects/<id>/query/   prints ph_window_events=<n>: events carrying `openvaa.app`, in the
-#                                                  window
-#   privacy       POST /api/projects/<id>/query/   prints, over the events carrying `openvaa.app` in the window:
-#                   ph_events                       all of them
-#                   ph_ip_present                   with `$ip`
-#                   ph_geoip_present                with any of the `$geoip_` properties PostHog's GeoIP step sets
-#                   ph_user_agent_present           with `$user_agent` or `$raw_user_agent`
-#                   ph_url_present                  with `$current_url`, `$pathname` or `url`
-#                   ph_referrer_present             with `$referrer` or `$referring_domain`
-#                   ph_host_present                 with `$host` or `host`
-#                   ph_person_profile_events        whose `$process_person_profile` is not false
-#                   ph_persons                      persons linked to the window's distinct ids
-#                   ph_pageviews                    named `pageview`
-#                   ph_pageview_session_id_present  named `pageview` and with `$session_id`
-#                   ph_other_events                 not named `pageview`
-#                   ph_other_session_id_present     not named `pageview` and with `$session_id`
-# Each query is a `HogQLQuery`. The window is [--since, --until), compared in UTC. The answer is parsed with `jq` into
-# those lines only, and an answer of another shape prints `ph_result=unexpected_shape`.
+# What it does. One HTTPS request to the EU app host, https://eu.posthog.com, with the personal API key as a Bearer token:
+#   settings:      GET  /api/projects/<id>/         prints ph_anonymize_ips=true|false
+#   probe-count:   POST /api/projects/<id>/query/   prints ph_probe_events=<n>: events whose `questionId` property equals the probe id, in the window
+#   window-count:  POST /api/projects/<id>/query/   prints ph_window_events=<n>: events carrying `openvaa.app`, in the window
+#   privacy:       POST /api/projects/<id>/query/   prints, over the events carrying `openvaa.app` in the window:
+#     ph_events:                       all of them
+#     ph_ip_present:                   with `$ip`
+#     ph_geoip_present:                with any of the `$geoip_` properties PostHog's GeoIP step sets
+#     ph_user_agent_present:           with `$user_agent` or `$raw_user_agent`
+#     ph_url_present:                  with `$current_url`, `$pathname` or `url`
+#     ph_referrer_present:             with `$referrer` or `$referring_domain`
+#     ph_host_present:                 with `$host` or `host`
+#     ph_person_profile_events:        whose `$process_person_profile` is not false
+#     ph_persons:                      persons linked to the window's distinct ids
+#     ph_pageviews:                    named `pageview`
+#     ph_pageview_session_id_present:  named `pageview` and with `$session_id`
+#     ph_other_events:                 not named `pageview`
+#     ph_other_session_id_present:     not named `pageview` and with `$session_id`
+# Each query is a `HogQLQuery`. The window is [--since, --until), compared in UTC. The answer is parsed with `jq` into those lines only, and an answer of another shape prints `ph_result=unexpected_shape`.
 #
-# The property names and the HogQL of the three event modes, the `persons` link included, are checked against the
-# project's SQL editor before first use: PostHog's naming of a property can differ from what this script assumes, and a
-# query that errors there is fixed here before any capture is read with it.
+# The property names and the HogQL of the three event modes, the `persons` link included, are checked against the project's SQL editor before first use: PostHog's naming of a property can differ from what this script assumes, and a query that errors there is fixed here before any capture is read with it.
 #
-# What it does not record: no event, no property value, no response body and no response header is printed or written
-# outside a private temporary directory, which is removed on exit. A non-2xx answer prints `ph_query_status=<n>` and
-# nothing of the body. The key is read from POSTHOG_PERSONAL_API_KEY and written only to a header file in that
-# directory, created with umask 077, so it is on no command line and in no output.
+# What it does not record: no event, no property value, no response body and no response header is printed or written outside a private temporary directory, which is removed on exit. A non-2xx answer prints `ph_query_status=<n>` and nothing of the body. The key is read from POSTHOG_PERSONAL_API_KEY and written only to a header file in that directory, created with umask 077, so it is on no command line and in no output.
 #
 # Usage:
+#   ```sh
 #   POSTHOG_PERSONAL_API_KEY=... infra/scripts/posthog-read.sh --project 12345 --mode settings
 #   POSTHOG_PERSONAL_API_KEY=... infra/scripts/posthog-read.sh --project 12345 --mode probe-count \
 #     --probe capture-20261118T120000Z --since 2026-11-18T12:00:00Z --until 2026-11-18T12:30:00Z
 #   POSTHOG_PERSONAL_API_KEY=... infra/scripts/posthog-read.sh --project 12345 --mode privacy \
 #     --since 2026-11-18T12:00:00Z --until 2026-11-18T12:30:00Z
 #   infra/scripts/posthog-read.sh --self-test
+#   ```
 #
 #   --project <digits>      REQUIRED. The numeric project id.
 #   --mode <mode>           REQUIRED. settings, probe-count, window-count or privacy.
 #   --since <utc>           REQUIRED for the three event modes. YYYY-MM-DDTHH:MM:SSZ, inclusive.
 #   --until <utc>           REQUIRED for the three event modes. YYYY-MM-DDTHH:MM:SSZ, exclusive, after --since.
 #   --probe <id>            REQUIRED for probe-count. 1 to 64 letters, digits, `_` or `-`.
-#   --host <origin>         OPTIONAL. Only https://eu.posthog.com is accepted; the self-test alone points it at
-#                           its loopback stand-in.
-#   --self-test             Run every mode against a loopback stand-in for the EU endpoints, started with node, with a
-#                           fake key. Needs no credential and no network beyond 127.0.0.1. Each case prints
-#                           `self_test <name> PASS|FAIL`.
+#   --host <origin>         OPTIONAL. Only https://eu.posthog.com is accepted; the self-test alone points it at its loopback stand-in.
+#   --self-test             Run every mode against a loopback stand-in for the EU endpoints, started with node, with a fake key. Needs no credential and no network beyond 127.0.0.1. Each case prints `self_test <name> PASS|FAIL`.
 #   -h, --help              Print this header and exit 0.
 #
 # Environment:
-#   POSTHOG_PERSONAL_API_KEY  REQUIRED except for --self-test and --help. A read-only personal API key scoped to the
-#                             project. Never printed.
+#   POSTHOG_PERSONAL_API_KEY:  REQUIRED except for --self-test and --help. A read-only personal API key scoped to the project. Never printed.
 #
 # Exit codes:
 #   0:  the read succeeded and its lines were printed, or every self-test case passed
@@ -74,6 +61,12 @@ set -f
 export LC_ALL=C
 
 SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_NAME="posthog-read.sh"
+USAGE_LINE="--project <digits> --mode settings|probe-count|window-count|privacy [--since <utc> --until <utc>] [--probe <id>] [--host https://eu.posthog.com] | --self-test | -h | --help"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$(dirname "$SCRIPT_PATH")/../../scripts/lib/cli.sh"
+# shellcheck source=../../scripts/lib/self-test.sh
+. "$(dirname "$SCRIPT_PATH")/../../scripts/lib/self-test.sh"
 
 EU_HOST="https://eu.posthog.com"
 
@@ -82,23 +75,8 @@ ST_LOOPBACK_ORIGIN=""
 
 PRIVACY_NAMES="ph_events ph_ip_present ph_geoip_present ph_user_agent_present ph_url_present ph_referrer_present ph_host_present ph_person_profile_events ph_persons ph_pageviews ph_pageview_session_id_present ph_other_events ph_other_session_id_present"
 
-usage_line() {
-  echo "usage: posthog-read.sh --project <digits> --mode settings|probe-count|window-count|privacy [--since <utc> --until <utc>] [--probe <id>] [--host https://eu.posthog.com] | --self-test | -h | --help" >&2
-}
-
-print_header() {
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$SCRIPT_PATH"
-}
-
-usage_error() {
-  echo "posthog-read.sh: $1" >&2
-  usage_line
-  exit 2
-}
-
 # ---------------------------------------------------------------------------------------------------
-# The read. Every step checks its own status: the self-test runs it in a subshell whose status is tested, where bash
-# does not apply errexit.
+# The read. Every step checks its own status: the self-test runs it in a subshell whose status is tested, where bash does not apply errexit.
 # ---------------------------------------------------------------------------------------------------
 
 L=""
@@ -150,8 +128,7 @@ FROM events WHERE $window AND $APP_CLAUSE"
   esac
 }
 
-# Makes one request and leaves the answer in $L/response.json. Prints `ph_query_status=<n>` and returns 1 on a non-2xx
-# answer or none. Arguments: the URL, then `post` to send $L/query.json.
+# Makes one request and leaves the answer in $L/response.json. Prints `ph_query_status=<n>` and returns 1 on a non-2xx answer or none. Arguments: the URL, then `post` to send $L/query.json.
 request() {
   local url="$1" method="${2:-get}" code status_re='^[0-9]{3}$'
   if [ "$method" = "post" ]; then
@@ -171,8 +148,7 @@ request() {
   esac
 }
 
-# Prints the named lines from $L/response.json, or `ph_result=unexpected_shape` and returns 1. Nothing is printed until
-# the whole answer has parsed.
+# Prints the named lines from $L/response.json, or `ph_result=unexpected_shape` and returns 1. Nothing is printed until the whole answer has parsed.
 print_counts() {
   local names_json="$1"
   if jq -r --argjson names "$names_json" '
@@ -244,11 +220,7 @@ ST_SERVER_PID=""
 # Assembled from two parts so that no key-shaped literal appears in the source for a secret scanner to match.
 ST_FAKE_KEY="phx_""fake0000000000000000000000000000000000000000"
 
-# The stand-in. GET /api/projects/<id>/ answers the project with anonymize_ips true. POST /api/projects/<id>/query/
-# answers a HogQLQuery by its text: one count for the probe and window questions, thirteen for the privacy question.
-# Project 401 answers 401 and project 402 a result of another shape. Every answer body carries the key it was sent and a
-# marker, which the script must print neither of. Each request appends one line to the request log: method, kind,
-# whether the Bearer key matched, whether the window and the probe are in the query text.
+# The stand-in. GET /api/projects/<id>/ answers the project with anonymize_ips true. POST /api/projects/<id>/query/ answers a HogQLQuery by its text: one count for the probe and window questions, thirteen for the privacy question. Project 401 answers 401 and project 402 a result of another shape. Every answer body carries the key it was sent and a marker, which the script must print neither of. Each request appends one line to the request log: method, kind, whether the Bearer key matched, whether the window and the probe are in the query text.
 ST_SERVER_JS='
 const http = require("node:http");
 const fs = require("node:fs");
@@ -292,24 +264,6 @@ const server = http.createServer((request, response) => {
 });
 server.listen(0, "127.0.0.1", () => fs.writeFileSync(portFile, String(server.address().port)));
 '
-
-st_result() {
-  ST_CASES=$((ST_CASES + 1))
-  if [ "$2" = "pass" ]; then
-    echo "self_test $1 PASS"
-  else
-    echo "self_test $1 FAIL"
-    ST_FAILED=$((ST_FAILED + 1))
-  fi
-}
-
-st_expect() {
-  local name="$1"
-  shift
-  if "$@"; then st_result "$name" pass; else st_result "$name" fail; fi
-}
-
-equals() { [ "$1" = "$2" ]; }
 
 # Whether the file holds no match of the fixed string.
 file_lacks() { ! grep -qF -- "$2" "$1"; }

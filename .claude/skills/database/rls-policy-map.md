@@ -86,7 +86,7 @@ is the same `private.caller_entity_ids` lookup, on the named entity; `user_can` 
 project admin is answered `NULL`. `44-nomination-parent-options.test.sql` holds it.
 
 **The write side has no definer function.** `set_entity_nominations(p_entity_type, p_entity_id,
-p_nominations, p_expected_reach)` is SECURITY INVOKER: every statement of it runs under the policies below, the column
+p_nominations, p_expected_versions)` is SECURITY INVOKER: every statement of it runs under the policies below, the column
 grants and the triggers, so a direct write of the same rows meets the same refusals. It asks `user_can`
 once, for `nomination.edit` on the entity, before it reads anything, and it raises `42501` when an UPDATE
 or a DELETE affected fewer rows than it named, because row-level security refuses those two verbs by
@@ -179,29 +179,32 @@ and `entity.confirm` are enforced by the `enforce_entity_immutability` trigger a
 `enforce_nomination_confirmation`, because all three compare OLD against NEW and a row predicate cannot see
 OLD. The list is `m17_unenforced_ratified`, asserted two-directionally in `25-matrix-conformance.test.sql`.
 
-**"Unless locked" is a stored setting, not a member of the matrix.** There are two locks, both app
-settings in the project's row of `public.app_settings`, and both bind an entity's own users only:
+**"Unless locked" is a stored setting, not a member of the matrix.** It is one app setting in the
+project's row of `public.app_settings`, `access.contestantEditing`, and it binds an entity's own users
+only. `private.project_contestant_editing(project_id)` reads it as `'open'` (the default),
+`'nominationsLocked'` or `'locked'`:
 
-- **The nominations lock**, `access.nominationsLocked`, read by `private.project_nominations_locked(project_id)`.
-  Four policies ask it: `entity_insert_nominations`, `entity_insert_parent_nominations`,
-  `entity_update_nominations` and `entity_delete_nominations`.
-- **The answers lock**, `access.answersLocked`, read by `private.project_answers_locked(project_id)`. While
-  it holds, an entity's own editor writes nothing of the entity. It is a conjunct of the four self-update
-  policies `entity_update_own_candidates`, `_organizations`, `_factions` and `_alliances` (USING and WITH
-  CHECK) and of the same four nomination policies, beside the nominations lock; `storage_path_can` refuses
-  an entity-scope write (the six `entity_*_assets` write policies) and reads the key inline, so no second
-  definer call is nested in it; and `upsert_answers` and `set_entity_nominations` refuse a caller without
-  `project.edit_entities` / `project.edit_nominations` on the project with `42501` and
-  `<function>: answers are locked in this project`, so the app can tell the lock from a row it may not write.
+- **Nominations.** `entity_insert_nominations`, `entity_insert_parent_nominations`,
+  `entity_update_nominations` and `entity_delete_nominations` ask `= 'open'`, so both `'nominationsLocked'`
+  and `'locked'` refuse them; `set_entity_nominations` refuses a caller without `project.edit_nominations`
+  on the project with `OV006` and `set_entity_nominations: nominations are locked in this project` under
+  `'nominationsLocked'`, and with `OV002` and `... editing is locked in this project` under `'locked'`.
+- **Everything of the entity, under `'locked'`.** The four self-update policies
+  `entity_update_own_candidates`, `_organizations`, `_factions` and `_alliances` ask `<> 'locked'` (USING and
+  WITH CHECK); `storage_path_can` refuses an entity-scope write (the six `entity_*_assets` write policies)
+  and reads the key through the invoker helper `private.contestant_editing_in`, so no second definer call is nested in it; `upsert_answers` refuses a caller
+  without `project.edit_entities` on the project with `OV002` and `upsert_answers: answers are locked in this
+  project`, so the app can tell the lock from a row it may not write by the code; and no registration mode is
+  allowed, so no open candidate or organization invitation is valid, earns a link or is claimed.
 
-The admin and project-scope policies, which ask `project.edit_entities` / `project.edit_nominations`, read
-neither lock, and the project-scope storage write does not either: **a project editor and a project admin
-write answers, profiles, nominations and files while either lock holds.** Only the JSON boolean `true`
-locks; a project with no settings row, or a row without the key, is unlocked, and an id that names no
-project is locked. The row is written under `project.edit_app_settings`, so **every holder of that member
-sets either lock, ProjEditor included**. `23-nominations-write.test.sql` holds the nominations lock's
-cells, `55-answers-lock.test.sql` the answers lock's on every site and both sides, and
-`22-content-policies.test.sql` who may write the key.
+The admin and project-scope policies, which ask `project.edit_entities` / `project.edit_nominations`, do not
+read it, and the project-scope storage write does not either: **a project editor and a project admin
+write answers, profiles, nominations and files whatever it says.** A project with no settings row, a row
+without the key and any value that is not one of the three words as a JSON string read as `'open'`; an id
+that names no project reads as `'locked'`. The row is written under `project.edit_app_settings`, so **every
+holder of that member sets it, ProjEditor included**. `23-nominations-write.test.sql` holds the
+nomination cells and the helper's truth table (§ 10), `55-answers-lock.test.sql` the `'locked'` cells on
+every site and both sides, and `22-content-policies.test.sql` who may write the key.
 
 **The other two grant-administration members ARE enforced by policies**: `project.manage_editors` and
 `account.manage_admins` are read by the three policies of `public.invitations`, as the authority to
@@ -290,12 +293,14 @@ literals out of the policy text; a helper holding the map would hide them from b
   auth schema's users table and nothing the caller passes. It reads no address for an account whose
   `raw_app_meta_data ->> 'identity_provider'` is set, so an account the identity provider created
   claims nothing.
-- **Three definer functions sit beside the invitation functions without reaching a policy.**
-  `address_confirmation_request` and `address_confirmation_release` (`506-invitation-rpcs.sql`,
+- **Definer functions sit beside the invitation functions without reaching a policy.**
+  `email_confirmation_request` and `email_confirmation_release` (`506-invitation-rpcs.sql`,
   `service_role` only) take and give back the slots `account-access`'s `confirm-address` spends, neither
-  of them per project and taken only for a project the account's `registered_entities` record names, and `private.caller_pending_email_taken()`
-  (`301-auth-functions.sql`, `authenticated` only) answers for `auth.uid()` alone whether the caller's
-  pending address is another account's; `get_user_entities` returns it as `pending_email_taken`.
+  of them per project and taken only for a project in which `private.identity_registrations` holds a row
+  of the account; `email_invitation_hold` (`service_role` only) answers whether an open invitation
+  of the project holds an address and whether the project would honour it (`allowed`, `held`, `none`); and `private.caller_pending_email_taken()` (`301-auth-functions.sql`,
+  `authenticated` only) answers for `auth.uid()` alone whether the caller's pending address is another
+  account's; `get_caller_account_state` returns it as `pending_email_taken`.
 
 ### The one table outside the grant model
 
@@ -425,12 +430,12 @@ table policy asks:
 | `user_has_account_grant(uuid)` | "does this caller hold ANY grant on this account or on a project it owns?" — grant EXISTENCE, which `user_can` cannot express because `user_can` takes a permission |
 | `is_child_nominee(entity_type, uuid, entity_type, uuid)` | the one-hop parent→child nomination reach, the single mechanism for it; parent and child each matched by type and id |
 | `project_open_for_voters(uuid)` | the project-level anon visibility sub-rule |
-| `contestant_app_public_config(uuid)` | **no policy reaches it**; listed here because it is the other anon-executable definer function over a project id. The frontend adapter calls it when the caller can read no `app_settings` row of a closed project, and it answers five stored values (`access.contestantApp`, `access.answersLocked`, `contestantApp.entityTypes`, `contestantApp.registrationModes`, `analytics.trackEvents`), each as stored when its shape is one the frontend's parse accepts and otherwise as the string `"invalid"`, so nothing stored under a refused value is returned, and never the row |
+| `get_public_app_settings(uuid)` | **no policy reaches it**; listed here because it is the other anon-executable definer function over a project id. The frontend adapter calls it when the caller can read no `app_settings` row of a closed project, and it answers four stored values (`access.contestantApp`, `access.contestantEditing`, `contestantApp.servedEntityTypes`, `analytics.trackEvents`), each as stored when its shape is one the frontend's parse accepts and otherwise as the string `"invalid"`, so nothing stored under a refused value is returned, and never the row |
 | `entity_has_confirmed_nomination(entity_type, uuid, uuid)` | the nomination-level anon visibility sub-rule |
 | `nomination_entities_confirmed(uuid)` | both sub-rules asked of a nomination row |
 | `storage_path_can(grant_scope_type, text, text, text, storage_verb)` | the storage authority question, over the eleven-segment mapping |
 | `storage_path_is_public(text, text, text)` | § 3.4's public-read question asked of a path |
-| `project_nominations_locked(uuid)` · `project_answers_locked(uuid)` · `nomination_exists_in_contest(...)` · `caller_nominated_in_contest(election, constituency, round, permission, caller types)` · `caller_unconfirmed_originated_count()` | the nomination write guards; `project_answers_locked` guards the four entity self-update policies too. The fifth argument of `caller_nominated_in_contest` is what pairs a parent's row with the caller that may create it: `entity_insert_parent_nominations` passes `{candidate, faction}` for an organization's row and `{organization}` for an alliance's, so holding `nomination.create_parent` on an entity of another type nominated at the contest does not answer yes. A faction's nomination always stands under its own organization's, so the organization's row a faction's editor can create is another organization's. The count behind the cap is by user (`created_by`) and includes the rows the caller inserted for an organization or an alliance it edits itself |
+| `project_contestant_editing(uuid)` · `nomination_exists_in_contest(...)` · `caller_nominated_in_contest(election, constituency, round, permission, caller types)` · `caller_unconfirmed_originated_count()` | the nomination write guards; `project_contestant_editing` guards the four entity self-update policies too. The fifth argument of `caller_nominated_in_contest` is what pairs a parent's row with the caller that may create it: `entity_insert_parent_nominations` passes `{candidate, faction}` for an organization's row and `{organization}` for an alliance's, so holding `nomination.create_parent` on an entity of another type nominated at the contest does not answer yes. A faction's nomination always stands under its own organization's, so the organization's row a faction's editor can create is another organization's. The count behind the cap is by user (`created_by`) and includes the rows the caller inserted for an organization or an alliance it edits itself |
 | `nomination_id_in_contest(entity_type, uuid, uuid, uuid, integer)` | not asked by a policy: `private.parent_nomination_resolved` asks it, for both nomination writers, for the id of a parent's nomination the caller cannot read. No parent first, then the oldest, then the lowest id |
 | `entity_project_id(entity_type, uuid)` · `election_project_id(uuid)` · `constituency_group_project_id(uuid)` | the project a row belongs to, for policies whose table carries no `project_id` |
 | `private.project_account_id(uuid)` | the account a project belongs to; the project-admin arm of the three `invitations` policies passes it to `user_can` at account scope. Definer because `projects` has row-level security and an inline read would also ask whether the caller sees the project; `authenticated` alone holds EXECUTE |
@@ -533,9 +538,14 @@ These apply to every policy in the schema.
 | the entity policies and the hierarchy disjunct | `18-entity-policies.test.sql` |
 | the authenticated entity reads' disjunct order | `29-authenticated-disjunct-order.test.sql` |
 | a project that is not open for voters: `get_nominations`/`get_questions` to anon before and after closing, anon and authenticated EXECUTE on `project_open_for_voters`, and grant holders' reads that make the preview possible | `30-closed-project.test.sql` |
-| `contestant_app_public_config`: both EXECUTE rights, the definer shape, the five values as stored when their shape is accepted and as `"invalid"` otherwise, the exact key set at every level of the answer, the one all-null answer, and `anon_select_app_settings` left unwidened | `38-contestant-app-public-config.test.sql` |
+| `get_public_app_settings`: both EXECUTE rights, the definer shape, the four values as stored when their shape is accepted and as `"invalid"` otherwise, the exact key set at every level of the answer, the one all-null answer, and `anon_select_app_settings` left unwidened | `38-get-public-app-settings.test.sql` |
 | `terms_of_use_acceptances`: what the catalogue declares, the self-row read and insert, the `42501` refusals, another user and anon, project scope, the user cascade, a confirmed candidate public with the table empty, and the census that nothing in the schema names terms of use | `37-terms-of-use-acceptances.test.sql` |
-| `invitations`: what the catalogue declares, the authority map through the function and through the table, no rewrite, duplicates, the code, seeding confirming a named entity when the call says so, who reads and deletes a row, the claim (exactly the promised grants, nobody else, each row by itself), the used code, who may be mailed, the limits, the slot given back, the witness, and what each function exposes | `39-invitations.test.sql` |
+| `invitations`: what the catalogue declares, the authority map through the function and through the table, no rewrite, duplicates, the code, seeding confirming a named entity when the call says so, who reads and deletes a row, the claim (exactly the promised grants, nobody else, each row by itself), the used code, who may be mailed, the limits, the slot given back, the witness, what each function exposes, the registration-mode condition, recovery, and the identity provider's account | `39a-invitations-seeding.test.sql` (the catalogue, the authority map, no rewrite, duplicates, who reads and deletes a row, the code), `39b-invitations-claim.test.sql` (the claim and the pending address), `39c-invitations-service-helpers.test.sql` (the service-role helpers, the limits, the slot given back, the witness, exposure), `39d-invitations-registration-mode.test.sql` (the registration-mode condition), `39e-invitations-recovery-identity-provider.test.sql` (recovery and the identity provider's account) |
+| the test-only witness installed from `tests/fixtures/invitation-link-witness.psql`, its table and its two service-role functions | `00z-invitation-link-witness.test.sql` |
+| `email_confirmation_request` / `email_confirmation_release`: the two slots, a project the user holds no registration in, and nothing else written | `48-email-confirmation-request.test.sql` |
+| `identity_entity_find_or_create`: `found`, `gone`, `created`, the row lock, the bound match value, the identity metadata merge, `private.identity_registrations` | `56-identity-entity-find-or-create.test.sql` |
+| `email_invitation_hold` | `57-email-invitation-hold.test.sql` |
+| `identity_provider_entity_types`, `identity_account_find` and a switched-off Contestant App refusing every entity invitation and its link request, and allowing a project-scope one | `59-identity-provider-entry.test.sql` |
 | project-structure authority | `17-project-structure-authority.test.sql` |
 | content policies (`questions`, `app_settings`, `feedback`, `admin_jobs`) | `22-content-policies.test.sql` |
 | storage authority, and the table/storage pairing | `20-storage-authority.test.sql`, `28-storage-table-parity.test.sql` |
@@ -543,17 +553,17 @@ These apply to every policy in the schema.
 | both uniqueness keys, by name and in both directions | `26-uniqueness-keys.test.sql` |
 | the requested-parent admin queue and its confirmation guard | `27-parent-nomination-queue.test.sql` |
 | level-1 (ProjectEditor) through the nomination and entity confirmation flows: edits unconfirm, confirmation refused without `nomination.confirm`, `entity.confirm` held | `32-level1-confirmation-flow.test.sql` |
-| the nominations lock as an app setting: the entity policies refused while it is on and admitted while it is off, and who may write the key | `23-nominations-write.test.sql`, `22-content-policies.test.sql` |
-| the answers lock: the stored values that lock, each entity's own editor refused on the four self-update policies, the four nomination policies, the storage write in both buckets, `upsert_answers` and `set_entity_nominations` while it is on and admitted while it is off, a project editor and a project admin admitted while it is on, and a read unaffected | `55-answers-lock.test.sql` |
+| contestant editing's nomination cells: the entity policies refused under `nominationsLocked` and `locked` and admitted under `open`, the stored values `private.project_contestant_editing` reads, and who may write the key | `23-nominations-write.test.sql`, `22-content-policies.test.sql` |
+| contestant editing `locked`: the stored values that lock, each entity's own editor refused on the four self-update policies, the four nomination policies, the storage write in both buckets, `upsert_answers` and `set_entity_nominations` while it is on (`OV002`) and admitted while it is off, a project editor and a project admin admitted while it is on, a read unaffected, and an open invitation neither valid, nor earning a link, nor claimed while it is on | `55-answers-lock.test.sql` |
 | a confirmed entity's protected columns, each on each of the four entity tables, and the confirmation gate | `19-entity-immutability.test.sql` |
 | the entity type list of `questions` and `question_categories`, per table and per verb, and through `bulk_import` | `40-entity-type-list.test.sql` |
 | the stored colour of the four entity tables, each refused value beside an accepted one | `41-entity-color.test.sql` |
 | `get_entity_nominations`: the answer for a candidate and for an organization, the parent resolved where the caller's own policies refuse it, the exact key set, `NULL` for every caller without the entity's editor grant (another editor, the parent's editor, a faction's editor, project and global admins, a wrong type or project, an id that does not exist), and `anon` refused by privilege | `42-entity-nominations.test.sql` |
-| `set_entity_nominations`: the argument's refusals, a caller without `nomination.edit`, each parent kind, a row that did not change left unwritten, the reach of a delete, a move, the nominations lock raised as `42501`, a refused call storing nothing, the cap met through the function, the end-of-transaction rule raised inside the call and deferred again after it, and `anon` refused by privilege | `43-set-entity-nominations.test.sql` |
+| `set_entity_nominations`: the argument's refusals, a caller without `nomination.edit`, each parent kind, a row that did not change left unwritten, the reach of a delete, a move, `p_expected_versions`, several nominations of one election bounded by the uniqueness key, contestant editing `nominationsLocked` raised as `OV006` before the set is read, a removed nomination with others listed under it refused as `OV005`, a refused call storing nothing, the cap met through the function (`OV004`), the end-of-transaction rule raised inside the call and deferred again after it, and `anon` refused by privilege | `43-set-entity-nominations.test.sql` |
 | the three private functions of a nomination write (their catalogue shape and EXECUTE, the bound of 1000, each shape refusal and the normalised answer, a parent's nomination found or created bare as the owner, an admin and an entity's editor), and a parent or an invited entity that is no entity of the nomination's project refused through both writers with nothing written | `46-nomination-write-helpers.test.sql` |
 | `create_invitations`' stated confirmation (no default, `NULL` refused, `true` and `false`, never an unconfirmation) and the `nominations` key: new nominations and their parents, created bare and unconfirmed, updates by `id`, nothing deleted, the shape refusals under the invitation's label, the bound, the caller's own authority, the parent rule raised inside the call, and the answer's keys | `47-invitation-nominations.test.sql` |
 | `get_nomination_parent_options`: the options for a candidate and for an organization, the exact key set, `nominated` for the asked contests, `NULL` for every caller without the entity's editor grant and for a malformed argument, and `anon` refused by privilege | `44-nomination-parent-options.test.sql` |
-| the election-type rule cell by cell, and the end-of-transaction rule for a candidate that needs a parent | `08-triggers.test.sql` |
+| the nomination-shape rule cell by cell, and the end-of-transaction rule for a candidate that needs a parent | `08-triggers.test.sql` |
 | `entity_delete_nominations` conjunct by conjunct, the widened parent policy with its pairing by caller type, and the order of `private.nomination_id_in_contest` | `23-nominations-write.test.sql` |
 | the retired model is GONE | `24-legacy-removal.test.sql` |
 | read/write non-collapse, permanently, on every build | `apps/supabase/scripts/lint-schema.mjs` check 9001 |

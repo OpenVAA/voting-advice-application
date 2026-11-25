@@ -37,9 +37,9 @@
  * ## Question scoping
  *
  * - QG-Opin-EL-Reg carries `_elections: { external_id: ['test-e2e-base-el-reg'] }`
- *   so linkJoinTables (supabaseAdminClient.ts) resolves to `election_ids: [uuid(test-e2e-base-el-reg)]` on the question_categories row.
+ *   so linkQuestionScopes (supabaseAdminClient.ts) resolves to `election_ids: [uuid(test-e2e-base-el-reg)]` on the question_categories row.
  * - QG-Opin-CO-Mun-SE-SW carries `_constituencies: { external_id: [...] }`
- *   resolved by linkJoinTables to `constituency_ids: [uuid(...)]` JSONB on the question_categories row.
+ *   resolved by linkQuestionScopes to `constituency_ids: [uuid(...)]` JSONB on the question_categories row.
  * - Per-question constituency scoping (QU-Open-Filt-Mun-NE under QG-Opin-Filt-A
  *   and QU-Open-Filt-Mun-SE under QG-Opin-Filt-B) carries the same `_constituencies: { external_id: [...] }` sentinel on the question row; resolved to `questions.constituency_ids` JSONB.
  *
@@ -198,22 +198,21 @@ export const BASE_APP_SETTINGS = {
     voterApp: true,
     adminApp: true,
     underMaintenance: false,
-    answersLocked: false
+    contestantEditing: 'open'
   },
   notifications: {
     contestantApp: null,
     voterApp: null
   },
-  // The whole root: `entityTypes` is a list, which replaces the default whole, and the voter loaders merge the row over the static settings only. Both entity types are served, so the app names itself for candidates and parties; candidates and organizations alike register by email or code.
+  // The whole root: a stored `servedEntityTypes` replaces the default whole, and the voter loaders merge the row over the static settings only. Both entity types are served, so the app names itself for candidates and parties; candidates and organizations alike register by email or code.
   contestantApp: {
     questions: {
       hideHero: false,
       hideVideo: false
     },
-    entityTypes: ['candidate', 'organization'],
-    registrationModes: {
-      candidate: ['email', 'code'],
-      organization: ['email', 'code']
+    servedEntityTypes: {
+      candidate: { registrationModes: ['email', 'code'] },
+      organization: { registrationModes: ['email', 'code'] }
     }
   }
   // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.
@@ -349,7 +348,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-el-reg',
         name: { en: '[el-reg] Regional Election' },
         short_name: { en: 'Regional' },
-        election_type: 'organization_list_and_independents',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
@@ -360,7 +359,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-el-mun',
         name: { en: '[el-mun] Municipal Election' },
         short_name: { en: 'Municipal' },
-        election_type: 'organization_list_and_independents',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 1,
         multiple_rounds: false,
@@ -530,7 +529,7 @@ export const baseTemplate: Template = {
   // -------------------------------------------------------------- question_categories
 
   // 8 categories total: 1 info + 7 opinion (Base + Opt-A + Opt-B + EL-Reg scoped + CO-Mun-SE-SW scoped + Filt-A + Filt-B).
-  // Scoping refs (resolved by linkJoinTables from `_<sentinel>` shape):
+  // Scoping refs (resolved by linkQuestionScopes from `_<sentinel>` shape):
   //   - QG-Opin-EL-Reg → `_elections` sentinel → election_ids JSONB column.
   //   - QG-Opin-CO-Mun-SE-SW → `_constituencies` sentinel → constituency_ids
   //     JSONB column. Per-question (test-e2e-base-qu-open-filt-mun-ne / -se) entries in `questions` use the same `_constituencies` sentinel.
@@ -893,7 +892,7 @@ export const baseTemplate: Template = {
 
   // ------------------------------------------------------------------- candidates
 
-  // CA-AA-Hidden, CA-AA-Unregistered, CA-Sel-A and CA-Sel-B are seeded unconfirmed, which is what hides them from voters; every other candidate takes the import's confirmed default. Every candidate answers every info question by default; opinion answers vary to support the matching invariants.
+  // Every candidate that states confirmed: false is hidden from voters (the negative controls CA-AA-Hidden and CA-AA-Unregistered, and the rows reserved for the selection, invitation, registration, recovery, scan and admin-flow tests); every other candidate takes the import's confirmed default. Every candidate answers every info question by default; opinion answers vary to support the matching invariants.
   //
   // Perfect-match candidate: CA-AA-Special (also exercises 4-case matrix below).
   // Worst-match candidate: CA-BA-1 (CO-Reg-N) — all base opinions at polar min.

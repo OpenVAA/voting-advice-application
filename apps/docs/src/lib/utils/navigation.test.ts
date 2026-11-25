@@ -35,13 +35,13 @@ function nodeTitled(title: string): NavigationSection | NavigationItemType {
  * The links a rendered navigation node marks as the current page.
  * @param item - The navigation node to render.
  * @param pathname - The path of the page being viewed.
- * @returns The `href` of every link carrying `menu-active`.
+ * @returns The `href` of every link carrying `aria-current="page"`.
  */
 function currentLinks(item: NavigationSection | NavigationItemType, pathname: string): Array<string> {
   const { body } = render(NavigationItem, { props: { item, url: new URL(pathname, SITE) } });
   return [...body.matchAll(/<a\b[^>]*>/g)]
     .map(([tag]) => tag)
-    .filter((tag) => /\sclass="[^"]*\bmenu-active\b/.test(tag))
+    .filter((tag) => /\saria-current="page"/.test(tag))
     .map((tag) => /\shref="([^"]*)"/.exec(tag)?.[1] ?? '');
 }
 

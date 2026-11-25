@@ -41,6 +41,10 @@ export type SelectMultiplePartProps = {
    */
   describedBy?: string;
   /**
+   * Whether `Input` is showing an error, which marks every field `aria-invalid`. @default false
+   */
+  invalid?: boolean;
+  /**
    * Every selectable option. An empty or absent list renders the general error message instead of the dropdown. @default undefined
    */
   options?: ReadonlyArray<AnyChoice>;

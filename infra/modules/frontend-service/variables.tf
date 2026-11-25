@@ -85,6 +85,17 @@ variable "omit_environment" {
   default     = []
 }
 
+variable "identity_provider_type" {
+  description = "The identity provider of bank authentication, signicat-ftn or idura-ftn, or null for none. It selects the entries of task-environment.json that carry an identity_providers list naming it, which then need their values in environment_values and their parameters under parameter_path, and it is the task's PUBLIC_IDENTITY_PROVIDER_TYPE. Null leaves every such entry out of the task."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.identity_provider_type == null || contains(["signicat-ftn", "idura-ftn"], coalesce(var.identity_provider_type, "none"))
+    error_message = "identity_provider_type must be signicat-ftn, idura-ftn or null."
+  }
+}
+
 variable "task_cpu" {
   description = "CPU units of one task."
   type        = number
@@ -132,9 +143,9 @@ variable "deregistration_delay_seconds" {
 }
 
 variable "stop_timeout_seconds" {
-  description = "Seconds between the stop signal and the kill of the container. It must exceed the server's SHUTDOWN_TIMEOUT by at least the analytics forward timeout of 10 seconds plus a margin of 5, so that the shutdown flush of a queue of up to one slice reaches a responsive PostHog before the kill. The flush sends its slices one after another, so a full queue against an unresponsive PostHog can still be cut off."
+  description = "Seconds between the stop signal and the kill of the container. The task definition's precondition enforces its bound: at least the task's SHUTDOWN_TIMEOUT, 30 when the task receives none, plus 15 seconds, the analytics forward timeout of 10 and a margin of 5."
   type        = number
-  default     = 30
+  default     = 45
 
   validation {
     condition     = var.stop_timeout_seconds >= 2 && var.stop_timeout_seconds <= 120

@@ -1,4 +1,10 @@
-import { dynamicSettings, getLocalized, staticSettings, StoredSettingsSchema } from '@openvaa/app-shared';
+import {
+  dynamicSettings,
+  getLocalized,
+  isPlainObject,
+  staticSettings,
+  StoredSettingsSchema
+} from '@openvaa/app-shared';
 import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
 import { parseAnswers } from '$lib/api/utils/parseAnswers';
@@ -45,37 +51,25 @@ import type {
 } from './supabaseDataProvider.type';
 
 /**
- * Whether a value read from a `jsonb` answer is an object with members, as opposed to a list, a scalar or `null`.
- * @param value - The value to narrow.
- * @returns `true` for a non-null, non-list object.
- */
-function isJsonObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * Place the five values `contestant_app_public_config` answers at their storage paths, as a value for `StoredSettingsSchema` to validate.
+ * Place the four values `get_public_app_settings` answers at their storage paths, as a value for `StoredSettingsSchema` to validate.
  *
- * Only `access.contestantApp`, `access.answersLocked`, `contestantApp.entityTypes`, `contestantApp.registrationModes` and `analytics.trackEvents` are copied, whatever else the answer carries. A `null` member is left out: the function answers `null` where nothing is stored, and the schema's members are optional, not nullable.
+ * Only `access.contestantApp`, `access.contestantEditing`, `contestantApp.servedEntityTypes` and `analytics.trackEvents` are copied, whatever else the answer carries. A `null` member is left out: the function answers `null` where nothing is stored, and the schema's members are optional, not nullable.
  * @param answer - The function's answer, narrowed to an object.
- * @returns The unvalidated stored settings, holding at most those five members.
+ * @returns The unvalidated stored settings, holding at most those four members.
  */
-function storedPublicConfig(answer: Record<string, unknown>): Record<string, unknown> {
-  const access = isJsonObject(answer.access) ? answer.access : {};
-  const contestantApp = isJsonObject(answer.contestantApp) ? answer.contestantApp : {};
-  const analytics = isJsonObject(answer.analytics) ? answer.analytics : {};
+function storedPublicSettings(answer: Record<string, unknown>): Record<string, unknown> {
+  const access = isPlainObject(answer.access) ? answer.access : {};
+  const contestantApp = isPlainObject(answer.contestantApp) ? answer.contestantApp : {};
+  const analytics = isPlainObject(answer.analytics) ? answer.analytics : {};
 
   const gates: Record<string, unknown> = {};
   if (access.contestantApp != null) gates.contestantApp = access.contestantApp;
-  if (access.answersLocked != null) gates.answersLocked = access.answersLocked;
-
-  const lists: Record<string, unknown> = {};
-  if (contestantApp.entityTypes != null) lists.entityTypes = contestantApp.entityTypes;
-  if (contestantApp.registrationModes != null) lists.registrationModes = contestantApp.registrationModes;
+  if (access.contestantEditing != null) gates.contestantEditing = access.contestantEditing;
 
   const settings: Record<string, unknown> = {};
   if (Object.keys(gates).length > 0) settings.access = gates;
-  if (Object.keys(lists).length > 0) settings.contestantApp = lists;
+  if (contestantApp.servedEntityTypes != null)
+    settings.contestantApp = { servedEntityTypes: contestantApp.servedEntityTypes };
   if (analytics.trackEvents != null) settings.analytics = { trackEvents: analytics.trackEvents };
   return settings;
 }
@@ -101,7 +95,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
    *
    * Preview is decided by RLS, not by a role check. `authenticated_select_app_settings` returns the row to any grant holder of the project, so a signed-in admin or candidate gets the real voter app; anon, or a signed-in user with no grant, reads zero rows and gets the maintenance page.
    *
-   * A closed project, for a caller who can read no settings row of it (anon, or a signed-in user with no grant there): the answer is the `access`, `analytics` and `contestantApp` roots, each built over the shipped defaults. Five stored values are honoured, read through `contestant_app_public_config` and validated by `StoredSettingsSchema` like a readable row: `access.contestantApp`, the answers lock in `access.answersLocked`, the served entity types in `contestantApp.entityTypes`, the registration matrix in `contestantApp.registrationModes` and the tracking switch in `analytics.trackEvents`, which keeps its shipped default from `dynamicSettings.analytics` when nothing valid is stored. One invalid value in either list leaves the whole `contestantApp` root at the shipped defaults, is reported once with its path, and does not touch `access`. An RPC error or an answer that is not an object throws.
+   * A closed project, for a caller who can read no settings row of it (anon, or a signed-in user with no grant there): the answer is the `access`, `analytics` and `contestantApp` roots, each built over the shipped defaults. Four stored values are honoured, read through `get_public_app_settings` and validated by `StoredSettingsSchema` like a readable row: `access.contestantApp`, how far contestants may edit in `access.contestantEditing`, the served entity types with their registration modes in `contestantApp.servedEntityTypes` and the tracking switch in `analytics.trackEvents`, which keeps its shipped default from `dynamicSettings.analytics` when nothing valid is stored. An invalid `servedEntityTypes` leaves the whole `contestantApp` root at the shipped defaults, is reported once with its path, and does not touch `access`. An RPC error or an answer that is not an object throws.
    *
    * Limitation: nothing else that is stored is honoured for that caller. `access.underMaintenance`, `contestantApp.questions` and every other stored setting stay at their shipped defaults on the sign-in pages of a closed project.
    *
@@ -121,18 +115,18 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       if (rpcError) throw new Error(`getAppSettings: ${rpcError.message}`);
       if (open === true) return {};
       if (open === false) {
-        const { data: publicConfig, error: configError } = await this.supabase.rpc('contestant_app_public_config', {
+        const { data: publicSettings, error: settingsError } = await this.supabase.rpc('get_public_app_settings', {
           p_project_id: this.projectId
         });
-        if (configError) throw new Error(`getAppSettings: ${configError.message}`);
-        if (!isJsonObject(publicConfig)) {
-          throw new Error('getAppSettings: contestant_app_public_config returned a non-object');
+        if (settingsError) throw new Error(`getAppSettings: ${settingsError.message}`);
+        if (!isPlainObject(publicSettings)) {
+          throw new Error('getAppSettings: get_public_app_settings returned a non-object');
         }
 
-        // The same parse a readable row gets, so repeats collapse, the lists take their canonical order and an invalid value is rejected and reported in one place.
+        // The same parse a readable row gets, so repeated modes collapse, they take their canonical order and an invalid value is rejected and reported in one place.
         const closedOutcome = parseWithPartialPreserve<StoredSettings>(
           StoredSettingsSchema,
-          storedPublicConfig(publicConfig),
+          storedPublicSettings(publicSettings),
           { column: 'app_settings.settings' },
           SETTINGS_PARSE_FAILURE_MESSAGE
         );
@@ -144,11 +138,10 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
           access: { ...dynamicSettings.access, ...declared.access, voterApp: false },
           // The whole root over the shipped default for the same reason as `access`: the tracking switch is the only member the function answers.
           analytics: { ...dynamicSettings.analytics, ...declared.analytics },
-          // The whole root for the same reason as `access`. `questions` is the shipped one: the stored one is not read for this caller.
+          // The whole root for the same reason as `access`. `questions` is the shipped one: the stored one is not read for this caller. A stored `servedEntityTypes` replaces the shipped one as a whole.
           contestantApp: {
             ...shipped,
-            entityTypes: declared.contestantApp?.entityTypes ?? shipped.entityTypes,
-            registrationModes: { ...shipped.registrationModes, ...declared.contestantApp?.registrationModes }
+            servedEntityTypes: declared.contestantApp?.servedEntityTypes ?? shipped.servedEntityTypes
           }
         };
       }
@@ -266,8 +259,6 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...obj,
         date: row.election_date ? String(row.election_date) : undefined,
         round: row.current_round ?? undefined,
-        nominationShape: row.election_type,
-        // `subtype` is read from the `subtype` column only. `election_type` holds the nomination shape, which is a separate axis.
         subtype: row.subtype ?? undefined,
         image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: 'elections.image', id: row.id })),
         constituencyGroupIds: (

@@ -11,6 +11,7 @@
 import { renderRecoveryMail, renderSignInMail, resolveMailLocale } from './mailTemplates.ts';
 import { buildSignInLink, confirmPageUrl } from './signInLink.ts';
 import type { RequestLinkRequest, RequestRecoveryRequest } from './contract.ts';
+import type { SignInMailLocale } from './mailTemplates.ts';
 
 /** Whether a mail was handed to the transport. */
 export type LinkIssueOutcome = 'sent' | 'not-sent';
@@ -33,6 +34,8 @@ export interface LogDetail {
 /** A mail ready for the transport. */
 export interface OutgoingMail {
   to: string;
+  /** The locale the mail was rendered in, sent as its `Content-Language`. */
+  locale: SignInMailLocale;
   subject: string;
   text: string;
   html: string;
@@ -60,7 +63,7 @@ export interface LinkIssueDeps {
   sendMail(mail: OutgoingMail): Promise<void>;
   /** Give back the slot the eligibility answer took. */
   release(slot: { projectId: string; address: string; code: string | null }): Promise<void>;
-  /** Record the outcome on a completion record the service role opened. */
+  /** Record the outcome on a completion record the service role opened. Resolves without writing in a database that holds no witness. */
   completeWitness(id: string, outcome: LinkIssueOutcome): Promise<void>;
   /** Write one log line. It never receives an address, a code, a token hash, a link, a locale or a request. */
   log(message: string, detail?: LogDetail): void;
@@ -77,49 +80,66 @@ interface Recipient extends RecoveryEligibility {
 const SAFE_LOG_TOKEN = /^[A-Za-z0-9_.:-]{1,64}$/;
 
 /**
- * What a log line may say about a thrown value.
+ * Issue a sign-in link for a parsed link request, if the deployment and the database both allow it.
  *
- * A failure's message can quote the address or the code it failed on, so it is never logged. The name and the code are kept only when each is a short run of letters, digits and `_ . : -`, which an address cannot be.
+ * The order: (a) the sign-up check, (b) the locale, the confirm page URL and the redirect check, (c) the eligibility question, whose null answer ends the work silently, (d) the passwordless user, the token, the link, the mail, (e) on any failure in (d) the release of the slot, (f) on every path the completion of the request's witness, when it names one.
  *
- * @param error - Whatever was thrown or returned as an error
- * @returns The error's name and code, each present only when it is such a token
+ * @param request - The parsed `request-link` body
+ * @param deps - Every effect, injected
+ * @returns `'sent'` when a mail was handed to the transport, `'not-sent'` otherwise. Never rejects: a failure is logged by its name and code and is an outcome.
  */
-export function describeFailure(error: unknown): LogDetail {
-  const detail: LogDetail = {};
-  if (typeof error !== 'object' || error === null) return detail;
-  const { name, code } = error as { name?: unknown; code?: unknown };
-  if (typeof name === 'string' && SAFE_LOG_TOKEN.test(name)) detail.name = name;
-  if (typeof code === 'string' && SAFE_LOG_TOKEN.test(code)) detail.code = code;
-  return detail;
-}
-
-/** An eligibility answer as the two things it must be, or null: an address that is a non-empty string and one of the two kinds of mail. */
-function eligibility(address: unknown, mail: unknown): RecoveryEligibility | null {
-  if (typeof address !== 'string' || address === '') return null;
-  if (mail !== 'recovery' && mail !== 'sign-in') return null;
-  return { address, mail };
+export async function issueSignInLink(request: RequestLinkRequest, deps: LinkIssueDeps): Promise<LinkIssueOutcome> {
+  return issue({ ...request, app: 'contestant' }, deps, async () => {
+    const address = await deps.requestEligibility({
+      projectId: request.projectId,
+      email: request.email,
+      code: request.code
+    });
+    const settled = eligibility(address, 'sign-in');
+    return settled === null ? null : { ...settled, code: request.code };
+  });
 }
 
 /**
- * Read the database's answer to a recovery request.
+ * Issue the mail a parsed recovery request earns, if the deployment and the database both allow it.
  *
- * @param answer - What `recovery_link_request` returned, of any shape
- * @returns The address and the kind of mail when the answer is an object whose `email` is a non-empty string and whose `mail` is exactly `recovery` or `sign-in`, and null for anything else
+ * The order is that of {@link issueSignInLink}, with the recovery question in the place of (c). For an answer of `recovery`, (d) is a recovery token minted for the account that exists, a link of the type `recovery` and the recovery mail, and no user is created. For an answer of `sign-in`, (d) is what a link request does. The slot is given back with the address alone: a recovery request names no code. Either link lands in the app the request was made in.
+ *
+ * @param request - The parsed `request-recovery` body
+ * @param deps - Every effect, injected
+ * @returns `'sent'` when a mail was handed to the transport, `'not-sent'` otherwise. Never rejects: a failure is logged by its name and code and is an outcome.
  */
-export function readRecoveryEligibility(answer: unknown): RecoveryEligibility | null {
-  if (typeof answer !== 'object' || answer === null) return null;
-  const { email, mail } = answer as { email?: unknown; mail?: unknown };
-  return eligibility(email, mail);
+export async function issueRecoveryLink(
+  request: RequestRecoveryRequest,
+  deps: LinkIssueDeps
+): Promise<LinkIssueOutcome> {
+  return issue(request, deps, async () => {
+    const answer = await deps.recoveryEligibility({ projectId: request.projectId, email: request.email });
+    const settled = typeof answer === 'object' && answer !== null ? eligibility(answer.address, answer.mail) : null;
+    return settled === null ? null : { ...settled, code: null };
+  });
 }
-
-/** Write one log line. A logger that throws cannot turn an outcome into a rejection. */
-function say(deps: LinkIssueDeps, message: string, detail?: LogDetail): void {
+/** One issue from its first check to its witness. Never rejects: a failure is logged by its name and code and is an outcome. */
+async function issue(
+  request: IssueRequest,
+  deps: LinkIssueDeps,
+  settle: () => Promise<Recipient | null>
+): Promise<LinkIssueOutcome> {
+  let outcome: LinkIssueOutcome = 'not-sent';
   try {
-    if (detail === undefined) deps.log(message);
-    else deps.log(message, detail);
-  } catch {
-    // Nothing can be done about a logger that fails, and the outcome does not depend on it.
+    outcome = await attempt(request, deps, settle);
+  } catch (error) {
+    say(deps, 'the link issue ended before eligibility was settled; no link issued', describeFailure(error));
+  } finally {
+    if (request.witness !== null) {
+      try {
+        await deps.completeWitness(request.witness, outcome);
+      } catch (witnessError) {
+        say(deps, 'the completion witness could not be written', describeFailure(witnessError));
+      }
+    }
   }
+  return outcome;
 }
 
 /** The steps up to and including the mail. Rejects only for a failure before a slot is known to be taken. */
@@ -160,9 +180,8 @@ async function attempt(
       type: mail === 'recovery' ? 'recovery' : 'magiclink',
       app: request.app
     });
-    const { subject, text, html } =
-      mail === 'recovery' ? renderRecoveryMail(locale, link) : renderSignInMail(locale, link);
-    await deps.sendMail({ to: address, subject, text, html });
+    const rendered = mail === 'recovery' ? renderRecoveryMail(locale, link) : renderSignInMail(locale, link);
+    await deps.sendMail({ to: address, ...rendered });
     return 'sent';
   } catch (error) {
     say(deps, 'a link could not be issued or mailed; its slot is given back', describeFailure(error));
@@ -175,66 +194,63 @@ async function attempt(
   }
 }
 
-/** One issue from its first check to its witness. Never rejects: a failure is logged by its name and code and is an outcome. */
-async function issue(
-  request: IssueRequest,
-  deps: LinkIssueDeps,
-  settle: () => Promise<Recipient | null>
-): Promise<LinkIssueOutcome> {
-  let outcome: LinkIssueOutcome = 'not-sent';
+/** Write one log line. A logger that throws cannot turn an outcome into a rejection. */
+function say(deps: LinkIssueDeps, message: string, detail?: LogDetail): void {
   try {
-    outcome = await attempt(request, deps, settle);
-  } catch (error) {
-    say(deps, 'the link issue ended before eligibility was settled; no link issued', describeFailure(error));
-  } finally {
-    if (request.witness !== null) {
-      try {
-        await deps.completeWitness(request.witness, outcome);
-      } catch (witnessError) {
-        say(deps, 'the completion witness could not be written', describeFailure(witnessError));
-      }
-    }
+    if (detail === undefined) deps.log(message);
+    else deps.log(message, detail);
+  } catch {
+    // Nothing can be done about a logger that fails, and the outcome does not depend on it.
   }
-  return outcome;
 }
 
 /**
- * Issue a sign-in link for a parsed link request, if the deployment and the database both allow it.
+ * What a log line may say about a thrown value.
  *
- * The order: (a) the sign-up check, (b) the locale, the confirm page URL and the redirect check, (c) the eligibility question, whose null answer ends the work silently, (d) the passwordless user, the token, the link, the mail, (e) on any failure in (d) the release of the slot, (f) on every path the completion of the request's witness, when it names one.
+ * A failure's message can quote the address or the code it failed on, so it is never logged. The name and the code are kept only when each is a short run of letters, digits and `_ . : -`, which an address cannot be.
  *
- * @param request - The parsed `request-link` body
- * @param deps - Every effect, injected
- * @returns `'sent'` when a mail was handed to the transport, `'not-sent'` otherwise. Never rejects: a failure is logged by its name and code and is an outcome.
+ * @param error - Whatever was thrown or returned as an error
+ * @returns The error's name and code, each present only when it is such a token
  */
-export async function issueSignInLink(request: RequestLinkRequest, deps: LinkIssueDeps): Promise<LinkIssueOutcome> {
-  return issue({ ...request, app: null }, deps, async () => {
-    const address = await deps.requestEligibility({
-      projectId: request.projectId,
-      email: request.email,
-      code: request.code
-    });
-    const settled = eligibility(address, 'sign-in');
-    return settled === null ? null : { ...settled, code: request.code };
-  });
+export function describeFailure(error: unknown): LogDetail {
+  const detail: LogDetail = {};
+  if (typeof error !== 'object' || error === null) return detail;
+  const { name, code } = error as { name?: unknown; code?: unknown };
+  if (typeof name === 'string' && SAFE_LOG_TOKEN.test(name)) detail.name = name;
+  if (typeof code === 'string' && SAFE_LOG_TOKEN.test(code)) detail.code = code;
+  return detail;
+}
+
+/** The codes a database call answers when the function it names does not exist: PostgREST's, when its schema cache holds no such function, and Postgres's own. */
+const MISSING_FUNCTION_CODES: ReadonlyArray<string> = ['PGRST202', '42883'];
+
+/**
+ * Whether a database call failed because the function it names does not exist.
+ *
+ * @param error - What the call failed with, of any shape
+ * @returns True only for an object whose own `code` is one of the missing-function codes
+ */
+export function isMissingFunction(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null || !Object.hasOwn(error, 'code')) return false;
+  const { code } = error as { code?: unknown };
+  return typeof code === 'string' && MISSING_FUNCTION_CODES.includes(code);
+}
+
+/** An eligibility answer as the two things it must be, or null: an address that is a non-empty string and one of the two kinds of mail. */
+function eligibility(address: unknown, mail: unknown): RecoveryEligibility | null {
+  if (typeof address !== 'string' || address === '') return null;
+  if (mail !== 'recovery' && mail !== 'sign-in') return null;
+  return { address, mail };
 }
 
 /**
- * Issue the mail a parsed recovery request earns, if the deployment and the database both allow it.
+ * Read the database's answer to a recovery request.
  *
- * The order is that of {@link issueSignInLink}, with the recovery question in the place of (c). For an answer of `recovery`, (d) is a recovery token minted for the account that exists, a link of the type `recovery` and the recovery mail, and no user is created. For an answer of `sign-in`, (d) is what a link request does. The slot is given back with the address alone: a recovery request names no code. Either link names the app the request was made in, when it named one.
- *
- * @param request - The parsed `request-recovery` body
- * @param deps - Every effect, injected
- * @returns `'sent'` when a mail was handed to the transport, `'not-sent'` otherwise. Never rejects: a failure is logged by its name and code and is an outcome.
+ * @param answer - What `recovery_link_request` returned, of any shape
+ * @returns The address and the kind of mail when the answer is an object whose `email` is a non-empty string and whose `mail` is exactly `recovery` or `sign-in`, and null for anything else
  */
-export async function issueRecoveryLink(
-  request: RequestRecoveryRequest,
-  deps: LinkIssueDeps
-): Promise<LinkIssueOutcome> {
-  return issue(request, deps, async () => {
-    const answer = await deps.recoveryEligibility({ projectId: request.projectId, email: request.email });
-    const settled = typeof answer === 'object' && answer !== null ? eligibility(answer.address, answer.mail) : null;
-    return settled === null ? null : { ...settled, code: null };
-  });
+export function readRecoveryEligibility(answer: unknown): RecoveryEligibility | null {
+  if (typeof answer !== 'object' || answer === null) return null;
+  const { email, mail } = answer as { email?: unknown; mail?: unknown };
+  return eligibility(email, mail);
 }

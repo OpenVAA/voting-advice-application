@@ -1,5 +1,6 @@
-import { log } from '@openvaa/app-shared';
-import { hasDefaultLocaleName, ownOrganizationId } from '$lib/contestant/utils/identityProviderAccount';
+import { isPlainObject, log } from '@openvaa/app-shared';
+import { hasDefaultLocaleName } from '$lib/contestant/utils/identityProviderAccount';
+import { isJsonRequest, isSameOriginRequest } from '$lib/server/http/sameOriginJson';
 import type { LocalizedString } from '@openvaa/app-shared';
 import type {
   AddressConfirmationResult,
@@ -15,7 +16,7 @@ import type {
  *
  * The one server endpoint behind the identity provider's success view and the settings page. A request names one intent:
  *
- * - `save` — the names of the organization the identity registered, an address to prove, or both. The names are written to that organization alone, found by the record `identity-callback` keeps in the account's `app_metadata` and never by an id the request names, and only while the organization is unconfirmed, the project's answers are not locked and the name has text in the default locale. The address is handed to the address-confirmation operation of `account-access`, which mails it a link; it becomes the account's address only when that link is opened, and the request is refused unless the account has no proved address yet. The names are saved before the address is asked for, so a later failure leaves them saved. A save that succeeds clears the arrival marker.
+ * - `save` — the names of the organization the identity registered, an address to prove, or both. The names are written to that organization alone, found by the user-level read's `ownOrganizationId`, which the database answers from the identity's registration, and never by an id the request names, and only while the organization is unconfirmed, the project's answers are not locked and the name has text in the default locale. The address is handed to the address-confirmation operation of `account-access`, which mails it a link unless the address is another account's (`in-use`) or an open invitation is addressed to it (`invited`); it becomes the account's address only when that link is opened, and the request is refused unless the account has no proved address yet. The names are saved before the address is asked for, so a later failure leaves them saved. A save that succeeds clears the arrival marker.
  * - `resend` — the link for the pending address, mailed again.
  * - `acknowledge` — the arrival marker cleared, and nothing else.
  *
@@ -30,6 +31,7 @@ import type {
 export const IDENTITY_PROVIDER_REGISTRATION_RESULT = Object.freeze({
   saved: 'saved',
   inUse: 'in-use',
+  invited: 'invited',
   failed: 'failed',
   sent: 'sent',
   acknowledged: 'acknowledged'
@@ -47,16 +49,14 @@ export type IdentityProviderRegistrationReply = {
 
 /** The verified user, as far as the handler reads it. */
 export type VerifiedRegistrationUser = {
-  /** The user's `app_metadata`, which holds the record of the entity the identity registered. */
-  appMetadata: unknown;
+  /** The user's id. */
+  id: string;
 };
 
 /** The effects and facts of one request. */
 export interface IdentityProviderRegistrationDeps {
-  /** The endpoint's own origin, which a request's `Origin` header must equal. */
+  /** The endpoint's own origin, which a request without `Sec-Fetch-Site` must name in its `Origin` header. */
   origin: string;
-  /** The project the application serves. */
-  projectId: string;
   /** The locale a name must have text in. */
   defaultLocale: string;
   /** The locale a confirmation mail is written in. */
@@ -65,7 +65,7 @@ export interface IdentityProviderRegistrationDeps {
   supportedLocales: ReadonlyArray<string>;
   /** The verified user, or `null` when no one is signed in. */
   getVerifiedUser: () => Promise<VerifiedRegistrationUser | null>;
-  /** Whether the project's answers are locked, which closes the names to their editor. */
+  /** Whether the project's answers are locked, its `access.contestantEditing` being `locked`, which closes the names to their editor. */
   getAnswersLocked: () => Promise<boolean>;
   /** The user-level data of the signed-in user. */
   getBasicUserData: () => Promise<BasicUserData>;
@@ -91,28 +91,60 @@ const MAX_EMAIL_LENGTH = 254;
 /** The longest text a name may have in one locale. */
 const MAX_NAME_LENGTH = 200;
 
+/**
+ * Serve one request of the endpoint.
+ *
+ * Never rejects: a read or write that throws is logged by its message alone and answered `failed`.
+ * @param request - The request.
+ * @param deps - The request's effects and facts.
+ * @returns The status and the body to answer with.
+ */
+export async function handleIdentityProviderRegistration(
+  request: Request,
+  deps: IdentityProviderRegistrationDeps
+): Promise<IdentityProviderRegistrationReply> {
+  const { saved, inUse, invited, failed, sent, acknowledged } = IDENTITY_PROVIDER_REGISTRATION_RESULT;
+  try {
+    const verified = await deps.getVerifiedUser();
+    if (!verified) return reply(401, failed);
+    if (!isSameOriginRequest(request.headers, deps.origin) || !isJsonRequest(request.headers))
+      return reply(403, failed);
+
+    const intent = parseIntent(await request.json().catch(() => undefined), deps.supportedLocales);
+    if (!intent) return reply(400, failed);
+
+    if (intent.intent === 'acknowledge') {
+      deps.deleteArrivalMarker();
+      return reply(200, acknowledged);
+    }
+
+    const user = await deps.getBasicUserData();
+
+    if (intent.intent === 'resend') {
+      if (user.address.state !== 'pending') return reply(200, failed);
+      const outcome = await deps.requestAddressConfirmation({ email: user.address.email, locale: deps.locale });
+      return reply(200, outcome === 'sent' ? sent : failed);
+    }
+
+    if (intent.email !== undefined && user.address.state === 'proved') return reply(200, failed);
+    if (intent.name !== undefined && !(await saveNames(deps, user, intent.name, intent.shortName)))
+      return reply(200, failed);
+    if (intent.email !== undefined) {
+      const outcome = await deps.requestAddressConfirmation({ email: intent.email, locale: deps.locale });
+      if (outcome === 'in-use') return reply(200, inUse);
+      if (outcome === 'invited') return reply(200, invited);
+      if (outcome !== 'sent') return reply(200, failed);
+    }
+    deps.deleteArrivalMarker();
+    return reply(200, saved);
+  } catch (e) {
+    log.error(`Identity-provider registration failed: ${e instanceof Error ? e.message : 'No error message'}`);
+    return reply(200, failed);
+  }
+}
+
 function reply(status: IdentityProviderRegistrationReply['status'], result: IdentityProviderRegistrationResult) {
   return { status, body: { result } };
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * Whether a value is a name the endpoint passes on: an object of texts, each in a supported locale and no longer than {@link MAX_NAME_LENGTH}.
- * @param value - The value.
- * @param supportedLocales - The locales a text may be in.
- * @returns `true` when it is.
- */
-function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>): value is LocalizedString {
-  return (
-    isObject(value) &&
-    Object.entries(value).every(
-      ([locale, text]) =>
-        supportedLocales.includes(locale) && typeof text === 'string' && text.length <= MAX_NAME_LENGTH
-    )
-  );
 }
 
 /**
@@ -122,7 +154,7 @@ function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>):
  * @returns The intent, or `null`.
  */
 function parseIntent(body: unknown, supportedLocales: ReadonlyArray<string>): RegistrationIntent | null {
-  if (!isObject(body)) return null;
+  if (!isPlainObject(body)) return null;
   if (body.intent === 'resend' || body.intent === 'acknowledge') return { intent: body.intent };
   if (body.intent !== 'save') return null;
 
@@ -146,15 +178,18 @@ function parseIntent(body: unknown, supportedLocales: ReadonlyArray<string>): Re
 }
 
 /**
- * Whether a request may be served at all: JSON, from the endpoint's own origin.
- * @param request - The request.
- * @param origin - The endpoint's own origin.
- * @returns `true` when both hold.
+ * Whether a value is a name the endpoint passes on: an object of texts, each in a supported locale and no longer than {@link MAX_NAME_LENGTH}.
+ * @param value - The value.
+ * @param supportedLocales - The locales a text may be in.
+ * @returns `true` when it is.
  */
-function isSameOriginJson(request: Request, origin: string): boolean {
-  const contentType = request.headers.get('content-type') ?? '';
+function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>): value is LocalizedString {
   return (
-    request.headers.get('origin') === origin && contentType.split(';')[0].trim().toLowerCase() === 'application/json'
+    isPlainObject(value) &&
+    Object.entries(value).every(
+      ([locale, text]) =>
+        supportedLocales.includes(locale) && typeof text === 'string' && text.length <= MAX_NAME_LENGTH
+    )
   );
 }
 
@@ -164,11 +199,11 @@ function isSameOriginJson(request: Request, origin: string): boolean {
  */
 async function saveNames(
   deps: IdentityProviderRegistrationDeps,
-  appMetadata: unknown,
+  user: BasicUserData,
   name: LocalizedString,
   shortName: LocalizedString | null | undefined
 ): Promise<boolean> {
-  const ownId = ownOrganizationId(appMetadata, deps.projectId);
+  const ownId = user.ownOrganizationId;
   if (ownId === null || !hasDefaultLocaleName(name, deps.defaultLocale)) return false;
   if (await deps.getAnswersLocked()) return false;
   const own = (await deps.getUserEntities()).find((entity) => entity.type === 'organization' && entity.id === ownId);
@@ -178,54 +213,4 @@ async function saveNames(
   if (shortName !== undefined) properties.shortName = shortName;
   const saved = await deps.updateEntityProperties({ target: { type: 'organization', id: ownId }, properties });
   return saved.type === 'saved';
-}
-
-/**
- * Serve one request of the endpoint.
- *
- * Never rejects: a read or write that throws is logged by its message alone and answered `failed`.
- * @param request - The request.
- * @param deps - The request's effects and facts.
- * @returns The status and the body to answer with.
- */
-export async function handleIdentityProviderRegistration(
-  request: Request,
-  deps: IdentityProviderRegistrationDeps
-): Promise<IdentityProviderRegistrationReply> {
-  const { saved, inUse, failed, sent, acknowledged } = IDENTITY_PROVIDER_REGISTRATION_RESULT;
-  try {
-    const verified = await deps.getVerifiedUser();
-    if (!verified) return reply(401, failed);
-    if (!isSameOriginJson(request, deps.origin)) return reply(403, failed);
-
-    const intent = parseIntent(await request.json().catch(() => undefined), deps.supportedLocales);
-    if (!intent) return reply(400, failed);
-
-    if (intent.intent === 'acknowledge') {
-      deps.deleteArrivalMarker();
-      return reply(200, acknowledged);
-    }
-
-    const user = await deps.getBasicUserData();
-
-    if (intent.intent === 'resend') {
-      if (user.addressState !== 'pending' || !user.pendingEmail) return reply(200, failed);
-      const outcome = await deps.requestAddressConfirmation({ email: user.pendingEmail, locale: deps.locale });
-      return reply(200, outcome === 'sent' ? sent : failed);
-    }
-
-    if (intent.email !== undefined && user.addressState === 'proved') return reply(200, failed);
-    if (intent.name !== undefined && !(await saveNames(deps, verified.appMetadata, intent.name, intent.shortName)))
-      return reply(200, failed);
-    if (intent.email !== undefined) {
-      const outcome = await deps.requestAddressConfirmation({ email: intent.email, locale: deps.locale });
-      if (outcome === 'in-use') return reply(200, inUse);
-      if (outcome !== 'sent') return reply(200, failed);
-    }
-    deps.deleteArrivalMarker();
-    return reply(200, saved);
-  } catch (e) {
-    log.error(`Identity-provider registration failed: ${e instanceof Error ? e.message : 'No error message'}`);
-    return reply(200, failed);
-  }
 }

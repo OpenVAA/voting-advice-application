@@ -27,8 +27,8 @@ const LOCALE = 'fi';
 /** Settings of a project that serves candidates and allows them the given registration modes. */
 function settingsFor(modes: Array<string>) {
   return {
-    access: { answersLocked: false },
-    contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: modes, organization: [] } }
+    access: { contestantEditing: 'open' },
+    contestantApp: { servedEntityTypes: { candidate: { registrationModes: modes } } }
   };
 }
 

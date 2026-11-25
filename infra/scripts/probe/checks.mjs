@@ -1,16 +1,9 @@
 /**
- * The probe's check registry. Each check has a stable name, names the one source it reads, and compares what that source
- * served with the expected values read from tracked files. `run` returns `{ pass: true }` or `{ pass: false, finding }`.
+ * The probe's check registry. Each check has a stable name, names the one source it reads, and compares what that source served with the expected values read from tracked files. `run` returns `{ pass: true }` or `{ pass: false, finding }`.
  *
- * A finding is one line of prose an operator can paste into a tracked record, so it passes `pasteSafe`: no `=`, no
- * `@`, no run of 32 or more hexadecimal digits and no secret word directly followed by `:` or `=`. A finding names a
- * number or a boolean as it is, a string in quotes when it is short, is written in a plain alphabet of letters, digits,
- * spaces and `._:/*,+-` and passes the screen, and any other value by its JSON type alone. Of a field that holds an
- * address, a user name or a credential a finding names the field and never a value. Every comparison is aware of the
- * JSON type: a string `"true"` served for the boolean `true` is a finding.
+ * A finding is one line of prose an operator can paste into a tracked record, so it passes `pasteSafe`: no `=`, no `@`, no run of 32 or more hexadecimal digits and no secret word directly followed by `:` or `=`. A finding names a number or a boolean as it is, a string in quotes when it is short, is written in a plain alphabet of letters, digits, spaces and `._:/*,+-` and passes the screen, and any other value by its JSON type alone. Of a field that holds an address, a user name or a credential a finding names the field and never a value. Every comparison is aware of the JSON type: a string `"true"` served for the boolean `true` is a finding.
  *
- * The checks run, and their lines print, in the order of `CHECKS`. `keyModelNote` formats the key model the
- * management source reads; that note is not a check and never changes a verdict.
+ * The checks run, and their lines print, in the order of `CHECKS`. `keyModelNote` formats the key model the management source reads; that note is not a check and never changes a verdict.
  *
  * This module has no side effect on import.
  */

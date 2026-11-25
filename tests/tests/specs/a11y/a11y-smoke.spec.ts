@@ -1,7 +1,7 @@
 /**
  * axe accessibility smoke — the VOTER half of the two-file WCAG 2.1 AA gate.
  *
- * Asserts the 0-violation state across 7 voter-app routes (14 surfaces, both themes) AND a per-rule regression gate (aria-required-parent, list, button-name) so future reintroductions are caught.
+ * Asserts the 0-violation state across 8 voter-app routes (16 surfaces, both themes) AND a per-rule regression gate (aria-required-parent, list, button-name) so future reintroductions are caught.
  *
  * ## This file is one half of a family
  *
@@ -20,14 +20,15 @@
  *   - `answered` — `answeredVoterPage` fixture (full walk to /results landing).
  * The fixtures walk the real voter flow and let the voter context populate electionId/constituencyId via the live UI path, avoiding bypass-of-UI-flow data setup and tightening the trust boundary.
  *
- * Routes (7 distinct entries, all voter-app — note Paraglide's `url` locale strategy means there is NO locale route segment; the paths really are `/`, `/elections`, …):
+ * Routes (8 distinct entries, all voter-app — note Paraglide's `url` locale strategy means there is NO locale route segment; the paths really are `/`, `/elections`, …):
  *   1. home                             (/)              [raw]
  *   2. elections-selector               (/elections)     [raw]
  *   3. constituencies-selector-located  (/constituencies)[raw + settle: walks the elections Continue gate, because /constituencies 307-redirects a goto that carries no electionId]
- *   4. questions                        (/questions)     [located]
- *   5. results                          (/results)       [answered]
- *   6. voter-detail-drawer  (opened from Results)        [answered + settle]
- *   7. results-filter-drawer (filter dialog on Results)  [answered + settle: opens the dialog through the entityFilters fixture and expands EVERY filter row, because the filter bodies are lazily imported]
+ *   4. privacy                          (/privacy)       [raw: `e2e/base` configures no analytics, so the analytics section and the `DataConsent` control are not rendered in the scanned state and are not covered]
+ *   5. questions                        (/questions)     [located]
+ *   6. results                          (/results)       [answered]
+ *   7. voter-detail-drawer  (opened from Results)        [answered + settle]
+ *   8. results-filter-drawer (filter dialog on Results)  [answered + settle: opens the dialog through the entityFilters fixture and expands EVERY filter row, because the filter bodies are lazily imported]
  *
  * Each scan: (navigate) → optional reach-the-target `settle` → REQUIRED `contentTestId` wait (the LAST gate; NEVER a network-idle settle) → `awaitAnimationsSettled` → COLLECT the raw-i18n-key verdict (`collectRawI18nKeyFindings`, F2) → run AxeBuilder.withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze() → report BOTH verdicts: the raw-key one softly, then the per-rule 0-violation gate + global 0-violation gate.
  *
@@ -98,6 +99,13 @@ const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
       await page.getByTestId(testIds.voter.elections.continue).click();
       await page.waitForURL(/\/constituencies/, { timeout: TIMEOUTS.slowPage });
     }
+  },
+  {
+    // The privacy page. The `e2e/base` dataset configures no analytics, so the page renders neither its analytics section nor the `DataConsent` control here: this entry covers the page's privacy text and its return button only.
+    name: 'privacy',
+    fixture: 'raw',
+    routeId: 'Privacy',
+    contentTestId: testIds.voter.privacy.content
   },
   {
     // `locatedVoterPage` walks Home → Elections → Constituencies → the /questions intro and STOPS there, so the start button IS the intro page's data-driven content and no extra settle is needed.

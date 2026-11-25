@@ -246,17 +246,17 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     console.info(`[NF-01] seed step elapsed: ${elapsedMs} ms (observability only — not asserted)`);
 
     // 1a. Row writes stay BATCHED: three fixed passes (bulk_import →
-    //     importAnswers → linkJoinTables) no matter how many rows the template
+    //     importAnswers → linkQuestionScopes) no matter how many rows the template
     //     produced. Splitting a pass per-table or per-row fails here.
     expect(ops.bulkImport).toBe(1);
     expect(ops.importAnswers).toBe(1);
-    expect(ops.linkJoinTables).toBe(1);
+    expect(ops.linkQuestionScopes).toBe(1);
 
     // 1a-ii. The link pass's OWN round-trips, newly visible at this boundary.
-    //     `linkJoinTables` is a pure planner (`planLinks`, no I/O) plus two prototype helpers, so calls a monolithic version would make INSIDE itself are counted here by name. They are budgeted rather than allow-listed, because every one of them is a function of the template alone. The constituency join tables cost the link pass nothing: `bulk_import` writes them in Pass 1.
+    //     `linkQuestionScopes` is a pure planner (`planLinks`, no I/O) plus two prototype helpers, so calls a monolithic version would make INSIDE itself are counted here by name. They are budgeted rather than allow-listed, because every one of them is a function of the template alone. The constituency join tables cost the link pass nothing: `bulk_import` writes them in Pass 1.
     //       - one `updateJsonbRefs` per JSONB plan entry (one per scoped question_category — the default template scopes all four);
     //       - one `resolveExternalId` per external_id actually looked up: one per category→election reference.
-    //     An N+1 introduced into the link pass now fails HERE, at the pass that owns it, instead of hiding inside a single `linkJoinTables` tick.
+    //     An N+1 introduced into the link pass now fails HERE, at the pass that owns it, instead of hiding inside a single `linkQuestionScopes` tick.
     expect(ops.updateJsonbRefs).toBe(rows.question_categories.length);
     expect(ops.resolveExternalId).toBe(rows.question_categories.length);
 
@@ -267,7 +267,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     expect(ops.uploadPortrait).toBe(rows.candidates.length);
     expect(ops.updateCandidateImage).toBe(rows.candidates.length);
 
-    // 1c. app_settings: one merge_jsonb_column RPC per row, and AT MOST one
+    // 1c. app_settings: one `updateAppSettings` call per row, and AT MOST one
     //     question-external-id lookup for the entire payload (the cheap pre-walk gate).
     expect(ops.updateAppSettings).toBe(rows.app_settings?.length ?? 0);
     expect(ops.selectQuestionExternalIds).toBeLessThanOrEqual(1);
@@ -452,7 +452,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
 const BUDGETED_WRITE_OPS = new Set([
   'bulkImport',
   'importAnswers',
-  'linkJoinTables',
+  'linkQuestionScopes',
   // The link pass's two I/O helpers. Each carries its own explicit count assertion in 1a-ii above — present here because they are budgeted, not because they are exempt.
   'resolveExternalId',
   'updateJsonbRefs',

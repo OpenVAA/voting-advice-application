@@ -7,10 +7,8 @@ domain         = "staging.openvaa.org"
 # Confirmed against the SigningHostedZone that SES returns for the identity after the first apply.
 dkim_signing_hosted_zone = "dkim.amazonses.com"
 
-# The organisation's own DMARC record already reports to this receiver, and the receiver already
-# authorises the subdomain (both observed in public DNS on 2026-10-11). Replace it, or set it to null
-# for no reports.
+# The organisation's own DMARC record already reports to this receiver, and the receiver already authorises the subdomain. Replace it, or set it to null for no reports.
 dmarc_report_address = "dmarc_agg@vali.email"
 
-# Other SES identities in eu-north-1 already share this account-level setting (seen 2026-10-21), so this root does not own it.
+# Other SES identities in eu-north-1 already share this account-level setting, so this root does not own it.
 manage_account_suppression = false

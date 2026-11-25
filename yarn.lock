@@ -1693,6 +1693,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@openvaa/repo-gates@workspace:scripts":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/repo-gates@workspace:scripts"
+  dependencies:
+    "@openvaa/shared-config": "workspace:^"
+    "@types/node": "catalog:"
+    typescript: "catalog:"
+    vite: "catalog:"
+    vitest: "catalog:"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/shared-config@workspace:^, @openvaa/shared-config@workspace:packages/shared-config":
   version: 0.0.0-use.local
   resolution: "@openvaa/shared-config@workspace:packages/shared-config"
@@ -6955,6 +6967,7 @@ __metadata:
     "@changesets/changelog-github": "npm:^1.0.1"
     "@changesets/cli": "npm:^3.0.3"
     "@faker-js/faker": "catalog:"
+    "@openvaa/data": "workspace:^"
     "@openvaa/dev-seed": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     "@openvaa/supabase-types": "workspace:^"
@@ -6977,6 +6990,7 @@ __metadata:
     turbo: "npm:^2.8.17"
     vite: "catalog:"
     vitest: "catalog:"
+    zod: "catalog:"
   dependenciesMeta:
     esbuild:
       built: true

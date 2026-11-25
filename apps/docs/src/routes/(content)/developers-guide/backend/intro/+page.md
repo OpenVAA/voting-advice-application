@@ -22,19 +22,19 @@ The SQL lives in two directories under `apps/supabase/supabase/`. `schema/` is t
 | `schema/`     | The current view of the schema. Hand-edited SQL files, numbered by concern. The Supabase CLI never reads this directory, because `config.toml` sets `schema_paths = []`.                                                                                                                                                         |
 | `migrations/` | What a database is built from: the frozen baseline `00001_initial_schema.sql`, then one appended migration per schema change, named by the next five-digit version, an underscore and a name, such as `00002_add_example.sql`. `supabase db reset` applies them in version order. A migration is never edited once it is listed. |
 
-Beside them, `migrations.manifest.json` lists every migration in version order with the sha256 of its bytes.
+Beside them, `migrations.manifest.json` lists every migration in version order with the sha256 of its bytes. Its `baseline.commit` names the commit whose `schema/` the baseline was generated from; that commit carries the tag `schema-baseline-00001`. The baseline is the only migration so far, so the next schema change is `00002`.
 
 The [`schema/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/schema) files are grouped by their number:
 
-| Files       | Contents                                                                                                             |
-| ----------- | -------------------------------------------------------------------------------------------------------------------- |
-| `000`–`011` | enum types, role settings, utility functions and validation functions                                                |
-| `100`–`108` | content tables: tenancy, elections, entities, questions, nominations, answers, app settings, feedback and admin jobs |
-| `200`       | indexes                                                                                                              |
-| `300`–`303` | auth tables, auth functions, RLS policies and column grants                                                          |
-| `400`       | storage buckets, storage policies and storage cleanup                                                                |
-| `500`–`505` | external ids, bulk operations, email helpers, entity functions, admin functions and question functions               |
-| `900`       | helper functions for the pgTAP tests                                                                                 |
+| Files       | Contents                                                                                                                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `000`–`011` | enum types, role settings, utility functions and validation functions                                                        |
+| `100`–`108` | content tables: tenancy, elections, entities, questions, nominations, answers, app settings, feedback and admin jobs         |
+| `200`       | indexes                                                                                                                      |
+| `300`–`305` | auth tables, auth functions, RLS policies, column grants, terms-of-use acceptances and invitations                           |
+| `400`       | storage buckets, storage policies and storage cleanup                                                                        |
+| `500`–`506` | external ids, bulk operations, email helpers, entity functions, admin functions, question functions and invitation functions |
+| `900`       | helper functions for the pgTAP tests                                                                                         |
 
 A schema change is one commit with three parts:
 
@@ -42,9 +42,9 @@ A schema change is one commit with three parts:
 2. Write the same change as a new migration, `migrations/<version>_<name>.sql`. The version is the next five-digit number after the highest in the manifest, and the name is lower-case letters, digits and underscores. A file that `supabase migration new` names with a timestamp is renamed to the next number.
 3. Add the migration's line, with its sha256 from `shasum -a 256 <file>`, to the end of `migrations.manifest.json`.
 
-Then run `yarn check:schema-equivalence`, which builds one database from `schema/` and one from `migrations/` and fails when the two differ. It needs Docker and is not part of `yarn lint:check`. Run `yarn db:reset` to recreate the local database from the migrations, and `yarn db:types` to regenerate the TypeScript types (see [Generated types](/developers-guide/backend/generated-types)); commit the types with the same change. Read the migration you wrote before you commit: nothing else shows a policy or grant that changed by accident.
+Then run `yarn check:schema-equivalence`, which builds one database from `schema/` and one from `migrations/` and fails when the two differ. It needs Docker, and runs in CI in the `sql-lint` job. Run `yarn db:reset` to recreate the local database from the migrations, and `yarn db:types` to regenerate the TypeScript types (see [Generated types](/developers-guide/backend/generated-types)); commit the types with the same change. Read the migration you wrote before you commit: nothing else shows a policy or grant that changed by accident.
 
-`yarn assert:schema-migration-parity`, which `yarn lint:check` runs, fails when a listed migration's bytes change, when a migration has no manifest line, and when versions repeat, go down or leave a gap. `yarn schema:regenerate` writes nothing: it refuses and prints these steps with the next file name. The check proves that the listed migrations are unchanged, not that either directory is correct.
+`yarn assert:migrations-frozen`, which `yarn lint:check` runs, fails when a listed migration's bytes change, when a migration has no manifest line, and when versions repeat, go down or leave a gap. The check proves that the listed migrations are unchanged, not that either directory is correct.
 
 The two storage buckets are created by the migration. A deployment's own rows, such as its project, are written by `infra/scripts/bootstrap.sql`.
 
@@ -58,7 +58,7 @@ A frontend deployment serves exactly one project, named by `PUBLIC_PROJECT_ID` i
 PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001
 ```
 
-The Supabase adapter in the frontend has no fallback for this variable. If it is unset, or is not a canonical uuid, the adapter throws when it is constructed instead of reading some other project's rows. The `identity-callback` Edge Function reads the same variable to decide which project a candidate who registers through bank authentication joins.
+The Supabase adapter in the frontend has no fallback for this variable. If it is unset, or is not a canonical uuid, the adapter throws when it is constructed instead of reading some other project's rows. Of the Edge Functions, `account-access` and `send-email` read it and refuse a request for another project; `identity-callback` takes the project from the request.
 
 ## Tests and SQL lint
 

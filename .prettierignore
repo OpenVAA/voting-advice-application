@@ -71,7 +71,7 @@ apps/supabase/supabase/snippets/
 # becomes forced again; the symptom is `npx prettier --check "**/*.sql"` exiting 2 rather than 1.
 # --- Applied migrations ---
 # Every file under `apps/supabase/supabase/migrations/` is an applied migration, and
-# `scripts/assert-schema-migration-parity.mjs` compares their bytes. A formatter that rewrote one
+# `scripts/assert-migrations-frozen.mjs` compares their bytes. A formatter that rewrote one
 # would produce a red gate no edit could repair, so the whole directory is named and a migration
 # added to it is out of scope on arrival. The hand-edited sources under
 # `apps/supabase/supabase/schema/` stay in scope and are prettier-clean.
@@ -84,6 +84,7 @@ apps/supabase/supabase/migrations/
 # beside them stays in scope.
 infra/scripts/bootstrap.sql
 infra/scripts/check-seed.sql
+apps/supabase/supabase/tests/database/00z-invitation-link-witness.test.sql
 infra/scripts/check-deployment-settings.sql
 infra/scripts/grant-project-admin.sql
 infra/scripts/grant-smoke-contestant.sql

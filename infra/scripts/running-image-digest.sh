@@ -2,38 +2,27 @@
 #
 # running-image-digest.sh -- Print the digest of the image an ECS service runs now.
 #
-# A plan of the staging AWS root needs `image_digest`, which no variable file holds. The deploy job of the pipeline
-# passes the digest it has just pushed. Every other plan, a pull request's, a destroy's or one made by hand, passes the
-# digest the service runs now, so that its diff shows the infrastructure change alone and no change of image. This
-# script reads that digest, and changes nothing.
+# A plan of the staging AWS root needs `image_digest`, which no variable file holds. The deploy job of the pipeline passes the digest it has just pushed. Every other plan, a pull request's, a destroy's or one made by hand, passes the digest the service runs now, so that its diff shows the infrastructure change alone and no change of image. This script reads that digest, and changes nothing.
 #
 # What it does, in this order:
-#   1. Reads the task definition the service names, with `aws ecs describe-services`, and prints
-#      `running_task_definition=<arn>`.
-#   2. Reads the image of that definition's first container, with `aws ecs describe-task-definition` and a `--query`
-#      that selects the image field alone. No other field of the definition is read, so the task's environment never
-#      leaves the CLI call.
-#   3. When the image ends in `@sha256:<digest>`, prints `running_image_reference=digest` and takes that digest. A
-#      service whose definition was registered before the switch to digests names `<host>/<repository>:<tag>`: then it
-#      prints `running_image_reference=tag` and reads the tag's digest from the registry with
-#      `aws ecr describe-images`.
-#   4. Checks the digest's form, `sha256:` and 64 lower-case hexadecimal characters, and prints
-#      `running_image_digest=<digest>`.
-#   A step that fails prints one `failed=<step>` line, the step being describe-services, describe-task-definition,
-#   image-form, describe-images or digest-form, and exits 1. A service that does not exist, or names no task
-#   definition, fails at describe-services; a tag the registry does not hold fails at describe-images.
+#   1. Reads the task definition the service names, with `aws ecs describe-services`, and prints `running_task_definition=<arn>`.
+#   2. Reads the image of that definition's first container, with `aws ecs describe-task-definition` and a `--query` that selects the image field alone. No other field of the definition is read, so the task's environment never leaves the CLI call.
+#   3. When the image ends in `@sha256:<digest>`, prints `running_image_reference=digest` and takes that digest. A service whose definition was registered before the switch to digests names `<host>/<repository>:<tag>`: then it prints `running_image_reference=tag` and reads the tag's digest from the registry with `aws ecr describe-images`.
+#   4. Checks the digest's form, `sha256:` and 64 lower-case hexadecimal characters, and prints `running_image_digest=<digest>`.
+#
+# A step that fails prints one `failed=<step>` line, the step being describe-services, describe-task-definition, image-form, describe-images or digest-form, and exits 1. A service that does not exist, or names no task definition, fails at describe-services; a tag the registry does not hold fails at describe-images.
 #
 # Usage (from a shell signed in to the account, with the AWS CLI on the PATH):
+#
+#   ```sh
 #   infra/scripts/running-image-digest.sh --cluster <name> --service <name>
+#   ```
 #
 #   --cluster <name>  REQUIRED. The ECS cluster, the staging AWS root's output cluster_name.
 #   --service <name>  REQUIRED. The ECS service, the staging AWS root's output service_name.
 #   -h, --help        Print this header and exit 0.
 #
-# For a caller: read the status directly, never through a pipe. Status 0 prints three lines,
-# `running_task_definition=`, `running_image_reference=digest|tag` and `running_image_digest=`. Status 1 prints the
-# lines of the steps that passed and one `failed=` line. Progress and the error code of a failed AWS call go to
-# standard error; the error's message does not, because it can name the caller's session.
+# For a caller: read the status directly, never through a pipe. Status 0 prints three lines, `running_task_definition=`, `running_image_reference=digest|tag` and `running_image_digest=`. Status 1 prints the lines of the steps that passed and one `failed=` line. Progress and the error code of a failed AWS call go to standard error; the error's message does not, because it can name the caller's session.
 #
 # Environment: AWS_REGION (default eu-north-1) is the region of the service and of the registry.
 #
@@ -55,46 +44,16 @@ REGION="${AWS_REGION:-eu-north-1}"
 export AWS_REGION="$REGION"
 
 SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_NAME="running-image-digest.sh"
+USAGE_LINE="--cluster <name> --service <name> | -h | --help"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$(dirname "$SCRIPT_PATH")/../../scripts/lib/cli.sh"
+# shellcheck source=../../scripts/lib/aws.sh
+. "$(dirname "$SCRIPT_PATH")/../../scripts/lib/aws.sh"
 
 CLUSTER=""
 SERVICE=""
 WORK=""
-
-usage_line() {
-  echo "usage: running-image-digest.sh --cluster <name> --service <name> | -h | --help" >&2
-}
-
-print_header() {
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$SCRIPT_PATH"
-}
-
-usage_error() {
-  echo "running-image-digest.sh: $1" >&2
-  usage_line
-  exit 2
-}
-
-note() {
-  echo "running-image-digest.sh: $1" >&2
-}
-
-fail_step() {
-  echo "failed=$1"
-  [ -z "${2:-}" ] || note "$2"
-  exit 1
-}
-
-is_digest() {
-  local re='^sha256:[0-9a-f]{64}$'
-  [[ "$1" =~ $re ]]
-}
-
-# The error code of a failed AWS call, read from its standard error, or "unknown".
-error_code() {
-  local code
-  code="$(awk 'match($0, /An error occurred \([A-Za-z][A-Za-z0-9.]*\)/) { print substr($0, RSTART + 19, RLENGTH - 20); exit }' "$1")"
-  printf '%s' "${code:-unknown}"
-}
 
 on_exit() {
   [ -z "$WORK" ] || rm -rf "$WORK"

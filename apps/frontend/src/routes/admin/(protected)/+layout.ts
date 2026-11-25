@@ -2,7 +2,8 @@
  * Load the data for a logged-in admin user.
  * - No session in the page data redirects to the login page
  * - A read of the user data that answers nothing asks the load's client whether a session is left: none redirects to the login page, as a session ended elsewhere; one left, or no answer, ends on the error page, and nobody is signed out
- * - A user the server load did not admit is signed out and redirected to the login page, before anything is read. Admission is the server load's match of the verified session's grants against `ADMIN_GRANTS`. When the sign-out fails it ends on the error page, unless, in the browser, no session is left, which redirects as a sign-out that worked does. In the browser, the sign-out is announced to the browser's other tabs, `start` before it and `end` once it has settled, worked or failed, so that the tabs it signs out name another tab as the cause; and a sign-out that ended the session removes the Contestant App's drafts before the redirect
+ * - A user the server load did not admit, and found at home in the Contestant App alone, is redirected to the Contestant App's home, still signed in
+ * - Any other user the server load did not admit is signed out and redirected to the login page, before anything is read. Admission is the server load's match of the verified session's grants against `ADMIN_GRANTS`. When the sign-out fails it ends on the error page, unless, in the browser, no session is left, which redirects as a sign-out that worked does. In the browser, the sign-out is announced to the browser's other tabs, `start` before it and `end` once it has settled, worked or failed, so that the tabs it signs out name another tab as the cause; and a sign-out that ended the session removes the Contestant App's drafts before the redirect
  * - The user data is the server load's during server rendering. In the browser it is read again with the tab's own client, so that a read that fails there is answered as above
  * - The gate the server load decided is passed on to the layout, which renders its view in place of the page
  */
@@ -35,7 +36,10 @@ export async function load({ data, fetch, parent }) {
     );
   }
 
-  if (!data.admitted) return await handleError('userNotAuthorized');
+  if (!data.admitted) {
+    if ('home' in data) return redirect(303, buildRoute({ route: 'ContestantAppHome', locale: lang }));
+    return await handleError('userNotAuthorized');
+  }
 
   const userData = browser ? await getUserData({ fetch, client: supabaseClient }, { parent }) : data.user;
 
@@ -73,7 +77,7 @@ export async function load({ data, fetch, parent }) {
     if (browser) announceLogout('end');
     // Asked in the browser alone. There the writer's sign-out calls the logout endpoint first, whose server client clears the cookies when the auth service's answer is what failed, and the tab's client reads them gone. The universal client on the server writes no cookies, so after its own failed sign-out it answers no session while the browser still holds one, and a redirect would come straight back.
     const sessionEnded = signedOut || (browser && (await dataWriter.isSessionGone()));
-    if (!sessionEnded) error(403, { message: t('error.403') });
+    if (!sessionEnded) error(503, { message: t('error.default') });
     // Removed here rather than by a subscriber: this load can run before the Admin App's layout has mounted, on a link from a page with no subscriber, and the client reports no sign-out that failed. The server cannot reach the browser's storage.
     if (browser) discardContestantDrafts();
     redirect(

@@ -4,7 +4,7 @@
     "constituencies": {
       "ingress": {
         "candidate": "Sélectionnez la circonscription dans laquelle vous vous présentez.",
-        "organization": "Sélectionnez la circonscription dans laquelle votre parti se présente. Une seule circonscription peut être sélectionnée pour chaque élection ; si votre parti se présente dans plusieurs, veuillez contacter l’assistance."
+        "organization": "Sélectionnez les circonscriptions dans lesquelles votre parti se présente. Vous pouvez en sélectionner plusieurs pour chaque élection."
       },
       "noElection": {
         "candidate": "Aucune élection à laquelle vous pouvez vous présenter n’a lieu dans cette circonscription.",
@@ -13,7 +13,7 @@
       "severalKept": "Vous avez plusieurs candidatures à cette élection. Elles sont conservées telles quelles ; vous pourrez en modifier les détails à l’étape suivante.",
       "title": {
         "candidate": "Quelle est votre circonscription ?",
-        "organization": "Quelle est la circonscription de votre parti ?"
+        "organization": "Dans quelles circonscriptions votre parti se présente-t-il ?"
       }
     },
     "delete": "Supprimer",

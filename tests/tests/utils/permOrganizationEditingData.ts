@@ -1,7 +1,5 @@
-import path from 'path';
-import { TEST_CANDIDATE_PASSWORD } from './testCredentials';
-import { TESTS_DIR } from './testsDir';
-import type { EntityGrantTarget } from './supabaseAdminClient';
+import { permEditor } from '../setup/shared/registerAndStoreSession';
+import type { PermEditor } from '../setup/shared/registerAndStoreSession';
 
 /**
  * The organization-editing dataset as the suite names it: the rows of the `perm-organization-editing` template a test addresses, what they are seeded with, and the three users that edit them.
@@ -15,9 +13,6 @@ import type { EntityGrantTarget } from './supabaseAdminClient';
 
 /** The `external_id` prefix of every row of the dataset, and the prefix its teardown deletes. */
 export const ORGANIZATION_EDITING_PREFIX = 'e2e-perm-organization-editing-';
-
-/** The password of all three editors: the suite's shared test password. */
-export const ORGANIZATION_EDITING_PASSWORD = TEST_CANDIDATE_PASSWORD;
 
 // ---------------------------------------------------------------------------
 // The confirmed organization: visible to voters, its two names frozen.
@@ -38,19 +33,11 @@ export const CONFIRMED_ORGANIZATION_SHORT_NAME = Object.freeze({
   fi: 'ORA-FI'
 });
 
-/** The entity the confirmed organization's editor is registered on. */
-export const CONFIRMED_ORGANIZATION_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'organization',
-  externalId: CONFIRMED_ORGANIZATION_EXTERNAL_ID
-});
-
-/** Email of the confirmed organization's editor. */
-export const CONFIRMED_ORGANIZATION_EDITOR_EMAIL = `${CONFIRMED_ORGANIZATION_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the confirmed organization's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const CONFIRMED_ORGANIZATION_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-organization-editing-confirmed.json'
+/** The confirmed organization's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const CONFIRMED_ORGANIZATION_EDITOR = permEditor(
+  'organization',
+  CONFIRMED_ORGANIZATION_EXTERNAL_ID,
+  'perm-organization-editing-confirmed.json'
 );
 
 // ---------------------------------------------------------------------------
@@ -65,19 +52,11 @@ export const UNCONFIRMED_ORGANIZATION_NAME = Object.freeze({
   fi: '[OR-B] Vahvistamaton puolue'
 });
 
-/** The entity the unconfirmed organization's editor is registered on. */
-export const UNCONFIRMED_ORGANIZATION_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'organization',
-  externalId: UNCONFIRMED_ORGANIZATION_EXTERNAL_ID
-});
-
-/** Email of the unconfirmed organization's editor. */
-export const UNCONFIRMED_ORGANIZATION_EDITOR_EMAIL = `${UNCONFIRMED_ORGANIZATION_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the unconfirmed organization's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const UNCONFIRMED_ORGANIZATION_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-organization-editing-unconfirmed.json'
+/** The unconfirmed organization's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const UNCONFIRMED_ORGANIZATION_EDITOR = permEditor(
+  'organization',
+  UNCONFIRMED_ORGANIZATION_EXTERNAL_ID,
+  'perm-organization-editing-unconfirmed.json'
 );
 
 // ---------------------------------------------------------------------------
@@ -113,17 +92,16 @@ export const UNCONFIRMED_CANDIDATE_NAME = Object.freeze({
   lastName: 'Candidate'
 });
 
-/** The entity the unconfirmed candidate's editor is registered on. */
-export const UNCONFIRMED_CANDIDATE_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'candidate',
-  externalId: UNCONFIRMED_CANDIDATE_EXTERNAL_ID
-});
-
-/** Email of the unconfirmed candidate's editor. */
-export const UNCONFIRMED_CANDIDATE_EDITOR_EMAIL = `${UNCONFIRMED_CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the unconfirmed candidate's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const UNCONFIRMED_CANDIDATE_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-organization-editing-candidate.json'
+/** The unconfirmed candidate's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const UNCONFIRMED_CANDIDATE_EDITOR = permEditor(
+  'candidate',
+  UNCONFIRMED_CANDIDATE_EXTERNAL_ID,
+  'perm-organization-editing-candidate.json'
 );
+
+/** The dataset's three editors, as its setup stores their sessions and its teardown removes them. */
+export const EDITORS: ReadonlyArray<PermEditor> = Object.freeze([
+  CONFIRMED_ORGANIZATION_EDITOR,
+  UNCONFIRMED_ORGANIZATION_EDITOR,
+  UNCONFIRMED_CANDIDATE_EDITOR
+]);

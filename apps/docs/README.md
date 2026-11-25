@@ -53,6 +53,7 @@ Run them from the repository root with `yarn workspace @openvaa/docs <script>`.
 | `generate:navigation`     | Compares `src/lib/navigation.config.ts` with the pages and updates titles and items                                |
 | `validate:links`          | Checks the links; with `--check` it only reports (`--only <class,…>`, `--scope <route>`)                           |
 | `check:research-quotes`   | Checks that the research quotes are unchanged (`--base <rev>`, `--component-base <rev>`)                           |
+| `test:unit`               | Unit tests of the docs scripts (vitest, the `server` project)                                                      |
 | `lint`                    | ESLint (part of the root `yarn lint:check`)                                                                        |
 | `lint:full`               | Prettier check and ESLint                                                                                          |
 | `check`, `typecheck`      | svelte-check                                                                                                       |

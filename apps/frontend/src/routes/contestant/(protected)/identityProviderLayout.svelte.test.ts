@@ -1,7 +1,7 @@
 /**
  * The Contestant App's protected layout and the identity provider's view it renders, mounted for real against a fake context and a fake page.
  *
- * A rerun load replaces the layout's `data` in place. The cases do the same: the layout's props are held in `$state`, a case assigns a new `data` object and flushes. The fake context's `user` is the user of the load data the layout was last given, which is how the real context derives it, and the page's data is that load data, which is where the view reads the arrival marker.
+ * A rerun load replaces the layout's `data` in place. The cases do the same: the layout's props are held in `$state`, a case assigns a new `data` object and flushes. The fake context is the shared `fakeContestantContext`; its `user` is the user of the load data the layout was last given, which is how the real context derives it, and the page's data is that load data, which is where the view reads the arrival marker.
  *
  * What this file holds:
  *
@@ -13,21 +13,25 @@
 
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import type { BasicUserData } from '$lib/api/base/dataWriter.type';
+import type { AddressStateName } from '$lib/contestant/utils/identityProviderAccount';
 
-const { box, context, navigating } = vi.hoisted(() => {
-  const box = { data: {} as { user?: unknown } };
-  const context = {
-    t: (key: string) => key,
+const { context, box } = fakeContestantContext(
+  {
+    /** The load data the layout was last given. */
+    data: {} as { user?: unknown },
+    appSettings: { analytics: { trackEvents: false } },
+    answersLocked: false
+  },
+  (held) => ({
     logout: async () => undefined,
     setPassword: async () => ({ type: 'success' }),
     clearEntryFlow: () => undefined,
     acceptTermsOfUse: async () => ({ type: 'success' }),
     userData: { init: () => undefined },
-    appSettings: { analytics: { trackEvents: false } },
-    answersLocked: false,
     // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
-    analyticsGate: {
+    analyticsPolicy: {
       current: {
         projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
         globalPrivacyControl: false,
@@ -36,12 +40,14 @@ const { box, context, navigating } = vi.hoisted(() => {
       }
     },
     get user() {
-      return box.data.user;
+      return held.current.data.user;
     }
-  };
-  const navigating = { from: null, to: null, type: null, willUnload: null, delta: null, complete: null };
-  return { box, context, navigating };
-});
+  })
+);
+
+const { navigating } = vi.hoisted(() => ({
+  navigating: { from: null, to: null, type: null, willUnload: null, delta: null, complete: null }
+}));
 
 vi.mock('$lib/contexts/contestant/contestantContext.svelte', () => ({ getContestantContext: () => context }));
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
@@ -63,7 +69,7 @@ vi.mock('$app/state', async (importOriginal) => ({
   navigating,
   page: {
     get data() {
-      return box.data;
+      return box.current.data;
     }
   }
 }));
@@ -93,7 +99,7 @@ const TERMS = '[data-testid="terms-of-use-submit"]';
 const PAGE = '[data-testid="page"]';
 
 /** User-level data of an identity-provider account with no password. */
-function providerUser(addressState: BasicUserData['addressState']): BasicUserData {
+function providerUser(addressState: AddressStateName): BasicUserData {
   const proved = addressState === 'proved';
   return {
     id: 'user-1',
@@ -103,10 +109,14 @@ function providerUser(addressState: BasicUserData['addressState']): BasicUserDat
     settings: {},
     termsOfUseAccepted: null,
     passwordSet: false,
-    addressState,
-    pendingEmail: addressState === 'pending' ? 'waiting@example.org' : null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    address:
+      addressState === 'pending'
+        ? { state: 'pending', email: 'waiting@example.org' }
+        : addressState === 'none'
+          ? { state: 'none', pendingTaken: false }
+          : { state: 'proved' },
+    ownOrganizationId: null,
+    ownOrganizationUnnamed: false
   };
 }
 
@@ -123,7 +133,7 @@ afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
   (document.activeElement as HTMLElement | null)?.blur?.();
-  box.data = {};
+  box.set({ data: {} });
 });
 
 /**
@@ -131,7 +141,7 @@ afterEach(() => {
  * @returns The element it was mounted into and `rerun` for replacing its load data as a rerun load does.
  */
 function render(data: object): { target: HTMLElement; rerun: (next: object) => void } {
-  box.data = data as { user?: unknown };
+  box.set({ data: data as { user?: unknown } });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const props = $state({ data: data as never, children: page });
@@ -144,7 +154,7 @@ function render(data: object): { target: HTMLElement; rerun: (next: object) => v
   return {
     target,
     rerun: (next) => {
-      box.data = next as { user?: unknown };
+      box.set({ data: next as { user?: unknown } });
       props.data = next as never;
       flushSync();
     }

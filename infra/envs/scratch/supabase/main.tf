@@ -1,16 +1,9 @@
-# The rehearsal root of the staging Supabase root, on a throwaway project. It uses the same module as
-# the persistent project's root, so an import here rehearses that one: key discovery, the first plan,
-# the settings apply, the second plan and the destroy refusal are all seen here first. Each rehearsal
-# creates a new throwaway project by hand and writes its ref, organisation, name and region into
-# terraform.tfvars. The state is local and ignored by Git, and a plan against a state that lacks the
-# project imports it rather than creating one. When the rehearsal ends, the operator deletes the
-# project in the dashboard and removes this root's state, which holds its settings in clear text.
+# The rehearsal root of the staging Supabase root, on a throwaway project. It uses the same module as the persistent project's root, so an import here rehearses that one: key discovery, the first plan, the settings apply, the second plan and the destroy refusal are all seen here first. Each rehearsal creates a new throwaway project by hand and writes its ref, organisation, name and region into terraform.tfvars. The state is local and ignored by Git, and a plan against a state that lacks the project imports it rather than creating one. When the rehearsal ends, the operator deletes the project in the dashboard and removes this root's state, which holds its settings in clear text.
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
-    # Exact: the runbook's stop rules on decoding and import rest on a reading of this version's
-    # source. Raise it together with a new reading of those paths.
+    # Exact: the runbook's stop rules on decoding and import rest on a reading of this version's source. Raise it together with a new reading of those paths.
     supabase = {
       source  = "supabase/supabase"
       version = "= 1.11.0"
@@ -23,9 +16,7 @@ terraform {
 # The provider reads SUPABASE_ACCESS_TOKEN from the environment of the operator's shell.
 provider "supabase" {}
 
-# The project already exists and is only ever imported. Against a state that lacks it, this block
-# plans an import instead of a creation, and a ref that names no project fails the plan. Once the
-# project is in state, the block plans nothing.
+# The project already exists and is only ever imported. Against a state that lacks it, this block plans an import instead of a creation, and a ref that names no project fails the plan. Once the project is in state, the block plans nothing.
 import {
   to = module.supabase.supabase_project.this
   id = var.project_ref
@@ -46,10 +37,14 @@ module "supabase" {
   smtp_user                = var.smtp_user
   smtp_password            = var.smtp_password
   public_project_id        = var.public_project_id
+
+  identity_provider                 = var.identity_provider
+  identity_provider_decryption_jwks = var.identity_provider_decryption_jwks
+  identity_callback_server_secret   = var.identity_callback_server_secret
 }
 
 output "project_ref" {
-  description = "Reference of the imported throwaway project."
+  description = "Reference of the imported project."
   value       = module.supabase.project_ref
 }
 

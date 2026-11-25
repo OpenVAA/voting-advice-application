@@ -4,22 +4,22 @@
 
 Shows the basic information of the entity the user edits, a candidate or an organization, some of which is editable.
 
-- The identity section holds the entity's name fields: a candidate's first and last name, or an organization's name and short name by locale. They are editable while the entity is unconfirmed and answers are not locked, and locked otherwise; the section says which. The locked info questions follow them.
+- The identity section holds the entity's name fields: a candidate's first and last name, or an organization's name and short name by locale. They are editable while the entity is unconfirmed and answers are not locked, and locked otherwise; the section says which, and the sentence of a locked name links to an email to support. The locked info questions follow them.
 - The editable section holds the image, an organization's colour and the editable info questions. They are locked only while answers are locked. Beside the thumbnail of an image that is shown, in the same row, a Trash icon button stages its removal, which a save stores; it is not shown while answers are locked.
 - One Save button stores every edit of the page. A stored save leads on: to the questions list when the profile is then complete and an opinion question is unanswered, and to the entity's home otherwise. The button's label says which before the save, from the saved data with the draft. A save that fails, and one in which the backend refuses a changed name because the entity has been confirmed, stay on the page: each puts its own sentence into the message region above the button, which is in the document from the start so that the message is announced, and focus returns to the button. A save that fails first reads the answers lock alone, from the stored settings: when answers are locked, the page's data is read again and the note that answers can no longer be edited says why in place of the failure, and focus moves to the Return button that replaces Save. Otherwise no load runs again, because a load that reruns after a fault can sign the user out or replace the page, and the page keeps its edits.
 
-Which fields a profile has, and every text that differs between the two entity types, is read from the descriptor of the selected entity's type. Whether a name field is editable is one rule for both types. Both are read from the list of the user's entities, so they are right on the server and before the entity's data is in the store.
+Which fields a profile has, and every text that differs between the two entity types, is read from the descriptor of the selected entity's type, or is a text whose key the page builds from that type. Whether a name field is editable is one rule for both types. Both are read from the list of the user's entities, so they are right on the server and before the entity's data is in the store.
 
 ### Settings
 
 - `entities.hideIfMissingAnswers`: Affects message shown. The key read is that of the selected entity's type.
-- `access.answersLocked`: Locks every field and removes the Save button.
+- `access.contestantEditing`: `locked` locks every field and removes the Save button.
 -->
 
 <script lang="ts">
   import { getCustomData, isLocalizedString, log } from '@openvaa/app-shared';
   import { tick } from 'svelte';
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { NotEditableNote } from '$contestant/components/notEditableNote';
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
@@ -29,19 +29,20 @@ Which fields a profile has, and every text that differs between the two entity t
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
   import { SuccessMessage } from '$lib/components/successMessage';
   import { hasNomination, profileSaveTarget, taskStateOf, unansweredQuestionsOf } from '$lib/contestant/tasks';
-  import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
+  import { entityDescriptorOf, servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
   import { isHiddenIfMissingAnswers } from '$lib/contestant/utils/hideIfMissingAnswers';
   import { isNameEditable, isRequiredNameMissing, nameState, requiredNameLocale } from '$lib/contestant/utils/nameRule';
   import { opinionQuestionsStateOf } from '$lib/contestant/utils/opinionQuestionsState';
-  import { readAnswersLocked } from '$lib/contestant/utils/readAnswersLocked';
+  import { lockedAfterRefusedSave, rereadPageData } from '$lib/contestant/utils/rereadPageData';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { ContactSupport } from '$lib/dynamic-components/contactSupport';
   import type { LocalizedAnswer } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { AnyQuestionVariant } from '@openvaa/data';
-  import type { EditableEntityProps } from '$lib/api/base/dataWriter.type';
   import type { IdentityFieldDescriptor } from '$lib/contestant/utils/entityDescriptor';
   import type { NameState } from '$lib/contestant/utils/nameRule';
+  import type { TranslationKey } from '$types';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -74,8 +75,10 @@ Which fields a profile has, and every text that differs between the two entity t
   // The entity's type and the name rule
   ////////////////////////////////////////////////////////////////////
 
-  /** Everything that differs by entity type. Read from the selected entity, which is known on the server and before the store holds the entity's data. */
+  /** What differs by entity type beyond a text's key. Read from the selected entity, which is known on the server and before the store holds the entity's data. */
   const descriptor = $derived(entityDescriptorOf(contestantCtx.selectedEntity?.type));
+  /** The type whose texts the page shows: each text that differs by type alone has a key ending in it. */
+  const textType = $derived(servedEntityTypeOf(contestantCtx.selectedEntity?.type));
 
   /** The selected entity as the name rule reads it: confirmed once a save of its names was refused. */
   const nameRuleEntity = $derived.by(() => {
@@ -90,16 +93,17 @@ Which fields a profile has, and every text that differs between the two entity t
   /** The id of the sentence above the name fields, which is their description. */
   const NAME_NOTE_ID = 'profile-name-note';
 
-  /** Which of the descriptor's two name sentences a name state shows. A name locked by the answers lock has none: the page's note explains it. */
+  /** Which of the type's two name sentences a name state shows. A name locked by the answers lock has none: the page's note explains it. */
   const NAME_SENTENCE: Record<NameState, 'editable' | 'locked' | undefined> = {
     editable: 'editable',
     'locked-confirmed': 'locked',
     'locked-answers': undefined
   };
 
-  const nameSentence = $derived.by(() => {
+  /** The sentence above the name fields, if the name state shows one: which of the two it is and its translation key. */
+  const nameSentence = $derived.by((): { member: 'editable' | 'locked'; key: TranslationKey } | undefined => {
     const member = NAME_SENTENCE[currentNameState];
-    return member ? t(descriptor.nameSentence[member]) : undefined;
+    return member ? { member, key: `dynamic.contestantAppBasicInfo.identity.name.${member}.${textType}` } : undefined;
   });
 
   /** The name fields with one field for each locale, which stand on their own, and those with a single line, which are rows of the group the locked info questions are in. */
@@ -131,8 +135,8 @@ Which fields a profile has, and every text that differs between the two entity t
         questionsReady: contestantCtx.questionsReady,
         questionCount: contestantCtx.opinionQuestions.length
       }) === 'none'
-        ? descriptor.instructionsNoQuestions
-        : descriptor.instructions
+        ? `contestantApp.basicInfo.instructionsNoQuestions.${textType}`
+        : `contestantApp.basicInfo.instructions.${textType}`
     )
   );
 
@@ -218,47 +222,67 @@ Which fields a profile has, and every text that differs between the two entity t
 
   /** The label of the button that removes the image, which names a candidate's portrait or an organization's logo, while an image is shown and can be removed. */
   const imageRemoveLabel = $derived(
-    contestantCtx.answersLocked || !userData.current?.entity.image ? undefined : t(descriptor.imageRemoveLabel)
+    contestantCtx.answersLocked || !userData.current?.entity.image
+      ? undefined
+      : t(`contestantApp.basicInfo.removeImage.${textType}`)
   );
 
   /**
    * Stage the removal of the image. The Trash goes with the image, so focus moves to the image field's upload button.
    */
   async function handleImageRemove(): Promise<void> {
-    userData.setImage(null);
+    stageImage(null);
     await tick();
     editableFields
       ?.querySelector<HTMLElement>('[data-testid="profile-image-upload"] [data-testid="input-image-upload"]')
       ?.focus();
   }
 
+  /**
+   * Stage an image of the loaded entity, of whichever type it is, or the removal of the stored one.
+   */
+  function stageImage(image: ImageWithFile | null): void {
+    const type = userData.current?.entity.type;
+    if (type) userData.setProperty(type, 'image', image);
+  }
+
   function handleImageInputChange(value: unknown): void {
     if (!value) {
-      userData.resetImage();
+      userData.resetProperty('image');
       return;
     }
     const image = value as ImageWithFile;
-    userData.setImage(image);
+    stageImage(image);
   }
 
   /**
-   * Hand an edited name field to the store, as a plain value: a multilingual `Input` emits the object it edits in place.
+   * Hand an edited name field to the store, as a plain value: a multilingual `Input` emits the object it edits in place. A field is staged only as a name of the loaded entity's own type: a candidate's first or last name as text, an organization's name or short name by locale.
    */
   function handleNameChange(property: IdentityFieldDescriptor['property'], value: unknown): void {
-    userData.setProperty(property, $state.snapshot(value) as Exclude<EditableEntityProps[typeof property], undefined>);
+    const type = userData.current?.entity.type;
+    const plain = $state.snapshot(value);
+    if (type === 'candidate' && (property === 'firstName' || property === 'lastName')) {
+      if (typeof plain === 'string') userData.setProperty(type, property, plain);
+    } else if (type === 'organization' && (property === 'name' || property === 'shortName')) {
+      if (plain === null || isLocalizedString(plain)) userData.setProperty(type, property, plain);
+    }
   }
 
   /**
-   * Hand an edited colour to the store: the one colour the user chose, or none.
+   * Hand an edited colour to the store: the one colour the user chose, or none. Only an organization has a colour.
    */
   function handleColorChange(value: unknown): void {
-    userData.setProperty('color', typeof value === 'string' ? { normal: value } : null);
+    if (userData.current?.entity.type !== 'organization') return;
+    userData.setProperty('organization', 'color', typeof value === 'string' ? { normal: value } : null);
   }
 
   function handleQuestionInputChange({ value, question }: { value: unknown; question: AnyQuestionVariant }): void {
     const answer = { value } as LocalizedAnswer;
     userData.setAnswer(question.id, answer);
   }
+
+  /** The label the page's logged failures start with. */
+  const LOG_LABEL = '[Contestant app profile page]';
 
   /**
    * Save every edit of the page, and lead on to the next page when it was stored. A save that was not stored whole stays on the page and says why.
@@ -276,7 +300,8 @@ Which fields a profile has, and every text that differs between the two entity t
       return undefined;
     });
     if (result?.type === 'success') {
-      if (result.listedPropertySaved) await rereadEntityList();
+      // The list of the user's entities is read again so that it shows what is stored: the menu's title, and whether the entity is confirmed. A failure of the re-read is not a failed save.
+      if (result.listedPropertySaved) await rereadPageData(LOG_LABEL);
       status = 'success';
       // The target is asked only now, of the state the save and the list's re-read left.
       goto(getRoute.current(profileSaveTarget(contestantCtx.taskState).route));
@@ -284,18 +309,12 @@ Which fields a profile has, and every text that differs between the two entity t
     }
     if (result?.type === 'nameRefused') {
       nameRefusedFor = contestantCtx.selectedEntity?.id;
-      saveMessage = { outcome: 'name-refused', text: t(descriptor.nameRefusedMessage) };
-      await rereadEntityList();
+      saveMessage = { outcome: 'name-refused', text: t(`contestantApp.error.nameLocked.${textType}`) };
+      await rereadPageData(LOG_LABEL);
       status = 'idle';
     } else {
       // The database refuses the write without naming the lock where a row it hides answers with no row, so the lock is asked of the stored settings alone, and the page's data is read again only when answers are locked.
-      if ((await readAnswersLocked({ locale: contestantCtx.locale })) === true) {
-        await invalidateAll().catch((e) => {
-          log.error(`[Contestant app profile page] Error reading the page data again: ${e?.message}`);
-        });
-        // What the re-read brought has reached the settings after one tick.
-        await tick();
-      }
+      await lockedAfterRefusedSave({ refusedByLock: false, locale: contestantCtx.locale, logLabel: LOG_LABEL });
       if (contestantCtx.answersLocked) {
         // The note says why the save was not stored, so no failure is said.
         status = 'idle';
@@ -307,15 +326,6 @@ Which fields a profile has, and every text that differs between the two entity t
     // The button was disabled while the save ran, which can cost it its focus. While answers are locked the Return button stands in its place.
     await tick();
     actions?.querySelector<HTMLElement>('[data-testid="profile-submit"], [data-testid="profile-return"]')?.focus();
-  }
-
-  /**
-   * Read the page's loads again, so that the list of the user's entities shows what is stored: the menu's title, and whether the entity is confirmed. It follows a save that has been stored and is never part of it, so a failure here is not a failed save. It is logged, and handled where the failure of a load is.
-   */
-  async function rereadEntityList(): Promise<void> {
-    await invalidateAll().catch((e) => {
-      log.error(`[Contestant app profile page] Error reading the page data again: ${e?.message}`);
-    });
   }
 
   /**
@@ -355,7 +365,7 @@ Which fields a profile has, and every text that differs between the two entity t
           {t('contestantApp.common.isHiddenBecauseMissing')}
         {/if}
       </NotEditableNote>
-    {:else if contestantCtx.profileComplete}
+    {:else if contestantCtx.taskState.allComplete}
       <SuccessMessage inline message={t('contestantApp.common.fullyCompleted')} />
     {/if}
   {/snippet}
@@ -370,9 +380,16 @@ Which fields a profile has, and every text that differs between the two entity t
     data-entity-type={contestantCtx.selectedEntity?.type}
     data-name-state={currentNameState}
     data-entity-loaded={entityLoaded ? 'true' : 'false'}>
-    <h2 class={subheadingClass}>{t(descriptor.identityTitle)}</h2>
-    {#if nameSentence}
-      <p class="mx-md" id={NAME_NOTE_ID} data-testid="contestant-profile-name-note">{nameSentence}</p>
+    <h2 class={subheadingClass}>{t(`dynamic.contestantAppBasicInfo.identity.title.${textType}`)}</h2>
+    {#if nameSentence?.member === 'locked'}
+      <ContactSupport
+        sentence={nameSentence.key}
+        action="email"
+        id={NAME_NOTE_ID}
+        class="mx-md text-start"
+        data-testid="contestant-profile-name-note" />
+    {:else if nameSentence}
+      <p class="mx-md" id={NAME_NOTE_ID} data-testid="contestant-profile-name-note">{t(nameSentence.key)}</p>
     {/if}
     {#if lockedInfoQuestions.length}
       <p class="mx-md mt-md">{t('dynamic.contestantAppBasicInfo.identity.lockedInfo')}</p>
@@ -424,7 +441,7 @@ Which fields a profile has, and every text that differs between the two entity t
             locked
             onShadedBg
             disableMultilingual
-            placeholder={t(descriptor.lockedInfoPlaceholder)} />
+            placeholder={t(`dynamic.contestantAppBasicInfo.identity.emptyPlaceholder.${textType}`)} />
         {/each}
       </InputGroup>
     {/if}
@@ -441,7 +458,7 @@ Which fields a profile has, and every text that differs between the two entity t
       <!-- Image upload: a candidate's portrait or an organization's logo. The error surface is Input's own <ErrorMessage>, which already carries the shared `input-error` testid; tests address it scoped inside this instance's `profile-image-upload` container. That container is what disambiguates this Input from the others on the page, so no wrapper element is needed to carry a testid of its own. The Trash is in the thumbnail's row, before the upload button. -->
       <Input
         type="image"
-        label={t(descriptor.imageLabel)}
+        label={t(`common.entityImage.${textType}`)}
         info={descriptor.imageInfo ? t(descriptor.imageInfo) : undefined}
         value={userData.current?.entity.image}
         onChange={handleImageInputChange}

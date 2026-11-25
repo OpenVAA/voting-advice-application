@@ -15,11 +15,11 @@ Every page that shows or edits an entity lives under two route params, below the
 /contestant/<entityType>/<entityId>/preview
 ```
 
-The settings page is not among them: the account's address and its password belong to the user, not to an entity. It has one address, `/contestant/settings` (`ContestantAppSettings`), directly below the `(protected)` group, behind the same gates as every protected page, and a user with no entity, one or several reaches it alike. The menu of every signed-in page, outside the group of an entity's items, the entity's home and the "nothing to edit" view link to it, and its Return leads to the app root. The settings address under an entity, `/contestant/<entityType>/<entityId>/settings`, still answers: its server load redirects it with 307 to `/contestant/settings`.
+The settings page is not among them: the account's address and its password belong to the user, not to an entity. It has one address, `/contestant/settings` (`ContestantAppSettings`), directly below the `(protected)` group, behind the same gates as every protected page, and a user with no entity, one or several reaches it alike. The menu of every signed-in page, outside the group of an entity's items, the entity's home and the "nothing to edit" view link to it, and its Return leads to the app root.
 
 Both params are guarded by a matcher, so a malformed segment is answered with SvelteKit's own 404 and never reaches a load:
 
-- `entityType` by [`servedEntityType`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/params/servedEntityType.ts), which accepts `candidate` and `organization`. It checks the vocabulary, not what the project serves: `contestantApp.entityTypes` is read by the load.
+- `entityType` by [`servedEntityType`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/params/servedEntityType.ts), which accepts `candidate` and `organization`. It checks the vocabulary, not what the project serves: `contestantApp.servedEntityTypes` is read by the load.
 - `entityId` by [`uuid`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/params/uuid.ts), which accepts the canonical textual form of a uuid.
 
 The route keys are in `ROUTE` (see [Routing](/developers-guide/frontend/routing)). `ContestantAppEntityHome` is an entity's home, and `ContestantAppHome` is the app root, `/contestant`, which carries no entity. A route built with `getRoute.current(...)` on an entity page keeps the current page's two params, so a link between the pages of one entity does not have to name it.
@@ -64,7 +64,7 @@ A request for an entity page without the entity, such as `/contestant/profile` o
 - A user who edits exactly one entity is redirected to the same page under that entity.
 - Any other user is redirected to the app root.
 
-Every target is built from a route key. A question segment that is not a plain id leads to the app root, and the query string of the request is not carried over, so nothing of the requested path reaches the target unchecked.
+Every target is built from a route key, and the query string of the request is not carried over, so nothing of the requested path reaches the target unchecked. A question segment that is not a plain id is rejected by the matcher, so such a path is a 404.
 
 ## An entity the user may not edit
 
@@ -96,9 +96,9 @@ The home, the nominations view, the profile, the questions pages and the preview
 | Image               | Portrait.                                | Logo.                                                                  |
 | Colour              | Not offered.                             | A hex colour, typed or chosen with the colour picker.                  |
 
-**When a name is editable** is one rule for every name field of both types, `nameState` in [`nameRule.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/contestant/utils/nameRule.ts): the fields are editable while the entity is unconfirmed and `access.answersLocked` is off, and read-only otherwise. A confirmed entity's names are read-only whether or not answers are locked, and the nominations lock plays no part. The database holds the same line by itself: once an entity is confirmed it refuses a changed name or short name from the entity's own editor; see [Row-level security and column grants](/developers-guide/backend/authentication#row-level-security-and-column-grants).
+**When a name is editable** is one rule for every name field of both types, `nameState` in [`nameRule.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/contestant/utils/nameRule.ts): the fields are editable while the entity is unconfirmed and `access.contestantEditing` is not `'locked'`, and read-only otherwise. A confirmed entity's names are read-only whether or not answers are locked, and the nominations lock plays no part. The database holds the same line by itself: once an entity is confirmed it refuses a changed name or short name from the entity's own editor; see [Row-level security and column grants](/developers-guide/backend/authentication#row-level-security-and-column-grants).
 
-An entity can be confirmed while its user has the profile open. The next save of a changed name is then refused by the database. The page's other edits of that save are stored, the name fields turn read-only, and a message above the Save button says so. `ContestantUserDataState.save()` reports this outcome as `nameRefused`.
+An entity can be confirmed while its user has the profile open. The next save of a changed name is then refused by the database. The page's other edits of that save are stored, the name fields turn read-only, and a message above the Save button says so. `EntityUserDataState.save()` reports this outcome as `nameRefused`.
 
 **The colour is stored as chosen and adjusted when read.** The profile stores `{ normal: '#rrggbb' }` and nothing else, and the field shows that value. An editor's colour therefore replaces both theme colours: a dark-theme colour stored with the entity, for example by an administrator or an import, is removed when the editor saves a colour, and the dark-theme colour is then derived from the new one. Wherever the colour is painted, in the preview and in the voter app, it first passes through `ensureColors` in [`ensureColors.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/utils/color/ensureColors.ts), which adjusts it for contrast, derives the dark-theme colour when none is stored and drops a value that is not a colour. A page must therefore read the editable colour from the user data (`userData.current?.entity.color`) and never from `selectedEntity` or `entities`, which hold the adjusted one.
 
@@ -124,9 +124,10 @@ The editors' prompt is the one they have for any navigation. Leaving the profile
 
 ## The database functions
 
-The frontend reads the user's entities through three functions, described in full in [Which entity a user is](/developers-guide/backend/authentication#which-entity-a-user-is):
+The frontend reads the user's entities and account through five functions, described in full in [Which entity a user is](/developers-guide/backend/authentication#which-entity-a-user-is):
 
-- `get_user_entities(p_project_id)` lists the entities the caller edits, as one JSON object with an `entities` array, beside `password_set`, which says whether the caller's own account holds a password.
+- `get_user_entities(p_project_id)` lists the entities the caller edits, as one JSON object with an `entities` array and, for a caller who registered a party through the identity provider, its id under `organization`.
+- `get_caller_account_state()` answers two facts about the caller's own account: `password_set`, whether it holds a password, and `pending_email_taken`, whether the address awaiting confirmation on it is now another account's.
 - `get_entity_user_data(p_project_id, p_entity_type, p_entity_id)` returns the editable row of one of them, or no row.
 - `get_entity_nominations(p_project_id, p_entity_type, p_entity_id)` returns the nominations of one of them as a JSON array, empty for an entity with none, or `NULL` for an entity the caller does not edit.
 

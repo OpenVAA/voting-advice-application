@@ -25,14 +25,12 @@ under destructuring**.
 
 The translation function `t`; the route helper `getRoute` (still a `{ current }` handle); `darkMode`;
 `answers`; the `userData` object (whose internal `$state` getters are accessed by property); and the
-lifecycle functions (`logout`, `preregister`, `startEvent`, `*Countdown`). On the contestant
+lifecycle functions (`logout`, `track`, `*Countdown`). On the contestant
 context also the two nomination functions, `setEntityNominations` and `getNominationParentOptions`:
 each is a stable arrow function that reads the selected entity when it is called, so a destructured
-copy acts on the entity the route names at that moment. And the seven functions of the entry flow:
-`checkInvitationCode`, `requestSignInLink` and `requestPasswordRecovery`, which forward to the data
-writer, and `holdEntryCode`, `sendEntryLink`, `resendEntryLink` and `clearEntryFlow`, which write the
-flow state (see `entryFlow` below). A screen calls `sendEntryLink`, never the two link forwards, so
-that the request is held for the "email sent" screen.
+copy acts on the entity the route names at that moment. And the five functions of the entry flow:
+`checkInvitationCode`, which forwards to the data writer, and `holdEntryCode`, `sendEntryLink`,
+`resendEntryLink` and `clearEntryFlow`, which write the flow state (see `entryFlow` below).
 
 ```ts
 const { t, getRoute } = getVoterContext();
@@ -45,7 +43,7 @@ Getters returning `$state`- or `$derived`-backed values that change over time. `
 previously stable `{ current }` handles, now bare reactive fields). Plus: `selectedElections`,
 `selectedConstituencies`, `opinionQuestions`, `infoQuestions`, `infoQuestionCategories`,
 `opinionQuestionCategories`, `questionBlocks`, `unansweredOpinionQuestions`,
-`unansweredRequiredInfoQuestions`, `requiredInfoQuestions`, `answersLocked`, `profileComplete`,
+`unansweredRequiredInfoQuestions`, `requiredInfoQuestions`, `answersLocked`,
 `electionsSelectable`, `constituenciesSelectable`, `matches`, `nominationsAvailable`,
 `resultsAvailable`, `idTokenClaims`, `isPreregistered`, `isAuthenticated`, `preregistrationElections`,
 `preregistrationNominations`. On the contestant context also `entryFlow`, what the entry screens
@@ -59,11 +57,13 @@ also the three user-level accessors derived from page data: `user`, `entities` a
 `homeRoute`, the built route "home" leads to from the current page: that entity's home when the
 route params name one, the app root otherwise. They sit beside `userData`, which stays a stable
 reference; read them as `contestantCtx.X`. Two more on the contestant context: `nominationsLocked`,
-which follows the app setting `access.nominationsLocked` as `answersLocked` follows its own key, and
+which, like `answersLocked`, is derived from the one app setting `access.contestantEditing`
+(`getContestantEditing` of `@openvaa/app-shared`): `answersLocked` while it is `locked`,
+`nominationsLocked` while it is `nominationsLocked` or `locked`, and
 `questionsReady`, which is `true` once the question lists were rolled up for a loaded entity with a
 selected election — the fact that tells an empty list that means "no questions" from one that means
 "not loaded yet". The lists themselves are scoped to the loaded entity's type and are empty while no
-entity is loaded. They are empty too for a loaded entity with no selected election. And five that
+entity is loaded. They are empty too for a loaded entity with no selected election. And two that
 hold the entity's tasks:
 
 - `nominations` — derived from page data: the list the entity-level load read for the entity on the
@@ -73,16 +73,18 @@ hold the entity's tasks:
   `taskStateOf` of `$lib/contestant/tasks`: whether the entity has a nomination from `nominations`,
   and the counts of unanswered questions from the store and the question lists, read only while the
   store holds the entity the route names and `questionsReady` is true.
-- `tasks` — the state's own `tasks` member: the entity's tasks in order, each with a status that is
-  `undefined` while the facts it rests on are not loaded.
-- `nextStep` — the state's own `nextStep` member: the first incomplete task and its route,
-  `undefined` when there is none and while the state is not known.
-- `previewOpen` — the state's own `previewOpen` member: false while the state is not known.
 
-`profileComplete` is the state's `allComplete`: false for an entity with no nomination and while the
-state is not known.
+The context has no member of its own for a part of the state: read each off it, as
+`contestantCtx.taskState.X`, inside the tracking scope.
 
-`taskState`, `tasks` and `nextStep` are **value-replacing**: `taskStateOf` returns a fresh object on
+- `taskState.tasks` — the entity's tasks in order, each with a status that is `undefined` while the
+  facts it rests on are not loaded.
+- `taskState.nextStep` — the first incomplete task and its route, `undefined` when there is none and
+  while the state is not known.
+- `taskState.previewOpen` — false while the state is not known.
+- `taskState.allComplete` — false for an entity with no nomination and while the state is not known.
+
+`taskState` and its members `tasks` and `nextStep` are **value-replacing**: `taskStateOf` returns a fresh object on
 every call, so the reference changes on every change and a `$derived(contestantCtx.taskState)` read
 alias follows it. `dataRoot` is not (§ 5). A value-replacing accessor is still never destructured.
 Nothing is decided from a list's length before the state's `known` member is true: an empty list
@@ -104,17 +106,16 @@ re-invoke the getter inside the tracking scope each time, preserving the reactiv
 ## 2. Canonical pattern
 
 Reproduced verbatim from
-`apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte:63-70`:
+`apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte:46-52`:
 
 ```ts
 const voterCtx = getVoterContext();
-const { answers, getRoute, startEvent, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = voterCtx;
+const { answers, getRoute, track, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = voterCtx;
 // appSettings is value-replacing: a $derived read alias is safe and correct.
 const appSettings = $derived(voterCtx.appSettings);
-// dataRoot is identity-stable: read `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope, never through an intermediate $derived alias …
+// dataRoot is identity-stable: read `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope, never through an intermediate $derived alias (referential equality would suppress downstream notification and the cold/direct-URL snapshot would stay empty). See CLAUDE.md "Context Destructuring Rule" and its stable-reference carve-out.
 // Local aliases for template readability:
 const elections = $derived(voterCtx.selectedElections);
-const constituencies = $derived(voterCtx.selectedConstituencies);
 ```
 
 **Read what this example does NOT contain.** There is no `const dataRoot = $derived(voterCtx.dataRoot)`

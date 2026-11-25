@@ -137,7 +137,7 @@ describe('ForgotPasswordScreen', () => {
     expect(sendEntryLink).not.toHaveBeenCalled();
     expect(goto).not.toHaveBeenCalled();
     expect(target.querySelector('[data-testid="forgot-password-email-error"]')?.textContent).toContain(
-      'contestantApp.login.emailRequired'
+      'common.account.emailRequired'
     );
   });
 });

@@ -18,6 +18,7 @@
  * Likert-5 choices for opinion questions. Mirrors the e2e/base shape so the latent-factor emitter (ordinal dispatch) treats perm-* opinion questions identically.
  */
 
+import { mergeSettings } from '@openvaa/app-shared';
 import type { Json } from '@openvaa/supabase-types';
 import type {
   CandidatesFixedRow,
@@ -102,26 +103,29 @@ export const MINIMAL_BASE_APP_SETTINGS = {
     voterApp: true,
     adminApp: true,
     underMaintenance: false,
-    answersLocked: false
+    contestantEditing: 'open'
   },
   // Both notifications are stated off, so no perm dataset that derives from this base shows a notification modal; only perm-per-app-notifications overrides them. Each perm setup replaces the stored settings row whole with its own template's settings, so nothing carries over from the setup before it.
   notifications: { voterApp: { show: false }, contestantApp: { show: false } },
   analytics: { trackEvents: false },
-  // The whole contestant app root: candidates only are served, and the registration matrix is the E2E base dataset's, email or code for candidates and organizations alike. The organizations' row decides nothing while the type is not served.
+  // The whole contestant app root: candidates only are served, and they register by email or code, as in the E2E base dataset.
   contestantApp: {
     questions: {
       hideHero: false,
       hideVideo: false
     },
-    entityTypes: ['candidate'],
-    registrationModes: {
-      candidate: ['email', 'code'],
-      organization: ['email', 'code']
+    servedEntityTypes: {
+      candidate: { registrationModes: ['email', 'code'] }
     }
   }
   // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.
   // `as const` would make every nested array a readonly tuple, which `Json` rejects.
 } satisfies Json;
+
+/** The minimal base's `contestantApp` root with organizations served too, registering by no mode: the root of the datasets on which an organization's editor works. */
+export const EDITOR_CONTESTANT_APP_SETTINGS = mergeSettings(MINIMAL_BASE_APP_SETTINGS.contestantApp, {
+  servedEntityTypes: { organization: { registrationModes: [] } }
+});
 
 /**
  * Build the standard 2 question_categories (1 info + 1 opinion).

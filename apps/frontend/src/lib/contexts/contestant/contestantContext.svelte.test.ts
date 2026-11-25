@@ -6,7 +6,7 @@ import { log as appLog } from '@openvaa/app-shared';
 import { ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LINK_REQUEST_SETTLE_BOUND_MS, RESEND_WAIT_SECONDS } from '$lib/auth/entryFlow';
+import { RESEND_WAIT_SECONDS } from '$lib/auth/entryFlow';
 import { isLeavingUnasked, registerNavigationGuard } from '$lib/components/preventNavigation/navigationGuards';
 import { requiredNameLocale } from '$lib/contestant/utils/nameRule';
 import type { LocalizedString } from '@openvaa/app-shared';
@@ -24,6 +24,7 @@ type FakeQuestion = {
   customData: Record<string, unknown>;
   category: { id: string };
   entityType?: EntityType;
+  isAnswered: (answer?: { value?: unknown } | null) => boolean;
 };
 
 type FakeCategory = {
@@ -51,7 +52,7 @@ type FakeUserData = {
   nominations: Array<{ electionId: string; constituencyId: string }>;
 };
 
-type FakeSettings = { access: { answersLocked?: boolean; nominationsLocked?: boolean } };
+type FakeSettings = { access: { contestantEditing?: 'open' | 'nominationsLocked' | 'locked' } };
 
 type FakePage = { data: Record<string, unknown>; params: Record<string, string>; url?: URL };
 
@@ -70,7 +71,7 @@ const EMPTY_DATA_ROOT: FakeDataRoot = {
   getConstituency: () => CONSTITUENCY
 };
 
-const UNLOCKED: FakeSettings = { access: { answersLocked: false } };
+const UNLOCKED: FakeSettings = { access: { contestantEditing: 'open' } };
 
 // `page` is whatever the box holds when it is read. A test that needs a navigation to reach the context puts a `$state` object in the box; the others leave the plain one.
 const { pageBox, world } = vi.hoisted(() => ({
@@ -108,21 +109,20 @@ function resetWorld(): void {
 }
 resetWorld();
 
-// The app context's tracking members, one reference each for the whole file, so that a case can compare what the provider holds with what the app context forwards. `analyticsGate` is a `{ current }` handle whose getter reads the box's `gateInput` on every access, the way the app context's handle reads its producer's gate input; a case that changes the input puts a getter over a `$state` in the box.
+// The app context's tracking members, one reference each for the whole file, so that a case can compare what the provider holds with what the app context forwards. `analyticsPolicy` is a `{ current }` handle whose getter reads the box's `policyInput` on every access, the way the app context's handle reads its producer's send-policy input; a case that changes the input puts a getter over a `$state` in the box.
 const { tracking } = vi.hoisted(() => {
   const box = {
-    gateInput: undefined as unknown,
+    policyInput: undefined as unknown,
     startPageview: () => undefined,
-    startEvent: () => ({}),
     track: () => undefined,
     submitAllEvents: () => undefined,
     resetAllEvents: () => undefined,
     setPageVisible: (_visible: boolean) => undefined,
-    analyticsGate: undefined as unknown as { readonly current: unknown }
+    analyticsPolicy: undefined as unknown as { readonly current: unknown }
   };
-  box.analyticsGate = {
+  box.analyticsPolicy = {
     get current() {
-      return box.gateInput;
+      return box.policyInput;
     }
   };
   return { tracking: box };
@@ -147,12 +147,11 @@ vi.mock('../app', () => ({
       }
     },
     startPageview: tracking.startPageview,
-    startEvent: tracking.startEvent,
     track: tracking.track,
     submitAllEvents: tracking.submitAllEvents,
     resetAllEvents: tracking.resetAllEvents,
     setPageVisible: tracking.setPageVisible,
-    analyticsGate: tracking.analyticsGate
+    analyticsPolicy: tracking.analyticsPolicy
   })
 }));
 
@@ -174,8 +173,8 @@ vi.mock('../utils/inheritContextMembers', () => ({
 }));
 
 // The user data store is constructed in a field initializer. The stub answers its three reads from the box, so construction reaches neither the data writer nor the persisted state.
-vi.mock('./contestantUserDataState.svelte', () => ({
-  contestantUserDataState: () => ({
+vi.mock('./entityUserDataState.svelte', () => ({
+  entityUserDataState: () => ({
     get current() {
       return world.userData;
     },
@@ -196,8 +195,7 @@ vi.mock('$app/navigation', async (importOriginal) => ({
 
 // The full load is the case's: a real one never settles, so a case holds its promise and resolves it at its end, which brings the guards back up.
 const { fullLoadBox } = vi.hoisted(() => ({ fullLoadBox: { leave: vi.fn() } }));
-vi.mock('$lib/components/preventNavigation/navigationGuards', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
+vi.mock('$lib/components/preventNavigation/fullLoad', () => ({
   leaveByFullLoad: (address: string) => fullLoadBox.leave(address)
 }));
 
@@ -239,7 +237,15 @@ function makeQuestion({
   entityType?: EntityType;
   required?: boolean;
 }): FakeQuestion {
-  return { id, isMatchable: true, required, customData: {}, category: { id: categoryId }, entityType };
+  return {
+    id,
+    isMatchable: true,
+    required,
+    customData: {},
+    category: { id: categoryId },
+    entityType,
+    isAnswered: (answer) => answer?.value != null
+  };
 }
 
 /**
@@ -361,8 +367,9 @@ describe('contestantContext — the nominations lock', () => {
 
   it.each([
     ['absent', false, { access: {} }],
-    ['false', false, { access: { nominationsLocked: false } }],
-    ['true', true, { access: { nominationsLocked: true } }]
+    ['open', false, { access: { contestantEditing: 'open' } }],
+    ['nominationsLocked', true, { access: { contestantEditing: 'nominationsLocked' } }],
+    ['locked', true, { access: { contestantEditing: 'locked' } }]
   ] as const)('with the setting %s it is %s', async (_label, expected, settings) => {
     world.settings = settings;
     const built = await construct();
@@ -371,14 +378,14 @@ describe('contestantContext — the nominations lock', () => {
     expect(built.provider.nominationsLocked).toBe(expected);
   });
 
-  it('reads its own key and not the answers lock, and the answers lock does not read it', async () => {
-    world.settings = { access: { answersLocked: true, nominationsLocked: false } };
+  it('locks nominations alone under nominationsLocked, and answers with them under locked', async () => {
+    world.settings = { access: { contestantEditing: 'locked' } };
     const answers = await construct();
-    expect(answers.provider.nominationsLocked).toBe(false);
+    expect(answers.provider.nominationsLocked).toBe(true);
     expect(answers.provider.answersLocked).toBe(true);
     answers.cleanup();
 
-    world.settings = { access: { answersLocked: false, nominationsLocked: true } };
+    world.settings = { access: { contestantEditing: 'nominationsLocked' } };
     const nominations = await construct();
     cleanup = nominations.cleanup;
     expect(nominations.provider.nominationsLocked).toBe(true);
@@ -399,11 +406,11 @@ describe('contestantContext — the nominations lock', () => {
     flushSync();
     expect(seen).toEqual([false]);
 
-    settings = { access: { nominationsLocked: true } };
+    settings = { access: { contestantEditing: 'nominationsLocked' } };
     flushSync();
     expect(seen).toEqual([false, true]);
 
-    settings = { access: { nominationsLocked: false } };
+    settings = { access: { contestantEditing: 'open' } };
     flushSync();
     expect(seen).toEqual([false, true, false]);
   });
@@ -416,17 +423,17 @@ describe('contestantContext — the tracking members of the app context', () => 
     cleanup?.();
     cleanup = undefined;
     resetWorld();
-    Object.defineProperty(tracking, 'gateInput', { value: undefined, writable: true, configurable: true });
+    Object.defineProperty(tracking, 'policyInput', { value: undefined, writable: true, configurable: true });
   });
 
-  it('holds `setPageVisible` and `analyticsGate` as the references the app context forwards', async () => {
+  it('holds `setPageVisible` and `analyticsPolicy` as the references the app context forwards', async () => {
     const built = await construct();
     cleanup = built.cleanup;
 
     expect(typeof built.provider.setPageVisible).toBe('function');
     expect(built.provider.setPageVisible).toBe(tracking.setPageVisible);
-    expect(built.provider.analyticsGate).toBe(tracking.analyticsGate);
-    const descriptor = Object.getOwnPropertyDescriptor(built.provider.analyticsGate, 'current');
+    expect(built.provider.analyticsPolicy).toBe(tracking.analyticsPolicy);
+    const descriptor = Object.getOwnPropertyDescriptor(built.provider.analyticsPolicy, 'current');
     expect(typeof descriptor?.get).toBe('function');
   });
 
@@ -438,7 +445,7 @@ describe('contestantContext — the tracking members of the app context', () => 
     expect(Object.keys(built.provider).filter((key) => /tracking/i.test(key))).toEqual([]);
   });
 
-  it('reads `analyticsGate.current` through to a change of the gate input, for a consumer reading it in an effect', async () => {
+  it('reads `analyticsPolicy.current` through to a change of the send-policy input, for a consumer reading it in an effect', async () => {
     const inactive = {
       projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
       globalPrivacyControl: false,
@@ -446,20 +453,20 @@ describe('contestantContext — the tracking members of the app context', () => 
       consent: undefined
     };
     const active = { ...inactive, projection: { ...inactive.projection, active: true } };
-    let gateInput = $state.raw<typeof inactive>(inactive);
-    Object.defineProperty(tracking, 'gateInput', { get: () => gateInput, configurable: true });
+    let policyInput = $state.raw<typeof inactive>(inactive);
+    Object.defineProperty(tracking, 'policyInput', { get: () => policyInput, configurable: true });
     const { ContestantContextProvider } = await import('./contestantContext.svelte');
     const seen: Array<unknown> = [];
     cleanup = $effect.root(() => {
       const provider = new ContestantContextProvider();
       $effect(() => {
-        seen.push(provider.analyticsGate.current);
+        seen.push(provider.analyticsPolicy.current);
       });
     });
     flushSync();
     expect(seen).toEqual([inactive]);
 
-    gateInput = active;
+    policyInput = active;
     flushSync();
     expect(seen).toEqual([inactive, active]);
   });
@@ -709,7 +716,7 @@ describe('contestantContext — questionsReady', () => {
   });
 });
 
-describe('contestantContext — profileComplete and the required name fields', () => {
+describe('contestantContext — taskState.allComplete and the required name fields', () => {
   const REQUIRED_LOCALE = requiredNameLocale();
   const OTHER_LOCALE = REQUIRED_LOCALE === 'fi' ? 'sv' : 'fi';
   /** Every question an organization or a candidate is asked in {@link makeScopedDataRoot}, whichever type the scope is. */
@@ -762,7 +769,7 @@ describe('contestantContext — profileComplete and the required name fields', (
 
     expect(built.provider.unansweredOpinionQuestions).toEqual([]);
     expect(built.provider.unansweredRequiredInfoQuestions).toEqual([]);
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
   });
 
   it.each([
@@ -776,7 +783,7 @@ describe('contestantContext — profileComplete and the required name fields', (
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
   });
 
   it('is true for an unconfirmed organization once its saved name has an entry in the required locale, with no short name', async () => {
@@ -784,7 +791,7 @@ describe('contestantContext — profileComplete and the required name fields', (
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.profileComplete).toBe(true);
+    expect(built.provider.taskState.allComplete).toBe(true);
   });
 
   it('follows the saved name: false without the required entry, true once a save stores it', async () => {
@@ -794,11 +801,11 @@ describe('contestantContext — profileComplete and the required name fields', (
     Object.defineProperty(world, 'userData', { get: () => userData, configurable: true });
     const built = await construct();
     cleanup = built.cleanup;
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
 
     userData = makeUserData({ type: 'organization', answered: ALL_ANSWERED, localizedNames: NAME_IN_REQUIRED_LOCALE });
     flushSync();
-    expect(built.provider.profileComplete).toBe(true);
+    expect(built.provider.taskState.allComplete).toBe(true);
   });
 
   it('is true for a confirmed organization whose saved name has no entry in the required locale', async () => {
@@ -806,16 +813,16 @@ describe('contestantContext — profileComplete and the required name fields', (
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.profileComplete).toBe(true);
+    expect(built.provider.taskState.allComplete).toBe(true);
   });
 
   it('is true for an unconfirmed organization without the required entry while answers are locked', async () => {
     loadEntity({ type: 'organization', confirmed: false, localizedNames: NAME_IN_OTHER_LOCALE });
-    world.settings = { access: { answersLocked: true } };
+    world.settings = { access: { contestantEditing: 'locked' } };
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.profileComplete).toBe(true);
+    expect(built.provider.taskState.allComplete).toBe(true);
   });
 
   it.each([
@@ -828,7 +835,7 @@ describe('contestantContext — profileComplete and the required name fields', (
     cleanup = built.cleanup;
 
     expect(built.provider.unansweredOpinionQuestions).toEqual([]);
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
   });
 
   it('is true for an unconfirmed candidate with both saved names', async () => {
@@ -836,7 +843,7 @@ describe('contestantContext — profileComplete and the required name fields', (
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.profileComplete).toBe(true);
+    expect(built.provider.taskState.allComplete).toBe(true);
   });
 
   it('is true for a confirmed candidate, whatever its saved names hold', async () => {
@@ -844,7 +851,7 @@ describe('contestantContext — profileComplete and the required name fields', (
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.profileComplete).toBe(true);
+    expect(built.provider.taskState.allComplete).toBe(true);
   });
 
   it.each([
@@ -853,13 +860,13 @@ describe('contestantContext — profileComplete and the required name fields', (
   ])('is false for an entity with its name while %s is unanswered, as before', async (_label, answered) => {
     loadEntity({ type: 'organization', confirmed: false, answered, localizedNames: NAME_IN_REQUIRED_LOCALE });
     const organization = await construct();
-    expect(organization.provider.profileComplete).toBe(false);
+    expect(organization.provider.taskState.allComplete).toBe(false);
     organization.cleanup();
 
     loadEntity({ type: 'candidate', confirmed: true, answered, entity: { firstName: 'Ada', lastName: 'Candidate' } });
     const candidate = await construct();
     cleanup = candidate.cleanup;
-    expect(candidate.provider.profileComplete).toBe(false);
+    expect(candidate.provider.taskState.allComplete).toBe(false);
   });
 
   it('is false with no entity loaded, although no question is unanswered then', async () => {
@@ -868,7 +875,7 @@ describe('contestantContext — profileComplete and the required name fields', (
 
     expect(built.provider.unansweredOpinionQuestions).toEqual([]);
     expect(built.provider.unansweredRequiredInfoQuestions).toEqual([]);
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
   });
 });
 
@@ -914,7 +921,7 @@ describe('contestantContext — the task state', () => {
 
   /** The id and status of each task, in order. */
   function statuses(provider: ContestantContextProvider): Array<[string, string | undefined]> {
-    return provider.tasks.map((task) => [task.id, task.status]);
+    return provider.taskState.tasks.map((task) => [task.id, task.status]);
   }
 
   const NO_NOMINATION = [
@@ -945,20 +952,24 @@ describe('contestantContext — the task state', () => {
     cleanup = built.cleanup;
 
     expect(statuses(built.provider)).toEqual(NO_NOMINATION);
-    expect(built.provider.nextStep).toEqual({ task: 'nomination', route: EDITOR_ENTRY_ROUTE });
-    expect(built.provider.previewOpen).toBe(false);
+    expect(built.provider.taskState.nextStep).toEqual({ task: 'nomination', route: EDITOR_ENTRY_ROUTE });
+    expect(built.provider.taskState.previewOpen).toBe(false);
     expect(built.provider.taskState.known).toBe(true);
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
   });
 
   it("leads the nomination task of an entity with no nomination to the editor's entry while neither lock is on", async () => {
-    world.settings = { access: { answersLocked: false, nominationsLocked: false } };
+    world.settings = { access: { contestantEditing: 'open' } };
     openEntity({ nominations: [] });
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.tasks[0]).toEqual({ id: 'nomination', status: 'incomplete', route: EDITOR_ENTRY_ROUTE });
-    expect(built.provider.nextStep).toEqual({ task: 'nomination', route: EDITOR_ENTRY_ROUTE });
+    expect(built.provider.taskState.tasks[0]).toEqual({
+      id: 'nomination',
+      status: 'incomplete',
+      route: EDITOR_ENTRY_ROUTE
+    });
+    expect(built.provider.taskState.nextStep).toEqual({ task: 'nomination', route: EDITOR_ENTRY_ROUTE });
   });
 
   it.each([
@@ -967,21 +978,24 @@ describe('contestantContext — the task state', () => {
   ])(
     'leads the nomination task of an entity with no nomination to the nominations view where the project holds %s, with neither lock on',
     async (_label, electionData) => {
-      world.settings = { access: { answersLocked: false, nominationsLocked: false } };
+      world.settings = { access: { contestantEditing: 'open' } };
       openEntity({ nominations: [], electionData });
       const built = await construct();
       cleanup = built.cleanup;
 
       expect(statuses(built.provider)).toEqual(NO_NOMINATION);
-      expect(built.provider.tasks[0]).toEqual({ id: 'nomination', status: 'incomplete', route: NOMINATION_TASK_ROUTE });
-      expect(built.provider.nextStep).toEqual({ task: 'nomination', route: NOMINATION_TASK_ROUTE });
+      expect(built.provider.taskState.tasks[0]).toEqual({
+        id: 'nomination',
+        status: 'incomplete',
+        route: NOMINATION_TASK_ROUTE
+      });
+      expect(built.provider.taskState.nextStep).toEqual({ task: 'nomination', route: NOMINATION_TASK_ROUTE });
     }
   );
 
-  it.each([
-    ['the nominations lock', { access: { answersLocked: false, nominationsLocked: true } }],
-    ['the answers lock', { access: { answersLocked: true, nominationsLocked: false } }],
-    ['both locks', { access: { answersLocked: true, nominationsLocked: true } }]
+  it.each<[string, FakeSettings]>([
+    ['the nominations lock', { access: { contestantEditing: 'nominationsLocked' } }],
+    ['the lock on everything', { access: { contestantEditing: 'locked' } }]
   ])(
     'leads the nomination task of an entity with no nomination to the nominations view under %s',
     async (_label, settings) => {
@@ -991,32 +1005,36 @@ describe('contestantContext — the task state', () => {
       cleanup = built.cleanup;
 
       expect(statuses(built.provider)).toEqual(NO_NOMINATION);
-      expect(built.provider.tasks[0]).toEqual({ id: 'nomination', status: 'incomplete', route: NOMINATION_TASK_ROUTE });
-      expect(built.provider.nextStep).toEqual({ task: 'nomination', route: NOMINATION_TASK_ROUTE });
+      expect(built.provider.taskState.tasks[0]).toEqual({
+        id: 'nomination',
+        status: 'incomplete',
+        route: NOMINATION_TASK_ROUTE
+      });
+      expect(built.provider.taskState.nextStep).toEqual({ task: 'nomination', route: NOMINATION_TASK_ROUTE });
     }
   );
 
   it('follows a lock that comes on and goes off again under a live context, for an entity with no nomination', async () => {
-    let settings = $state.raw<FakeSettings>({ access: { answersLocked: false, nominationsLocked: false } });
+    let settings = $state.raw<FakeSettings>({ access: { contestantEditing: 'open' } });
     Object.defineProperty(world, 'settings', { get: () => settings, configurable: true });
     openEntity({ nominations: [] });
     const built = await construct();
     cleanup = built.cleanup;
-    expect(built.provider.nextStep?.route).toEqual(EDITOR_ENTRY_ROUTE);
+    expect(built.provider.taskState.nextStep?.route).toEqual(EDITOR_ENTRY_ROUTE);
 
-    settings = { access: { answersLocked: true, nominationsLocked: false } };
+    settings = { access: { contestantEditing: 'locked' } };
     flushSync();
-    expect(built.provider.nextStep?.route).toEqual(NOMINATION_TASK_ROUTE);
-    expect(built.provider.tasks[0].route).toEqual(NOMINATION_TASK_ROUTE);
+    expect(built.provider.taskState.nextStep?.route).toEqual(NOMINATION_TASK_ROUTE);
+    expect(built.provider.taskState.tasks[0].route).toEqual(NOMINATION_TASK_ROUTE);
 
-    settings = { access: { answersLocked: false, nominationsLocked: false } };
+    settings = { access: { contestantEditing: 'open' } };
     flushSync();
-    expect(built.provider.nextStep?.route).toEqual(EDITOR_ENTRY_ROUTE);
+    expect(built.provider.taskState.nextStep?.route).toEqual(EDITOR_ENTRY_ROUTE);
   });
 
-  it.each([
-    ['the nominations lock', { access: { answersLocked: false, nominationsLocked: true } }],
-    ['neither lock', { access: { answersLocked: false, nominationsLocked: false } }]
+  it.each<[string, FakeSettings]>([
+    ['the nominations lock', { access: { contestantEditing: 'nominationsLocked' } }],
+    ['neither lock', { access: { contestantEditing: 'open' } }]
   ])(
     'leads the nomination task of an entity that has a nomination to the nominations view under %s',
     async (_label, settings) => {
@@ -1027,7 +1045,11 @@ describe('contestantContext — the task state', () => {
       const built = await construct();
       cleanup = built.cleanup;
 
-      expect(built.provider.tasks[0]).toEqual({ id: 'nomination', status: 'complete', route: NOMINATION_TASK_ROUTE });
+      expect(built.provider.taskState.tasks[0]).toEqual({
+        id: 'nomination',
+        status: 'complete',
+        route: NOMINATION_TASK_ROUTE
+      });
     }
   );
 
@@ -1044,10 +1066,10 @@ describe('contestantContext — the task state', () => {
     expect(built.provider.opinionQuestions).toEqual([]);
     expect(built.provider.infoQuestions).toEqual([]);
     expect(statuses(built.provider)).toEqual(NO_NOMINATION);
-    expect(built.provider.tasks.every((task) => task.count === undefined)).toBe(true);
-    expect(built.provider.nextStep).toEqual({ task: 'nomination', route: EDITOR_ENTRY_ROUTE });
-    expect(built.provider.previewOpen).toBe(false);
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.tasks.every((task) => task.count === undefined)).toBe(true);
+    expect(built.provider.taskState.nextStep).toEqual({ task: 'nomination', route: EDITOR_ENTRY_ROUTE });
+    expect(built.provider.taskState.previewOpen).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
   });
 
   it('with a nomination and the store still empty the profile and the questions have no status, and nothing is complete', async () => {
@@ -1061,10 +1083,10 @@ describe('contestantContext — the task state', () => {
       ['profile', undefined],
       ['questions', undefined]
     ]);
-    expect(built.provider.nextStep).toBeUndefined();
-    expect(built.provider.previewOpen).toBe(false);
+    expect(built.provider.taskState.nextStep).toBeUndefined();
+    expect(built.provider.taskState.previewOpen).toBe(false);
     expect(built.provider.taskState.known).toBe(false);
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
   });
 
   it('counts the unanswered required info questions on the profile, which is the next step, and the questions by their own count', async () => {
@@ -1074,7 +1096,7 @@ describe('contestantContext — the task state', () => {
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.tasks).toEqual([
+    expect(built.provider.taskState.tasks).toEqual([
       { id: 'nomination', status: 'complete', route: NOMINATION_TASK_ROUTE },
       { id: 'profile', status: 'incomplete', route: { route: 'ContestantAppProfile' }, count: 1 },
       {
@@ -1085,9 +1107,9 @@ describe('contestantContext — the task state', () => {
         resume: { route: 'ContestantAppQuestion', questionId: 'q-any' }
       }
     ]);
-    expect(built.provider.nextStep).toEqual({ task: 'profile', route: { route: 'ContestantAppProfile' } });
-    expect(built.provider.previewOpen).toBe(false);
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.nextStep).toEqual({ task: 'profile', route: { route: 'ContestantAppProfile' } });
+    expect(built.provider.taskState.previewOpen).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
   });
 
   it.each([
@@ -1114,8 +1136,8 @@ describe('contestantContext — the task state', () => {
         ['profile', undefined],
         ['questions', undefined]
       ]);
-      expect(built.provider.previewOpen).toBe(false);
-      expect(built.provider.profileComplete).toBe(false);
+      expect(built.provider.taskState.previewOpen).toBe(false);
+      expect(built.provider.taskState.allComplete).toBe(false);
     }
   );
 
@@ -1126,7 +1148,7 @@ describe('contestantContext — the task state', () => {
     world.dataRoot = makeScopedDataRoot();
     const built = await construct();
     cleanup = built.cleanup;
-    expect(built.provider.nextStep?.task).toBe('profile');
+    expect(built.provider.taskState.nextStep?.task).toBe('profile');
 
     userData = makeUserData({ type: 'candidate', answered: ['q-info'] });
     flushSync();
@@ -1135,9 +1157,12 @@ describe('contestantContext — the task state', () => {
       ['profile', 'complete'],
       ['questions', 'incomplete']
     ]);
-    expect(built.provider.nextStep).toEqual({ task: 'questions', route: { route: 'ContestantAppQuestions' } });
-    expect(built.provider.previewOpen).toBe(false);
-    expect(built.provider.profileComplete).toBe(false);
+    expect(built.provider.taskState.nextStep).toEqual({
+      task: 'questions',
+      route: { route: 'ContestantAppQuestions' }
+    });
+    expect(built.provider.taskState.previewOpen).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
 
     userData = makeUserData({ type: 'candidate', answered: ['q-info', 'q-candidate', 'q-any'] });
     flushSync();
@@ -1146,10 +1171,10 @@ describe('contestantContext — the task state', () => {
       ['profile', 'complete'],
       ['questions', 'complete']
     ]);
-    expect(built.provider.nextStep).toBeUndefined();
-    expect(built.provider.previewOpen).toBe(true);
+    expect(built.provider.taskState.nextStep).toBeUndefined();
+    expect(built.provider.taskState.previewOpen).toBe(true);
     expect(built.provider.taskState.allComplete).toBe(true);
-    expect(built.provider.profileComplete).toBe(true);
+    expect(built.provider.taskState.allComplete).toBe(true);
   });
 
   it.each([
@@ -1168,14 +1193,14 @@ describe('contestantContext — the task state', () => {
       const built = await construct();
       cleanup = built.cleanup;
       const stateBefore = built.provider.taskState;
-      const completeBefore = built.provider.profileComplete;
+      const completeBefore = built.provider.taskState.allComplete;
       expect(stateBefore.known).toBe(true);
 
       userData = makeUserData({ type: 'candidate', answered: [...answered, ...NOT_ASKED] });
       flushSync();
 
       expect(built.provider.taskState).toEqual(stateBefore);
-      expect(built.provider.profileComplete).toBe(completeBefore);
+      expect(built.provider.taskState.allComplete).toBe(completeBefore);
       expect(ids(built.provider.opinionQuestions)).toEqual(['q-candidate', 'q-any']);
       expect(ids(built.provider.unansweredOpinionQuestions)).toEqual(
         ['q-candidate', 'q-any'].filter((id) => !answered.includes(id))
@@ -1194,25 +1219,10 @@ describe('contestantContext — the task state', () => {
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.tasks).toEqual([]);
-    expect(built.provider.nextStep).toBeUndefined();
-    expect(built.provider.previewOpen).toBe(false);
-    expect(built.provider.profileComplete).toBe(false);
-  });
-
-  it('exposes the parts of one state: the tasks, the next step and the preview are its own members', async () => {
-    openEntity({ nominations: [NOMINATION] });
-    world.dataRoot = makeScopedDataRoot();
-    world.userData = makeUserData({ type: 'candidate' });
-    const built = await construct();
-    cleanup = built.cleanup;
-
-    const state = built.provider.taskState;
-    expect(state.tasks.length).toBe(3);
-    expect(built.provider.tasks).toBe(state.tasks);
-    expect(built.provider.nextStep).toBe(state.nextStep);
-    expect(built.provider.previewOpen).toBe(state.previewOpen);
-    expect(built.provider.profileComplete).toBe(state.allComplete);
+    expect(built.provider.taskState.tasks).toEqual([]);
+    expect(built.provider.taskState.nextStep).toBeUndefined();
+    expect(built.provider.taskState.previewOpen).toBe(false);
+    expect(built.provider.taskState.allComplete).toBe(false);
   });
 });
 
@@ -1225,10 +1235,9 @@ describe('contestantContext — the user-level accessors derived from page data'
     settings: {},
     termsOfUseAccepted: '2026-10-06T00:54:12.277826+00:00',
     passwordSet: true,
-    addressState: 'proved',
-    pendingEmail: null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    address: { state: 'proved' },
+    ownOrganizationId: null,
+    ownOrganizationUnnamed: false
   };
   /** One id shared by an entity of each type, as the independent primary keys of the entity tables allow. */
   const SHARED_ID = '3f2b8c1e-9a4d-4e6f-8b7a-0c1d2e3f4a5b';
@@ -1444,7 +1453,8 @@ describe('contestantContext — the calls on the nominations of the entity the r
       electionSymbol: '6',
       confirmed: true,
       customData: null,
-      updatedAt: '2026-10-01T12:00:00+00:00'
+      updatedAt: '2026-10-01T12:00:00+00:00',
+      writable: true
     }
   ];
 
@@ -1562,7 +1572,6 @@ describe('contestantContext — the entry flow', () => {
   const START = Date.UTC(2030, 0, 1, 12, 0, 0);
   const WAIT_MS = RESEND_WAIT_SECONDS * 1000;
   const ADDRESS = 'entry-flow-case@example.org';
-  const OTHER_ADDRESS = 'entry-flow-other@example.org';
   const CODE = 'ENTRY-FLOW-CODE';
 
   let cleanups: Array<() => void> = [];
@@ -1690,28 +1699,22 @@ describe('contestantContext — the entry flow', () => {
     });
   });
 
-  describe('the three calls the flow makes', () => {
-    it('forwards each to the writer with what it was given and answers what the writer answers', async () => {
+  describe('the code check the flow makes', () => {
+    it('forwards it to the writer with what it was given and answers what the writer answers', async () => {
       const writer = fakeWriter();
       const provider = await provide();
       // Taken off the context once, as a page does with a stable function.
-      const { checkInvitationCode, requestPasswordRecovery, requestSignInLink } = provider;
+      const { checkInvitationCode } = provider;
 
       await expect(checkInvitationCode({ code: CODE })).resolves.toBe('valid');
-      await expect(requestSignInLink({ email: ADDRESS, locale: 'fi' })).resolves.toEqual({ type: 'success' });
-      await expect(requestPasswordRecovery({ email: ADDRESS, locale: 'fi' })).resolves.toEqual({ type: 'success' });
 
       expect(writer.checkInvitationCode.mock.calls).toEqual([[{ code: CODE }]]);
-      expect(writer.requestSignInLink.mock.calls).toEqual([[{ email: ADDRESS, locale: 'fi' }]]);
-      expect(writer.requestPasswordRecovery.mock.calls).toEqual([[{ email: ADDRESS, locale: 'fi' }]]);
     });
 
-    it('hold nothing: a direct call leaves the flow as it was', async () => {
+    it('holds nothing: a direct call leaves the flow as it was', async () => {
       fakeWriter();
       const provider = await provide();
 
-      await provider.requestSignInLink({ email: ADDRESS, locale: 'en' });
-      await provider.requestPasswordRecovery({ email: ADDRESS, locale: 'en' });
       await provider.checkInvitationCode({ code: CODE });
 
       expect(provider.entryFlow).toBeUndefined();
@@ -1773,228 +1776,6 @@ describe('contestantContext — the entry flow', () => {
     });
   });
 
-  describe('sendEntryLink — what its caller and the state learn', () => {
-    /** The held request without the one member that is a time. */
-    function heldWithoutTime(provider: ContestantContextProvider): Record<string, unknown> {
-      const { settledAt: _settledAt, ...rest } = provider.entryFlow?.request ?? { settledAt: 0 };
-      return rest;
-    }
-
-    it('resolves to nothing and holds the request with its wording and the time it settled when the request fulfils', async () => {
-      fakeWriter(async () => ({ type: 'success', somethingOfTheAnswer: 'kept nowhere' }));
-      const provider = await provide();
-      vi.setSystemTime(START + 250);
-
-      await expect(provider.sendEntryLink({ origin: 'signIn', email: ADDRESS })).resolves.toBeUndefined();
-
-      expect(provider.entryFlow).toStrictEqual({
-        request: { origin: 'signIn', email: ADDRESS, wording: 'signIn', settledAt: START + 250, askedAgain: false }
-      });
-    });
-
-    it('resolves to nothing and holds the same when the request rejects', async () => {
-      fakeWriter(async () => {
-        throw new Error('a failed request');
-      });
-      const provider = await provide();
-
-      await expect(provider.sendEntryLink({ origin: 'signIn', email: ADDRESS })).resolves.toBeUndefined();
-
-      expect(provider.entryFlow).toStrictEqual({
-        request: { origin: 'signIn', email: ADDRESS, wording: 'signIn', settledAt: START, askedAgain: false }
-      });
-    });
-
-    it('resolves to nothing and holds the same when the writer throws before it returns a promise', async () => {
-      const writer = fakeWriter();
-      writer.requestSignInLink.mockImplementation(() => {
-        throw new Error('a writer that throws at the call');
-      });
-      const provider = await provide();
-
-      await expect(provider.sendEntryLink({ origin: 'signIn', email: ADDRESS })).resolves.toBeUndefined();
-
-      expect(heldWithoutTime(provider)).toStrictEqual({
-        origin: 'signIn',
-        email: ADDRESS,
-        wording: 'signIn',
-        askedAgain: false
-      });
-    });
-
-    it('resolves at the ten-second bound, and not before, when the request neither fulfils nor rejects', async () => {
-      fakeWriter(() => new Promise(() => undefined));
-      const provider = await provide();
-      let resolved = false;
-
-      const sent = provider.sendEntryLink({ origin: 'signIn', email: ADDRESS }).then(() => {
-        resolved = true;
-      });
-      await vi.advanceTimersByTimeAsync(LINK_REQUEST_SETTLE_BOUND_MS - 1);
-      expect(resolved).toBe(false);
-      expect(provider.entryFlow).toBeUndefined();
-
-      await vi.advanceTimersByTimeAsync(1);
-      await sent;
-
-      expect(resolved).toBe(true);
-      expect(provider.entryFlow).toStrictEqual({
-        request: {
-          origin: 'signIn',
-          email: ADDRESS,
-          wording: 'signIn',
-          settledAt: START + LINK_REQUEST_SETTLE_BOUND_MS,
-          askedAgain: false
-        }
-      });
-    });
-
-    it('holds nothing that tells a fulfilled request from a rejected one or from one that never answered', async () => {
-      const request = { origin: 'forgotPassword', email: ADDRESS } as const;
-
-      fakeWriter(async () => ({ type: 'success' }));
-      const fulfilled = await provide();
-      await fulfilled.sendEntryLink(request);
-
-      fakeWriter(async () => {
-        throw new Error('a failed request');
-      });
-      const rejected = await provide();
-      await rejected.sendEntryLink(request);
-
-      fakeWriter(() => new Promise(() => undefined));
-      const unanswered = await provide();
-      const sent = unanswered.sendEntryLink(request);
-      await vi.advanceTimersByTimeAsync(LINK_REQUEST_SETTLE_BOUND_MS);
-      await sent;
-
-      const expected = { origin: 'forgotPassword', email: ADDRESS, wording: 'recovery', askedAgain: false };
-      expect(heldWithoutTime(fulfilled)).toStrictEqual(expected);
-      expect(heldWithoutTime(rejected)).toStrictEqual(expected);
-      expect(heldWithoutTime(unanswered)).toStrictEqual(expected);
-    });
-
-    it('holds the wording of the screen the request was made from', async () => {
-      fakeWriter();
-      const provider = await provide();
-
-      await provider.sendEntryLink({ origin: 'registerSignIn', code: CODE });
-      expect(provider.entryFlow?.request?.wording).toBe('code');
-
-      await provider.sendEntryLink({ origin: 'forgotPassword', email: OTHER_ADDRESS });
-      expect(provider.entryFlow?.request?.wording).toBe('recovery');
-
-      await provider.sendEntryLink({ origin: 'registerEmail', email: ADDRESS, code: CODE });
-      expect(provider.entryFlow?.request?.wording).toBe('signIn');
-    });
-  });
-
-  describe('sendEntryLink — the held code', () => {
-    it('keeps the held code beside a request made with it', async () => {
-      fakeWriter();
-      const provider = await provide();
-      provider.holdEntryCode({ code: CODE, status: 'valid' });
-
-      await provider.sendEntryLink({ origin: 'registerEmail', email: ADDRESS, code: CODE });
-
-      expect(provider.entryFlow).toStrictEqual({
-        code: { code: CODE, status: 'valid' },
-        request: {
-          origin: 'registerEmail',
-          email: ADDRESS,
-          code: CODE,
-          wording: 'signIn',
-          settledAt: START,
-          askedAgain: false
-        }
-      });
-    });
-
-    it('replaces the whole flow, a held code included, with a request made without a code', async () => {
-      fakeWriter();
-      const provider = await provide();
-      provider.holdEntryCode({ code: CODE, status: 'used' });
-
-      await provider.sendEntryLink({ origin: 'signIn', email: ADDRESS });
-
-      expect(provider.entryFlow?.code).toBeUndefined();
-      expect(provider.entryFlow?.request?.email).toBe(ADDRESS);
-    });
-  });
-
-  describe('sendEntryLink — a request asked again', () => {
-    it('marks a second request for the same address made less than the wait after the first settled', async () => {
-      fakeWriter();
-      const provider = await provide();
-      await provider.sendEntryLink({ origin: 'signIn', email: ADDRESS });
-      expect(provider.entryFlow?.request?.askedAgain).toBe(false);
-
-      vi.setSystemTime(START + WAIT_MS - 1);
-      await provider.sendEntryLink({ origin: 'forgotPassword', email: ` ${ADDRESS.toUpperCase()} ` });
-
-      expect(provider.entryFlow?.request?.askedAgain).toBe(true);
-      expect(provider.entryFlow?.request?.settledAt).toBe(START + WAIT_MS - 1);
-    });
-
-    it('does not mark a second request for the same address made once the wait has passed', async () => {
-      fakeWriter();
-      const provider = await provide();
-      await provider.sendEntryLink({ origin: 'signIn', email: ADDRESS });
-
-      vi.setSystemTime(START + WAIT_MS);
-      await provider.sendEntryLink({ origin: 'signIn', email: ADDRESS });
-
-      expect(provider.entryFlow?.request?.askedAgain).toBe(false);
-    });
-
-    it('does not mark a request for another address', async () => {
-      fakeWriter();
-      const provider = await provide();
-      await provider.sendEntryLink({ origin: 'signIn', email: ADDRESS });
-
-      vi.setSystemTime(START + 5_000);
-      await provider.sendEntryLink({ origin: 'signIn', email: OTHER_ADDRESS });
-
-      expect(provider.entryFlow?.request?.askedAgain).toBe(false);
-    });
-
-    it('marks a second request with the same code made inside the wait', async () => {
-      fakeWriter();
-      const provider = await provide();
-      provider.holdEntryCode({ code: CODE, status: 'valid' });
-      await provider.sendEntryLink({ origin: 'registerEmail', email: ADDRESS, code: CODE });
-
-      vi.setSystemTime(START + 20_000);
-      await provider.sendEntryLink({ origin: 'registerEmail', email: OTHER_ADDRESS, code: CODE });
-
-      expect(provider.entryFlow?.request?.askedAgain).toBe(true);
-    });
-
-    it('judges it from the time the first request settled, not from when it was made', async () => {
-      let answer: (() => void) | undefined;
-      fakeWriter(
-        () =>
-          new Promise<void>((resolve) => {
-            answer = resolve;
-          })
-      );
-      const provider = await provide();
-      const first = provider.sendEntryLink({ origin: 'signIn', email: ADDRESS });
-      await vi.advanceTimersByTimeAsync(4_000);
-      answer?.();
-      await first;
-      expect(provider.entryFlow?.request?.settledAt).toBe(START + 4_000);
-
-      // The wait after the first request was made has passed here, and the wait after it settled has not.
-      vi.setSystemTime(START + WAIT_MS + 1_000);
-      const second = provider.sendEntryLink({ origin: 'signIn', email: ADDRESS });
-      answer?.();
-      await second;
-
-      expect(provider.entryFlow?.request?.askedAgain).toBe(true);
-    });
-  });
-
   describe('resendEntryLink', () => {
     it('repeats the held sign-in request through the same writer call and records a new settlement time', async () => {
       const writer = fakeWriter();
@@ -2019,54 +1800,6 @@ describe('contestantContext — the entry flow', () => {
           askedAgain: false
         }
       });
-    });
-
-    it('repeats a held recovery request as a recovery request', async () => {
-      const writer = fakeWriter();
-      const provider = await provide();
-      await provider.sendEntryLink({ origin: 'forgotPassword', email: ADDRESS });
-
-      vi.setSystemTime(START + WAIT_MS);
-      await provider.resendEntryLink();
-
-      expect(writer.requestPasswordRecovery).toHaveBeenCalledTimes(2);
-      expect(writer.requestPasswordRecovery.mock.calls[1][0]).toStrictEqual({ email: ADDRESS, locale: 'en' });
-      expect(writer.requestSignInLink).not.toHaveBeenCalled();
-      expect(provider.entryFlow?.request?.wording).toBe('recovery');
-    });
-
-    it('resolves alike, with a new settlement time, when the repeated request rejects', async () => {
-      let fail = false;
-      fakeWriter(async () => {
-        if (fail) throw new Error('a failed request');
-        return { type: 'success' };
-      });
-      const provider = await provide();
-      await provider.sendEntryLink({ origin: 'signIn', email: ADDRESS });
-
-      fail = true;
-      vi.setSystemTime(START + WAIT_MS + 500);
-      await expect(provider.resendEntryLink()).resolves.toBeUndefined();
-
-      expect(provider.entryFlow?.request).toStrictEqual({
-        origin: 'signIn',
-        email: ADDRESS,
-        wording: 'signIn',
-        settledAt: START + WAIT_MS + 500,
-        askedAgain: false
-      });
-    });
-
-    it('does nothing when no request is held', async () => {
-      const writer = fakeWriter();
-      const provider = await provide();
-      provider.holdEntryCode({ code: CODE, status: 'valid' });
-
-      await expect(provider.resendEntryLink()).resolves.toBeUndefined();
-
-      expect(writer.requestSignInLink).not.toHaveBeenCalled();
-      expect(writer.requestPasswordRecovery).not.toHaveBeenCalled();
-      expect(provider.entryFlow).toStrictEqual({ code: { code: CODE, status: 'valid' } });
     });
   });
 

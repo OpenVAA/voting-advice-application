@@ -67,6 +67,8 @@ describe('COOKIE — the cookie names this application chooses', () => {
       'logout-pending',
       'oidc_code_verifier',
       'oidc_entity_type',
+      'oidc_intent',
+      'oidc_locale',
       'oidc_nonce',
       'oidc_state',
       'registered'

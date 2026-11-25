@@ -46,14 +46,14 @@ describe('buildMinimal', () => {
   it('settingsOverlay deep-merges onto MINIMAL_BASE_APP_SETTINGS (Test 2)', () => {
     const tpl = buildMinimal({
       externalIdPrefix: 'e2e-overlay-',
-      settingsOverlay: { access: { answersLocked: true } }
+      settingsOverlay: { access: { contestantEditing: 'locked' } }
     });
 
     const settings = (tpl.app_settings?.fixed?.[0] as { settings?: Record<string, unknown> })?.settings as Record<
       string,
       Record<string, unknown>
     >;
-    expect(settings.access.answersLocked).toBe(true);
+    expect(settings.access.contestantEditing).toBe('locked');
     // Base access flags preserved (deep merge, not shallow):
     expect(settings.access.contestantApp).toBe(true);
     expect(settings.access.voterApp).toBe(true);

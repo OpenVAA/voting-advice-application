@@ -16,6 +16,7 @@ import { isVoterAppPath } from '$lib/routes';
 import { load } from './+layout';
 
 vi.mock('$lib/paraglide/runtime', () => ({ getLocale: () => 'en', locales: ['en', 'fi'] }));
+vi.mock('$lib/i18n', () => ({ t: (key: string) => key }));
 vi.mock('$lib/api/dataProvider', () => ({
   createSupabaseUniversalClient: () => ({}),
   createDataProvider: () => ({

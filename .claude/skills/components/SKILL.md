@@ -30,8 +30,8 @@ The split is a dependency rule, not a filing convention: a base component that r
    destructuring of `$props()` typed by a co-located type file (`Button.type.ts` beside
    `Button.svelte`); children and named regions are `Snippet` props rendered with `{@render …}`.
    Measured on the three target directories
-   2026-10-16: `export let` 0 files, `$$Props` 0 files, `<slot` 0 files, against 112 files calling
-   `$props()` and 112 co-located `*.type.ts` files (`git grep -l -F '$props()'` over the directories'
+   2026-11-21: `export let` 0 files, `$$Props` 0 files, `<slot` 0 files, against 122 files calling
+   `$props()` and 122 co-located `*.type.ts` files (`git grep -l -F '$props()'` over the directories'
    `*.svelte` files; `git ls-files` of the directories filtered to `*.type.ts`). The tree has no pre-runes component left, so a
    new one written in the old dialect is a lone regression rather than a local convention.
 
@@ -44,8 +44,8 @@ The split is a dependency rule, not a filing convention: a base component that r
 3. **Forward `class` with `concatClass`, NEVER by overwriting it.** Spread the rest props through
    `concatClass(restProps, classes)` from `apps/frontend/src/lib/utils/components.ts` so a caller's
    `class` is combined with the component's own Tailwind/DaisyUI classes instead of replacing them.
-   70 files in the three directories above depend on this, and 75 across all of
-   `apps/frontend/src` (re-derived 2026-10-16: `git grep -l -F concatClass`, less `components.ts`
+   75 files in the three directories above depend on this, and 80 across all of
+   `apps/frontend/src` (re-derived 2026-11-21: `git grep -l -F concatClass`, less `components.ts`
    itself and its test); a component that writes `class={classes}` directly silently
    drops every caller-supplied utility class.
 
@@ -82,7 +82,7 @@ The split is a dependency rule, not a filing convention: a base component that r
    - **The Contestant App's entry screens are scanned too.** `contestant-entry-scan` scans every
      signed-out screen of the entry flow in both themes through `declareEntryScans`
      (`tests/tests/utils/entryAxeScan.ts`, which the wiring gate reads under the same rules as
-     `contestantAxeScan.ts`); `contestant-a11y-scan` scans the set-password view, as it opens and with
+     `contestantAxeScan.ts` and `themedAxeScans.ts`, where both declare their light and dark scans); `contestant-a11y-scan` scans the set-password view, as it opens and with
      its confirmation in error, under the stored session of a user with no password, and the reset
      page; `contestant-entry-phone` measures each entry screen for overflow at 320 and 390 px. A new
      entry screen gets an entry in the first and two tests in the third.
@@ -110,6 +110,24 @@ The split is a dependency rule, not a filing convention: a base component that r
      covers the row; the card is hidden from assistive technology and takes no pointer events, so a
      press on it reaches the label. axe still evaluates colour contrast inside that hidden card, so an
      entity's colours must pass in both themes.
+   - **A single choice among plain options is `RadioGroup`**
+     (`apps/frontend/src/lib/components/input`, exported beside `Radio`): a `<fieldset>` named by its
+     `<legend>`, native radios sharing one `name` and no added role, the caller's content under the
+     chosen option only (the `option` snippet), and a bindable `error` with `role="alert"` that names the
+     fieldset's description and clears on a choice. `RegistrationModeSelector` is built on it; a new
+     radio list builds on it rather than re-rolling the fieldset.
+   - **Several constituencies in one election is `MultiConstituencySelector`**
+     (`apps/frontend/src/lib/components/constituencySelector`, beside `ConstituencySelector`, which
+     selects one per election): a checkbox `<fieldset>` per constituency group, `selected` as
+     `Record<electionId, Array<constituencyId>>` kept per election even where two elections share a
+     constituency, and with `useSingleGroup` one list whose selection applies to every election.
+   - **A destructive action on one item among several confirms inline.**
+     `ButtonWithConfirmation` takes `confirmationType: 'dialog' | 'inline'` (default `'dialog'`) and a
+     bindable `open`. Inline, the button is replaced by a warning asking `modalTitle` with Confirm
+     (focused on open, described by the question, loading while `onConfirm`'s promise is pending) and
+     Cancel (disabled while pending, returns focus to the button); a `data-testid` on the button yields
+     `-prompt`, `-confirm` and `-cancel`. An action on the page or the whole of its data keeps the
+     modal. The nominations view's delete is the inline user.
 
 7. **Accepted Svelte compiler warnings are annotated, never silently tolerated.** Use
    `// svelte-warning: accepted — <one-sentence-rationale>` immediately above the offending line.
@@ -140,6 +158,16 @@ Both defects have been shipped and diagnosed in this codebase — the destructur
 Phase 61, the alias-indirection hole in v2.13 Phase 117.
 
 For the full rule, read `.claude/skills/components/context-reactivity.md`.
+
+**Fake the contestant context with `fakeContestantContext`** in a component test
+(`apps/frontend/src/lib/contexts/contestant/contestantContext.testUtils.svelte.ts`, handed to a
+`vi.mock('$lib/contexts/contestant')`). Its members are getters over one `$state.raw` box, replaced
+whole by `box.set(changes)`, so the test reads them as the component reads the real reactive
+accessors and a destructured accessor fails the test instead of passing on a static value. `t`
+answers the key, `getRoute` answers `/route/<name>`, and nothing is derived from the box: a test that
+needs a derived member such as `taskState` adds it as a getter in `members`. Every route test under
+`apps/frontend/src/routes/contestant` uses it; the component tests under `apps/frontend/src/lib` still declare their
+own small mocks, and a new test uses the helper.
 
 ## The component listing — linked, never copied
 
@@ -174,3 +202,23 @@ After adding, removing, renaming or moving a component, verify:
    this skill's `targets:` and reports the source commits that landed since this skill was last
    touched — it will flag your component change. But the guard only *flags*; step 4 is what makes a
    human act on it. `bash .claude/scripts/audit-skill-links.sh components` must exit 0 afterwards.
+
+## Freshness Record
+
+**Reviewed 2026-11-21** (PR 898 review fixes). `.claude/scripts/audit-skill-drift.sh` reported
+`DRIFT 15 commits, 43 files` since `0d9c1535`, summed over the targets (the base library 7 commits, 19
+files; the dynamic one 3, 11; the contestant one 5, 13): nine distinct commits, each below.
+
+| Commits | What changed | Effect here |
+|---|---|---|
+| `e1ad9a80` | new `RadioGroup` in the input library; `RegistrationModeSelector` rebuilt on it | convention 6 gains the `RadioGroup` bullet |
+| `bd173245` `7d7bcd80` | new `MultiConstituencySelector` for an organization's several constituencies | convention 6 gains its bullet |
+| `61ee5d15` | `ButtonWithConfirmation`'s `confirmationType: 'inline'` and bindable `open`, with a component test | convention 6 gains the inline-confirmation rule |
+| `dcda2e67` | new `NominationCard` in the contestant library | none beyond the counts: listed in the generated listing and the directory README |
+| `4f4c8132` | new `PendingAddressPanel` in the contestant library, shared by the identity-provider gate and settings | none beyond the counts, likewise |
+| `1d02d3f0` | `ConstituencySelector` asks `Election.getImpliedConstituency()` | none here; recorded in the `data` skill |
+| `ef7fd315` | `fakeContestantContext` (outside the targets, beside the contestant context) for the route tests | the context section gains the paragraph on it |
+| `f90940ca` `35e2c049` | account copy moved to `common.account.*` and `common.json` keys in `EmailEntry`, `PasswordSetter`, `PasswordSignIn`, `AccountAddress`, the account screens and panels, `ContestantNav` and their tests | none -- message keys only |
+
+Re-measured on this date: convention 1's 122 `$props()` files and 122 `*.type.ts` files, convention 3's
+75 and 80 `concatClass` files. No count in `context-reactivity.md` changed.

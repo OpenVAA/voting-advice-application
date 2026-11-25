@@ -1,30 +1,38 @@
 /**
  * The identity provider's error screen, mounted for real with its real support block against a fake contestant context.
  *
- * The page receives what its server load returns: the class and whether Try again is offered. The fake context's `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The page receives what its server load returns: the class and whether Try again is offered. The fake context is the shared `fakeContestantContext`. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
  * 1. **The frame** — the screen's marker with its class, and a heading per class that can take focus, under the app's name.
  * 2. **The sentence** — one per class.
- * 3. **The actions** — one way to support in every class; in `cancelled` and `retry` a filled Try again and a sentence of the class whose own words link to support, with no support button; in `noRetry` the filled support action, with no icon, and a text Try again; Return always.
- * 4. **Try again** — a link to the registration page with the provider's option named, rendered only while it is offered.
+ * 3. **The actions** — one way to support in every class but `noAccount`; in `cancelled` and `retry` a filled Try again and a sentence of the class whose own words link to support, with no support button; in `noRetry` the filled support action, with no icon, and a text Try again; in `noAccount` a filled Register and no support; Return always.
+ * 4. **Try again** — a link to the registration page with the provider's option named, rendered only while it is offered; in `noAccount` the same link, labelled Register.
  * 5. **Nothing echoed** — a crafted parameter on the page's address appears nowhere in the markup.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { OidcErrorClass } from '$lib/contestant/utils/oidcError';
 import type { RouteOptions } from '$lib/routes';
 
-const context = {
-  // A key translates to itself, followed by the values of its parameters, so a link given to a sentence is rendered with it.
-  t: (key: string, params: Record<string, unknown> = {}) => [key, ...Object.values(params)].join(' '),
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  appSettings: { admin: { email: 'support@example.test' }, contestantApp: { entityTypes: ['candidate'] } }
-};
+const { context } = fakeContestantContext(
+  {
+    appSettings: {
+      admin: { email: 'support@example.test' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    }
+  },
+  () => ({
+    // A key translates to itself, followed by the values of its parameters, so a link given to a sentence is rendered with it.
+    t: (key: string, params: Record<string, unknown> = {}) => [key, ...Object.values(params)].join(' '),
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) }
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -81,7 +89,9 @@ const REGISTER_WITH_PROVIDER = buildRoute(
   { params: {} }
 );
 
-const CLASSES: Array<OidcErrorClass> = ['cancelled', 'retry', 'noRetry'];
+const CLASSES: Array<OidcErrorClass> = ['cancelled', 'retry', 'noRetry', 'noAccount'];
+/** The classes whose link to the registration page is labelled Try again. */
+const TRY_AGAIN_CLASSES: Array<OidcErrorClass> = ['cancelled', 'retry', 'noRetry'];
 
 let teardown: Array<() => void> = [];
 
@@ -129,7 +139,7 @@ describe('the frame', () => {
 
   it('gives each class its own heading', () => {
     const headings = CLASSES.map((errorClass) => one(render(errorClass), 'h1').textContent?.trim());
-    expect(new Set(headings).size).toBe(3);
+    expect(new Set(headings).size).toBe(CLASSES.length);
   });
 
   it('adds no dialog and names no element for a view transition', () => {
@@ -194,6 +204,15 @@ describe('the actions', () => {
     expect(target.querySelectorAll(SUPPORT_SENTENCE)).toHaveLength(0);
   });
 
+  it('in noAccount fill Register, and offer no support', () => {
+    const target = render('noAccount');
+    const register = one(target, TRY_AGAIN);
+    expect(isFilled(register)).toBe(true);
+    expect(register.textContent).toContain('contestantApp.register.register');
+    expect(target.querySelectorAll(SUPPORT)).toHaveLength(0);
+    expect(target.querySelectorAll(SUPPORT_SENTENCE)).toHaveLength(0);
+  });
+
   it.each(CLASSES)('fill one action at most in %s', (errorClass) => {
     const target = render(errorClass);
     const filled = Array.from(target.querySelectorAll<HTMLElement>('.btn')).filter(isFilled);
@@ -207,14 +226,23 @@ describe('Try again', () => {
     expect(link.tagName).toBe('A');
     expect(link.getAttribute('href')).toBe(REGISTER_WITH_PROVIDER);
     expect(link.getAttribute('href')).toContain('mode=identity_provider');
-    expect(link.textContent).toContain('contestantApp.identityProvider.error.tryAgain');
   });
 
-  it.each(CLASSES)('in %s is not rendered while it is not offered, and Return still is', (errorClass) => {
+  it.each(TRY_AGAIN_CLASSES)('in %s is labelled Try again', (errorClass) => {
+    expect(one(render(errorClass), TRY_AGAIN).textContent).toContain('contestantApp.identityProvider.error.tryAgain');
+  });
+
+  it.each(TRY_AGAIN_CLASSES)('in %s is not rendered while it is not offered, and Return still is', (errorClass) => {
     const target = render(errorClass, false);
     expect(target.querySelectorAll(TRY_AGAIN)).toHaveLength(0);
     one(target, RETURN);
     one(target, errorClass === 'noRetry' ? SUPPORT : SUPPORT_SENTENCE);
+  });
+
+  it('in noAccount is not rendered while it is not offered, and Return still is', () => {
+    const target = render('noAccount', false);
+    expect(target.querySelectorAll(TRY_AGAIN)).toHaveLength(0);
+    one(target, RETURN);
   });
 });
 

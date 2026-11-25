@@ -40,11 +40,11 @@
       "incomplete": "Inte klar ännu.",
       "incompleteCount": [
         {
-          "declarations": ["input count", "local countPlural = count: plural"],
-          "selectors": ["countPlural"],
+          "declarations": ["input count"],
+          "selectors": ["count"],
           "match": {
-            "countPlural=one": "Inte klar ännu: en punkt återstår.",
-            "countPlural=*": "Inte klar ännu: {count} punkter återstår."
+            "count=1": "Inte klar ännu: en punkt återstår.",
+            "count=*": "Inte klar ännu: {count} punkter återstår."
           }
         }
       ]

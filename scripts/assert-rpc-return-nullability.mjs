@@ -99,9 +99,7 @@
  * human-owned half. `--write` rewrites only the region between the DERIVED sentinels and
  * copies every other byte of the existing file through unchanged, so the hand-written
  * evidence and disposition cells survive a regeneration. If the artifact does not exist yet,
- * `--write` scaffolds one. The `--write` mode of `scripts/assert-schema-migration-parity.mjs`
- * is the in-repo precedent for an assert-script that can regenerate the committed artifact it checks;
- * the flag-membership read follows `scripts/assert-node-engine.mjs`.
+ * `--write` scaffolds one. The flag-membership read follows `scripts/assert-node-engine.mjs`.
  *
  * `--write` MUST NEVER RUN IN CI. The gate's value is that a stale artifact is a red build,
  * not an auto-fixed one.

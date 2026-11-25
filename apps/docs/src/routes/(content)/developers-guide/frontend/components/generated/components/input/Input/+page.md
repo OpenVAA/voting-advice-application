@@ -38,6 +38,7 @@ Multilingual features are only available if the `locales` store contains more th
 - `value`: Bindable: the value of the input. Depends on the `type` prop.
 - `error`: Bindable: the message shown as the inline error. A caller sets it to put the input in error, and the input sets it itself when it refuses an entry. Cleared when the user edits the input.
 - `validate`: Whether the `url` and `email` kinds judge an entry when it is committed: refuse one that is not a URL or an address with their own error, and store a usable one without its spaces. With `false` the caller judges the entry and every entry is stored as typed. @default true
+- `commitOn`: When the single-line text kinds (`text`, `url`, `email`) take an entry in: `'change'` when it is committed, or `'input'` on every keystroke, as typed and without the judgement `validate` asks for, which then waits for the commit. @default 'change'
 - `errorTestId`: The test id of the inline error. @default 'input-error'
 - `errorReason`: A word naming why the input is in error, written on the inline error as `data-reason`. Nothing is written without one.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false

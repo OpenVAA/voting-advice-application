@@ -17,6 +17,10 @@ export const COOKIE = deepFreeze({
   oidcCodeVerifier: 'oidc_code_verifier',
   /** The entity type the identity provider's flow was started for. It selects and never authorises: every reader checks the registration matrix again. */
   oidcEntityType: 'oidc_entity_type',
+  /** Set to `sign_in` when the identity provider's flow was started to sign in an existing account rather than to register. It selects and never authorises: a sign-in creates nothing, and `identity-callback` signs in only an account the identity already has. */
+  oidcIntent: 'oidc_intent',
+  /** The locale the identity provider's flow was started in, so its return lands in that locale and not in whichever the provider's redirect resolves to. Read once by the callback and accepted only when it is a supported locale. */
+  oidcLocale: 'oidc_locale',
   /** Whether the identity provider's return made the account or found one, read once by the view the user arrives at. It only ever adds a notice and never removes a gate. */
   identityProviderArrival: 'identity_provider_arrival',
   /**
@@ -31,6 +35,17 @@ export const COOKIE = deepFreeze({
    * The same id as `logoutPending`, written beside it with a max age of the count's length plus a grace of ten seconds, so the browser drops it at the count's end by its own clock and a count that runs signs out through its own flow first. A request that carries a pending id and no deadline is signed out by the server's request hook, which compares no time. Written and removed with `logoutPending`, with the same attributes. It names no user and carries no time; a user who removes it is signed out at their next request, and one who removes both keeps only their own session.
    */
   logoutDeadline: 'logout-deadline'
+} as const);
+
+/**
+ * The attributes of every cookie the identity provider's flow leaves behind: the authorize endpoint's flow cookies and the callback's arrival marker. Each is read by the server alone and lives as long as one return; `lax` lets them return with the provider's top-level redirect.
+ */
+export const OIDC_FLOW_COOKIE_OPTIONS = deepFreeze({
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax',
+  path: '/',
+  maxAge: 600
 } as const);
 
 /**

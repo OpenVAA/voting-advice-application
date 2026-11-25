@@ -1,8 +1,6 @@
-# Offline tests of the module's logic. Both AWS providers are mocks, so no run reads or changes an
-# account; the random provider is the real one, which needs no credential.
+# Offline tests of the module's logic. Both AWS providers are mocks, so no run reads or changes an account; the random provider is the real one, which needs no credential.
 
-# The mocks' generated values are random strings. The provider checks some of the arguments that
-# receive them, so the resources whose ARNs feed such an argument get ARNs of the right form.
+# The mocks' generated values are random strings. The provider checks some of the arguments that receive them, so the resources whose ARNs feed such an argument get ARNs of the right form.
 mock_provider "aws" {
   mock_resource "aws_lb" {
     defaults = {
@@ -155,9 +153,9 @@ run "environment_split" {
   assert {
     condition = (
       sort([for e in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].environment : e.name])
-      == sort([for v in jsondecode(file("${path.module}/task-environment.json")).variables : v.name if v.source == "value"])
+      == sort([for v in jsondecode(file("${path.module}/task-environment.json")).variables : v.name if v.source == "value" && try(v.identity_providers, null) == null])
     )
-    error_message = "The container's environment must hold exactly the list's value entries."
+    error_message = "With no identity provider, the container's environment must hold exactly the list's value entries that name no identity provider."
   }
 
   assert {
@@ -193,6 +191,120 @@ run "environment_split" {
     condition     = length(output.task_environment_names) == 17
     error_message = "With nothing omitted, the task must receive every entry of the list."
   }
+}
+
+run "identity_provider_signicat" {
+  command = apply
+
+  variables {
+    identity_provider_type = "signicat-ftn"
+    environment_overrides = {
+      PUBLIC_IDENTITY_PROVIDER_CLIENT_ID              = "client"
+      IDENTITY_PROVIDER_JWKS_URI                      = "https://example.signicat.com/auth/open/.well-known/openid-configuration/jwks"
+      IDENTITY_PROVIDER_ISSUER                        = "https://example.signicat.com/auth/open"
+      PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT = "https://example.signicat.com/auth/open/connect/authorize"
+      IDENTITY_PROVIDER_TOKEN_ENDPOINT                = "https://example.signicat.com/auth/open/connect/token"
+    }
+  }
+
+  assert {
+    condition = (
+      sort([for s in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].secrets : s.name])
+      == tolist(["ANALYTICS_POSTHOG_KEY", "IDENTITY_CALLBACK_SERVER_SECRET", "IDENTITY_PROVIDER_CLIENT_SECRET", "IDENTITY_PROVIDER_DECRYPTION_JWKS", "PUBLIC_SUPABASE_ANON_KEY"])
+    )
+    error_message = "With Signicat, the secrets must add the callback secret, the decryption keys and Signicat's client secret."
+  }
+
+  assert {
+    condition = one([
+      for e in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].environment : e.value
+      if e.name == "PUBLIC_IDENTITY_PROVIDER_TYPE"
+    ]) == "signicat-ftn"
+    error_message = "PUBLIC_IDENTITY_PROVIDER_TYPE must be identity_provider_type."
+  }
+
+  assert {
+    condition     = length([for n in output.task_environment_names : n if startswith(n, "IDURA_")]) == 0 && length(output.task_environment_names) == 17 + 9
+    error_message = "With Signicat, the task must receive the nine entries that name it and no Idura entry."
+  }
+}
+
+run "identity_provider_idura" {
+  command = apply
+
+  variables {
+    identity_provider_type = "idura-ftn"
+    environment_overrides = {
+      PUBLIC_IDENTITY_PROVIDER_CLIENT_ID = "urn:example:client"
+      IDENTITY_PROVIDER_JWKS_URI         = "https://example.idura.broker/.well-known/jwks"
+      IDENTITY_PROVIDER_ISSUER           = "https://example.idura.broker"
+      IDURA_DOMAIN                       = "example.idura.broker"
+      IDURA_SIGNING_KEY_KID              = "signing-1"
+    }
+  }
+
+  assert {
+    condition = (
+      sort([for s in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].secrets : s.name])
+      == tolist(["ANALYTICS_POSTHOG_KEY", "IDENTITY_CALLBACK_SERVER_SECRET", "IDENTITY_PROVIDER_DECRYPTION_JWKS", "IDURA_SIGNING_JWKS", "PUBLIC_SUPABASE_ANON_KEY"])
+    )
+    error_message = "With Idura, the secrets must add the callback secret, the decryption keys and the signing keys."
+  }
+
+  assert {
+    condition     = !contains(output.task_environment_names, "PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT") && !contains(output.task_environment_names, "IDENTITY_PROVIDER_CLIENT_SECRET")
+    error_message = "With Idura, the task must receive no Signicat entry."
+  }
+}
+
+run "identity_provider_value_without_provider_fails" {
+  command = plan
+
+  variables {
+    environment_overrides = {
+      PUBLIC_IDENTITY_PROVIDER_CLIENT_ID = "client"
+    }
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "identity_provider_without_its_values_fails" {
+  command = plan
+
+  variables {
+    identity_provider_type = "signicat-ftn"
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "identity_provider_type_given_as_a_value_fails" {
+  command = plan
+
+  variables {
+    identity_provider_type = "idura-ftn"
+    environment_overrides = {
+      PUBLIC_IDENTITY_PROVIDER_TYPE      = "idura-ftn"
+      PUBLIC_IDENTITY_PROVIDER_CLIENT_ID = "urn:example:client"
+      IDENTITY_PROVIDER_JWKS_URI         = "https://example.idura.broker/.well-known/jwks"
+      IDENTITY_PROVIDER_ISSUER           = "https://example.idura.broker"
+      IDURA_DOMAIN                       = "example.idura.broker"
+      IDURA_SIGNING_KEY_KID              = "signing-1"
+    }
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "identity_provider_type_refuses_an_unknown_provider" {
+  command = plan
+
+  variables {
+    identity_provider_type = "bankid"
+  }
+
+  expect_failures = [var.identity_provider_type]
 }
 
 run "omit_removes_an_entry" {
@@ -397,6 +509,52 @@ run "stop_timeout_refuses_above_fargate" {
   expect_failures = [var.stop_timeout_seconds]
 }
 
+run "stop_timeout_refuses_less_than_shutdown_timeout_plus_15" {
+  command = plan
+
+  variables {
+    stop_timeout_seconds = 39
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "stop_timeout_accepts_shutdown_timeout_plus_15" {
+  command = plan
+
+  variables {
+    stop_timeout_seconds = 40
+  }
+
+  assert {
+    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].stopTimeout == 40
+    error_message = "A stop timeout of SHUTDOWN_TIMEOUT plus 15 seconds must reach the container."
+  }
+}
+
+run "stop_timeout_reads_30_for_an_omitted_shutdown_timeout" {
+  command = plan
+
+  variables {
+    omit_environment     = ["SHUTDOWN_TIMEOUT"]
+    stop_timeout_seconds = 44
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "stop_timeout_refuses_a_non_numeric_shutdown_timeout" {
+  command = plan
+
+  variables {
+    environment_overrides = {
+      SHUTDOWN_TIMEOUT = "soon"
+    }
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
 run "task_floor_refuses_zero" {
   command = plan
 
@@ -475,9 +633,7 @@ run "security_groups" {
   }
 }
 
-# EC2 accepts a security group's or a rule's description only when it is shorter than 256 characters
-# and drawn from a-zA-Z0-9, space and ._-:/()#,@[]+=&;{}!$*. It refuses any other one at apply time,
-# after the resources before it have been created, so the mocks would let it through to a real apply.
+# EC2 accepts a security group's or a rule's description only when it is shorter than 256 characters and drawn from a-zA-Z0-9, space and ._-:/()#,@[]+=&;{}!$*. It refuses any other one at apply time, after the resources before it have been created, so the mocks would let it through to a real apply.
 # A debug address is set so that the debug rules exist and are checked too.
 run "descriptions_use_the_ec2_character_set" {
   command = apply
@@ -577,8 +733,8 @@ run "service" {
   }
 
   assert {
-    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].stopTimeout == 30
-    error_message = "The container must have 30 seconds between the stop signal and the kill."
+    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].stopTimeout == 45
+    error_message = "The container must have the default of 45 seconds between the stop signal and the kill."
   }
 
   assert {

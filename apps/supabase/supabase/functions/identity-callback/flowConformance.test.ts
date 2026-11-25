@@ -1,18 +1,23 @@
 /**
  * Source-level conformance checks over `identity-callback`'s path.
  *
- * This is the IDENTITY ENTRY POINT, not an authorisation gate on a claim: it decides from the project's stored matrix which entity type may be created, creates the account the passwordless way, and has one database function find or create the identity's entity and its grant. What is checked here is the shape of that path: the frontend server's credential is checked before anything else is read, and the frontend's callback sends it under the header the function reads; the project is the one the request names; no account is created by a call that stores a password; no admin update carries an address or `app_metadata`, and the only admin update confirms the placeholder the identity's account was created on; the identity metadata is built by `identityAppMetadata`, so no claim of the provider's token is spread into it, and is handed to the database function, which writes it under the same lock as the record; the matrix decides before anything is written; the account is resolved, then the entity is found or created with the decided type and the metadata written, then the placeholder is confirmed, then the sign-in link is generated; and every answer is built by `resultBody`.
+ * This is the IDENTITY ENTRY POINT, not an authorisation gate on a claim: it chooses the entity type to create among the types the database allows, creates the account the passwordless way, and has one database function find or create the identity's entity and its grant. What is checked here is the shape of that path: the frontend server's credential is checked before anything else is read, and the frontend's callback sends it under the header the function reads; the project is the one the request names; no account is created by a call that stores a password; no admin update carries an address or `app_metadata`, and the only admin update confirms the placeholder the identity's account was created on; the identity metadata is built by `identityAppMetadata`, so no claim of the provider's token is spread into it, and is handed to the database function, which writes it under the same lock as the record; the entity type is decided before anything is written; the account is resolved, then the entity is found or created with the decided type and the metadata written, then the placeholder is confirmed, then the sign-in link is generated; and every answer is built by `resultBody`.
  *
- * `index.ts` cannot be imported by vitest (see `envReadSites.test.ts`), so these checks read its source with the comments stripped: the comments describe the path in the same words the checks look for. The entity, its grant and the record are written by `public.identity_entity_find_or_create`, whose own pgTAP file asserts them.
+ * `index.ts` cannot be imported by vitest (see `envReadSites.test.ts`), so these checks read its source with the comments stripped: the comments describe the path in the same words the checks look for. The entity, its grant and the record are written by `public.identity_entity_find_or_create`, whose own pgTAP file asserts them. What a sign-in does with the account it finds is run by `signIn.test.ts`; here only the handler's branch to it is checked.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { BASE_CORS_HEADERS } from '../_shared/cors.ts';
 import { SERVER_CREDENTIAL_HEADER } from './serverCredential.ts';
 
 const RAW_INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
 const ENUM_SOURCE = readFileSync(new URL('../../schema/000-enums.sql', import.meta.url), 'utf8');
 const CALLBACK_SOURCE = readFileSync(
+  new URL('../../../../frontend/src/lib/server/auth/identityCallback.ts', import.meta.url),
+  'utf8'
+);
+const CALLBACK_ROUTE_SOURCE = readFileSync(
   new URL('../../../../frontend/src/routes/api/oidc/callback/+server.ts', import.meta.url),
   'utf8'
 );
@@ -86,6 +91,13 @@ function callArguments(callee: string): Array<string> {
   });
 }
 
+/** The argument text of the one `supabaseAdmin.rpc` call of the database function `name`, from its name to the closing parenthesis. */
+function rpcArguments(name: string): string {
+  const calls = callArguments('supabaseAdmin.rpc').filter((args) => args.trimStart().startsWith(`'${name}'`));
+  expect(calls, `calls of ${name}`).toHaveLength(1);
+  return calls[0];
+}
+
 /** The first position of `needle` in the code, asserted present. */
 function firstAt(needle: string): number {
   const at = CODE.indexOf(needle);
@@ -142,12 +154,12 @@ describe('identity-callback flow conformance', () => {
       }
     });
 
-    it('is refused at once without the header, before the configured secret is read', () => {
-      const headerAt = firstAt('req.headers.get(SERVER_CREDENTIAL_HEADER)');
-      const secretAt = firstAt("requireEnv('IDENTITY_CALLBACK_SERVER_SECRET'");
-      const refusalAt = CODE.indexOf('return respond(IDENTITY_CALLBACK_RESULT.refused);', headerAt);
-      expect(refusalAt).toBeGreaterThan(headerAt);
-      expect(refusalAt).toBeLessThan(secretAt);
+    it('hands the header and the configured secret to the one check, which refuses a missing header before it reads the secret', () => {
+      const [args] = callArguments('presentsServerCredential');
+      expect(args.replace(/\s+/g, ' ').trim()).toMatch(
+        /^req\.headers\.get\(SERVER_CREDENTIAL_HEADER\), Deno\.env\.get\('IDENTITY_CALLBACK_SERVER_SECRET'\),?$/
+      );
+      expect(CODE).not.toContain("requireEnv('IDENTITY_CALLBACK_SERVER_SECRET'");
     });
 
     it('is refused when the header does not carry the configured secret', () => {
@@ -159,25 +171,25 @@ describe('identity-callback flow conformance', () => {
     });
 
     it('is not offered the credential header by the CORS answer', () => {
-      const corsAt = firstAt('const corsHeaders = {');
-      const corsBlock = CODE.slice(corsAt, CODE.indexOf('};', corsAt));
+      const corsAt = firstAt('const corsHeaders = Object.freeze({');
+      const corsBlock = CODE.slice(corsAt, CODE.indexOf('});', corsAt));
+      expect(corsBlock).toContain('...BASE_CORS_HEADERS');
       expect(corsBlock).not.toContain(SERVER_CREDENTIAL_HEADER);
+      expect(Object.values(BASE_CORS_HEADERS).join(', ')).not.toContain(SERVER_CREDENTIAL_HEADER);
     });
 
     it("is the frontend's callback, which sends the credential under the header the function reads", () => {
       expect(CALLBACK_SOURCE).toContain(`'${SERVER_CREDENTIAL_HEADER}': `);
-      expect(CALLBACK_SOURCE).toContain('constants.IDENTITY_CALLBACK_SERVER_SECRET');
+      expect(CALLBACK_ROUTE_SOURCE).toContain('constants.IDENTITY_CALLBACK_SERVER_SECRET');
     });
   });
 
   describe('the request', () => {
     it('names the project, and no other source of a project is read', () => {
-      expect(CODE).toContain('const projectId = request.projectId;');
       expect(CODE).not.toContain('PUBLIC_PROJECT_ID');
     });
 
     it('is answered with the token alone, never with a whole sign-in link', () => {
-      expect(CODE).toContain('function respond(result: IdentityCallbackResult, token?: string): Response {');
       expect(CODE).not.toMatch(/session\s*:/);
       expect(CODE).not.toMatch(/action_link\s*:/);
     });
@@ -203,8 +215,8 @@ describe('identity-callback flow conformance', () => {
     it('is created by an invite for the placeholder of the match value', () => {
       const invites = callArguments('generateLink').filter((args) => args.includes("type: 'invite'"));
       expect(invites).toHaveLength(1);
-      expect(invites[0]).toMatch(/email:\s*placeholderAddress\b/);
-      expect(CODE).toContain('const placeholderAddress = placeholderAddressFor(matchValue);');
+      expect(invites[0]).toMatch(/email:\s*placeholderEmail\b/);
+      expect(CODE).toMatch(/placeholderEmail\s*=\s*placeholderEmailFor\(matchValue\)/);
     });
 
     it('passes no address to any admin update', () => {
@@ -216,29 +228,28 @@ describe('identity-callback flow conformance', () => {
       }
     });
 
-    it('finds the account on its placeholder whatever the case of the stored address', () => {
-      const lookup = CODE.slice(CODE.indexOf('function findUserByPlaceholderAddress('));
-      expect(lookup.slice(0, lookup.indexOf('\n}\n'))).toContain(
-        'findUser(supabaseAdmin, (user) => holdsPlaceholderAddress(user, placeholderAddress))'
-      );
+    it('is found by one database function, by the match value and the placeholder email, and never by paging the auth users', () => {
+      expect(CODE).not.toContain('listUsers');
+      const args = rpcArguments('identity_account_find');
+      expect(args).toMatch(/p_match_value:\s*matchValue\s*,/);
+      expect(args).toMatch(/p_placeholder_email:\s*placeholderEmail\s*[,}]/);
       expect(CODE).not.toMatch(/user\.email\s*===/);
     });
 
-    it('looks the account up on its placeholder whenever the invite fails, so a request that lost the race to create it goes on with it', () => {
+    it('is looked up again whenever the invite fails, so a request that lost the race to create it goes on with it', () => {
+      const lookups = positions('findIdentityAccount(supabaseAdmin, matchValue, placeholderEmail)');
+      expect(lookups).toHaveLength(2);
       const inviteAt = firstAt("type: 'invite'");
-      const lookupAt = CODE.indexOf(
-        'account = inviteError ? await findUserByPlaceholderAddress(supabaseAdmin, placeholderAddress) : invited?.user;',
-        inviteAt
-      );
-      expect(lookupAt).toBeGreaterThan(inviteAt);
-      const createFailureAt = CODE.indexOf("throw failure('ERR_ACCOUNT_CREATE_FAILED'", inviteAt);
-      expect(createFailureAt).toBeGreaterThan(lookupAt);
-      expect(CODE.slice(lookupAt, createFailureAt)).toContain('if (inviteError && !account)');
+      expect(lookups[0]).toBeLessThan(inviteAt);
+      const failedAt = CODE.indexOf('if (inviteError) {', inviteAt);
+      expect(failedAt).toBeGreaterThan(inviteAt);
+      expect(lookups[1]).toBeGreaterThan(failedAt);
+      expect(CODE.indexOf("throw failure('ERR_ACCOUNT_CREATE_FAILED'", failedAt)).toBeGreaterThan(lookups[1]);
       expect(CODE).not.toContain("inviteError.code !== 'email_exists'");
     });
 
     it('finishes an account no request has finished yet, and refuses one of another identity', () => {
-      const setupAt = firstAt('existingAccountSetup(account.app_metadata, matchValue)');
+      const setupAt = firstAt('existingAccountSetup(account.appMetadata, matchValue)');
       expect(setupAt).toBeLessThan(firstAt('email_confirm: true'));
       expect(CODE).toMatch(/setup\.kind === 'refuse'/);
       expect(CODE).toContain("initialise = setup.kind === 'initialise';");
@@ -270,8 +281,7 @@ describe('identity-callback flow conformance', () => {
       const values = Array.from(CODE.matchAll(/p_identity_metadata\s*:\s*([^\s,}]+)/g)).map((m) => m[1]);
       expect(values).toHaveLength(1);
       expect(values[0].startsWith('identityAppMetadata(')).toBe(true);
-      const [args] = callArguments('supabaseAdmin.rpc');
-      expect(args).toMatch(/p_identity_metadata:\s*identityAppMetadata\(/);
+      expect(rpcArguments('identity_entity_find_or_create')).toMatch(/p_identity_metadata:\s*identityAppMetadata\(/);
     });
 
     it('never carries the registered-entities record, which the find-or-create alone writes', () => {
@@ -287,9 +297,20 @@ describe('identity-callback flow conformance', () => {
   });
 
   describe('the order', () => {
-    it('decides the entity type from the matrix before any account or row is written', () => {
-      const decidedAt = firstAt('resolveEntityType(');
-      for (const call of ['generateLink(', 'updateUserById(', "rpc('identity_entity_find_or_create'"]) {
+    it('decides the entity type among the types the database allows for the project, before any account or row is written', () => {
+      expect(CODE).not.toContain("from('app_settings')");
+      expect(rpcArguments('identity_provider_entity_types')).toMatch(/p_project_id:\s*projectId\s*[,}]/);
+      const readAt = firstAt("rpc('identity_provider_entity_types'");
+      const parsedAt = firstAt('allowedEntityTypes(allowedAnswer)');
+      const decidedAt = firstAt('resolveEntityType(allowed, request.entityType)');
+      expect(parsedAt).toBeGreaterThan(readAt);
+      expect(decidedAt).toBeGreaterThan(parsedAt);
+      for (const call of [
+        'findIdentityAccount(supabaseAdmin, matchValue',
+        'generateLink(',
+        'updateUserById(',
+        "rpc('identity_entity_find_or_create'"
+      ]) {
         const first = CODE.indexOf(call);
         expect(first, `${call} is not called`).toBeGreaterThan(-1);
         expect(first, `${call} comes before resolveEntityType`).toBeGreaterThan(decidedAt);
@@ -300,8 +321,8 @@ describe('identity-callback flow conformance', () => {
     });
 
     it('resolves the account, then finds or creates the entity and writes the identity metadata, then confirms the placeholder, then generates the link', () => {
-      const serveAt = firstAt('Deno.serve(');
-      const accountAt = CODE.indexOf('findUserByIdentityMatch(supabaseAdmin, matchValue)', serveAt);
+      const handlerAt = firstAt('async function handleRequest(');
+      const accountAt = CODE.indexOf('findIdentityAccount(supabaseAdmin, matchValue', handlerAt);
       const inviteAt = firstAt("type: 'invite'");
       const entityAt = firstAt("rpc('identity_entity_find_or_create'");
       const confirmAt = firstAt('updateUserById(');
@@ -309,8 +330,14 @@ describe('identity-callback flow conformance', () => {
       const linkAt = firstAt("type: 'magiclink'");
 
       expect(occurrences("rpc('identity_entity_find_or_create'")).toBe(1);
-      expect(occurrences('.rpc(')).toBe(1);
-      expect(accountAt).toBeGreaterThan(serveAt);
+      const called = callArguments('supabaseAdmin.rpc').map((args) => args.trimStart().match(/^'([a-z_]+)'/)?.[1]);
+      expect(called.sort()).toEqual([
+        'identity_account_find',
+        'identity_entity_find_or_create',
+        'identity_provider_entity_types'
+      ]);
+      expect(occurrences('.rpc(')).toBe(called.length);
+      expect(accountAt).toBeGreaterThan(handlerAt);
       expect(inviteAt).toBeGreaterThan(accountAt);
       expect(entityAt).toBeGreaterThan(inviteAt);
       expect(confirmAt).toBeGreaterThan(entityAt);
@@ -325,7 +352,7 @@ describe('identity-callback flow conformance', () => {
     it('throws when the find-or-create reports an error, and reads its answer through findOrCreateOutcome', () => {
       const entityAt = firstAt("rpc('identity_entity_find_or_create'");
       const throwAt = CODE.indexOf("if (entityError) throw failure('ERR_ENTITY_RESOLVE_FAILED'", entityAt);
-      const readAt = CODE.indexOf('findOrCreateOutcome(entityAnswer, projectId, entityType)', entityAt);
+      const readAt = CODE.indexOf('findOrCreateOutcome(entityAnswer)', entityAt);
       expect(throwAt).toBeGreaterThan(entityAt);
       expect(readAt).toBeGreaterThan(throwAt);
       expect(readAt).toBeLessThan(firstAt('updateUserById('));
@@ -346,9 +373,7 @@ describe('identity-callback flow conformance', () => {
   describe('the entity type', () => {
     it('reaches the find-or-create as the decided value, never as a literal', () => {
       expect(CODE).toContain('const entityType = decision.entityType;');
-      const calls = callArguments('supabaseAdmin.rpc');
-      expect(calls).toHaveLength(1);
-      expect(calls[0]).toMatch(/p_entity_type:\s*entityType\s*[,}]/);
+      expect(rpcArguments('identity_entity_find_or_create')).toMatch(/p_entity_type:\s*entityType\s*[,}]/);
     });
 
     it('is never named as a literal argument anywhere on the path', () => {
@@ -357,7 +382,7 @@ describe('identity-callback flow conformance', () => {
     });
 
     it("hands the find-or-create the account, the request's project and the names read from the token", () => {
-      const [args] = callArguments('supabaseAdmin.rpc');
+      const args = rpcArguments('identity_entity_find_or_create');
       expect(args).toMatch(/p_user_id:\s*userId\s*,/);
       expect(args).toMatch(/p_project_id:\s*projectId\s*,/);
       expect(args).toMatch(/p_first_name:\s*firstName\s*,/);
@@ -367,9 +392,10 @@ describe('identity-callback flow conformance', () => {
 
   describe('the answers', () => {
     it('builds every answer body with resultBody, in one place', () => {
-      expect(occurrences('new Response(')).toBe(2);
-      expect(occurrences("new Response('ok'")).toBe(1);
-      expect(occurrences('JSON.stringify(')).toBe(1);
+      expect(occurrences('new Response(')).toBe(
+        occurrences("new Response('ok'") + occurrences('new Response(JSON.stringify(resultBody(')
+      );
+      expect(occurrences('JSON.stringify(')).toBe(occurrences('JSON.stringify(resultBody('));
 
       const respondAt = firstAt('function respond(');
       const respondEnd = CODE.indexOf('\n}\n', respondAt);
@@ -389,8 +415,46 @@ describe('identity-callback flow conformance', () => {
     });
 
     it('answers every refusal and failure through respond, with no message of its own', () => {
-      expect(CODE).not.toMatch(/error:\s*'[^']*'/);
+      expect(CODE).not.toMatch(/error:\s*'[^'\n]*'/);
       expect(CODE).not.toContain('Internal server error');
+    });
+  });
+
+  describe('a sign-in', () => {
+    const BRANCH = 'if (request.intent === IDENTITY_CALLBACK_INTENT.sign_in) {';
+
+    /** The sign-in branch of the handler, from its condition to its closing brace. */
+    function signInBranch(): string {
+      const at = firstAt(BRANCH);
+      return CODE.slice(at, CODE.indexOf('\n    }\n', at));
+    }
+
+    it('leaves the registration path after the token and its claims are read, and before the entity type is decided', () => {
+      const branchAt = firstAt(BRANCH);
+      expect(branchAt).toBeGreaterThan(firstAt('extractIdentityClaims(payload, config)'));
+      expect(branchAt).toBeLessThan(firstAt("rpc('identity_provider_entity_types'"));
+      expect(occurrences('signInExistingAccount(')).toBe(1);
+    });
+
+    it('hands signInExistingAccount the account look-up and the one sign-in link, and answers what it comes to', () => {
+      const branch = signInBranch().replace(/\s+/g, ' ');
+      expect(branch).toContain(
+        'findAccount: (value) => findIdentityAccount(supabaseAdmin, value, placeholderEmailFor(value))'
+      );
+      expect(branch).toContain('signInToken: (userId) => signInToken(supabaseAdmin, userId)');
+      expect(branch).toContain("return respond(signIn.result, 'token' in signIn ? signIn.token : undefined);");
+    });
+
+    it.each(['generateLink(', 'updateUserById(', '.rpc(', 'identityAppMetadata(', 'resolveEntityType('])(
+      'invites, confirms, writes and decides nothing itself: %s',
+      (call) => {
+        expect(signInBranch()).not.toContain(call);
+      }
+    );
+
+    it('mints its token with the registration, through the one sign-in link', () => {
+      expect(occurrences('signInToken(supabaseAdmin, ')).toBe(2);
+      expect(CODE).toContain('return respond(result, await signInToken(supabaseAdmin, userId));');
     });
   });
 

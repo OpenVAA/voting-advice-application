@@ -3,22 +3,20 @@ import { missingRequiredEnv, REQUIRED_ENV } from './requiredEnv';
 import type { StartupEnv, StartupRule } from './requiredEnv';
 
 /**
- * Specification for `missingRequiredEnv`: it returns the name of every required variable that is unset, where an empty, whitespace-only or non-string value counts as unset, in rule order with each name once, and it never throws or returns a value from the environment.
+ * Specification for `missingRequiredEnv`: it returns the name of every required variable that is unset, where an empty, whitespace-only or non-string value counts as unset, and of `PUBLIC_PROJECT_ID` when it is also not a canonical uuid, in rule order with each name once, and it never throws or returns a value from the environment.
  */
 
-/** The four required names, restated locally so the cases assert against the contract rather than against the implementation's own export. */
-const REQUIRED_NAMES: ReadonlyArray<string> = [
-  'PUBLIC_SUPABASE_URL',
-  'PUBLIC_SUPABASE_ANON_KEY',
-  'PUBLIC_PROJECT_ID',
-  'ORIGIN'
-];
+/** The three names `REQUIRED_ENV` holds, restated locally so the cases assert against the contract rather than against the implementation's own export. */
+const REQUIRED_NAMES: ReadonlyArray<string> = ['PUBLIC_SUPABASE_URL', 'PUBLIC_SUPABASE_ANON_KEY', 'ORIGIN'];
 
-/** An environment in which every required variable is set, each to a value no other variable has. */
+/** Every name the start-up check refuses to start without, in the order it reports them: the project id's own rule runs after the rule over `REQUIRED_ENV`. */
+const STARTUP_NAMES: ReadonlyArray<string> = [...REQUIRED_NAMES, 'PUBLIC_PROJECT_ID'];
+
+/** An environment in which every required variable is set, each to a value no other variable has, the project id to a canonical uuid. */
 const COMPLETE_ENV: Readonly<Record<string, string>> = {
   PUBLIC_SUPABASE_URL: 'value-of-supabase-url',
   PUBLIC_SUPABASE_ANON_KEY: 'value-of-anon-key',
-  PUBLIC_PROJECT_ID: 'value-of-project-id',
+  PUBLIC_PROJECT_ID: '00000000-0000-0000-0000-0000000000aa',
   ORIGIN: 'value-of-origin'
 };
 
@@ -52,17 +50,17 @@ function extraNames(): Array<string> {
 }
 
 describe('REQUIRED_ENV', () => {
-  it('holds exactly the four required names, in order', () => {
+  it('holds exactly the three required names, in order', () => {
     expect(REQUIRED_ENV).toEqual(REQUIRED_NAMES);
   });
 });
 
 describe('missingRequiredEnv', () => {
-  it('returns an empty array when all four names are set to non-empty values', () => {
+  it('returns an empty array when every required name is set to a usable value', () => {
     expect(missingRequiredEnv(COMPLETE_ENV)).toEqual([]);
   });
 
-  it.each(REQUIRED_NAMES)('returns exactly %s when it alone is absent', (name) => {
+  it.each(STARTUP_NAMES)('returns exactly %s when it alone is absent', (name) => {
     expect(missingRequiredEnv(envWithout(name))).toEqual([name]);
   });
 
@@ -77,6 +75,22 @@ describe('missingRequiredEnv', () => {
     ['only a tab and a newline', '\t\n']
   ])('reports a variable whose value is %s as missing', (_label, value) => {
     expect(missingRequiredEnv({ ...COMPLETE_ENV, PUBLIC_PROJECT_ID: value })).toEqual(['PUBLIC_PROJECT_ID']);
+  });
+
+  // The adapter refuses a project id that is not a canonical uuid on every request, so the start-up check refuses it too.
+  it.each([
+    ['a digit short', '00000000-0000-0000-0000-00000000001'],
+    ['without hyphens', '00000000000000000000000000000001'],
+    ['a non-hexadecimal digit', '00000000-0000-0000-0000-00000000000g'],
+    ['not a uuid at all', 'value-of-project-id']
+  ])('reports PUBLIC_PROJECT_ID when its value is %s', (_label, value) => {
+    expect(missingRequiredEnv({ ...COMPLETE_ENV, PUBLIC_PROJECT_ID: value })).toEqual(['PUBLIC_PROJECT_ID']);
+  });
+
+  it('accepts a project id the adapter normalises: padded and upper-case', () => {
+    expect(
+      missingRequiredEnv({ ...COMPLETE_ENV, PUBLIC_PROJECT_ID: '  00000000-0000-0000-0000-0000000000AA \n' })
+    ).toEqual([]);
   });
 
   // The values come from the process environment, so a non-string is reachable despite the `string` type.
@@ -113,5 +127,42 @@ describe('missingRequiredEnv', () => {
   it('reports ANALYTICS_POSTHOG_KEY when the provider is posthog and no key is set, and nothing when the provider is log', () => {
     expect(missingRequiredEnv({ ...COMPLETE_ENV, ANALYTICS_PROVIDER: 'posthog' })).toEqual(['ANALYTICS_POSTHOG_KEY']);
     expect(missingRequiredEnv({ ...COMPLETE_ENV, ANALYTICS_PROVIDER: 'log' })).toEqual([]);
+  });
+
+  // `STARTUP_RULES` holds the identity-provider rule, so a start that sets up a provider without the callback's shared secret is refused.
+  it.each([
+    ['absent', undefined],
+    ['empty', ''],
+    ['only spaces', '   ']
+  ])(
+    'reports IDENTITY_CALLBACK_SERVER_SECRET when an identity provider is set up and the secret is %s',
+    (_label, secret) => {
+      const env = { ...COMPLETE_ENV, PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'value-of-client-id' } as Record<
+        string,
+        string | undefined
+      >;
+      if (secret !== undefined) env.IDENTITY_CALLBACK_SERVER_SECRET = secret;
+      expect(missingRequiredEnv(env)).toEqual(['IDENTITY_CALLBACK_SERVER_SECRET']);
+    }
+  );
+
+  it('reports nothing for identity-provider sign-in when a provider is set up with the secret', () => {
+    expect(
+      missingRequiredEnv({
+        ...COMPLETE_ENV,
+        PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'value-of-client-id',
+        IDENTITY_CALLBACK_SERVER_SECRET: 'value-of-secret'
+      })
+    ).toEqual([]);
+  });
+
+  it.each([
+    ['absent', undefined],
+    ['empty', ''],
+    ['only spaces', '   ']
+  ])('does not ask for IDENTITY_CALLBACK_SERVER_SECRET when the provider client id is %s', (_label, clientId) => {
+    const env = { ...COMPLETE_ENV } as Record<string, string | undefined>;
+    if (clientId !== undefined) env.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID = clientId;
+    expect(missingRequiredEnv(env)).toEqual([]);
   });
 });

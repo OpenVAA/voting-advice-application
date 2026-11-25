@@ -30,10 +30,9 @@ SET
   settings = settings || jsonb_build_object(
     'contestantApp',
     COALESCE(settings -> 'contestantApp', '{}'::jsonb) || '{
-      "entityTypes": ["candidate", "organization"],
-      "registrationModes": {
-        "candidate": ["identity_provider", "email", "code"],
-        "organization": ["identity_provider", "email", "code"]
+      "servedEntityTypes": {
+        "candidate": {"registrationModes": ["identity_provider", "email", "code"]},
+        "organization": {"registrationModes": ["identity_provider", "email", "code"]}
       }
     }'::jsonb
   )
@@ -230,7 +229,7 @@ SELECT
 SELECT
   is (
     public.claim_invitations (test_id ('project_a')),
-    '{"claimed":[{"scope":"entity","target_type":"candidate","target_id":"52520000-0000-4000-8000-0000000000c1","role":"editor"}],"skipped":[],"password_set":false}'::jsonb,
+    '{"claimed":[{"scope":"entity","target_type":"candidate","target_id":"52520000-0000-4000-8000-0000000000c1","role":"editor"}],"skipped":[]}'::jsonb,
     'an invitation for a grant its user already holds is claimed'
   );
 
@@ -275,7 +274,7 @@ SELECT
 SELECT
   is (
     public.claim_invitations (test_id ('project_a')),
-    '{"claimed":[],"skipped":[{"scope":"entity","target_type":"candidate","target_id":"52520000-0000-4000-8000-0000000000c2","role":"editor","reason":"candidate_has_editor"}],"password_set":false}'::jsonb,
+    '{"claimed":[],"skipped":[{"scope":"entity","target_type":"candidate","target_id":"52520000-0000-4000-8000-0000000000c2","role":"editor","reason":"candidate_has_editor"}]}'::jsonb,
     'an invitation for a candidate another user edits is skipped with the reason candidate_has_editor'
   );
 

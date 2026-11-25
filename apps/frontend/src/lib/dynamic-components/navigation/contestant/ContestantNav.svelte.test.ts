@@ -111,7 +111,7 @@ vi.mock('$lib/contexts/contestant', () => ({
     openFeedbackModal: { current: undefined },
     // A project that serves candidates and lets them register with a code, so the signed-out menu holds its registration item.
     appSettings: {
-      contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: [REGISTRATION_MODE.Code] } }
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [REGISTRATION_MODE.Code] } } }
     },
     answersLocked: false,
     // The question lists say that the entity is asked no opinion question and lacks a required info answer, whatever the task state says.
@@ -130,9 +130,6 @@ vi.mock('$lib/contexts/contestant', () => ({
     },
     get taskState() {
       return state.taskState;
-    },
-    get previewOpen() {
-      return state.taskState.previewOpen;
     },
     get dataRoot() {
       return dataRoot;

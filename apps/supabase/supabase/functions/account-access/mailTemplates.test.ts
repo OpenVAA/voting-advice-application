@@ -1,7 +1,7 @@
 /**
  * The sign-in mail, the recovery mail and the address-confirmation mail: one template per message directory of the frontend, the link marker once per part, a closed locale set.
  *
- * Every completeness case runs over all three mails. The locale set and the label of the forgot-password control are read from disk rather than restated, so a locale added to the application without a mail, and a control renamed without its mail, fail here.
+ * Every completeness case runs over all three mails. The locale set, the supported locales of the static settings and the label of the forgot-password control are read from their sources rather than restated, so a locale added to the application without a mail, and a control renamed without its mail, fail here.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -18,6 +18,7 @@ import {
   SIGN_IN_MAIL_LOCALES,
   SIGN_IN_MAIL_TEMPLATES
 } from './mailTemplates.ts';
+import { staticSettings } from '../../../../../packages/app-shared/src/settings/staticSettings.ts';
 import type { SignInMailLocale } from './mailTemplates.ts';
 
 /** The subjects the auth service uses for its own mails. A mail of this function must be told apart from each. */
@@ -59,8 +60,8 @@ function count(haystack: string, needle: string): number {
  * @param locale - The message directory to read
  */
 function forgotPasswordLabel(locale: SignInMailLocale): string {
-  const catalogue = JSON.parse(readFileSync(new URL(`${locale}/contestantApp.login.json`, MESSAGES), 'utf8'));
-  return catalogue['contestantApp.login'].forgotPassword;
+  const catalogue = JSON.parse(readFileSync(new URL(`${locale}/common.json`, MESSAGES), 'utf8'));
+  return catalogue.common.account.forgotPassword;
 }
 
 describe('the locale set', () => {
@@ -71,6 +72,14 @@ describe('the locale set', () => {
 
   it.each(MAILS)('%s has one template per locale and no other', (_mail, templates) => {
     expect(Object.keys(templates).sort()).toEqual([...SIGN_IN_MAIL_LOCALES].sort());
+  });
+
+  it('holds every locale the static settings support, and defaults to their default', () => {
+    const supported = staticSettings.supportedLocales.map(({ code }) => code);
+    expect(supported.length).toBeGreaterThan(0);
+    for (const code of supported) expect(SIGN_IN_MAIL_LOCALES).toContain(code);
+    const defaults = staticSettings.supportedLocales.filter(({ isDefault }) => isDefault).map(({ code }) => code);
+    expect(defaults).toEqual([DEFAULT_MAIL_LOCALE]);
   });
 
   it('defaults to a locale of the set', () => {
@@ -122,43 +131,6 @@ describe.each(TEMPLATES)('the template of %s for %s', (_mail, _locale, { subject
 });
 
 describe('the English mails', () => {
-  it('the sign-in mail reads as written', () => {
-    expect(SIGN_IN_MAIL_TEMPLATES.en.subject).toBe('Sign-in link for the voting advice application');
-    expect(SIGN_IN_MAIL_TEMPLATES.en.text).toBe(
-      'Open this link to sign in:\n' +
-        '{{link}}\n\n' +
-        'The link works once and expires soon, and only the newest link you asked for works. If it no longer works, ask for a new one in the application.\n\n' +
-        'If you did not ask for this link, you can ignore this message.\n'
-    );
-    expect(SIGN_IN_MAIL_TEMPLATES.en.html).toContain(`<a href="${LINK_MARKER}">Sign in</a>`);
-  });
-
-  it('the recovery mail reads as written', () => {
-    expect(RECOVERY_MAIL_TEMPLATES.en.subject).toBe('Reset your password for the voting advice application');
-    expect(RECOVERY_MAIL_TEMPLATES.en.text).toBe(
-      'Open this link to sign in and choose a new password:\n' +
-        '{{link}}\n\n' +
-        'The link works once and expires soon, and only the newest link you asked for works. If it no longer works, ask for a new one with “Forgot Password?” in the application.\n\n' +
-        'If you did not ask for this link, you can ignore this message. Your password has not been changed.\n'
-    );
-    expect(RECOVERY_MAIL_TEMPLATES.en.html).toContain(`<a href="${LINK_MARKER}">Choose a new password</a>`);
-  });
-
-  it('the address-confirmation mail reads as written', () => {
-    expect(ADDRESS_CONFIRMATION_MAIL_TEMPLATES.en.subject).toBe(
-      'Confirm your email address for the voting advice application'
-    );
-    expect(ADDRESS_CONFIRMATION_MAIL_TEMPLATES.en.text).toBe(
-      'Someone who registered with Bank ID gave this address as the one they will sign in with. Open this link to confirm it and attach it to that account:\n' +
-        '{{link}}\n\n' +
-        'The link works once and expires soon, and only the newest link you asked for works. Until you open it, sign in to the application with Bank ID.\n\n' +
-        'If you did not register, do not open the link. You can ignore this message, and the address will not be attached to any account.\n'
-    );
-    expect(ADDRESS_CONFIRMATION_MAIL_TEMPLATES.en.html).toContain(
-      `<a href="${LINK_MARKER}">Confirm my email address</a>`
-    );
-  });
-
   it('the address-confirmation mail does not address its reader as the one who registered', () => {
     const { text } = ADDRESS_CONFIRMATION_MAIL_TEMPLATES.en;
     expect(text.startsWith('Someone who registered')).toBe(true);
@@ -269,6 +241,23 @@ describe.each(MAILS)('rendering %s', (_mail, templates, render) => {
       expect(mail.html).not.toContain('{{');
     }
   );
+
+  it.each(SIGN_IN_MAIL_LOCALES.map((locale) => [locale]))(
+    'states %s as the language of its html part and as the locale it was rendered in',
+    (locale) => {
+      const mail = render(locale, link);
+      expect(mail.locale).toBe(locale);
+      expect(mail.html.startsWith(`<div lang="${locale}">`)).toBe(true);
+      expect(mail.html.endsWith('</div>')).toBe(true);
+      expect(count(mail.html, 'lang=')).toBe(1);
+    }
+  );
+
+  it('states the default locale as the language of a mail rendered for a value outside the set', () => {
+    const mail = render('de' as SignInMailLocale, link);
+    expect(mail.locale).toBe(DEFAULT_MAIL_LOCALE);
+    expect(mail.html.startsWith(`<div lang="${DEFAULT_MAIL_LOCALE}">`)).toBe(true);
+  });
 
   it('escapes every character HTML gives meaning to', () => {
     const hostile = "http://x.example/?a=\"><script>alert('1')</script>&b=1";

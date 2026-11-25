@@ -5,33 +5,25 @@
  *
  * Usage:
  *
- *   unzip -p <trace.zip> '*.network' | node infra/scripts/load-check/journey-from-trace.mjs \
- *     --base https://staging.openvaa.org --supabase https://<ref>.supabase.co [--resources <dir>] \
- *     [--route-id <route id>] [--locale <locale>] > <journey.json>
+ * ```sh
+ * unzip -p <trace.zip> '*.network' | node infra/scripts/load-check/journey-from-trace.mjs \
+ *   --base https://staging.openvaa.org --supabase https://<ref>.supabase.co [--resources <dir>] \
+ *   [--route-id <route id>] [--locale <locale>] > <journey.json>
+ * ```
  *
  * It reads JSON lines on standard input and keeps the `resource-snapshot` lines whose request it can replay:
  *
- *   - a GET or HEAD to the base origin, as `kind: page` when it is a document navigation and as `kind: asset` otherwise
- *     (a font, a stylesheet, an image, a fetch of an `/api/` endpoint): the trace's `_resourceType` decides when it is
- *     present, `document` being a navigation; without it, a path whose last segment has no file extension and that is
- *     not under `/api/` is a navigation;
+ *   - a GET or HEAD to the base origin, as `kind: page` when it is a document navigation and as `kind: asset` otherwise (a font, a stylesheet, an image, a fetch of an `/api/` endpoint): the trace's `_resourceType` decides when it is present, `document` being a navigation; without it, a path whose last segment has no file extension and that is not under `/api/` is a navigation;
  *   - a GET or HEAD to the Supabase origin, as `kind: data`;
  *   - a POST to the Supabase origin's `/rest/v1/rpc/`, as `kind: data`, with the request body text.
  *
- * Every other request is dropped: another origin (a websocket among them), a path under `/_app/immutable/`,
- * `/auth/v1/` or `/functions/v1/`, the relay at `/api/usage` (the load script posts its own batches), and any other
- * method, so no write is replayed. Of a kept request it copies the method, the URL with its query and, for an RPC, the
- * body; never a header, a cookie or a response. The requests are ordered by their start time.
+ * Every other request is dropped: another origin (a websocket among them), a path under `/_app/immutable/`, `/auth/v1/` or `/functions/v1/`, the relay at `/api/usage` (the load script posts its own batches), and any other method, so no write is replayed. Of a kept request it copies the method, the URL with its query and, for an RPC, the body; never a header, a cookie or a response. The requests are ordered by their start time.
  *
- * An RPC body a trace stores as a resource (`postData._file` as `resources/<name>`, beside an empty `text`, or
- * `postData._sha1`) is read from `--resources <dir>`, the `resources` directory of the unzipped trace.
+ * An RPC body a trace stores as a resource (`postData._file` as `resources/<name>`, beside an empty `text`, or `postData._sha1`) is read from `--resources <dir>`, the `resources` directory of the unzipped trace.
  *
- * It writes the journey, `{ base, routeId, locale, requests }`, as JSON on standard output, and
- * `journey_requests=<n>` on standard error. `--route-id` (default `/(voters)`) and `--locale` (default `en`) are the
- * route id and locale the load script's relay batches carry.
+ * It writes the journey, `{ base, routeId, locale, requests }`, as JSON on standard output, and `journey_requests=<n>` on standard error. `--route-id` (default `/(voters)`) and `--locale` (default `en`) are the route id and locale the load script's relay batches carry.
  *
- * Exit codes: 0 when the journey was written; 1 when the trace yields no request (`journey_requests=0`) or an RPC
- * body could not be read (`journey_bodies_missing=<n>`); 2 on a usage error.
+ * Exit codes: 0 when the journey was written; 1 when the trace yields no request (`journey_requests=0`) or an RPC body could not be read (`journey_bodies_missing=<n>`); 2 on a usage error.
  */
 
 import { readFileSync } from 'node:fs';
@@ -125,8 +117,7 @@ function entryOf(request, flags) {
 }
 
 /**
- * Whether a request to the base origin is a document navigation: by the trace's resource type when it holds one, and
- * otherwise by a path whose last segment has no file extension and that is not under `/api/`.
+ * Whether a request to the base origin is a document navigation: by the trace's resource type when it holds one, and otherwise by a path whose last segment has no file extension and that is not under `/api/`.
  *
  * @param {string | undefined} resourceType - The trace's `_resourceType` of the request, if it holds one.
  * @param {string} pathname - The request's path.
@@ -151,9 +142,7 @@ function bodyOf(postData, resources) {
 }
 
 /**
- * The file name, inside the resources directory, of a body the trace stored as a resource: `_file` as
- * `resources/<name>`, or `_sha1` as `<name>`. `undefined` when the body is not stored as a resource, `null` when the
- * stored name would reach outside the resources directory.
+ * The file name, inside the resources directory, of a body the trace stored as a resource: `_file` as `resources/<name>`, or `_sha1` as `<name>`. `undefined` when the body is not stored as a resource, `null` when the stored name would reach outside the resources directory.
  */
 function resourceNameOf(postData) {
   if (typeof postData?._file === 'string') {

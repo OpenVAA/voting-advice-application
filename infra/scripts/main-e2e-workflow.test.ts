@@ -1,16 +1,10 @@
 /**
  * The Edge Functions' environment of the `e2e-tests` job of `main.yaml`.
  *
- * The local edge runtime reads `apps/supabase/supabase/functions/.env` when the stack starts and does not inherit the
- * root env file, and a running edge runtime keeps the environment it booted with. Without the file, `account-access`
- * throws at request time on its first required variable and every mailed-link flow of the suite times out. Two rules
- * hold the job to that:
+ * The local edge runtime reads `apps/supabase/supabase/functions/.env` when the stack starts and does not inherit the root env file, and a running edge runtime keeps the environment it booted with. Without the file, `account-access` throws at request time on its first required variable and every mailed-link flow of the suite times out. Two rules hold the job to that:
  *
- * - **env-before-start** — a step copies the tracked template `functions/.env.example` to `functions/.env` before the
- *   step that starts Supabase.
- * - **edge-log-on-failure** — a step guarded by `if: failure()` prints `docker logs` of the edge runtime container
- *   after the E2E run and before the stack is stopped, so that a failed run shows what the functions threw. The
- *   container is named after `project_id` of the stack's `config.toml`.
+ * - **env-before-start** — a step copies the tracked template `functions/.env.example` to `functions/.env` before the step that starts Supabase.
+ * - **edge-log-on-failure** — a step guarded by `if: failure()` prints `docker logs` of the edge runtime container after the E2E run and before the stack is stopped, so that a failed run shows what the functions threw. The container is named after `project_id` of the stack's `config.toml`.
  *
  * Each rule is shown red on a mutated in-memory copy, so that its green result on the real file means something.
  */

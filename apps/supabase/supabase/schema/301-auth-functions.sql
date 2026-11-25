@@ -1,6 +1,6 @@
 -- Auth hooks: Custom Access Token Hook and RLS helper functions
 --
--- Depends on: 300-auth-tables.sql (grants table), 106-app-settings.sql (app_settings table), auth.users (Supabase Auth)
+-- Depends on: 300-auth-tables.sql (grants table), 106-app-settings.sql (app_settings table, private.contestant_app_served_entity_types_valid), auth.users (Supabase Auth)
 --
 -- Functions:
 -- - custom_access_token_hook(jsonb) - projects public.grants into the JWT `grants` claim
@@ -13,21 +13,23 @@
 -- - project_open_for_voters(uuid) - the project-level term of public visibility
 -- - private.entity_has_confirmed_nomination(entity_type, uuid, uuid) - the entity-level term of public visibility
 -- - private.nomination_entities_confirmed(uuid) - whether the entity a nomination links is anon-readable
+-- - private.grant_reaches_project(grant_scope_type, entity_type, uuid, uuid) - whether one grant reaches a project; executable by no API role
 -- - user_can(grant_scope_type, uuid, grant_permission, entity_type) - may the caller do this verb to this object; the one predicate the RLS policies delegate their authority decision to
 -- - user_has_account_grant(uuid) - whether the caller holds any role on an account or on one of its projects
--- - private.project_nominations_locked(uuid) - whether a project's nomination editing is locked
--- - private.project_answers_locked(uuid) - whether a project's answers are locked
+-- - private.project_contestant_editing(uuid) - how far an entity's own editor may edit the entity in a project: open, nominationsLocked or locked
+-- - private.project_contestant_app_closed(uuid) - whether a project's Contestant App is switched off; executable by no API role
 -- - private.nomination_exists_in_contest(entity_type, uuid, uuid, uuid, integer) - whether an entity is already nominated at a contest
 -- - private.nomination_id_in_contest(entity_type, uuid, uuid, uuid, integer) - the id of an entity's nomination at a contest
 -- - private.caller_nominated_in_contest(uuid, uuid, integer, grant_permission, entity_type[]) - whether the caller holds a permission on an entity of one of the named types nominated at a contest
 -- - private.caller_unconfirmed_originated_count() - how many unconfirmed organization and alliance nominations the caller has originated
 -- - private.caller_entity_ids(uuid, entity_type) - the entities of one type, in one project, the caller holds an editor grant on; called by get_user_entities and get_entity_user_data
 -- - private.user_password_set(uuid) - whether an account holds a password; executable by no API role
--- - private.caller_password_set() - whether the caller's own account holds a password; called by get_user_entities
--- - private.caller_pending_email_taken() - whether the address the caller's own account is changing to is another account's; called by get_user_entities
+-- - private.caller_password_set() - whether the caller's own account holds a password; called by get_caller_account_state
+-- - private.caller_pending_email_taken() - whether the address the caller's own account is changing to is another account's; called by get_caller_account_state
+-- - private.nominations_listed_under(uuid[]) - whether another nomination is listed under one of the given nominations; called by set_entity_nominations
 -- - private.registration_mode_allowed_in(jsonb, text, text) - the registration-mode rule over stored settings; reads no table
 -- - private.registration_mode_allowed(uuid, text, text) - the rule over one project's settings row; executable by no API role
--- - private.grant_reaches_project(grant_scope_type, entity_type, uuid, uuid) - whether one grant reaches a project; executable by no API role
+-- - identity_provider_entity_types(uuid) - the entity types an identity provider may register in a project; executable by the service role alone
 -- - get_user_project_grants(uuid) - the caller's own grants that reach a project, for the frontend's app-entry gates
 --
 -- The two public-visibility terms are each defined once here and called directly by the eight entity SELECT policies.
@@ -38,7 +40,7 @@
 --
 -- Revoking EXECUTE is not the fix, because a policy expression runs with the querying role's privileges and would fail with `permission denied`. The helpers therefore live in `private`, which is not in PostgREST's exposed schemas (config.toml `[api] schemas`), while the API roles keep USAGE and EXECUTE so policies and SECURITY INVOKER functions, which both run as the caller, can call them. Every call site qualifies the name, so no search_path decides which function runs.
 --
--- What stays in `public`: `user_can` (the Edge Functions call it over RPC) and `user_has_account_grant`, which answer only about the caller's own rows of public.grants; `grant_role_permissions` (the matrix, no row data); `project_open_for_voters` (the frontend calls it); `contestant_app_public_config` in 106-app-settings.sql (the frontend calls it, and it returns five fixed settings values and never a row: whether the Contestant app is accessible, whether answers are locked, the entity types it serves, its registration modes and whether usage events are tracked); and the two storage path helpers (caller-scoped or public by definition). 07-rpc-security.test.sql holds a census of every anon- and authenticated-executable SECURITY DEFINER function in `public`, so a new one has to be added there on purpose.
+-- What stays in `public`: `user_can` (the Edge Functions call it over RPC) and `user_has_account_grant`, which answer only about the caller's own rows of public.grants; `grant_role_permissions` (the matrix, no row data); `project_open_for_voters` (the frontend calls it); `get_public_app_settings` in 106-app-settings.sql (the frontend calls it, and it returns four fixed settings values and never a row: whether the Contestant app is accessible, how far contestants may edit their entities, the entity types it serves with the registration modes of each, and whether usage events are tracked); and the two storage path helpers (caller-scoped or public by definition). 07-rpc-security.test.sql holds a census of every anon- and authenticated-executable SECURITY DEFINER function in `public`, so a new one has to be added there on purpose.
 --------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS private;
 
@@ -461,6 +463,38 @@ SET
 $$;
 
 --------------------------------------------------------------------------------
+-- grant_reaches_project: does one grant reach a project?
+--
+-- The reach rule, stated once for the questions that ask whether a grant counts in a project: user_can below, for a project-scope question asked of an account or a project grant; private.email_holds_grant_in_project in 506-invitation-rpcs.sql, which decides whether a mail may go to an address; and get_user_project_grants, which the frontend's app-entry gates read.
+--
+-- True for a project-scope grant on p_project_id, an entity-scope grant on one of its entities, any global-scope grant, and an account-scope grant on the account p_project_id belongs to, whatever the grant's role. An account grant on another account and a grant on another project or on one of its entities answer false.
+--
+-- It runs as its caller. Every caller is a definer function, so no API role holds EXECUTE: the grant on the `private` schema below reaches it, and the REVOKE after that grant takes it away again.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.grant_reaches_project (
+  p_scope public.grant_scope_type,
+  p_target_type public.entity_type,
+  p_target_id uuid,
+  p_project_id uuid
+) RETURNS boolean LANGUAGE sql STABLE
+SET
+  search_path = '' AS $$
+  SELECT
+    (p_scope = 'project' AND p_target_id = p_project_id)
+    OR (p_scope = 'entity' AND private.entity_project_id(p_target_type, p_target_id) = p_project_id)
+    OR p_scope = 'global'
+    OR (
+      p_scope = 'account'
+      AND EXISTS (
+        SELECT 1
+        FROM public.projects p
+        WHERE p.id = p_project_id
+          AND p.account_id = p_target_id
+      )
+    );
+$$;
+
+--------------------------------------------------------------------------------
 -- user_can: may the caller do this verb to this object?
 --
 -- The predicate the RLS policies delegate their authority decision to. It checks one grant at a time, and a grant says yes only when both halves say yes:
@@ -517,12 +551,14 @@ BEGIN
       RETURN true;
     END IF;
 
+    -- A project-scope question asked of an account or a project grant: the reach rule private.grant_reaches_project states once.
+    IF p_scope = 'project' AND g.scope IN ('account', 'project')
+       AND private.grant_reaches_project(g.scope, g.target_type, g.target_id, p_target_id) THEN
+      RETURN true;
+    END IF;
+
     IF g.scope = 'account' THEN
       IF p_scope = 'account' AND p_target_id = g.target_id THEN RETURN true; END IF;
-      IF p_scope = 'project' THEN
-        SELECT account_id INTO v_account_id FROM public.projects WHERE id = p_target_id;
-        IF v_account_id IS NOT NULL AND v_account_id = g.target_id THEN RETURN true; END IF;
-      END IF;
       IF p_scope = 'entity' THEN
         v_project_id := private.entity_project_id(p_target_type, p_target_id);
         IF v_project_id IS NOT NULL THEN
@@ -534,7 +570,6 @@ BEGIN
     END IF;
 
     IF g.scope = 'project' THEN
-      IF p_scope = 'project' AND p_target_id = g.target_id THEN RETURN true; END IF;
       IF p_scope = 'entity' THEN
         v_project_id := private.entity_project_id(p_target_type, p_target_id);
         IF v_project_id IS NOT NULL AND v_project_id = g.target_id THEN RETURN true; END IF;
@@ -597,50 +632,52 @@ SET
 $$;
 
 --------------------------------------------------------------------------------
--- project_nominations_locked: is this project's nomination editing locked?
+-- project_contestant_editing: how far may an entity's own editor edit the entity in this project?
 --
--- The lock is the app setting `access.nominationsLocked`, stored in the project's row of public.app_settings. It is a stored setting rather than a member of the permission matrix, so it is a conjunct of the nomination policies and this function is the hop they call.
+-- The app setting `access.contestantEditing`, stored in the project's row of public.app_settings. It is a stored setting rather than a member of the permission matrix, so it is a conjunct of the policies it binds and this function is the hop they call. It answers one of three words:
+--   'open'              - an entity's own editor edits everything of the entity.
+--   'nominationsLocked' - it can no longer add, change or delete the entity's nominations: the four entity-scope nomination policies and `set_entity_nominations` ask for 'open', and `set_entity_nominations` refuses an entity's editor with SQLSTATE OV006, a code no other refusal raises.
+--   'locked'            - it writes nothing of the entity: the entity self-update policies of the four entity tables ask for anything but 'locked', the nomination policies for 'open', `upsert_answers` and `set_entity_nominations` refuse an entity's editor with SQLSTATE OV002, a code no other refusal raises, `storage_path_can` (400-storage.sql) refuses an entity-scope write, reading the same key through private.contestant_editing_in, and private.registration_mode_allowed_in allows no registration.
+-- The project-scope policies do not read it, so a project editor and a project admin still write whatever it says.
 --
--- It answers at two levels. The outer one returns true (locked) when the project row is not found, so a missing project never unlocks anything; project_open_for_voters denies with false because its sense is the other way round. The inner one returns false (unlocked) when the project has no settings row or the row does not hold the key, which is the shipped default of the setting.
---
--- Only the JSON boolean true locks. The value is compared as jsonb, so the string "true", a number, a JSON null and an `access` member that is not an object are all unlocked; a comparison of the extracted text would read the string as locked.
+-- It answers at two levels. The outer one answers 'locked' when the project row is not found, so a missing project never opens anything; project_open_for_voters denies with false because its sense is the other way round. The inner one answers 'open' when the project has no settings row, when the row does not hold the key and when the key holds anything but one of the three words as a JSON string (private.contestant_editing_in, 106-app-settings.sql), which is the shipped default of the setting: a boolean, a number, a JSON null and an `access` member that is not an object all read as 'open'.
 --
 -- SECURITY DEFINER because public.projects and public.app_settings both have row-level security enabled, and an inline read would also ask whether the caller can see the project and its settings row.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION private.project_nominations_locked (p_project_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+CREATE OR REPLACE FUNCTION private.project_contestant_editing (p_project_id uuid) RETURNS text LANGUAGE sql STABLE SECURITY DEFINER
 SET
   search_path = '' AS $$
   SELECT COALESCE(
     (
       SELECT COALESCE(
-        (SELECT s.settings #> '{access,nominationsLocked}' = 'true'::jsonb
+        (SELECT private.contestant_editing_in(s.settings)
            FROM public.app_settings s
           WHERE s.project_id = p.id),
-        false
+        'open'
       )
       FROM public.projects p
       WHERE p.id = p_project_id
     ),
-    true
+    'locked'
   );
 $$;
 
 --------------------------------------------------------------------------------
--- project_answers_locked: are this project's answers locked?
+-- project_contestant_app_closed: is this project's Contestant App switched off?
 --
--- The lock is the app setting `access.answersLocked`, stored in the project's row of public.app_settings. While it holds, an entity's own editor writes nothing of the entity: it is a conjunct of the entity self-update policies of the four entity tables and of the four entity-scope nomination policies, `upsert_answers` and `set_entity_nominations` refuse an entity's editor with SQLSTATE 42501, and `storage_path_can` (400-storage.sql) refuses an entity-scope write, reading the same key itself. The project-scope policies do not read it, so a project editor and a project admin still write while answers are locked.
+-- The switch is the app setting `access.contestantApp`, stored in the project's row of public.app_settings. While it is off, no entity invitation is honoured and no identity-provider registration is made: private.invitation_mode_allowed (506-invitation-rpcs.sql) refuses every entity-scope invitation, and public.identity_provider_entity_types below answers no entity type, so an identity provider registers no one.
 --
--- It reads as project_nominations_locked does. A missing project reads as locked, so a missing project never unlocks anything; a project with no settings row, or a row that does not hold the key, reads as unlocked. Only the JSON boolean true locks: the value is compared as jsonb, so the string "true", a number and a JSON null are unlocked.
+-- It reads as project_contestant_editing does, for a key of its own. A missing project reads as closed, so a missing project never opens anything; a project with no settings row, or a row that does not hold the key, reads as open, which is the shipped default of the setting. Only the JSON boolean false closes: the value is compared as jsonb, so the string "false", a number and a JSON null are open.
 --
--- SECURITY DEFINER because public.projects and public.app_settings both have row-level security enabled, and an inline read would also ask whether the caller can see the project and its settings row.
+-- SECURITY DEFINER because public.projects and public.app_settings both have row-level security enabled. Only definer functions call it, as their owner, so no API role holds EXECUTE: the grant on the `private` schema below reaches it, and the REVOKE after that grant takes it away again.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION private.project_answers_locked (p_project_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+CREATE OR REPLACE FUNCTION private.project_contestant_app_closed (p_project_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
 SET
   search_path = '' AS $$
   SELECT COALESCE(
     (
       SELECT COALESCE(
-        (SELECT s.settings #> '{access,answersLocked}' = 'true'::jsonb
+        (SELECT s.settings #> '{access,contestantApp}' = 'false'::jsonb
            FROM public.app_settings s
           WHERE s.project_id = p.id),
         false
@@ -731,7 +768,7 @@ $$;
 --
 -- p_caller_types is what pairs a row with the caller that may create it. `entity_insert_parent_nominations` passes the types of entity that stand under the row being inserted, so holding the permission on an entity of another type nominated at the contest does not answer yes. A NULL or empty array answers false.
 --
--- A row-level WITH CHECK sees only the row being inserted, so "the caller is inserting their own nomination in the same transaction" cannot be expressed here. The order of the three statements a child writes makes that moot: its own nomination with no parent, then the parent's nomination, then its own nomination pointed at the parent's. Where the election's type requires the child's nomination to have a parent, `validate_nomination_parent_required` judges the first row when the transaction ends, after the third statement has given it one.
+-- A row-level WITH CHECK sees only the row being inserted, so "the caller is inserting their own nomination in the same transaction" cannot be expressed here. The order of the three statements a child writes makes that moot: its own nomination with no parent, then the parent's nomination, then its own nomination pointed at the parent's. Where the election's nomination shape requires the child's nomination to have a parent, `validate_nomination_parent_required` judges the first row when the transaction ends, after the third statement has given it one.
 --
 -- Denies (returns false) when no row is found.
 --------------------------------------------------------------------------------
@@ -814,9 +851,34 @@ EXECUTE ON ALL FUNCTIONS IN SCHEMA private TO anon,
 authenticated,
 service_role;
 
--- The grant above also reaches `private.feedback_client_ip` (107-feedback.sql). No policy calls it; only the SECURITY DEFINER trigger `check_feedback_rate_limit` does, so the API roles get no EXECUTE on it.
+-- The grant above also reaches `private.feedback_client_ip` and `private.client_address_bucket` (107-feedback.sql). No policy calls either; only the SECURITY DEFINER trigger `check_feedback_rate_limit` and, for the second, the SECURITY DEFINER function `access_caller_take` do, so the API roles get no EXECUTE on them.
 REVOKE
-EXECUTE ON FUNCTION private.feedback_client_ip (json, boolean)
+EXECUTE ON FUNCTION private.feedback_client_ip (json, boolean),
+private.client_address_bucket (text)
+FROM
+  anon,
+  authenticated,
+  service_role;
+
+-- The grant above also reaches the two helpers defined before it that no policy calls: private.grant_reaches_project, which user_can asks, and private.project_contestant_app_closed, which invitation_mode_allowed and identity_provider_entity_types ask. Their callers are definer functions, so no role but the owner may execute them.
+REVOKE
+EXECUTE ON FUNCTION private.grant_reaches_project (
+  public.grant_scope_type,
+  public.entity_type,
+  uuid,
+  uuid
+),
+private.project_contestant_app_closed (uuid)
+FROM
+  PUBLIC,
+  anon,
+  authenticated,
+  service_role;
+
+-- The grant above also reaches `private.contestant_app_served_entity_types_valid` and `private.contestant_editing_in` (106-app-settings.sql). No policy calls either; only definer functions do, as their owner (`get_public_app_settings` and `registration_mode_allowed` the first, those two, `project_contestant_editing` and `storage_path_can` the second), so the API roles get no EXECUTE on them.
+REVOKE
+EXECUTE ON FUNCTION private.contestant_app_served_entity_types_valid (jsonb),
+private.contestant_editing_in (jsonb)
 FROM
   anon,
   authenticated,
@@ -829,7 +891,7 @@ FROM
 --
 -- It reads true for accounts whose owner never chose a password: the auth service stores the hash of a generated password for an account created by a service-side `createUser`, for a new account created by a `magiclink` link, and when an `invite` token is verified. True therefore means that the account holds some password, not that its owner chose one; a caller that needs the second has to record it itself.
 --
--- It takes the id of any account, so no API role may execute it: published to one, it would say whether somebody else's account has a password. Only definer functions call it, as their owner and for `auth.uid()`: private.caller_password_set below and claim_invitations in 506-invitation-rpcs.sql. It is defined after the grant on the `private` schema above, which therefore does not reach it, and the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function.
+-- It takes the id of any account, so no API role may execute it: published to one, it would say whether somebody else's account has a password. Only private.caller_password_set below calls it, as its owner and for `auth.uid()`. It is defined after the grant on the `private` schema above, which therefore does not reach it, and the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function.
 --
 -- SECURITY DEFINER because no API role can read auth.users.
 --------------------------------------------------------------------------------
@@ -852,11 +914,11 @@ FROM
 --------------------------------------------------------------------------------
 -- caller_password_set: does the caller's own account hold a password?
 --
--- Answers private.user_password_set for `auth.uid()`. It takes no argument, so it answers for nobody else: there is nothing a caller could pass to point it at another account. get_user_entities in 503-entity-rpcs.sql calls it for its `password_set` key.
+-- Answers private.user_password_set for `auth.uid()`. It takes no argument, so it answers for nobody else: there is nothing a caller could pass to point it at another account. get_caller_account_state in 503-entity-rpcs.sql calls it for its `password_set` key.
 --
 -- It returns null for a caller that is not signed in: with no account to read there is no fact, and null is neither "set" nor "not set".
 --
--- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_user_entities runs with its caller's rights, so the role that may call it must be able to call this one.
+-- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_caller_account_state runs with its caller's rights, so the role that may call it must be able to call this one.
 --
 -- SECURITY DEFINER because it reads auth.users, which no API role can.
 --------------------------------------------------------------------------------
@@ -880,11 +942,11 @@ EXECUTE ON FUNCTION private.caller_password_set () TO authenticated;
 --------------------------------------------------------------------------------
 -- caller_pending_email_taken: is the address the caller's account is changing to already another account's?
 --
--- True when the caller's row of auth.users, the row `auth.uid()` names, holds a non-empty pending address (`email_change`) and another row's address equals it, both compared trimmed and lower-cased. False otherwise, for a caller with no pending address, and where no caller is signed in. get_user_entities in 503-entity-rpcs.sql calls it for its `pending_email_taken` key.
+-- True when the caller's row of auth.users, the row `auth.uid()` names, holds a non-empty pending address (`email_change`) and another row's address equals it, both compared trimmed and lower-cased. False otherwise, for a caller with no pending address, and where no caller is signed in. get_caller_account_state in 503-entity-rpcs.sql calls it for its `pending_email_taken` key.
 --
--- It answers for the caller alone. It takes no argument and reads one pending address, the caller's own, so each answer is about the one address the caller's account is changing to and never about an address the caller merely names: to ask about another address, a caller has to make it its own pending address first, which the application does only through the address-confirmation request that public.address_confirmation_request limits per account.
+-- It answers for the caller alone. It takes no argument and reads one pending address, the caller's own, so each answer is about the one address the caller's account is changing to and never about an address the caller merely names: to ask about another address, a caller has to make it its own pending address first, which the application does only through the address-confirmation request that public.email_confirmation_request limits per account.
 --
--- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_user_entities runs with its caller's rights, so the role that may call it must be able to call this one.
+-- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_caller_account_state runs with its caller's rights, so the role that may call it must be able to call this one.
 --
 -- SECURITY DEFINER because it reads auth.users, which no API role can.
 --------------------------------------------------------------------------------
@@ -917,15 +979,47 @@ GRANT
 EXECUTE ON FUNCTION private.caller_pending_email_taken () TO authenticated;
 
 --------------------------------------------------------------------------------
+-- nominations_listed_under: is another nomination listed under one of these?
+--
+-- True when a nomination whose `parent_nomination_id` is one of p_ids exists and is not itself one of p_ids; false otherwise, and for a NULL or empty array. set_entity_nominations asks it before it deletes the given rows, so a delete the foreign key on `parent_nomination_id` would refuse is refused first, with a code of its own.
+--
+-- The nominations listed under a row are mostly other entities' rows, which the caller may not read, so the question cannot be asked as the caller. It says only whether such a row exists, never which, and only of the rows the caller is about to delete; the foreign key's own refusal would say as much.
+--
+-- `authenticated` alone holds EXECUTE: set_entity_nominations runs with its caller's rights, and the grant on the `private` schema above does not reach a function defined after it.
+--
+-- SECURITY DEFINER because row-level security hides other entities' nominations from the caller.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.nominations_listed_under (p_ids uuid[]) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.nominations c
+    WHERE c.parent_nomination_id = ANY (p_ids)
+      AND c.id <> ALL (p_ids)
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.nominations_listed_under (uuid[])
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.nominations_listed_under (uuid[]) TO authenticated;
+
+--------------------------------------------------------------------------------
 -- registration_mode_allowed_in: may entities of this type register with this mode, under these stored settings?
 --
--- The registration-mode rule, as a function of the stored settings alone. It reads `contestantApp.entityTypes` and `contestantApp.registrationModes` of p_settings and no table:
+-- The registration-mode rule, as a function of the stored settings alone. It reads `access.contestantEditing` and `contestantApp.servedEntityTypes` of p_settings and no table:
+-- - `access.contestantEditing` must not be the JSON string `locked`: while an entity's own editor may change nothing of it, nobody may register as one, by any mode;
 -- - the entity type must be `candidate` or `organization` and the mode one of `identity_provider`, `email` and `code`;
--- - the type must be served: listed in the stored list of entity types when that list is an array naming at least one of the two types, and otherwise `candidate` alone is served;
--- - the stored matrix must be an object, the type's row in it an array, and the array must hold the mode.
--- Everything else is false: settings that are null or store nothing, a matrix or a row of another JSON type, a row for a type that is not served, and a null argument.
+-- - the stored `contestantApp.servedEntityTypes` must be one private.contestant_app_served_entity_types_valid (106-app-settings.sql) accepts, so a value the screens refuse allows no registration for any type;
+-- - the type must be a key of it, and the key's `registrationModes` must hold the mode.
+-- Everything else is false: settings that are null or store nothing, which serve the shipped default of candidates with no mode, a type that is not a key, and a null argument.
 --
--- `isRegistrationModeAllowed` in @openvaa/app-shared is the same rule for the screens. 45-registration-mode-matrix.test.sql holds one table of rows that this function is asserted against, and a unit test asserts the TypeScript accessor against the same rows.
+-- `isRegistrationModeAllowed` in @openvaa/app-shared is the same rule for the screens, read over the settings the stored-settings schema has parsed. 45-registration-mode-matrix.test.sql holds one table of rows that this function is asserted against, and a unit test asserts the TypeScript accessor against the same rows.
 --
 -- Only private.registration_mode_allowed below calls it, as its owner, so no API role holds EXECUTE: the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function, and the grant on the `private` schema above does not reach a function defined after it.
 --------------------------------------------------------------------------------
@@ -933,22 +1027,16 @@ CREATE OR REPLACE FUNCTION private.registration_mode_allowed_in (p_settings json
 SET
   search_path = '' AS $$
   SELECT COALESCE(
-    p_entity_type IN ('candidate', 'organization')
+    private.contestant_editing_in(p_settings) IS DISTINCT FROM 'locked'
+    AND p_entity_type IN ('candidate', 'organization')
     AND p_mode IN ('identity_provider', 'email', 'code')
-    AND CASE
-      WHEN jsonb_typeof(c.entity_types) = 'array' AND (c.entity_types ? 'candidate' OR c.entity_types ? 'organization')
-        THEN c.entity_types ? p_entity_type
-      ELSE p_entity_type = 'candidate'
-    END
-    AND jsonb_typeof(c.modes) = 'object'
-    AND jsonb_typeof(c.modes -> p_entity_type) = 'array'
-    AND (c.modes -> p_entity_type) ? p_mode,
+    AND private.contestant_app_served_entity_types_valid(p_settings)
+    AND jsonb_typeof(c.modes) = 'array'
+    AND c.modes ? p_mode,
     false
   )
   FROM (
-    SELECT
-      p_settings #> '{contestantApp,entityTypes}' AS entity_types,
-      p_settings #> '{contestantApp,registrationModes}' AS modes
+    SELECT p_settings #> ARRAY['contestantApp', 'servedEntityTypes', p_entity_type, 'registrationModes'] AS modes
   ) c;
 $$;
 
@@ -962,7 +1050,7 @@ FROM
 --------------------------------------------------------------------------------
 -- registration_mode_allowed: does this project allow this registration mode for this entity type?
 --
--- Answers private.registration_mode_allowed_in for the settings of p_project_id's row in public.app_settings, and false when the project has no row. private.invitation_mode_allowed in 506-invitation-rpcs.sql calls it for an invitation's project, target type and mode.
+-- Answers private.registration_mode_allowed_in for the settings of p_project_id's row in public.app_settings, and false when the project has no row. private.invitation_mode_allowed in 506-invitation-rpcs.sql calls it for an invitation's project, target type and mode, and identity_provider_entity_types below for each type with the mode `identity_provider`.
 --
 -- No API role holds EXECUTE: it answers for any project, a closed one included, and only definer functions call it, as their owner.
 --
@@ -993,48 +1081,32 @@ FROM
   authenticated;
 
 --------------------------------------------------------------------------------
--- grant_reaches_project: does one grant reach a project?
+-- identity_provider_entity_types: which entity types may an identity provider register in this project?
 --
--- The reach rule, stated once for the questions that ask which of a user's grants count in a project: private.email_holds_grant_in_project in 506-invitation-rpcs.sql, which decides whether a mail may go to an address, and get_user_project_grants below, which the frontend's app-entry gates read.
+-- The entity types, as a text array in the canonical order candidate, organization, for which private.registration_mode_allowed holds for p_project_id with the mode `identity_provider`: the types the project serves whose registration modes hold that mode. Empty when the project's Contestant App is switched off (private.project_contestant_app_closed), when the project stores no settings row or allows the mode for no type, for a project that does not exist and for a null project.
 --
--- True for a project-scope grant on p_project_id, an entity-scope grant on one of its entities, any global-scope grant, and an account-scope grant on the account p_project_id belongs to, whatever the grant's role. An account grant on another account and a grant on another project or on one of its entities answer false.
+-- The identity-callback Edge Function asks it before it touches any account or row, and chooses the entity type it registers among the answer: a type outside it is answered `mode_not_allowed`. The rule itself is registration_mode_allowed_in's and is stated nowhere else.
 --
--- It runs as its caller. Both callers are definer functions, so no API role holds EXECUTE: the grant on the `private` schema above does not reach a function defined after it, and the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function.
+-- SECURITY DEFINER because it reads the settings of a project the caller may not read. It answers for any project, a closed one included, so the service role alone may execute it.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION private.grant_reaches_project (
-  p_scope public.grant_scope_type,
-  p_target_type public.entity_type,
-  p_target_id uuid,
-  p_project_id uuid
-) RETURNS boolean LANGUAGE sql STABLE
+CREATE OR REPLACE FUNCTION public.identity_provider_entity_types (p_project_id uuid) RETURNS text[] LANGUAGE sql STABLE SECURITY DEFINER
 SET
   search_path = '' AS $$
-  SELECT
-    (p_scope = 'project' AND p_target_id = p_project_id)
-    OR (p_scope = 'entity' AND private.entity_project_id(p_target_type, p_target_id) = p_project_id)
-    OR p_scope = 'global'
-    OR (
-      p_scope = 'account'
-      AND EXISTS (
-        SELECT 1
-        FROM public.projects p
-        WHERE p.id = p_project_id
-          AND p.account_id = p_target_id
-      )
-    );
+  SELECT COALESCE(array_agg(t.entity_type ORDER BY t.ordinal), ARRAY[]::text[])
+  FROM (VALUES (1, 'candidate'), (2, 'organization')) AS t (ordinal, entity_type)
+  WHERE NOT private.project_contestant_app_closed(p_project_id)
+    AND private.registration_mode_allowed(p_project_id, t.entity_type, 'identity_provider');
 $$;
 
 REVOKE
-EXECUTE ON FUNCTION private.grant_reaches_project (
-  public.grant_scope_type,
-  public.entity_type,
-  uuid,
-  uuid
-)
+EXECUTE ON FUNCTION public.identity_provider_entity_types (uuid)
 FROM
   PUBLIC,
   anon,
   authenticated;
+
+GRANT
+EXECUTE ON FUNCTION public.identity_provider_entity_types (uuid) TO service_role;
 
 --------------------------------------------------------------------------------
 -- get_user_project_grants: which of the caller's grants count in a project?

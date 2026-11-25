@@ -2,11 +2,12 @@
   "privacy": {
     "analytics": {
       "content": {
-        "free": "See rakendus kogub kasutusandmeid sinult eraldi küsimata. Need hõlmavad sinu vastuseid küsimustele, rakenduses veedetud aega ja vaadatud tulemusi. Iga sündmus, mis paljastab vastuse või eelistuse, saadetakse eraldi, ilma tunnuseta, mis oleks ühine mõne teise sündmusega, nii et sinu vastuseid ei saa omavahel ega vaadatud lehtedega siduda. Andmed saadetakse selle saidi enda serveri kaudu, mis ei edasta sinu võrguaadressi ega brauseri tunnusandmeid. Sinu seadmesse ei salvestata selle kohta midagi.",
-        "gated": "Kasutusandmeid kogutakse ainult siis, kui sa sellega nõustud. Need hõlmavad sinu vastuseid küsimustele, rakenduses veedetud aega ja vaadatud tulemusi. Ühe külastuse sündmused seotakse kõige enam tunnusega, mida hoitakse ainult lehe mälus ja mis kaob, kui leht uuesti laaditakse või suletakse. Andmed saadetakse selle saidi enda serveri kaudu, mis ei edasta sinu võrguaadressi ega brauseri tunnusandmeid. Sinu seadmesse ei salvestata selle kohta midagi peale sinu valiku. Selles brauseris tehtud valik kehtib kõigi selles avatud rakenduse osade kohta ja sa saad seda privaatsuslehel muuta."
+        "free": "See rakendus kogub kasutusandmeid sinult eraldi küsimata. Need hõlmavad sinu vastuseid küsimustele, rakenduses veedetud aega ja vaadatud tulemusi. Iga sündmus, mis paljastab vastuse või eelistuse, ei kanna ühtegi tunnust, mida jagaks mõni teine sündmus, ja ka lehevaatamised ei kanna tunnust. Nagu iga teinegi sündmus, salvestab see siiski oma toimumise aja. Andmed saadetakse selle saidi enda serveri kaudu, mis ei edasta sinu võrguaadressi ega brauseri tunnusandmeid. Sinu seadmesse ei salvestata selle kohta midagi.",
+        "gated": "Kasutusandmeid kogutakse ainult siis, kui sa sellega nõustud. Need hõlmavad sinu vastuseid küsimustele, rakenduses veedetud aega ja vaadatud tulemusi. Ühe külastuse sündmused seotakse kõige enam tunnusega, mida hoitakse ainult lehe mälus ja mis kaob, kui leht uuesti laaditakse või suletakse. Andmed saadetakse selle saidi enda serveri kaudu, mis ei edasta sinu võrguaadressi ega brauseri tunnusandmeid. Sinu seadmesse ei salvestata selle kohta midagi peale sinu valiku. Selles brauseris tehtud valik kehtib selle rakenduse osa kohta, kus see tehti: kandidaatide ja erakondade rakendusel on oma valik ning valijarakendus ja haldusrakendus jagavad teist. Sa saad mõlemat privaatsuslehel muuta."
       },
       "gpc": "Kui sinu brauser saadab Global Privacy Control signaali, ei koguta midagi, isegi mitte lehevaatamiste arvu, ja sinult ei küsita. Signaali meelespidamiseks ei salvestata midagi.",
       "pageviews": "Lehevaatamisi loendatakse ka siis, kui muid kasutusandmeid ei koguta: mis tüüpi leht avati, mis keeles ja kui kauaks. Need andmed ei sisalda aga näiteks seda, millise erakonna või kandidaadi andmeid vaadati. Loendusel ei ole tunnust.",
+      "survey": "Kui avad kasutajaküsitluse, lisatakse külastuse tunnus küsitluse lingile, et sinu küsitluse vastuseid saaks siduda selle külastuse kasutusandmetega.",
       "title": "Analüütika"
     },
     "cookies": {
@@ -51,7 +52,10 @@
       "label": "Ära kogu kasutusandmeid selle kohta, kuidas ma rakendust kasutan"
     },
     "usageData": {
-      "content": "Rakenduse kasutamist mõõdetakse samal viisil valijate rakenduses, kandidaatide ja erakondade rakenduses ning haldusvaates. Kasutustingimustega nõustudes lubad koguda kasutusandmeid selle kohta, kuidas sa kandidaatide ja erakondade rakendust kasutad, kui sa ei märgi tingimuste all olevat kasti. Lehevaatamisi loendatakse ilma tunnuseta, nagu privaatsuslehel kirjeldatud. Sinu valik kehtib kõigi selles brauseris avatud rakenduse osade kohta ja sa saad seda hiljem privaatsuslehel muuta.",
+      "content": {
+        "free": "Rakenduse kasutamist mõõdetakse samal viisil valijate rakenduses, kandidaatide ja erakondade rakenduses ning haldusvaates. Kasutusandmeid selle kohta, kuidas sa kandidaatide ja erakondade rakendust kasutad, kogutakse ilma eraldi valikuta. Lehevaatamisi loendatakse ilma tunnuseta, nagu privaatsuslehel kirjeldatud.",
+        "gated": "Rakenduse kasutamist mõõdetakse samal viisil valijate rakenduses, kandidaatide ja erakondade rakenduses ning haldusvaates. Kasutustingimustega nõustudes lubad koguda kasutusandmeid selle kohta, kuidas sa kandidaatide ja erakondade rakendust kasutad, kui sa ei märgi tingimuste all olevat kasti. Lehevaatamisi loendatakse ilma tunnuseta, nagu privaatsuslehel kirjeldatud. Sinu valik kehtib ainult selles brauseris avatud kandidaatide ja erakondade rakenduse kohta ja sa saad seda hiljem privaatsuslehel muuta."
+      },
       "title": "Kasutusandmed"
     }
   }

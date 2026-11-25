@@ -40,11 +40,11 @@
       "incomplete": "Ikke fuldført endnu.",
       "incompleteCount": [
         {
-          "declarations": ["input count", "local countPlural = count: plural"],
-          "selectors": ["countPlural"],
+          "declarations": ["input count"],
+          "selectors": ["count"],
           "match": {
-            "countPlural=one": "Ikke fuldført endnu: ét punkt mangler.",
-            "countPlural=*": "Ikke fuldført endnu: {count} punkter mangler."
+            "count=1": "Ikke fuldført endnu: ét punkt mangler.",
+            "count=*": "Ikke fuldført endnu: {count} punkter mangler."
           }
         }
       ]

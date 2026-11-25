@@ -10,7 +10,7 @@ variable "iam_path" {
 }
 
 variable "environment" {
-  description = "Name of the GitHub Environment the deploy role is bound to. It also names the deploy role and its state policy."
+  description = "Name of the deployment environment, for example \"staging\". It names the deploy role and its state policy, and the frontend resources and log group the deploy policies are scoped to. It is not a GitHub Environment: the GitHub Environments trusted to assume the deploy role are the subjects in deploy_subjects."
   type        = string
 }
 

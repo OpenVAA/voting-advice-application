@@ -6,32 +6,45 @@
  * An answer is built here from one result of a closed set and carries no caught message, because a message from the token's decryption or verification would tell an unauthenticated caller which check its token failed. A token is returned only with a success.
  */
 
-import { ENTITY_TYPES } from './registrationMatrix.ts';
+import { isServedEntityType } from './registrationMatrix.ts';
+import { isPlainObject, isUuid } from '../_shared/guards.ts';
 import type { ServedEntityType } from './registrationMatrix.ts';
 
-/** An entity type a request may name: one the registration-mode rule decides about. */
-export type RequestedEntityType = ServedEntityType;
+/**
+ * What a request asks for: `register`, which finds or creates the identity's account and its entity, or `sign_in`, which signs in the identity's existing account and creates nothing.
+ */
+export const IDENTITY_CALLBACK_INTENT = Object.freeze({
+  register: 'register',
+  sign_in: 'sign_in'
+} as const);
+
+/** One intent of a request. */
+export type IdentityCallbackIntent = (typeof IDENTITY_CALLBACK_INTENT)[keyof typeof IDENTITY_CALLBACK_INTENT];
 
 /** A parsed request. */
 export interface IdentityCallbackRequest {
+  /** What the request asks for: `register` when the body names no intent. */
+  intent: IdentityCallbackIntent;
   /** The ID token as sent, compact-serialised, signed or encrypted. */
   idToken: string;
   /** The project the registration is for, lower-cased. */
   projectId: string;
-  /** The entity type the caller asks for, or null when the body names none. */
-  entityType: RequestedEntityType | null;
+  /** The entity type the caller asks for, or null when the body names none. Always null for a sign-in. */
+  entityType: ServedEntityType | null;
 }
 
 /**
  * The results the function answers with, each keyed by its own spelling.
  *
- * `created`, `found` and `no_entity` are the successes: an entity was created, an existing one was found, or the identity holds no entity to sign in to. The others are failures: the registration mode is not allowed for the type, the token did not verify, the request could not be read, the caller was refused, the deployment is not configured, or a dependency did not answer.
+ * `created`, `found` and `no_entity` are the successes of a registration: an entity was created, an existing one was found, or the identity holds no entity to sign in to. `signed_in` is the success of a sign-in: the identity's existing account was signed in. The others are failures: the registration mode is not allowed for the type, the identity has no account to sign in to, the token did not verify, the request could not be read, the caller was refused, the deployment is not configured, or a dependency did not answer.
  */
 export const IDENTITY_CALLBACK_RESULT = Object.freeze({
   created: 'created',
   found: 'found',
   no_entity: 'no_entity',
+  signed_in: 'signed_in',
   mode_not_allowed: 'mode_not_allowed',
+  no_account: 'no_account',
   invalid_token: 'invalid_token',
   bad_request: 'bad_request',
   refused: 'refused',
@@ -43,14 +56,16 @@ export const IDENTITY_CALLBACK_RESULT = Object.freeze({
 export type IdentityCallbackResult = (typeof IDENTITY_CALLBACK_RESULT)[keyof typeof IDENTITY_CALLBACK_RESULT];
 
 /** A result that comes with a token. */
-type SuccessResult = 'created' | 'found' | 'no_entity';
+type SuccessResult = 'created' | 'found' | 'no_entity' | 'signed_in';
 
 /** The HTTP status of each result. */
 const RESULT_STATUS: Readonly<Record<IdentityCallbackResult, number>> = Object.freeze({
   created: 200,
   found: 200,
   no_entity: 200,
+  signed_in: 200,
   mode_not_allowed: 403,
+  no_account: 404,
   invalid_token: 401,
   bad_request: 400,
   refused: 401,
@@ -58,56 +73,48 @@ const RESULT_STATUS: Readonly<Record<IdentityCallbackResult, number>> = Object.f
   unavailable: 503
 });
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /** The longest ID token read. An encrypted token of the supported providers is a few kilobytes. */
 const ID_TOKEN_MAX_LENGTH = 16384;
-
-function isAbsent(value: unknown): value is undefined | null {
-  return value === undefined || value === null;
-}
-
-function isRequestedEntityType(value: unknown): value is RequestedEntityType {
-  return ENTITY_TYPES.some((entityType) => entityType === value);
-}
-
-/** A value that is one of the results, against a runtime value of any kind. */
-function asResult(result: unknown): IdentityCallbackResult {
-  return typeof result === 'string' && Object.hasOwn(RESULT_STATUS, result)
-    ? (result as IdentityCallbackResult)
-    : IDENTITY_CALLBACK_RESULT.unavailable;
-}
-
-function isSuccess(result: IdentityCallbackResult): result is SuccessResult {
-  return RESULT_STATUS[result] === 200;
-}
 
 /**
  * Parse a request body.
  *
- * Unknown keys are ignored. The project is required: the function serves every project of a deployment, and only the request says which one a registration is for. An absent or null `entity_type` reads as none; one that is present with any other value than an entity type of the closed set makes the whole body malformed.
+ * Unknown keys are ignored. The project is required: the function serves every project of a deployment, and only the request says which one a registration is for. An absent or null `intent` reads as `register`; one that is present with any other value than an intent of the closed set makes the whole body malformed. An absent or null `entity_type` reads as none; one that is present with any other value than an entity type of the closed set makes the whole body malformed, and so does any present type on a sign-in, which creates no entity.
  *
  * @param body - The decoded JSON body, of any shape
- * @returns The parsed request, or null when the body is not an object, carries no ID token of one to 16384 characters, carries no project that is a uuid, or carries an entity type that is not acceptable
+ * @returns The parsed request, or null when the body is not an object, carries no ID token of one to 16384 characters, carries no project that is a uuid, carries an intent that is not acceptable, or carries an entity type that is not acceptable for its intent
  */
 export function parseIdentityCallbackRequest(body: unknown): IdentityCallbackRequest | null {
-  if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
-  const { id_token: idToken, project_id: project, entity_type: entityType } = body as Record<string, unknown>;
+  if (!isPlainObject(body)) return null;
+  const { id_token: idToken, project_id: project, entity_type: entityType, intent: namedIntent } = body;
 
   if (typeof idToken !== 'string' || idToken.length === 0 || idToken.length > ID_TOKEN_MAX_LENGTH) return null;
 
-  if (typeof project !== 'string' || !UUID_PATTERN.test(project)) return null;
+  if (!isUuid(project)) return null;
 
-  if (!isAbsent(entityType) && !isRequestedEntityType(entityType)) return null;
+  const intent = isAbsent(namedIntent) ? IDENTITY_CALLBACK_INTENT.register : asIntent(namedIntent);
+  if (!intent) return null;
 
-  return { idToken, projectId: project.toLowerCase(), entityType: isAbsent(entityType) ? null : entityType };
+  if (!isAbsent(entityType) && (intent === IDENTITY_CALLBACK_INTENT.sign_in || !isServedEntityType(entityType)))
+    return null;
+
+  return { intent, idToken, projectId: project.toLowerCase(), entityType: isAbsent(entityType) ? null : entityType };
+}
+
+/** The intent a present value names, or null for a value that is no intent. */
+function asIntent(value: unknown): IdentityCallbackIntent | null {
+  return value === IDENTITY_CALLBACK_INTENT.register || value === IDENTITY_CALLBACK_INTENT.sign_in ? value : null;
+}
+
+function isAbsent(value: unknown): value is undefined | null {
+  return value === undefined || value === null;
 }
 
 /**
  * The HTTP status a result is answered with.
  *
  * @param result - The result
- * @returns 200 for a success, 400, 401, 403, 500 or 503 for a failure, and 503 for a runtime value that is no result
+ * @returns 200 for a success, 400, 401, 403, 404, 500 or 503 for a failure, and 503 for a runtime value that is no result
  */
 export function resultStatus(result: IdentityCallbackResult): number {
   return RESULT_STATUS[asResult(result)];
@@ -127,4 +134,15 @@ export function resultBody(
   const answered = asResult(result);
   if (isSuccess(answered) && typeof token === 'string') return { result: answered, token };
   return { result: answered };
+}
+
+/** A value that is one of the results, against a runtime value of any kind. */
+function asResult(result: unknown): IdentityCallbackResult {
+  return typeof result === 'string' && Object.hasOwn(RESULT_STATUS, result)
+    ? (result as IdentityCallbackResult)
+    : IDENTITY_CALLBACK_RESULT.unavailable;
+}
+
+function isSuccess(result: IdentityCallbackResult): result is SuccessResult {
+  return RESULT_STATUS[result] === 200;
 }

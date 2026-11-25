@@ -18,10 +18,10 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import {
   MULTI_ENTITY_STORAGE_STATE,
   NO_ENTITY_STORAGE_STATE,
-  TEST_CANDIDATE_PASSWORD,
   TEST_LOGOUT_ENTITY_EMAIL,
   TEST_MULTI_ENTITY_EMAIL,
   TEST_NO_ENTITY_EMAIL,
+  TEST_PASSWORD,
   TEST_SELECTION_CANDIDATE_A_EXTERNAL_ID,
   TEST_SELECTION_CANDIDATE_B_EXTERNAL_ID,
   TEST_SELECTION_ORGANIZATION_EXTERNAL_ID
@@ -47,7 +47,7 @@ setup('register + authenticate as a user who edits two candidates and an organiz
       SELECTION_ORGANIZATION
     ],
     email: TEST_MULTI_ENTITY_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: MULTI_ENTITY_STORAGE_STATE,
     acceptTermsOfUse: true,
     settledTestId: testIds.contestant.entitySelection.list
@@ -62,7 +62,7 @@ setup('register + authenticate as a user whose only grant is then removed', asyn
   await registerAndStoreSession(page, {
     entityGrants: [SELECTION_ORGANIZATION],
     email: TEST_NO_ENTITY_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: NO_ENTITY_STORAGE_STATE,
     acceptTermsOfUse: true,
     settledTestId: testIds.contestant.home.statusMessage
@@ -75,8 +75,8 @@ setup('register + authenticate as a user whose only grant is then removed', asyn
 
 setup('register a user to sign in and out through the forms', async () => {
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(TEST_LOGOUT_ENTITY_EMAIL);
-  await client.forceRegisterUser(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD, {
+  await client.unregisterUser(TEST_LOGOUT_ENTITY_EMAIL);
+  await client.forceRegisterUser(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD, {
     entityGrants: [SELECTION_ORGANIZATION]
   });
 });

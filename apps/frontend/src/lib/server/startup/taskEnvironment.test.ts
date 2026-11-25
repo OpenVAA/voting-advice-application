@@ -1,5 +1,5 @@
 /**
- * Specification for the frontend task's environment list, `infra/modules/frontend-service/task-environment.json`: one entry per variable, each with a unique name, a source of `value` (set by the root) or `parameter` (read from the parameter store), a boolean `required` and a non-empty description. Its required entries are exactly `REQUIRED_ENV`, it holds every name of `ANALYTICS_ENV`, and every name it holds appears in the root `.env.example`, on a live or a commented line. No name contains `SERVICE_ROLE`, because the service-role key must reach the task in no form, and every name ending in `KEY`, `SECRET`, `PASSWORD` or `TOKEN` has source `parameter`, so no secret is ever a tracked value. Every name it holds is listed in backticks in the environment section of the staging AWS root's runbook, `infra/envs/staging/aws/README.md`. The `environment_values` block of every AWS root's `terraform.tfvars` sets every `value` name, sets no `parameter` name, and sets no name the list does not hold. Every problem found names the variable or the file it concerns.
+ * Specification for the frontend task's environment list, `infra/modules/frontend-service/task-environment.json`: one entry per variable, each with a unique name, a source of `value` (set by the root) or `parameter` (read from the parameter store), a boolean `required` and a non-empty description. An entry of bank authentication also carries `identity_providers`, a non-empty list of the provider types that need it, and is never required: the task receives it only from a root whose `identity_provider_type` is one of them. Its required entries are exactly the names the start-up check reports for an empty environment, it holds every name of `ANALYTICS_ENV`, and every name it holds appears in the root `.env.example`, on a live or a commented line. No name contains `SERVICE_ROLE`, because the service-role key must reach the task in no form, and every name ending in `KEY`, `SECRET`, `PASSWORD`, `TOKEN` or `JWKS` has source `parameter`, so no secret is ever a tracked value. The `environment_values` block of every AWS root's `terraform.tfvars` sets every `value` name the root's task receives, sets no `parameter` name, no identity-provider name its `identity_provider_type` does not select and never `PUBLIC_IDENTITY_PROVIDER_TYPE`, which the module sets from that type, and sets no name the list does not hold. Each AWS root agrees with the `terraform.tfvars` of its sibling Supabase root, `infra/envs/<env>/supabase/`: its `PUBLIC_PROJECT_ID` is that root's `public_project_id`, its `ORIGIN` is that root's `public_origin`, and its `PUBLIC_SUPABASE_URL` is `https://`, that root's `project_ref` and `.supabase.co`. Both roots turn bank authentication on or neither does: an AWS root that sets `identity_provider_type` has a sibling that sets the `identity_provider` object, whose `type` is that type and whose `client_id`, `jwks_uri` and `issuer` are the AWS root's `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID`, `IDENTITY_PROVIDER_JWKS_URI` and `IDENTITY_PROVIDER_ISSUER`; a commented-out block or line sets nothing. Every problem found names the variable or the file it concerns.
  *
  * @vitest-environment node
  */
@@ -7,13 +7,19 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { ANALYTICS_ENV } from '$lib/server/analytics/config';
-import { REQUIRED_ENV } from './requiredEnv';
+import { missingRequiredEnv } from './requiredEnv';
 
 /** The sources an entry may name: `value` is set by the root, `parameter` is read from the parameter store. */
 const SOURCES: ReadonlyArray<string> = ['value', 'parameter'];
 
 /** The suffixes that mark a variable as a secret, which must come from the parameter store. */
-const SECRET_SUFFIXES: ReadonlyArray<string> = ['KEY', 'SECRET', 'PASSWORD', 'TOKEN'];
+const SECRET_SUFFIXES: ReadonlyArray<string> = ['KEY', 'SECRET', 'PASSWORD', 'TOKEN', 'JWKS'];
+
+/** The identity-provider types an entry's `identity_providers` may name, the values of a root's `identity_provider_type`. */
+const IDENTITY_PROVIDERS: ReadonlyArray<string> = ['signicat-ftn', 'idura-ftn'];
+
+/** The names the module sets itself, which a root's `environment_values` never gives. */
+const DERIVED_NAMES: ReadonlyArray<string> = ['PUBLIC_IDENTITY_PROVIDER_TYPE'];
 
 /** The fragment no variable of the task may contain. */
 const FORBIDDEN_FRAGMENT = 'SERVICE_ROLE';
@@ -39,9 +45,6 @@ const ANALYTICS_NAMES: ReadonlyArray<string> = [
   'ANALYTICS_FLUSH_INTERVAL_MS'
 ];
 
-/** The runbook whose environment section lists every name of the list, relative to the repository root. */
-const RUNBOOK_PATH = 'infra/envs/staging/aws/README.md';
-
 /** The variable file of every AWS root, each of which sets every `value` entry of the list, relative to the repository root. */
 const AWS_ROOT_TFVARS_PATHS: ReadonlyArray<string> = [
   'infra/envs/staging/aws/terraform.tfvars',
@@ -56,16 +59,30 @@ type TfvarsFile = {
   text: string;
 };
 
+/** An AWS root's variable file, with the variable file of its sibling Supabase root. */
+type AwsTfvarsFile = TfvarsFile & {
+  /** The sibling Supabase root's variable file, its text `undefined` when the file does not exist. */
+  sibling: { path: string; text: string | undefined };
+};
+
+/**
+ * The path of the variable file of an AWS root's sibling Supabase root, `infra/envs/<env>/supabase/terraform.tfvars`.
+ *
+ * @param awsPath - The AWS root's variable file, `infra/envs/<env>/aws/terraform.tfvars`.
+ * @returns The sibling's path.
+ */
+function supabaseSiblingPath(awsPath: string): string {
+  return awsPath.replace(/\/aws\/terraform\.tfvars$/, '/supabase/terraform.tfvars');
+}
+
 /** What {@link taskEnvironmentProblems} checks: the parsed list, the texts it must agree with, and the name sets the list must agree with. */
 type TaskEnvironmentInput = {
   /** The parsed list, `unknown` because it comes from a JSON file. */
   spec: unknown;
   /** The text of the env example file. */
   envExample: string;
-  /** The text of the runbook whose environment section lists every name. */
-  runbook: string;
-  /** The variable file of every AWS root. */
-  tfvars: ReadonlyArray<TfvarsFile>;
+  /** The variable file of every AWS root, each with its sibling Supabase root's. */
+  tfvars: ReadonlyArray<AwsTfvarsFile>;
   /** The names the start-up check refuses to start without. */
   requiredNames: ReadonlyArray<string>;
   /** The names the analytics configuration is read from. */
@@ -100,56 +117,177 @@ function envExampleLists(envExample: string, name: string): boolean {
   });
 }
 
-/** The start of the heading that begins the runbook's environment section. */
-const RUNBOOK_SECTION_START = '## The task';
-
 /**
- * The names the runbook's environment section lists: every text in backticks from the line that begins with {@link RUNBOOK_SECTION_START} up to the next line that begins with `## `.
- *
- * @param runbook - The runbook's text.
- * @returns The names, or `undefined` when the runbook has no such section.
- */
-function runbookEnvironmentNames(runbook: string): Set<string> | undefined {
-  const lines = runbook.split('\n');
-  const start = lines.findIndex((line) => line.startsWith(RUNBOOK_SECTION_START));
-  if (start < 0) return undefined;
-  const rest = lines.slice(start + 1);
-  const end = rest.findIndex((line) => line.startsWith('## '));
-  const section = (end < 0 ? rest : rest.slice(0, end)).join('\n');
-  return new Set(Array.from(section.matchAll(/`([^`\n]+)`/g), (match) => match[1]));
-}
-
-/**
- * The names a root's variable file sets in `environment_values`: every `NAME =` line between the line `environment_values = {` and the next line that begins with `}`. Comment lines are skipped.
+ * The names a root's variable file sets in `environment_values`, with their values: every `NAME =` line between the line `environment_values = {` and the next line that begins with `}`. Comment lines are skipped.
  *
  * @param text - The variable file's text.
- * @returns The names, or `undefined` when the file has no such block.
+ * @returns Each name mapped to its double-quoted value, or to `undefined` when the value is not one double-quoted string; `undefined` when the file has no such block.
  */
-function tfvarsEnvironmentNames(text: string): Set<string> | undefined {
+function tfvarsEnvironmentValues(text: string): Map<string, string | undefined> | undefined {
   const lines = text.split('\n');
   const start = lines.findIndex((line) => /^environment_values\s*=\s*\{\s*$/.test(line));
   if (start < 0) return undefined;
   const rest = lines.slice(start + 1);
   const end = rest.findIndex((line) => line.startsWith('}'));
   if (end < 0) return undefined;
-  return new Set(
+  return new Map(
     rest.slice(0, end).flatMap((line) => {
-      const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=/.exec(line);
-      return match ? [match[1]] : [];
+      const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:"([^"\n]*)")?/.exec(line);
+      return match ? [[match[1], match[2]] as const] : [];
     })
   );
 }
 
 /**
+ * The double-quoted value a variable file gives a top-level key, on a line that begins with `key =`.
+ *
+ * @param text - The variable file's text.
+ * @param key - The key.
+ * @returns The value, or `undefined` when no such line gives one double-quoted string.
+ */
+function tfvarsTopLevelString(text: string, key: string): string | undefined {
+  return new RegExp(`^${key}\\s*=\\s*"([^"\\n]*)"`, 'm').exec(text)?.[1];
+}
+
+/**
+ * The task variables an AWS root sets that its sibling Supabase root restates, each with the value the Supabase root's variable file implies for it.
+ *
+ * @param sibling - The Supabase root's variable file's text.
+ * @returns Each task variable with the Supabase key it is read from and the value that key implies, `undefined` when the file gives the key no value.
+ */
+function supabaseImpliedValues(sibling: string): Array<{ name: string; key: string; implied: string | undefined }> {
+  const ref = tfvarsTopLevelString(sibling, 'project_ref');
+  return [
+    {
+      name: 'PUBLIC_PROJECT_ID',
+      key: 'public_project_id',
+      implied: tfvarsTopLevelString(sibling, 'public_project_id')
+    },
+    { name: 'ORIGIN', key: 'public_origin', implied: tfvarsTopLevelString(sibling, 'public_origin') },
+    {
+      name: 'PUBLIC_SUPABASE_URL',
+      key: 'project_ref',
+      implied: ref === undefined ? undefined : `https://${ref}.supabase.co`
+    }
+  ];
+}
+
+/**
+ * List every way an AWS root disagrees with its sibling Supabase root about the project, the origin and the Supabase project. A variable the AWS root does not set is left to the check of the list.
+ *
+ * @param path - The AWS root's variable file.
+ * @param setValues - The values its `environment_values` block sets.
+ * @param sibling - The sibling Supabase root's variable file.
+ * @returns One string per problem, each naming the variable and both files, or the absent file.
+ */
+function siblingProblems(
+  path: string,
+  setValues: ReadonlyMap<string, string | undefined>,
+  sibling: AwsTfvarsFile['sibling']
+): Array<string> {
+  if (sibling.text === undefined) return [`${sibling.path}: is missing, so ${path} cannot be compared with it`];
+  const problems: Array<string> = [];
+  for (const { name, key, implied } of supabaseImpliedValues(sibling.text)) {
+    if (!setValues.has(name)) continue;
+    const value = setValues.get(name);
+    if (implied === undefined)
+      problems.push(`${name}: ${sibling.path} gives ${key} no quoted value to compare with ${path}`);
+    else if (value !== implied)
+      problems.push(
+        `${name}: is ${JSON.stringify(value ?? null)} in ${path}, and ${sibling.path} implies ${JSON.stringify(implied)} by its ${key}`
+      );
+  }
+  return problems;
+}
+
+/**
+ * The double-quoted attributes of a top-level object a variable file gives a key, written one attribute per line between the line `key = {` and the next line that begins with `}`. A commented-out block is not read.
+ *
+ * @param text - The variable file's text.
+ * @param key - The key.
+ * @returns Each attribute mapped to its double-quoted value, `undefined` when the file has no such block.
+ */
+function tfvarsObject(text: string, key: string): Map<string, string> | undefined {
+  const lines = text.split('\n');
+  const start = lines.findIndex((line) => new RegExp(`^${key}\\s*=\\s*\\{\\s*$`).test(line));
+  if (start < 0) return undefined;
+  const rest = lines.slice(start + 1);
+  const end = rest.findIndex((line) => line.startsWith('}'));
+  if (end < 0) return undefined;
+  return new Map(
+    rest.slice(0, end).flatMap((line) => {
+      const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"([^"\n]*)"/.exec(line);
+      return match ? [[match[1], match[2]] as const] : [];
+    })
+  );
+}
+
+/** The task variables of bank authentication that the Supabase root restates, each with the attribute of its `identity_provider` that must equal it. */
+const IDENTITY_PROVIDER_PAIRS: ReadonlyArray<{ name: string; attribute: string }> = [
+  { name: 'PUBLIC_IDENTITY_PROVIDER_CLIENT_ID', attribute: 'client_id' },
+  { name: 'IDENTITY_PROVIDER_JWKS_URI', attribute: 'jwks_uri' },
+  { name: 'IDENTITY_PROVIDER_ISSUER', attribute: 'issuer' }
+];
+
+/**
+ * List every way an AWS root disagrees with its sibling Supabase root about bank authentication: one of them turns it on and the other does not, or a setting both give differs. The AWS root's `identity_provider_type` is compared with `identity_provider.type`, and each other setting, when its `environment_values` sets it, with the attribute of that name. A setting the AWS root does not set is left to the check of the list.
+ *
+ * @param path - The AWS root's variable file.
+ * @param text - Its text.
+ * @param setValues - The values its `environment_values` block sets.
+ * @param sibling - The sibling Supabase root's variable file and its text.
+ * @returns One string per problem, each naming the setting and both files.
+ */
+function identityProviderProblems(
+  path: string,
+  text: string,
+  setValues: ReadonlyMap<string, string | undefined>,
+  sibling: { path: string; text: string }
+): Array<string> {
+  const providerType = tfvarsTopLevelString(text, 'identity_provider_type');
+  const provider = tfvarsObject(sibling.text, 'identity_provider');
+  if (providerType === undefined && provider === undefined) return [];
+  if (providerType === undefined)
+    return [`identity_provider: is set in ${sibling.path}, but ${path} sets no identity_provider_type`];
+  if (provider === undefined)
+    return [`identity_provider_type: is set in ${path}, but ${sibling.path} sets no identity_provider`];
+  const pairs = [
+    { name: 'identity_provider_type', attribute: 'type', value: providerType },
+    ...IDENTITY_PROVIDER_PAIRS.filter(({ name }) => setValues.has(name)).map((pair) => ({
+      ...pair,
+      value: setValues.get(pair.name)
+    }))
+  ];
+  return pairs.flatMap(({ name, attribute, value }) => {
+    const implied = provider.get(attribute);
+    return value === implied
+      ? []
+      : [
+          `${name}: is ${JSON.stringify(value ?? null)} in ${path}, and ${sibling.path} gives identity_provider.${attribute} ${JSON.stringify(implied ?? null)}`
+        ];
+  });
+}
+
+/**
+ * Whether a root's task receives an entry.
+ *
+ * @param providers - The entry's `identity_providers`, `undefined` for an entry that names none.
+ * @param providerType - The root's `identity_provider_type`, `undefined` when it sets none.
+ * @returns `true` for an entry that names no provider, or one that names the root's.
+ */
+function receivedWith(providers: ReadonlyArray<string> | undefined, providerType: string | undefined): boolean {
+  return providers === undefined || (providerType !== undefined && providers.includes(providerType));
+}
+
+/**
  * List every way the task's environment list breaks its contract. It reads nothing but its arguments.
  *
- * @param input - The list, the env example, runbook and variable file texts, and the name sets, see {@link TaskEnvironmentInput}.
+ * @param input - The list, the env example and variable file texts, and the name sets, see {@link TaskEnvironmentInput}.
  * @returns One string per problem, each naming the variable or the file it concerns, or an empty array when the list is sound.
  */
 function taskEnvironmentProblems({
   spec,
   envExample,
-  runbook,
   tfvars,
   requiredNames,
   analyticsNames
@@ -161,16 +299,14 @@ function taskEnvironmentProblems({
   const requiredInList = new Set<string>();
   const valueNames: Array<string> = [];
   const parameterNames: Array<string> = [];
-  const runbookNames = runbookEnvironmentNames(runbook);
-  if (runbookNames === undefined)
-    problems.push(`the runbook has no section whose heading begins with \`${RUNBOOK_SECTION_START}\``);
+  const providersOf = new Map<string, ReadonlyArray<string>>();
 
   entries.forEach((entry, index) => {
     if (!isRecord(entry) || typeof entry.name !== 'string' || entry.name.trim() === '') {
       problems.push(`entry ${index}: has no name`);
       return;
     }
-    const { name, source, required, description } = entry;
+    const { name, source, required, description, identity_providers: providers } = entry;
 
     if (seen.has(name)) problems.push(`${name}: listed more than once`);
     seen.add(name);
@@ -183,20 +319,36 @@ function taskEnvironmentProblems({
     if (SECRET_SUFFIXES.some((suffix) => name.endsWith(suffix)) && source !== 'parameter')
       problems.push(`${name}: is a secret, so its source must be parameter`);
     if (!envExampleLists(envExample, name)) problems.push(`${name}: is not listed in .env.example`);
-    if (runbookNames !== undefined && !runbookNames.has(name))
-      problems.push(`${name}: is not listed in the runbook's environment section`);
+    if (providers !== undefined) {
+      if (
+        !Array.isArray(providers) ||
+        providers.length === 0 ||
+        providers.some((provider) => typeof provider !== 'string' || !IDENTITY_PROVIDERS.includes(provider))
+      )
+        problems.push(`${name}: identity_providers must be a non-empty list of ${IDENTITY_PROVIDERS.join(', ')}`);
+      else providersOf.set(name, providers);
+      if (required === true) problems.push(`${name}: names identity providers, so it cannot be required`);
+    }
     if (source === 'value') valueNames.push(name);
     if (source === 'parameter') parameterNames.push(name);
   });
 
-  for (const { path, text } of tfvars) {
-    const setNames = tfvarsEnvironmentNames(text);
-    if (setNames === undefined) {
+  for (const { path, text, sibling } of tfvars) {
+    const setValues = tfvarsEnvironmentValues(text);
+    if (setValues === undefined) {
       problems.push(`${path}: has no environment_values block closed by a line that begins with }`);
       continue;
     }
+    const setNames = new Set(setValues.keys());
+    const providerType = tfvarsTopLevelString(text, 'identity_provider_type');
     for (const name of valueNames) {
-      if (!setNames.has(name)) problems.push(`${name}: has source value but no value in ${path}`);
+      if (DERIVED_NAMES.includes(name)) {
+        if (setNames.has(name))
+          problems.push(`${name}: is set by the module from identity_provider_type, not in ${path}`);
+      } else if (!receivedWith(providersOf.get(name), providerType)) {
+        if (setNames.has(name))
+          problems.push(`${name}: is set in ${path}, whose identity_provider_type does not select it`);
+      } else if (!setNames.has(name)) problems.push(`${name}: has source value but no value in ${path}`);
     }
     for (const name of parameterNames) {
       if (setNames.has(name)) problems.push(`${name}: has source parameter but a value in ${path}`);
@@ -204,6 +356,9 @@ function taskEnvironmentProblems({
     for (const name of setNames) {
       if (!seen.has(name)) problems.push(`${name}: is set in ${path} but is not in the list`);
     }
+    problems.push(...siblingProblems(path, setValues, sibling));
+    if (sibling.text !== undefined)
+      problems.push(...identityProviderProblems(path, text, setValues, { path: sibling.path, text: sibling.text }));
   }
 
   for (const name of requiredNames) {
@@ -222,7 +377,13 @@ function taskEnvironmentProblems({
 }
 
 /** One entry of a fixture list. */
-type FixtureEntry = { name: string; source: string; required: boolean; description: string };
+type FixtureEntry = {
+  name: string;
+  source: string;
+  required: boolean;
+  description: string;
+  identity_providers?: ReadonlyArray<string>;
+};
 
 /**
  * Build a fixture entry.
@@ -255,71 +416,106 @@ const SOUND_ENV_EXAMPLE = SOUND_ENTRIES.map(({ name }, index) => (index % 2 === 
   '\n'
 );
 
+/** The values the fixture AWS roots set for the three variables the Supabase root restates. */
+const SIBLING_VALUES: Readonly<Record<string, string>> = {
+  PUBLIC_PROJECT_ID: '00000000-0000-0000-0000-000000000001',
+  ORIGIN: 'https://vaa.example.org',
+  PUBLIC_SUPABASE_URL: 'https://fixtureref.supabase.co'
+};
+
 /**
- * Build a fixture runbook whose environment section lists the given names in a table, between other sections that list none.
+ * Build a fixture Supabase root variable file that agrees with {@link SIBLING_VALUES}, with any of its three keys replaced or, given `undefined`, left out.
  *
- * @param names - The names the section lists.
- * @returns The runbook text.
+ * @param overrides - The keys to replace or leave out.
+ * @returns The variable file's text.
  */
-function runbookListing(names: ReadonlyArray<string>): string {
+function supabaseTfvars(overrides: Readonly<Record<string, string | undefined>> = {}): string {
+  const keys: Record<string, string | undefined> = {
+    project_ref: 'fixtureref',
+    public_origin: SIBLING_VALUES.ORIGIN,
+    public_project_id: SIBLING_VALUES.PUBLIC_PROJECT_ID,
+    ...overrides
+  };
   return [
-    '# A fixture runbook',
-    '',
-    "## The task's environment",
-    '',
-    '| Name | Source |',
-    '| ---- | ------ |',
-    ...names.map((name) => `| \`${name}\` | value |`),
-    '',
-    '## Flow overview',
+    '# A fixture Supabase root.',
+    ...Object.entries(keys).flatMap(([key, value]) => (value === undefined ? [] : [`${key} = "${value}"`])),
     ''
   ].join('\n');
 }
 
 /**
- * Build a fixture variable file whose `environment_values` block sets the given names, with a comment line inside the block.
+ * A fixture Supabase root variable file that agrees with {@link SIBLING_VALUES} and sets the `identity_provider` object.
  *
- * @param names - The names the block sets.
+ * @param attributes - The object's attributes, one line each.
  * @returns The variable file's text.
  */
-function tfvarsSetting(names: ReadonlyArray<string>): string {
+function supabaseTfvarsWithProvider(attributes: Readonly<Record<string, string>>): string {
   return [
-    'aws_region = "eu-north-1"',
-    '',
-    'environment_values = {',
-    '  # A comment inside the block.',
-    ...names.map((name) => `  ${name} = "x"`),
+    supabaseTfvars(),
+    'identity_provider = {',
+    ...Object.entries(attributes).map(([key, value]) => `  ${key} = "${value}"`),
     '}',
     ''
   ].join('\n');
 }
 
 /**
- * The texts a sound fixture list agrees with: a runbook that lists every entry, and two root variable files that each set every `value` entry.
+ * A fixture AWS root variable file paired with a sound sibling Supabase root.
  *
- * @param entries - The fixture entries.
- * @returns The runbook text and the two variable files.
+ * @param path - The AWS root's variable file.
+ * @param text - Its text.
+ * @param sibling - The sibling's text, a sound one by default.
+ * @returns The pair.
  */
-function soundTexts(entries: ReadonlyArray<FixtureEntry>): Pick<TaskEnvironmentInput, 'runbook' | 'tfvars'> {
-  const valueNames = entries.filter(({ source }) => source === 'value').map(({ name }) => name);
-  return {
-    runbook: runbookListing(entries.map(({ name }) => name)),
-    tfvars: AWS_ROOT_TFVARS_PATHS.map((path) => ({ path, text: tfvarsSetting(valueNames) }))
-  };
+function awsTfvars(path: string, text: string, sibling: string | undefined = supabaseTfvars()): AwsTfvarsFile {
+  return { path, text, sibling: { path: supabaseSiblingPath(path), text: sibling } };
 }
 
 /**
- * Check a fixture list against the fixture env example, the fixture runbook and variable files, and the local name sets.
+ * Build a fixture AWS root variable file whose `environment_values` block sets the given names, with a comment line inside the block.
+ *
+ * @param names - The names the block sets.
+ * @param values - The value of each name, `x` for a name not in it; by default the values {@link supabaseTfvars} agrees with.
+ * @returns The variable file's text.
+ */
+function tfvarsSetting(
+  names: ReadonlyArray<string>,
+  values: Readonly<Record<string, string>> = SIBLING_VALUES
+): string {
+  return [
+    'aws_region = "eu-north-1"',
+    '',
+    'environment_values = {',
+    '  # A comment inside the block.',
+    ...names.map((name) => `  ${name} = "${values[name] ?? 'x'}"`),
+    '}',
+    ''
+  ].join('\n');
+}
+
+/**
+ * The variable files a sound fixture list agrees with: two AWS roots that each set every `value` entry, each with a sibling Supabase root that agrees with it.
+ *
+ * @param entries - The fixture entries.
+ * @returns The two variable files.
+ */
+function soundTexts(entries: ReadonlyArray<FixtureEntry>): Pick<TaskEnvironmentInput, 'tfvars'> {
+  const valueNames = entries.filter(({ source }) => source === 'value').map(({ name }) => name);
+  return { tfvars: AWS_ROOT_TFVARS_PATHS.map((path) => awsTfvars(path, tfvarsSetting(valueNames))) };
+}
+
+/**
+ * Check a fixture list against the fixture env example, the fixture variable files and the local name sets.
  *
  * @param entries - The fixture entries.
  * @param envExample - The env example text, {@link SOUND_ENV_EXAMPLE} by default.
- * @param texts - A runbook or variable files to use instead of the sound ones {@link soundTexts} builds from the entries.
+ * @param texts - Variable files to use instead of the sound ones {@link soundTexts} builds from the entries.
  * @returns The problems found.
  */
 function fixtureProblems(
   entries: ReadonlyArray<FixtureEntry>,
   envExample: string = SOUND_ENV_EXAMPLE,
-  texts: Partial<Pick<TaskEnvironmentInput, 'runbook' | 'tfvars'>> = {}
+  texts: Partial<Pick<TaskEnvironmentInput, 'tfvars'>> = {}
 ): Array<string> {
   return taskEnvironmentProblems({
     spec: { variables: entries },
@@ -335,17 +531,15 @@ function fixtureProblems(
 const SOUND_VALUE_NAMES = SOUND_ENTRIES.filter(({ source }) => source === 'value').map(({ name }) => name);
 
 /**
- * Two fixture variable files: the first as given, the second sound.
+ * Two fixture AWS root variable files: the first as given, the second sound, each with a sibling Supabase root.
  *
  * @param text - The first file's text.
+ * @param sibling - The first file's sibling's text, a sound one by default.
  * @returns The two files.
  */
-function tfvarsWithFirst(text: string): Array<TfvarsFile> {
+function tfvarsWithFirst(text: string, sibling?: string): Array<AwsTfvarsFile> {
   const [first, second] = AWS_ROOT_TFVARS_PATHS;
-  return [
-    { path: first, text },
-    { path: second, text: tfvarsSetting(SOUND_VALUE_NAMES) }
-  ];
+  return [awsTfvars(first, text, sibling), awsTfvars(second, tfvarsSetting(SOUND_VALUE_NAMES))];
 }
 
 describe('taskEnvironmentProblems', () => {
@@ -457,39 +651,7 @@ describe('taskEnvironmentProblems', () => {
   });
 });
 
-describe('taskEnvironmentProblems against the runbook and the AWS roots', () => {
-  it("names a variable the runbook's environment section does not list", () => {
-    const runbook = runbookListing(
-      SOUND_ENTRIES.map(({ name }) => name).filter((name) => name !== 'ANALYTICS_CONSENT_MODE')
-    );
-    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { runbook });
-    expect(problems).toEqual([expect.stringContaining('ANALYTICS_CONSENT_MODE')]);
-    expect(problems[0]).toContain('runbook');
-  });
-
-  it('counts a name as listed only in backticks inside the section that begins with ## The task', () => {
-    const others = SOUND_ENTRIES.map(({ name }) => name).filter((name) => name !== 'ORIGIN');
-    const runbook = [
-      '# A fixture runbook',
-      '',
-      'The lines before the section name `ORIGIN`.',
-      '',
-      runbookListing(others)
-        .replace('# A fixture runbook\n', '')
-        .replace('| Name | Source |', 'ORIGIN is named here without backticks.\n\n| Name | Source |'),
-      'The section after it names `ORIGIN` too.'
-    ].join('\n');
-    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { runbook });
-    expect(problems).toEqual([expect.stringContaining('ORIGIN')]);
-  });
-
-  it('reports a runbook without the environment section', () => {
-    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, {
-      runbook: '# A runbook\n\n## Flow overview\n'
-    });
-    expect(problems).toEqual([expect.stringContaining('## The task')]);
-  });
-
+describe('taskEnvironmentProblems against the AWS roots and their Supabase siblings', () => {
   it("names a value variable an AWS root's variable file does not set, and the file", () => {
     const tfvars = tfvarsWithFirst(tfvarsSetting(SOUND_VALUE_NAMES.filter((name) => name !== 'ORIGIN')));
     const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { tfvars });
@@ -522,10 +684,189 @@ describe('taskEnvironmentProblems against the runbook and the AWS roots', () => 
     });
     expect(problems).toEqual([expect.stringContaining(AWS_ROOT_TFVARS_PATHS[0])]);
   });
+
+  it.each([
+    ['PUBLIC_PROJECT_ID', { public_project_id: '00000000-0000-0000-0000-000000000002' }],
+    ['ORIGIN', { public_origin: 'https://other.example.org' }],
+    ['PUBLIC_SUPABASE_URL', { project_ref: 'otherref' }]
+  ])('names %s when the sibling Supabase root disagrees, and both files', (name, overrides) => {
+    const tfvars = tfvarsWithFirst(tfvarsSetting(SOUND_VALUE_NAMES), supabaseTfvars(overrides));
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { tfvars });
+    expect(problems).toEqual([expect.stringContaining(name)]);
+    expect(problems[0]).toContain(AWS_ROOT_TFVARS_PATHS[0]);
+    expect(problems[0]).toContain(supabaseSiblingPath(AWS_ROOT_TFVARS_PATHS[0]));
+  });
+
+  it('names PUBLIC_SUPABASE_URL when it is not https, the ref and .supabase.co exactly', () => {
+    const text = tfvarsSetting(SOUND_VALUE_NAMES, {
+      ...SIBLING_VALUES,
+      PUBLIC_SUPABASE_URL: 'https://fixtureref.supabase.co/'
+    });
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { tfvars: tfvarsWithFirst(text) });
+    expect(problems).toEqual([expect.stringContaining('PUBLIC_SUPABASE_URL')]);
+  });
+
+  it('reports a sibling Supabase root that gives a compared key no value, and one that is missing', () => {
+    const withoutRef = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, {
+      tfvars: tfvarsWithFirst(tfvarsSetting(SOUND_VALUE_NAMES), supabaseTfvars({ project_ref: undefined }))
+    });
+    expect(withoutRef).toEqual([expect.stringContaining('project_ref')]);
+    const missing = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, {
+      tfvars: [
+        {
+          ...awsTfvars(AWS_ROOT_TFVARS_PATHS[0], tfvarsSetting(SOUND_VALUE_NAMES)),
+          sibling: { path: 'x/supabase/terraform.tfvars', text: undefined }
+        },
+        awsTfvars(AWS_ROOT_TFVARS_PATHS[1], tfvarsSetting(SOUND_VALUE_NAMES))
+      ]
+    });
+    expect(missing).toEqual([expect.stringContaining('x/supabase/terraform.tfvars')]);
+  });
+});
+
+describe('taskEnvironmentProblems for the identity-provider entries', () => {
+  const both = ['signicat-ftn', 'idura-ftn'];
+  const providerEntries: ReadonlyArray<FixtureEntry> = [
+    { ...entry('PUBLIC_IDENTITY_PROVIDER_TYPE', 'value', false), identity_providers: both },
+    { ...entry('PUBLIC_IDENTITY_PROVIDER_CLIENT_ID', 'value', false), identity_providers: both },
+    { ...entry('IDENTITY_CALLBACK_SERVER_SECRET', 'parameter', false), identity_providers: both },
+    { ...entry('IDENTITY_PROVIDER_TOKEN_ENDPOINT', 'value', false), identity_providers: ['signicat-ftn'] },
+    { ...entry('IDURA_DOMAIN', 'value', false), identity_providers: ['idura-ftn'] },
+    { ...entry('IDURA_SIGNING_JWKS', 'parameter', false), identity_providers: ['idura-ftn'] }
+  ];
+  const entries = [...SOUND_ENTRIES, ...providerEntries];
+  const envExample = `${SOUND_ENV_EXAMPLE}\n${providerEntries.map(({ name }) => `${name}=x`).join('\n')}`;
+
+  /**
+   * Check the fixture list against two AWS roots: the first as given, the second with no identity provider.
+   *
+   * @param first - The first root's variable file.
+   * @param list - The list, the fixture entries with the identity-provider ones by default.
+   * @param sibling - The first root's sibling Supabase root's text, a sound one without `identity_provider` by default.
+   * @returns The problems found.
+   */
+  function problemsWith(first: string, list: ReadonlyArray<FixtureEntry> = entries, sibling?: string): Array<string> {
+    return fixtureProblems(list, envExample, { tfvars: tfvarsWithFirst(first, sibling) });
+  }
+
+  /** A sibling Supabase root that turns on Idura with the client id the fixture AWS roots set. */
+  const iduraSibling = supabaseTfvarsWithProvider({ type: 'idura-ftn', client_id: 'x' });
+
+  it('asks a root without identity_provider_type for none of them', () => {
+    expect(problemsWith(tfvarsSetting(SOUND_VALUE_NAMES))).toEqual([]);
+  });
+
+  it("asks a root with identity_provider_type for exactly its provider's values, and not for the type", () => {
+    const text = `identity_provider_type = "idura-ftn"\n${tfvarsSetting([...SOUND_VALUE_NAMES, 'PUBLIC_IDENTITY_PROVIDER_CLIENT_ID', 'IDURA_DOMAIN'])}`;
+    expect(problemsWith(text, entries, iduraSibling)).toEqual([]);
+    const missing = `identity_provider_type = "idura-ftn"\n${tfvarsSetting([...SOUND_VALUE_NAMES, 'PUBLIC_IDENTITY_PROVIDER_CLIENT_ID'])}`;
+    expect(problemsWith(missing, entries, iduraSibling)).toEqual([expect.stringContaining('IDURA_DOMAIN')]);
+  });
+
+  it('names a value set by a root whose identity_provider_type does not select it, and PUBLIC_IDENTITY_PROVIDER_TYPE whenever it is set', () => {
+    const text = `identity_provider_type = "idura-ftn"\n${tfvarsSetting([...SOUND_VALUE_NAMES, 'PUBLIC_IDENTITY_PROVIDER_CLIENT_ID', 'IDURA_DOMAIN', 'IDENTITY_PROVIDER_TOKEN_ENDPOINT', 'PUBLIC_IDENTITY_PROVIDER_TYPE'])}`;
+    expect(problemsWith(text, entries, iduraSibling)).toEqual([
+      expect.stringContaining('PUBLIC_IDENTITY_PROVIDER_TYPE'),
+      expect.stringContaining('IDENTITY_PROVIDER_TOKEN_ENDPOINT')
+    ]);
+    expect(problemsWith(tfvarsSetting([...SOUND_VALUE_NAMES, 'IDURA_DOMAIN']))).toEqual([
+      expect.stringContaining('IDURA_DOMAIN')
+    ]);
+  });
+
+  it('names an entry with an unknown provider, an empty list, or required true, and a JWKS entry from value', () => {
+    const list = entries.map((e) =>
+      e.name === 'IDURA_DOMAIN'
+        ? { ...e, identity_providers: ['bankid'] }
+        : e.name === 'IDENTITY_PROVIDER_TOKEN_ENDPOINT'
+          ? { ...e, identity_providers: [] }
+          : e.name === 'PUBLIC_IDENTITY_PROVIDER_CLIENT_ID'
+            ? { ...e, required: true }
+            : e.name === 'IDURA_SIGNING_JWKS'
+              ? { ...e, source: 'value' }
+              : e
+    );
+    const problems = problemsWith(tfvarsSetting(SOUND_VALUE_NAMES), list);
+    for (const name of [
+      'IDURA_DOMAIN',
+      'IDENTITY_PROVIDER_TOKEN_ENDPOINT',
+      'PUBLIC_IDENTITY_PROVIDER_CLIENT_ID',
+      'IDURA_SIGNING_JWKS'
+    ])
+      expect(
+        problems.some((problem) => problem.startsWith(`${name}:`)),
+        name
+      ).toBe(true);
+  });
+
+  /** An AWS root that turns on Idura and sets the settings the Supabase root restates. */
+  const iduraRoot = `identity_provider_type = "idura-ftn"\n${tfvarsSetting(
+    [
+      ...SOUND_VALUE_NAMES,
+      'PUBLIC_IDENTITY_PROVIDER_CLIENT_ID',
+      'IDENTITY_PROVIDER_JWKS_URI',
+      'IDENTITY_PROVIDER_ISSUER',
+      'IDURA_DOMAIN'
+    ],
+    {
+      ...SIBLING_VALUES,
+      PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'client',
+      IDENTITY_PROVIDER_JWKS_URI: 'https://idp.example.org/jwks',
+      IDENTITY_PROVIDER_ISSUER: 'https://idp.example.org'
+    }
+  )}`;
+  const iduraProvider = {
+    type: 'idura-ftn',
+    client_id: 'client',
+    jwks_uri: 'https://idp.example.org/jwks',
+    issuer: 'https://idp.example.org'
+  };
+  const listWithIssuer = [
+    ...entries,
+    { ...entry('IDENTITY_PROVIDER_JWKS_URI', 'value', false), identity_providers: both },
+    { ...entry('IDENTITY_PROVIDER_ISSUER', 'value', false), identity_providers: both }
+  ];
+  const envWithIssuer = `${envExample}\nIDENTITY_PROVIDER_JWKS_URI=x\nIDENTITY_PROVIDER_ISSUER=x`;
+
+  it('finds nothing when the sibling Supabase root sets identity_provider with the same values', () => {
+    const tfvars = tfvarsWithFirst(iduraRoot, supabaseTfvarsWithProvider(iduraProvider));
+    expect(fixtureProblems(listWithIssuer, envWithIssuer, { tfvars })).toEqual([]);
+  });
+
+  it.each([
+    ['identity_provider_type', { type: 'signicat-ftn' }],
+    ['PUBLIC_IDENTITY_PROVIDER_CLIENT_ID', { client_id: 'other' }],
+    ['IDENTITY_PROVIDER_JWKS_URI', { jwks_uri: 'https://other.example.org/jwks' }],
+    ['IDENTITY_PROVIDER_ISSUER', { issuer: 'https://other.example.org' }]
+  ])('names %s when the sibling Supabase root disagrees, and both files', (name, override) => {
+    const tfvars = tfvarsWithFirst(iduraRoot, supabaseTfvarsWithProvider({ ...iduraProvider, ...override }));
+    const problems = fixtureProblems(listWithIssuer, envWithIssuer, { tfvars });
+    expect(problems).toEqual([expect.stringContaining(name)]);
+    expect(problems[0]).toContain(AWS_ROOT_TFVARS_PATHS[0]);
+    expect(problems[0]).toContain(supabaseSiblingPath(AWS_ROOT_TFVARS_PATHS[0]));
+  });
+
+  it('names a root pair where only one side turns bank authentication on, and reads no commented-out block', () => {
+    const awsOnly = fixtureProblems(listWithIssuer, envWithIssuer, { tfvars: tfvarsWithFirst(iduraRoot) });
+    expect(awsOnly).toEqual([expect.stringContaining('identity_provider_type')]);
+    const commented = supabaseTfvarsWithProvider(iduraProvider)
+      .split('\n')
+      .map((line) =>
+        line.startsWith('identity_provider') || line.startsWith('  ') || line === '}' ? `# ${line}` : line
+      )
+      .join('\n');
+    expect(fixtureProblems(listWithIssuer, envWithIssuer, { tfvars: tfvarsWithFirst(iduraRoot, commented) })).toEqual([
+      expect.stringContaining('identity_provider_type')
+    ]);
+    const supabaseOnly = fixtureProblems(listWithIssuer, envWithIssuer, {
+      tfvars: tfvarsWithFirst(tfvarsSetting(SOUND_VALUE_NAMES), supabaseTfvarsWithProvider(iduraProvider))
+    });
+    expect(supabaseOnly).toEqual([expect.stringContaining('identity_provider:')]);
+  });
 });
 
 /**
- * Check an arbitrary parsed value as the list, against the sound fixture env example, runbook and variable files.
+ * Check an arbitrary parsed value as the list, against the sound fixture env example and variable files.
  *
  * @param spec - The parsed value.
  * @returns The problems found.
@@ -546,14 +887,23 @@ describe('the task environment list in the repository', () => {
     process.env.TASK_ENVIRONMENT_SPEC ?? `${REPOSITORY_ROOT}infra/modules/frontend-service/task-environment.json`;
   const envExamplePath = `${REPOSITORY_ROOT}.env.example`;
 
-  it("agrees with REQUIRED_ENV, ANALYTICS_ENV, .env.example, the runbook and every AWS root's variable file", () => {
+  it("agrees with the start-up check, ANALYTICS_ENV, .env.example, and every AWS root's variable file and its Supabase sibling's", () => {
     expect(existsSync(specPath), `the list is expected at ${specPath}`).toBe(true);
     const problems = taskEnvironmentProblems({
       spec: JSON.parse(readFileSync(specPath, 'utf8')),
       envExample: readFileSync(envExamplePath, 'utf8'),
-      runbook: readFileSync(`${REPOSITORY_ROOT}${RUNBOOK_PATH}`, 'utf8'),
-      tfvars: AWS_ROOT_TFVARS_PATHS.map((path) => ({ path, text: readFileSync(`${REPOSITORY_ROOT}${path}`, 'utf8') })),
-      requiredNames: REQUIRED_ENV,
+      tfvars: AWS_ROOT_TFVARS_PATHS.map((path) => {
+        const siblingFile = `${REPOSITORY_ROOT}${supabaseSiblingPath(path)}`;
+        return {
+          path,
+          text: readFileSync(`${REPOSITORY_ROOT}${path}`, 'utf8'),
+          sibling: {
+            path: supabaseSiblingPath(path),
+            text: existsSync(siblingFile) ? readFileSync(siblingFile, 'utf8') : undefined
+          }
+        };
+      }),
+      requiredNames: missingRequiredEnv({}),
       analyticsNames: Object.values(ANALYTICS_ENV)
     });
     expect(problems).toEqual([]);

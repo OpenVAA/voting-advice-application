@@ -9,11 +9,11 @@
  *   3. Switching — the menu's switch item returns to the selection; the organization's home names it; the second candidate's pages show the second candidate's answer; Switch profile on the home returns to the selection too.
  *   4. The prompt — switching from the editor with an unsaved edit raises the page's one native confirm; Cancel keeps the page and the edit.
  *   5. Refusals — a URL naming an entity the user does not edit, or the user's own entity under the other type, lands on the selection with nothing added to it.
- *   6. The header's Log out — a signed-in user has it and signs out with it at once where no entity is loaded, and while a slow sign-out runs there it is disabled and shows a spinner; a Back pressed while a sign-out there runs and then fails is followed as a Back, and Forward returns to the page; the signed-out header has none; on an entity's page it opens the modal, which a navigation closes before its count can sign the user out; Back from a question with an unsaved answer, agreed at the native question, shows the list with the modal closed, and the count ends nothing; on the profile, on a question and on the nomination details with something unsaved it opens the modal, which says the changes will be lost, and no native question is raised in the whole test: Continue, and on the profile a close the platform makes, leave the session, the page and the edit as they were and stop the count, while the modal's Log out and the end of its count end signed out, with the draft gone; with tasks left the modal says both what is unsaved and what is left, with nothing to count it says the first alone, and with nothing unsaved its count ends the session too; the end of a count leaves a login screen that says why; over an unsaved edit the browser names the dialog by the sentence saying it will be lost, and computes a description for it from what else it says and the count's full length, which holds while the visible number runs; a sign-out that fails, from the modal's Log out or at its count's end, shows a message named apart from Log out, with one Close, and leaves the page, the edit and its draft as they were, and pressing again ends signed out, also after a failure whose answer has cleared the cookies; after such a failure a link that reaches the gate ends on the login screen with no message, and after a failure with the session alive the message stays across links until a later press ends signed out; with a live session Back to the entry screens ends on the home with the message still there, writes no history and goes on out of the app past them; after a failure that cleared the cookies Back to the sign-in screen shows no message and signing in again shows none; after Back to the login screen with a live session a sign-out that fails says so; a user who is no administrator, on a link into the Admin App, is signed out with no draft left, and when the sign-out fails ends on the error page with no request to the Admin App's login page, and when that failed sign-out has cleared the cookies ends on the Admin App's login page with no draft left; and with the session ended elsewhere and no signal to the tab, a link to a page whose load makes a request reaches the login screen; and a sign-out in another tab sends a tab holding an unsaved answer at once to a login screen that says why, with its draft gone; and a count left in a tab that closes ends the session at the browser's next request, on a login screen that says why, with no draft left, and a count whose timer did not run signs out when the tab is shown again; Continue, the modal's Log out, the count's own sign-out and a failed sign-out at its end each leave no deadline, and a reload of the tab during the count removes it and keeps the session; once such a count has signed out a tab that was already open, a sign-in in that tab, with no new document, keeps its session, and no draft and no deadline are left; a Log out in another tab, made at once after the count's tab has closed, withdraws that count, so a sign-in after it keeps its session once the deadline would have passed; once the session has ended with no Log out after the count's tab has closed, a sign-in withdraws that count and keeps its session once the deadline would have passed; a sign-out the server makes with no signal to any tab, after the count's tab has closed, removes that count at once; with the page's clock five minutes behind the server's, a request made while the modal counts keeps the session; and a page opened in another tab during the count leaves it, so that tab meets the sign-out at its next request once the count's tab has closed.
+ *   6. The header's Log out — a signed-in user has it and signs out with it at once where no entity is loaded, and while a slow sign-out runs there it is disabled and shows a spinner; a Back pressed while a sign-out there runs and then fails is followed as a Back, and Forward returns to the page; the signed-out header has none; on an entity's page it opens the modal, which a navigation closes before its count can sign the user out; Back from a question with an unsaved answer, agreed at the native question, shows the list with the modal closed, and the count ends nothing; on the profile, on a question and on the nomination details with something unsaved it opens the modal, which says the changes will be lost, and no native question is raised in the whole test: Continue, and on the profile a close the platform makes, leave the session, the page and the edit as they were and stop the count, while the modal's Log out and the end of its count end signed out, with the draft gone; with tasks left the modal says both what is unsaved and what is left, with nothing to count it says the first alone, and with nothing unsaved its count ends the session too; the end of a count leaves a login screen that says why; over an unsaved edit the browser names the dialog by the sentence saying it will be lost, and computes a description for it from what else it says and the count's full length, which holds while the visible number runs; a sign-out that fails, from the modal's Log out or at its count's end, shows a message named apart from Log out, with one Close, and leaves the page, the edit and its draft as they were, and pressing again ends signed out, also after a failure whose answer has cleared the cookies; after such a failure a link that reaches the gate ends on the login screen with no message, and after a failure with the session alive the message stays across links until a later press ends signed out; with a live session Back to the entry screens ends on the home with the message still there, writes no history and goes on out of the app past them; after a failure that cleared the cookies Back to the sign-in screen shows no message and signing in again shows none; after Back to the login screen with a live session a sign-out that fails says so; a contestant who is no administrator, on a link into the Admin App, lands on the Contestant App's home still signed in, with the draft kept and no native question; and with the session ended elsewhere and no signal to the tab, a link to a page whose load makes a request reaches the login screen; and a sign-out in another tab sends a tab holding an unsaved answer at once to a login screen that says why, with its draft gone; and a count left in a tab that closes ends the session at the browser's next request, on a login screen that says why, with no draft left, and a count whose timer did not run signs out when the tab is shown again; Continue, the modal's Log out, the count's own sign-out and a failed sign-out at its end each leave no deadline, and a reload of the tab during the count removes it and keeps the session; once such a count has signed out a tab that was already open, a sign-in in that tab, with no new document, keeps its session, and no draft and no deadline are left; a Log out in another tab, made at once after the count's tab has closed, withdraws that count, so a sign-in after it keeps its session once the deadline would have passed; once the session has ended with no Log out after the count's tab has closed, a sign-in withdraws that count and keeps its session once the deadline would have passed; a sign-out the server makes with no signal to any tab, after the count's tab has closed, removes that count at once; with the page's clock five minutes behind the server's, a request made while the modal counts keeps the session; and a page opened in another tab during the count leaves it, so that tab meets the sign-out at its next request once the count's tab has closed.
  *   7. A closed entry — on the home, in both colour schemes, a closed entry's lock has the colour of its label and an open row's icon does not.
  *   8. One entity — a user who edits a single entity is redirected from the root to its home, which offers no Switch profile, and has no switch item.
  *   9. Nothing to edit — a user whose only grant is removed sees the view with their email and logs out from it without a confirmation modal.
- *  10. The settings page — a user who edits nothing reaches it from the "nothing to edit" view, a user who edits several opens it at the app's root, and the settings address under an entity leads to it.
+ *  10. The settings page — a user who edits nothing reaches it from the "nothing to edit" view, and a user who edits several opens it at the app's root.
  *
  * No stored session is signed out here: the cases that log out sign in through the login form first, in a session of their own, and a sign-out ends that session alone. The spec writes to one row, the first selection candidate, which is unconfirmed and so read by no voter query.
  *
@@ -42,10 +42,10 @@ import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import {
   NO_ENTITY_STORAGE_STATE,
-  TEST_CANDIDATE_PASSWORD,
   TEST_LOGOUT_ENTITY_EMAIL,
   TEST_MULTI_ENTITY_EMAIL,
   TEST_NO_ENTITY_EMAIL,
+  TEST_PASSWORD,
   TEST_SELECTION_CANDIDATE_B_EXTERNAL_ID,
   TEST_SELECTION_ORGANIZATION_EXTERNAL_ID
 } from '../../utils/testCredentials';
@@ -322,7 +322,7 @@ test.describe('contestant entity selection', () => {
       'contestantEntityPages' | 'contestantEntitySelectionPage' | 'contestantLoginPage' | 'selectionEntities'
     >): Promise<void> {
       await contestantLoginPage.goToPage();
-      await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+      await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
       await contestantEntitySelectionPage.expectShown();
       await contestantEntitySelectionPage.pick(selectionEntities.candidateB.name);
       await contestantEntityPages.expectOnHome(selectionEntities.candidateB);
@@ -341,7 +341,7 @@ test.describe('contestant entity selection', () => {
     >): Promise<void> {
       const { differingQuestionId, organization } = selectionEntities;
       await contestantLoginPage.goToPage();
-      await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+      await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
       await contestantEntityPages.expectOnHome(organization);
       await contestantEntityPages.openQuestion(organization, differingQuestionId);
       await contestantQuestionPage.selectChoice(UNSAVED_CHOICE_INDEX);
@@ -365,7 +365,7 @@ test.describe('contestant entity selection', () => {
       }) => {
         await test.step('a user signs in through the login form and opens the settings page', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(selectionEntities.organization);
           await contestantSettingsPage.open();
         });
@@ -393,7 +393,7 @@ test.describe('contestant entity selection', () => {
       }) => {
         await test.step('a user signs in through the login form and opens the settings page', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(selectionEntities.organization);
           await contestantSettingsPage.open();
         });
@@ -429,7 +429,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user signs in through the login form, and goes from the home to the settings page by a link', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await contestantEntityPages.followLinkInsideTheApp(
             buildRoute({ route: 'ContestantAppSettings', locale: 'en' })
@@ -465,7 +465,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user signs in, and goes from the home to the profile inside the application', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -658,10 +658,11 @@ test.describe('contestant entity selection', () => {
           await contestantProfilePage.expectPersonNames(UNSAVED_FIRST_NAME, SEEDED_LAST_NAME_B);
         });
 
-        await test.step("with the sign-out held, the modal's Log out is pressed, and the ✕ and three Escapes leave the modal open", async () => {
+        await test.step("with the sign-out held, the modal's Log out is pressed, the ✕ reads as unavailable, and the ✕ and three Escapes leave the modal open", async () => {
           await headerLogout.holdSignOut();
           await headerLogout.pressExpectingDialog();
           await headerLogout.logOutInModal();
+          await headerLogout.expectModalCloseUnavailable();
           await headerLogout.pressModalClose();
           await headerLogout.pressEscape();
           await headerLogout.pressEscape();
@@ -824,7 +825,7 @@ test.describe('contestant entity selection', () => {
         await test.step('in the same tab, with no new document, a sign-in leads on to the settings page the link asked for', async () => {
           await contestantLoginPage.followSignInInsideTheApp();
           await contestantLoginPage.expectSignInShown();
-          await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantLoginPage.expectLedToSettings();
         });
 
@@ -1061,7 +1062,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in, opens the profile and edits the name', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1188,7 +1189,7 @@ test.describe('contestant entity selection', () => {
         await test.step('a sign-in through the login form in the second tab, and the deadline passes', async () => {
           await otherTabLogin.followSignInInsideTheApp();
           await otherTabLogin.expectSignInShown();
-          await otherTabLogin.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await otherTabLogin.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
           await otherTabSelection.expectShown();
           await otherTabLogout.dropLogoutDeadline();
         });
@@ -1259,7 +1260,7 @@ test.describe('contestant entity selection', () => {
         await test.step('a sign-in through the login form withdraws the count, and the deadline passes', async () => {
           await otherTabLogin.followSignInInsideTheApp();
           await otherTabLogin.expectSignInShown();
-          await otherTabLogin.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await otherTabLogin.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
           await otherTabSettings.expectShown();
           await otherTabLogout.expectNoLogoutDeadline();
           await otherTabLogout.dropLogoutDeadline();
@@ -1622,7 +1623,7 @@ test.describe('contestant entity selection', () => {
           await contestantLoginPage.expectEntryShown();
           await contestantLoginPage.followSignInInsideTheApp();
           await contestantLoginPage.expectSignInShown();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await contestantEntityPages.clickHomeProfileEntry();
           await contestantEntityPages.expectOnProfile(organization);
@@ -1676,7 +1677,7 @@ test.describe('contestant entity selection', () => {
         await test.step('a user signs in on a page whose script has loaded, and opens the profile', async () => {
           await contestantLoginPage.goToPage();
           await contestantLoginPage.signInScriptLoaded();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await contestantEntityPages.clickHomeProfileEntry();
           await contestantEntityPages.expectOnProfile(organization);
@@ -1703,7 +1704,7 @@ test.describe('contestant entity selection', () => {
         });
 
         await test.step('signing in again shows no message, and no native question was raised', async () => {
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.expectNoFailureMessage();
           await headerLogout.expectStillSignedIn();
@@ -1721,7 +1722,7 @@ test.describe('contestant entity selection', () => {
           await contestantLoginPage.expectEntryShown();
           await contestantLoginPage.followSignInInsideTheApp();
           await contestantLoginPage.expectSignInShown();
-          await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntitySelectionPage.expectShown();
         });
 
@@ -1758,7 +1759,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in and opens the profile', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1787,7 +1788,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in and opens the profile', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1813,7 +1814,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step("a user with tasks left signs in and opens the profile, with the page's clock five minutes behind the server's", async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClockBehindTheServer();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1842,7 +1843,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in and opens the profile', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await contestantEntityPages.clickHomeProfileEntry();
           await contestantEntityPages.expectOnProfile(organization);
@@ -1870,7 +1871,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in and opens the profile', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1897,13 +1898,12 @@ test.describe('contestant entity selection', () => {
     );
 
     test(
-      'a user who is no administrator, on a link into the Admin App, is signed out with no draft left',
+      "a contestant who is no administrator, on a link into the Admin App, lands on the Contestant App's home still signed in, with the draft kept",
       { tag: '@entity-selection' },
       async ({
         contestantEntityPages,
         contestantLoginPage,
         contestantQuestionPage,
-        headerLogout,
         nativeDialogs,
         page,
         selectionEntities
@@ -1920,61 +1920,13 @@ test.describe('contestant entity selection', () => {
           });
         });
 
-        await test.step('a link into the Admin App ends on its login page, signed out, with no draft left and no native question', async () => {
+        await test.step("a link into the Admin App ends on the Contestant App's home, with the draft kept and no native question", async () => {
+          const { differingQuestionId, organization } = selectionEntities;
           await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
-          await adminLoginPage.expectOnLoginPage();
-          await adminLoginPage.expectLoginAddressSaysNotAuthorized();
-          await headerLogout.expectNoContestantDraft();
+          await contestantEntityPages.expectOnHome(organization);
+          expect(await contestantEntityPages.draftQuestionIds(organization)).toEqual([differingQuestionId]);
           expect(nativeDialogs.types()).toEqual([]);
         });
-      }
-    );
-
-    test(
-      'a user who is no administrator and whose sign-out fails, on a link into the Admin App, ends on the error page',
-      { tag: '@entity-selection' },
-      async ({ contestantEntityPages, contestantLoginPage, headerLogout, page, selectionEntities }) => {
-        const adminLoginPage = createAdminLoginPage(page);
-
-        await contestantLoginPage.goToPage();
-        await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
-        await contestantEntityPages.expectOnHome(selectionEntities.organization);
-
-        await headerLogout.failSignOut();
-        await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
-        await adminLoginPage.expectErrorPageSays('403');
-        await adminLoginPage.expectNoLoginPageRequest();
-      }
-    );
-
-    test(
-      'a user who is no administrator and whose sign-out fails after clearing the cookies, on a link into the Admin App, ends on the login page, with no draft left',
-      { tag: '@entity-selection' },
-      async ({
-        contestantEntityPages,
-        contestantLoginPage,
-        contestantQuestionPage,
-        headerLogout,
-        nativeDialogs,
-        page,
-        selectionEntities
-      }) => {
-        const adminLoginPage = createAdminLoginPage(page);
-
-        await signInWithADraftOnTheOrganization({
-          contestantEntityPages,
-          contestantLoginPage,
-          contestantQuestionPage,
-          nativeDialogs,
-          selectionEntities
-        });
-
-        await headerLogout.failSignOutAfterClearingCookies();
-        await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
-        await adminLoginPage.expectOnLoginPage();
-        await adminLoginPage.expectLoginAddressSaysNotAuthorized();
-        await headerLogout.expectNoContestantDraft();
-        expect(nativeDialogs.types()).toEqual([]);
       }
     );
 
@@ -1983,7 +1935,7 @@ test.describe('contestant entity selection', () => {
       { tag: '@entity-selection' },
       async ({ contestantEntityPages, contestantLoginPage, headerLogout, selectionEntities }) => {
         await contestantLoginPage.goToPage();
-        await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+        await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
         await contestantEntityPages.expectOnHome(selectionEntities.organization);
 
         await headerLogout.endSessionWithNoSignal();
@@ -2049,7 +2001,7 @@ test.describe('contestant entity selection', () => {
 
           await test.step("an editor of one organization signs in and lands on the organization's home", async () => {
             await contestantLoginPage.goToPage();
-            await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+            await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
             await contestantEntityPages.expectOnHome(organization);
             await contestantEntityPages.expectHomeHeadingNames(organization);
           });
@@ -2113,16 +2065,6 @@ test.describe('contestant entity selection', () => {
       { tag: '@entity-selection' },
       async ({ contestantSettingsPage }) => {
         await contestantSettingsPage.open();
-        await contestantSettingsPage.expectAddress(TEST_MULTI_ENTITY_EMAIL);
-      }
-    );
-
-    test(
-      'the entity-scoped settings address leads to the settings page',
-      { tag: '@entity-selection' },
-      async ({ contestantEntityPages, contestantSettingsPage, selectionEntities }) => {
-        await contestantEntityPages.requestEntitySettings(selectionEntities.candidateA);
-        await contestantSettingsPage.expectShown();
         await contestantSettingsPage.expectAddress(TEST_MULTI_ENTITY_EMAIL);
       }
     );

@@ -23,7 +23,7 @@ async function importTracking(browser: boolean) {
   // Imported after the producer, so these are the module instances the producer holds. `vi.resetModules()` also gives the producer a fresh Svelte runtime, so a `$state` of this file is not a dependency it can track; a `SvelteMap` of that same runtime is.
   const { getVisitId } = await import('./visitId');
   const { SvelteMap } = await import('svelte/reactivity');
-  /** A `{ current }` handle whose changes reach the producer's `$derived` gate. */
+  /** A `{ current }` handle whose changes reach the producer's `$derived` send-policy input. */
   function reactiveHandle<TValue>(value: TValue): { current: TValue } {
     const store = new SvelteMap<'current', TValue>([['current', value]]);
     return {
@@ -66,7 +66,7 @@ function inputs(
   };
 }
 
-type SentEvent = { name: string; ago: number; id?: string; attributes: Record<string, unknown> };
+type SentEvent = { name: string; ago: number; visitId?: string; attributes: Record<string, unknown> };
 type SentBody = { routeId: string; locale: string; events: Array<SentEvent> };
 
 /** The parsed bodies handed to the transport. */
@@ -105,7 +105,7 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted', projection: handle(INACTIVE_PROJECTION) }));
       svc.startPageview(HOME, {});
-      svc.startEvent('menu_open');
+      svc.track('menu_open');
       svc.track('maintenance_shown');
       svc.submitAllEvents();
       expect(sentBodies).toHaveLength(0);
@@ -118,7 +118,7 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ trackEvents: false, consent: 'granted' }));
       svc.startPageview(HOME, {});
-      svc.startEvent('menu_open');
+      svc.track('menu_open');
       svc.submitAllEvents();
       expect(namesPerBody()).toEqual([['pageview']]);
     });
@@ -131,14 +131,14 @@ describe('trackingService (pure-rune producer)', () => {
       const prefs = reactiveHandle({ dataCollection: undefined } as UserPreferences);
       const svc = trackingService({ ...inputs(), userPreferences: prefs });
       svc.startPageview(HOME, {});
-      svc.startEvent('menu_open');
-      svc.startEvent('answer_delete', { questionId: QUESTION_ID });
+      svc.track('menu_open');
+      svc.track('answer_delete', { questionId: QUESTION_ID });
       svc.submitAllEvents();
       expect(namesPerBody()).toEqual([['pageview']]);
 
       prefs.current = { ...prefs.current, dataCollection: { consent: 'granted', date: '2026-10-19' } };
       svc.submitAllEvents();
-      svc.startEvent('answer_resetAll');
+      svc.track('answer_resetAll');
       svc.submitAllEvents();
       expect(namesPerBody()).toEqual([['pageview'], ['answer_resetAll']]);
     });
@@ -150,14 +150,14 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted' }));
       svc.startPageview(HOME, {});
-      svc.startEvent('menu_open');
-      svc.startEvent('answer_delete', { questionId: QUESTION_ID });
+      svc.track('menu_open');
+      svc.track('answer_delete', { questionId: QUESTION_ID });
       svc.submitAllEvents();
       const [body] = bodies();
       expect(body.events.map((event) => event.name)).toEqual(['pageview', 'menu_open', 'answer_delete']);
-      expect(body.events[0].id).toBeUndefined();
-      expect(body.events[1].id).toBe(getVisitId());
-      expect(body.events[2].id).toBe(getVisitId());
+      expect(body.events[0].visitId).toBeUndefined();
+      expect(body.events[1].visitId).toBe(getVisitId());
+      expect(body.events[2].visitId).toBe(getVisitId());
     });
     cleanup();
   });
@@ -167,14 +167,14 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ projection: activeProjection('free') }));
       svc.startPageview(HOME, {});
-      svc.startEvent('answer_delete', { questionId: QUESTION_ID });
-      svc.startEvent('menu_open');
+      svc.track('answer_delete', { questionId: QUESTION_ID });
+      svc.track('menu_open');
       svc.submitAllEvents();
       const [body] = bodies();
       const byName = Object.fromEntries(body.events.map((event) => [event.name, event]));
       expect(Object.keys(byName)).toEqual(['pageview', 'answer_delete', 'menu_open']);
-      expect(byName.answer_delete.id).toBeUndefined();
-      expect(byName.menu_open.id).toBe(getVisitId());
+      expect(byName.answer_delete.visitId).toBeUndefined();
+      expect(byName.menu_open.visitId).toBe(getVisitId());
     });
     cleanup();
   });
@@ -184,12 +184,12 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted', projection: activeProjection('gated', 'none') }));
       svc.startPageview(HOME, {});
-      svc.startEvent('menu_open');
-      svc.startEvent('answer_delete', { questionId: QUESTION_ID });
+      svc.track('menu_open');
+      svc.track('answer_delete', { questionId: QUESTION_ID });
       svc.submitAllEvents();
       const [body] = bodies();
       expect(body.events).toHaveLength(3);
-      for (const event of body.events) expect(event.id).toBeUndefined();
+      for (const event of body.events) expect(event.visitId).toBeUndefined();
     });
     cleanup();
   });
@@ -200,7 +200,7 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted', projection: activeProjection('free') }));
       svc.startPageview(HOME, {});
-      svc.startEvent('menu_open');
+      svc.track('menu_open');
       svc.submitAllEvents();
       expect(sentBodies).toHaveLength(0);
     });
@@ -213,7 +213,7 @@ describe('trackingService (pure-rune producer)', () => {
       const svc = trackingService(inputs({ consent: 'granted' }));
       svc.startPageview(HOME, {});
       svc.submitAllEvents();
-      svc.startEvent('menu_open');
+      svc.track('menu_open');
       svc.submitAllEvents();
       svc.submitAllEvents();
       expect(namesPerBody()).toEqual([['pageview'], ['menu_open']]);
@@ -226,8 +226,8 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted' }));
       svc.startPageview(HOME, {});
-      svc.startEvent('menu_open');
-      svc.startEvent('answer_delete', { questionId: QUESTION_ID });
+      svc.track('menu_open');
+      svc.track('answer_delete', { questionId: QUESTION_ID });
       svc.resetAllEvents();
       svc.submitAllEvents();
       expect(namesPerBody()).toEqual([['pageview']]);
@@ -259,12 +259,12 @@ describe('trackingService (pure-rune producer)', () => {
     cleanup();
   });
 
-  describe('surveySessionId', () => {
+  describe('visitId', () => {
     it('is the visit id in visit-id mode memory when events may be sent', async () => {
       const { trackingService, getVisitId } = await importTracking(true);
       const cleanup = $effect.root(() => {
         const svc = trackingService(inputs({ consent: 'granted' }));
-        expect(svc.surveySessionId.current).toBe(getVisitId());
+        expect(svc.visitId.current).toBe(getVisitId());
       });
       cleanup();
     });
@@ -279,7 +279,7 @@ describe('trackingService (pure-rune producer)', () => {
           inputs({ trackEvents: false, consent: 'granted' }),
           inputs({ consent: 'granted', projection: handle(INACTIVE_PROJECTION) })
         ];
-        for (const input of cases) expect(trackingService(input).surveySessionId.current).toBeUndefined();
+        for (const input of cases) expect(trackingService(input).visitId.current).toBeUndefined();
       });
       cleanup();
     });
@@ -288,7 +288,7 @@ describe('trackingService (pure-rune producer)', () => {
       Object.defineProperty(navigator, 'globalPrivacyControl', { value: true, configurable: true });
       const { trackingService } = await importTracking(true);
       const cleanup = $effect.root(() => {
-        expect(trackingService(inputs({ consent: 'granted' })).surveySessionId.current).toBeUndefined();
+        expect(trackingService(inputs({ consent: 'granted' })).visitId.current).toBeUndefined();
       });
       cleanup();
     });
@@ -300,9 +300,9 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted' }));
       svc.startPageview(HOME, {});
-      svc.startEvent('menu_open');
+      svc.track('menu_open');
       svc.track('maintenance_shown');
-      expect(svc.surveySessionId.current).toBeTypeOf('string');
+      expect(svc.visitId.current).toBeTypeOf('string');
       svc.submitAllEvents();
     });
     cleanup();
@@ -316,11 +316,11 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted' }));
       svc.startPageview(HOME, {});
-      svc.startEvent('answer_delete', { questionId: QUESTION_ID });
+      svc.track('answer_delete', { questionId: QUESTION_ID });
       svc.track('maintenance_shown');
       svc.submitAllEvents();
       svc.startPageview(null, null);
-      svc.startEvent('menu_open');
+      svc.track('menu_open');
       svc.submitAllEvents();
     });
     cleanup();
@@ -331,35 +331,124 @@ describe('trackingService (pure-rune producer)', () => {
     }
   });
 
+  describe('the consent choice of the current route', () => {
+    const CONTESTANT_ROUTE = '/contestant/(protected)';
+    const VOTER_ROUTE = '/(voters)/(located)/questions';
+
+    /** Preferences with only the Contestant App's own choice stored. */
+    function contestantOnly(consent: ConsentStatus) {
+      return handle({ contestantDataConsent: { consent, date: '2026-10-19' } } as UserPreferences);
+    }
+
+    it('on a voter route ignores a grant stored by the Contestant App, so no voter event is sent', async () => {
+      const { trackingService } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const svc = trackingService({
+          ...inputs(),
+          userPreferences: contestantOnly('granted'),
+          routeId: () => VOTER_ROUTE
+        });
+        expect(svc.analyticsPolicy.current.consent).toBeUndefined();
+        svc.startPageview(HOME, {});
+        svc.track('answer_delete', { questionId: QUESTION_ID });
+        svc.submitAllEvents();
+        expect(namesPerBody()).toEqual([['pageview']]);
+      });
+      cleanup();
+    });
+
+    it('with no route reads the voter choice only', async () => {
+      const { trackingService } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const svc = trackingService({ ...inputs(), userPreferences: contestantOnly('granted') });
+        expect(svc.analyticsPolicy.current.consent).toBeUndefined();
+      });
+      cleanup();
+    });
+
+    it('on a Contestant route reads contestantDataConsent and not the voter choice', async () => {
+      const { trackingService } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const svc = trackingService({
+          ...inputs(),
+          userPreferences: handle({
+            dataCollection: { consent: 'denied', date: '2026-10-19' },
+            contestantDataConsent: { consent: 'granted', date: '2026-10-19' }
+          } as UserPreferences),
+          routeId: () => CONTESTANT_ROUTE
+        });
+        expect(svc.analyticsPolicy.current.consent).toBe('granted');
+        svc.startPageview(HOME, {});
+        svc.track('menu_open');
+        svc.submitAllEvents();
+        expect(namesPerBody()).toEqual([['pageview', 'menu_open']]);
+      });
+      cleanup();
+    });
+
+    it('follows navigation between the apps', async () => {
+      const { trackingService, reactiveHandle } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const route = reactiveHandle<string | null>(CONTESTANT_ROUTE);
+        const svc = trackingService({
+          ...inputs(),
+          userPreferences: handle({
+            dataCollection: { consent: 'denied', date: '2026-10-19' },
+            contestantDataConsent: { consent: 'granted', date: '2026-10-19' }
+          } as UserPreferences),
+          routeId: () => route.current
+        });
+        expect(svc.analyticsPolicy.current.consent).toBe('granted');
+        route.current = VOTER_ROUTE;
+        expect(svc.analyticsPolicy.current.consent).toBe('denied');
+        route.current = null;
+        expect(svc.analyticsPolicy.current.consent).toBe('denied');
+      });
+      cleanup();
+    });
+  });
+
+  describe('consentPreferenceKey', () => {
+    it('picks contestantDataConsent on Contestant App routes only', async () => {
+      const { consentPreferenceKey } = await import('./sendPolicy');
+      expect(consentPreferenceKey('/contestant')).toBe('contestantDataConsent');
+      expect(consentPreferenceKey('/contestant/(protected)/questions')).toBe('contestantDataConsent');
+      expect(consentPreferenceKey('/contestants')).toBe('dataCollection');
+      expect(consentPreferenceKey('/(voters)/privacy')).toBe('dataCollection');
+      expect(consentPreferenceKey('/admin/(protected)')).toBe('dataCollection');
+      expect(consentPreferenceKey(null)).toBe('dataCollection');
+      expect(consentPreferenceKey(undefined)).toBe('dataCollection');
+    });
+  });
+
   // The members `appContext` takes from this producer travel on through the three downstream `{ ...appContext }` spreads, and the forward itself is an `Object.assign`, which, like spread, copies OWN-ENUMERABLE properties only. Svelte 5 compiles bare `$state`/`$derived` CLASS fields to PROTOTYPE accessors that are not own-enumerable and would be dropped by both.
   it('reactive members and methods survive `{ ...svc }` spread', async () => {
     const { trackingService, getVisitId } = await importTracking(true);
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted' }));
       const spread = { ...svc };
-      expect(spread.gate?.current.projection.active).toBe(true);
-      expect(spread.surveySessionId?.current).toBe(getVisitId());
-      expect(typeof spread.startEvent).toBe('function');
+      expect(spread.analyticsPolicy?.current.projection.active).toBe(true);
+      expect(spread.visitId?.current).toBe(getVisitId());
+      expect(typeof spread.track).toBe('function');
       expect(typeof spread.setPageVisible).toBe('function');
       expect(typeof spread.submitAllEvents).toBe('function');
     });
     cleanup();
   });
 
-  // EXACT own-enumerable surface lock, deliberately not a superset check. `appContext` forwards an explicit list of these members and withholds `surveySessionId`, which it reads producer to producer. Add a member here on purpose, and decide explicitly whether it joins appContext's forward and the `AppContext` type.
-  it('exposes EXACTLY eight own-enumerable members', async () => {
+  // EXACT own-enumerable surface lock, deliberately not a superset check. `appContext` forwards an explicit list of these members and withholds `visitId`, which it reads producer to producer. Add a member here on purpose, and decide explicitly whether it joins appContext's forward and the `AppContext` type.
+  it('exposes EXACTLY seven own-enumerable members', async () => {
     const { trackingService } = await importTracking(true);
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted' }));
       const expected = [
         'startPageview',
-        'startEvent',
         'track',
         'submitAllEvents',
         'resetAllEvents',
         'setPageVisible',
-        'gate',
-        'surveySessionId'
+        'analyticsPolicy',
+        'visitId'
       ];
       expect(Object.keys(svc).sort()).toEqual([...expected].sort());
     });

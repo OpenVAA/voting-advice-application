@@ -6,20 +6,19 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  actionLinkToken,
   bearerToken,
   callerTokenRefused,
   confirmAddress,
   identityProviderOf,
   isCompletedChange,
-  isSingleConfirmation,
-  registeredProjectsOf
+  isSingleConfirmation
 } from './addressConfirmation.ts';
 import { ADDRESS_CONFIRMATION_MAIL_TEMPLATES } from './mailTemplates.ts';
 import type {
   CallerAccount,
   AddressConfirmationDeps,
   EmailChangeKind,
+  InvitationHold,
   EmailChangeTokens
 } from './addressConfirmation.ts';
 import type { AddressConfirmationOutcome, ConfirmAddressRequest } from './contract.ts';
@@ -40,7 +39,7 @@ const NEW_LINK_TOKEN = 'new-link-token';
 type Step =
   | 'callerAccount'
   | 'takeSlot'
-  | 'addressHoldsOpenInvitation'
+  | 'emailInvitationHold'
   | 'releaseSlot'
   | 'generateEmailChange:current'
   | 'generateEmailChange:new'
@@ -59,8 +58,8 @@ interface Behaviour {
   accountThrows?: boolean;
   slot?: boolean;
   slotThrows?: boolean;
-  invited?: boolean;
-  invitedThrows?: boolean;
+  hold?: InvitationHold;
+  holdThrows?: boolean;
   current?: EmailChangeTokens | 'email-exists';
   next?: EmailChangeTokens | 'email-exists';
   failAt?: 'generateEmailChange:current' | 'generateEmailChange:new' | 'verifyCurrent' | 'sendMail';
@@ -76,8 +75,7 @@ const OTHER_PROJECT = '00000000-0000-0000-0000-000000000002';
 const ACCOUNT: CallerAccount = {
   id: USER_ID,
   email: PLACEHOLDER,
-  identityProvider: 'idura',
-  registeredProjects: [PROJECT]
+  identityProvider: 'idura'
 };
 
 /** A failure whose message, like a real one, quotes what it failed on. Only its name and code may reach a log line. */
@@ -111,10 +109,10 @@ function harness(behaviour: Behaviour = {}): { deps: AddressConfirmationDeps; re
       if (behaviour.slotThrows) throw failure('takeSlot');
       return behaviour.slot ?? true;
     },
-    async addressHoldsOpenInvitation(query) {
-      record('addressHoldsOpenInvitation', query);
-      if (behaviour.invitedThrows) throw failure('addressHoldsOpenInvitation');
-      return behaviour.invited ?? false;
+    async emailInvitationHold(query) {
+      record('emailInvitationHold', query);
+      if (behaviour.holdThrows) throw failure('emailInvitationHold');
+      return behaviour.hold ?? 'none';
     },
     async releaseSlot(slot) {
       record('releaseSlot', slot);
@@ -162,7 +160,7 @@ describe('confirmAddress: the whole recipe', () => {
     expect(steps(recorded)).toEqual([
       'callerAccount',
       'takeSlot',
-      'addressHoldsOpenInvitation',
+      'emailInvitationHold',
       'generateEmailChange:current',
       'generateEmailChange:new',
       'verifyCurrent',
@@ -264,18 +262,11 @@ describe('confirmAddress: who may ask', () => {
     expect(steps(recorded)).toEqual(['callerAccount']);
   });
 
-  it.each<[string, Array<string>]>([
-    ['a project the account registered no entity in', [OTHER_PROJECT]],
-    ['an account that registered no entity in any project', []]
-  ])('refuses %s, and takes no slot', async (_label, registeredProjects) => {
-    const { deps, recorded } = harness({ account: { ...ACCOUNT, registeredProjects } });
-    await expect(confirmAddress(request(), CALLER_TOKEN, deps)).resolves.toBe('refused');
-    expect(steps(recorded)).toEqual(['callerAccount']);
-  });
-
-  it('answers for any project the account registered in, not only the first', async () => {
-    const { deps } = harness({ account: { ...ACCOUNT, registeredProjects: [OTHER_PROJECT, PROJECT] } });
-    await expect(confirmAddress(request(), CALLER_TOKEN, deps)).resolves.toBe('sent');
+  it('asks the database for the slot on the project the request names, which takes none for a project the account registered no entity in', async () => {
+    const { deps, recorded } = harness({ slot: false });
+    await expect(confirmAddress(request({ projectId: OTHER_PROJECT }), CALLER_TOKEN, deps)).resolves.toBe('refused');
+    expect(steps(recorded)).toEqual(['callerAccount', 'takeSlot']);
+    expect(recorded.calls[1].args).toEqual([{ projectId: OTHER_PROJECT, userId: USER_ID, email: TRIMMED }]);
   });
 
   it.each([['someone@bank-auth.placeholder'], ['  SOMEONE@Bank-Auth.Placeholder ']])(
@@ -330,7 +321,7 @@ describe('confirmAddress: an address another account holds', () => {
     expect(steps(recorded)).toEqual([
       'callerAccount',
       'takeSlot',
-      'addressHoldsOpenInvitation',
+      'emailInvitationHold',
       'generateEmailChange:current',
       'releaseSlot'
     ]);
@@ -344,7 +335,7 @@ describe('confirmAddress: an address another account holds', () => {
     expect(steps(recorded)).toEqual([
       'callerAccount',
       'takeSlot',
-      'addressHoldsOpenInvitation',
+      'emailInvitationHold',
       'generateEmailChange:current',
       'generateEmailChange:new',
       'releaseSlot'
@@ -360,10 +351,19 @@ describe('confirmAddress: an address another account holds', () => {
 });
 
 describe('confirmAddress: an address an open invitation holds', () => {
-  it('answers in-use when an open invitation of the project holds the address, giving the address’s slot back and asking the auth service for no link', async () => {
-    const { deps, recorded } = harness({ invited: true });
+  it('answers invited when an open invitation the project would honour holds the address, giving the address’s slot back and asking the auth service for no link', async () => {
+    const { deps, recorded } = harness({ hold: 'allowed' });
+    await expect(confirmAddress(request(), CALLER_TOKEN, deps)).resolves.toBe('invited');
+    expect(steps(recorded)).toEqual(['callerAccount', 'takeSlot', 'emailInvitationHold', 'releaseSlot']);
+    expect(recorded.calls.at(-1)?.args).toEqual([{ email: TRIMMED }]);
+    expect(recorded.mails).toEqual([]);
+    expect(recorded.logs).toEqual([]);
+  });
+
+  it('answers in-use when only an invitation the project would not honour holds the address, giving the address’s slot back and asking the auth service for no link', async () => {
+    const { deps, recorded } = harness({ hold: 'held' });
     await expect(confirmAddress(request(), CALLER_TOKEN, deps)).resolves.toBe('in-use');
-    expect(steps(recorded)).toEqual(['callerAccount', 'takeSlot', 'addressHoldsOpenInvitation', 'releaseSlot']);
+    expect(steps(recorded)).toEqual(['callerAccount', 'takeSlot', 'emailInvitationHold', 'releaseSlot']);
     expect(recorded.calls.at(-1)?.args).toEqual([{ email: TRIMMED }]);
     expect(recorded.mails).toEqual([]);
     expect(recorded.logs).toEqual([]);
@@ -372,22 +372,22 @@ describe('confirmAddress: an address an open invitation holds', () => {
   it('asks about the trimmed address in the request’s project, once the slot is taken', async () => {
     const { deps, recorded } = harness();
     await confirmAddress(request(), CALLER_TOKEN, deps);
-    const asked = recorded.calls.filter(({ step }) => step === 'addressHoldsOpenInvitation');
+    const asked = recorded.calls.filter(({ step }) => step === 'emailInvitationHold');
     expect(asked.map(({ args }) => args)).toEqual([[{ projectId: PROJECT, email: TRIMMED }]]);
-    expect(steps(recorded).indexOf('addressHoldsOpenInvitation')).toBe(steps(recorded).indexOf('takeSlot') + 1);
+    expect(steps(recorded).indexOf('emailInvitationHold')).toBe(steps(recorded).indexOf('takeSlot') + 1);
   });
 
   it('goes on to the links and the mail when no open invitation holds the address', async () => {
-    const { deps, recorded } = harness({ invited: false });
+    const { deps, recorded } = harness({ hold: 'none' });
     await expect(confirmAddress(request(), CALLER_TOKEN, deps)).resolves.toBe('sent');
     expect(steps(recorded)).toContain('generateEmailChange:current');
     expect(recorded.mails).toHaveLength(1);
   });
 
   it('answers refused when the check rejects, giving the slot back, asking the auth service for no link and logging no address, token or user', async () => {
-    const { deps, recorded } = harness({ invitedThrows: true });
+    const { deps, recorded } = harness({ holdThrows: true });
     await expect(confirmAddress(request(), CALLER_TOKEN, deps)).resolves.toBe('refused');
-    expect(steps(recorded)).toEqual(['callerAccount', 'takeSlot', 'addressHoldsOpenInvitation', 'releaseSlot']);
+    expect(steps(recorded)).toEqual(['callerAccount', 'takeSlot', 'emailInvitationHold', 'releaseSlot']);
     expect(recorded.calls.at(-1)?.args).toEqual([{ email: TRIMMED }]);
     expect(recorded.mails).toEqual([]);
     expect(recorded.logs).toHaveLength(1);
@@ -396,17 +396,17 @@ describe('confirmAddress: an address an open invitation holds', () => {
     }
   });
 
-  it('answers refused for an answer of the check that is neither true nor false, giving the slot back and asking for no link', async () => {
-    const { deps, recorded } = harness({ invited: 'true' as unknown as boolean });
+  it('answers refused for an answer of the check that is none of allowed, held and none, giving the slot back and asking for no link', async () => {
+    const { deps, recorded } = harness({ hold: true as unknown as InvitationHold });
     await expect(confirmAddress(request(), CALLER_TOKEN, deps)).resolves.toBe('refused');
-    expect(steps(recorded)).toEqual(['callerAccount', 'takeSlot', 'addressHoldsOpenInvitation', 'releaseSlot']);
+    expect(steps(recorded)).toEqual(['callerAccount', 'takeSlot', 'emailInvitationHold', 'releaseSlot']);
     expect(recorded.mails).toEqual([]);
   });
 
   it('asks nothing about invitations when the slot is not given', async () => {
-    const { deps, recorded } = harness({ slot: false, invited: true });
+    const { deps, recorded } = harness({ slot: false, hold: 'allowed' });
     await expect(confirmAddress(request(), CALLER_TOKEN, deps)).resolves.toBe('refused');
-    expect(steps(recorded)).not.toContain('addressHoldsOpenInvitation');
+    expect(steps(recorded)).not.toContain('emailInvitationHold');
   });
 });
 
@@ -461,17 +461,18 @@ describe('confirmAddress: a failure after the slot', () => {
     await expect(confirmAddress(request(), CALLER_TOKEN, deps)).resolves.toBe('refused');
   });
 
-  it('never answers anything but the four outcomes', async () => {
+  it('never answers anything but the five outcomes', async () => {
     const outcomes = new Set<AddressConfirmationOutcome>();
     const cases: Array<[Behaviour, string | null]> = [
       [{}, CALLER_TOKEN],
       [{}, null],
       [{ current: 'email-exists' }, CALLER_TOKEN],
+      [{ hold: 'allowed' }, CALLER_TOKEN],
       [{ failAt: 'sendMail' }, CALLER_TOKEN]
     ];
     for (const [behaviour, token] of cases)
       outcomes.add(await confirmAddress(request(), token, harness(behaviour).deps));
-    expect([...outcomes].sort()).toEqual(['in-use', 'refused', 'sent', 'unauthenticated']);
+    expect([...outcomes].sort()).toEqual(['in-use', 'invited', 'refused', 'sent', 'unauthenticated']);
   });
 });
 
@@ -482,7 +483,7 @@ describe('confirmAddress: a change of address the current address’s link compl
     expect(steps(recorded)).toEqual([
       'callerAccount',
       'takeSlot',
-      'addressHoldsOpenInvitation',
+      'emailInvitationHold',
       'generateEmailChange:current',
       'generateEmailChange:new',
       'verifyCurrent',
@@ -562,51 +563,6 @@ describe('identityProviderOf', () => {
   it('reads no inherited key', () => {
     expect(identityProviderOf(Object.create({ identity_provider: 'idura' }))).toBeNull();
   });
-});
-
-describe('registeredProjectsOf', () => {
-  it('reads the projects the record names, lower-cased', () => {
-    const metadata = {
-      identity_provider: 'idura',
-      registered_entities: { [PROJECT]: { candidate: USER_ID }, 'ABCDEF00-0000-0000-0000-000000000003': {} }
-    };
-    expect(registeredProjectsOf(metadata)).toEqual([PROJECT, 'abcdef00-0000-0000-0000-000000000003']);
-  });
-
-  it('skips an entry whose value is not an object', () => {
-    expect(registeredProjectsOf({ registered_entities: { [PROJECT]: 'x', [OTHER_PROJECT]: null } })).toEqual([]);
-  });
-
-  it.each([
-    [null],
-    [undefined],
-    ['idura'],
-    [[]],
-    [{}],
-    [{ registered_entities: null }],
-    [{ registered_entities: [PROJECT] }],
-    [{ registered_entities: 'x' }]
-  ])('reads no project from %j', (metadata) => {
-    expect(registeredProjectsOf(metadata)).toEqual([]);
-  });
-
-  it('reads no inherited record', () => {
-    expect(registeredProjectsOf(Object.create({ registered_entities: { [PROJECT]: {} } }))).toEqual([]);
-  });
-});
-
-describe('actionLinkToken', () => {
-  it('reads the token parameter of an action link, not its token hash', () => {
-    const link = 'http://127.0.0.1:54321/auth/v1/verify?token=abc123&type=email_change&redirect_to=http://x.example';
-    expect(actionLinkToken(link)).toBe('abc123');
-  });
-
-  it.each([[''], ['not a url'], ['http://x.example/verify?type=email_change'], [undefined], [7]])(
-    'reads an empty token from %j',
-    (link) => {
-      expect(actionLinkToken(link)).toBe('');
-    }
-  );
 });
 
 describe('isCompletedChange', () => {

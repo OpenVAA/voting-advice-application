@@ -16,7 +16,7 @@ import { Writer } from '../src/writer';
 interface MockedAdminClient {
   bulkImport: ReturnType<typeof vi.fn>;
   importAnswers: ReturnType<typeof vi.fn>;
-  linkJoinTables: ReturnType<typeof vi.fn>;
+  linkQuestionScopes: ReturnType<typeof vi.fn>;
   updateAppSettings: ReturnType<typeof vi.fn>;
   selectQuestionExternalIds: ReturnType<typeof vi.fn>;
   selectCandidatesForPortraitUpload: ReturnType<typeof vi.fn>;
@@ -40,7 +40,7 @@ vi.mock('../src/supabaseAdminClient', () => ({
     const instance = {
       bulkImport: vi.fn(async () => ({})),
       importAnswers: vi.fn(async () => undefined),
-      linkJoinTables: vi.fn(async () => undefined),
+      linkQuestionScopes: vi.fn(async () => undefined),
       updateAppSettings: vi.fn(async () => undefined),
       selectQuestionExternalIds: vi.fn(async () => mockState.questionIds),
       selectCandidatesForPortraitUpload: vi.fn(async () => []),
@@ -64,7 +64,7 @@ function expectNothingWritten(): void {
   for (const method of [
     'bulkImport',
     'importAnswers',
-    'linkJoinTables',
+    'linkQuestionScopes',
     'uploadPortrait',
     'updateCandidateImage',
     'updateAppSettings',
@@ -101,7 +101,10 @@ describe('Writer validates app_settings with StoredSettingsSchema before it writ
       {
         ...ENTITY_ROWS,
         app_settings: [
-          { external_id: 'settings-1', settings: { contestantApp: { registrationModes: { candidate: ['emial'] } } } }
+          {
+            external_id: 'settings-1',
+            settings: { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['emial'] } } } }
+          }
         ]
       },
       'seed_',
@@ -109,7 +112,7 @@ describe('Writer validates app_settings with StoredSettingsSchema before it writ
     );
 
     await expect(write).rejects.toThrow('typo-template');
-    await expect(write).rejects.toThrow('contestantApp.registrationModes.candidate.0');
+    await expect(write).rejects.toThrow('contestantApp.servedEntityTypes.candidate.registrationModes.0');
     await expect(write).rejects.toThrow('nothing was written');
     expectNothingWritten();
   });

@@ -374,7 +374,7 @@ SELECT
         AND p.proname NOT LIKE 'test\_%'
         AND has_function_privilege('anon', p.oid, 'EXECUTE')
     ),
-    'contestant_app_public_config,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
+    'get_public_app_settings,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
     'census: the SECURITY DEFINER functions in public that anon can execute are exactly the six allow-listed ones'
   );
 
@@ -398,7 +398,7 @@ SELECT
         AND p.proname NOT LIKE 'test\_%'
         AND has_function_privilege('authenticated', p.oid, 'EXECUTE')
     ),
-    'claim_invitations,contestant_app_public_config,get_entity_basic_data,get_entity_nominations,get_nomination_parent_options,get_user_project_grants,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
+    'claim_invitations,get_entity_basic_data,get_entity_nominations,get_nomination_parent_options,get_public_app_settings,get_user_project_grants,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
     'census: the SECURITY DEFINER functions in public that authenticated can execute are the same six plus claim_invitations, get_entity_basic_data, get_entity_nominations, get_nomination_parent_options and get_user_project_grants'
   );
 
@@ -425,8 +425,8 @@ SELECT
         AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
         AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
     ),
-    'address_confirmation_release,address_confirmation_request,address_holds_open_invitation,delete_storage_object,identity_entity_find_or_create,invitation_caller_take,invitation_code_claimant_email,invitation_code_status,invitation_link_release,invitation_link_request,invitation_link_witness,invitation_link_witness_open,recovery_link_request,resolve_email_variables',
-    'census: the SECURITY DEFINER functions in public that service_role can execute and neither anon nor authenticated can are exactly the fourteen listed'
+    'access_caller_take,delete_storage_object,email_confirmation_release,email_confirmation_request,email_invitation_hold,identity_account_find,identity_entity_find_or_create,identity_provider_entity_types,invitation_code_claimant_email,invitation_code_status,invitation_link_release,invitation_link_request,invitation_link_witness,invitation_link_witness_open,recovery_link_request,resolve_email_variables',
+    'census: the SECURITY DEFINER functions in public that service_role can execute and neither anon nor authenticated can are exactly the sixteen listed: the two witness functions among them, which the test setup installs'
   );
 
 -- =====================================================================
@@ -520,7 +520,7 @@ SELECT
     'send_email_hook is not executable by service_role'
   );
 
--- The eleven policy-only helpers live where policies can still reach them: present in `private`, absent from `public`, and executable by both API roles (a policy runs as its caller).
+-- The ten policy-only helpers live where policies can still reach them: present in `private`, absent from `public`, and executable by both API roles (a policy runs as its caller).
 SELECT
   is (
     (
@@ -547,16 +547,15 @@ SELECT
           'nomination_exists_in_contest',
           'entity_has_confirmed_nomination',
           'nomination_entities_confirmed',
-          'project_nominations_locked',
-          'project_answers_locked',
+          'project_contestant_editing',
           'election_project_id',
           'constituency_group_project_id',
           'caller_unconfirmed_originated_count',
           'caller_nominated_in_contest'
         )
     ),
-    '11/0/11',
-    'the eleven policy-only helpers live in private (not public) and stay executable by anon and authenticated for policy evaluation'
+    '10/0/10',
+    'the ten policy-only helpers live in private (not public) and stay executable by anon and authenticated for policy evaluation'
   );
 
 -- =====================================================================

@@ -14,6 +14,7 @@ import {
   gateTargetLine,
   readDedicatedTarget,
   readPublicOrigin,
+  readSmokeAccessCallerMax,
   requireCredentialOrigin,
   requireSmokeInputs,
   runDeployedGate,
@@ -755,5 +756,29 @@ describe('requireSmokeInputs', () => {
       message = (error as Error).message;
     }
     expect(message).not.toContain('made-up-word');
+  });
+});
+
+describe('readSmokeAccessCallerMax', () => {
+  it.each([
+    ['unset', {}],
+    ['blank', { SMOKE_ACCESS_CALLER_MAX: '  ' }]
+  ])('defaults to 30 when it is %s', (_label, env) => {
+    expect(readSmokeAccessCallerMax(env)).toBe(30);
+  });
+
+  it.each([
+    ['1', 1],
+    ['30', 30],
+    [' 120 ', 120],
+    ['999999999', 999999999]
+  ])('reads %j as %d', (value, expected) => {
+    expect(readSmokeAccessCallerMax({ SMOKE_ACCESS_CALLER_MAX: value })).toBe(expected);
+  });
+
+  it.each(['0', '-5', '030', '2.5', '1e3', '30abc', 'thirty', '99999999999999999999'])('refuses %j', (value) => {
+    expect(() => readSmokeAccessCallerMax({ SMOKE_ACCESS_CALLER_MAX: value })).toThrow(
+      `SMOKE INPUT INVALID: SMOKE_ACCESS_CALLER_MAX must be a whole number of at least 1, got ${JSON.stringify(value)}`
+    );
   });
 });

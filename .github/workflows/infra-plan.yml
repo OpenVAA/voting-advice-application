@@ -52,86 +52,17 @@ jobs:
 
       - name: "Validate every Terraform root"
         if: ${{ !cancelled() }}
-        run: |
-          set -euo pipefail
-          validated=()
-          for root in infra/bootstrap infra/envs/*/*/; do
-            root="${root%/}"
-            echo "::group::$root"
-            terraform -chdir="$root" init -backend=false -input=false -lockfile=readonly
-            terraform -chdir="$root" validate -no-color
-            echo "::endgroup::"
-            validated+=("$root")
-          done
-          for required in \
-            infra/bootstrap \
-            infra/envs/staging/dns-mail \
-            infra/envs/staging/supabase \
-            infra/envs/staging/aws \
-            infra/envs/example/dns-mail \
-            infra/envs/example/supabase \
-            infra/envs/example/aws; do
-            found=0
-            for root in "${validated[@]}"; do
-              if [ "$root" = "$required" ]; then found=1; fi
-            done
-            if [ "$found" -ne 1 ]; then
-              echo "::error::$required was not among the roots validated (${validated[*]}). A required root is missing or the glob no longer reaches it."
-              exit 1
-            fi
-          done
-          echo "validated ${#validated[@]} roots: ${validated[*]}"
+        run: infra/scripts/terraform-checks.sh validate
 
       - name: "Test every Terraform module that has tests"
         if: ${{ !cancelled() }}
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          tested=()
-          for tests in infra/modules/*/tests/; do
-            module="${tests%/tests/}"
-            echo "::group::$module"
-            terraform -chdir="$module" init -backend=false -input=false
-            terraform -chdir="$module" test -no-color
-            echo "::endgroup::"
-            tested+=("$module")
-          done
-          if [ "${#tested[@]}" -eq 0 ]; then
-            echo "::error::No module under infra/modules has a tests directory, so no module test ran."
-            exit 1
-          fi
-          echo "tested ${#tested[@]} modules: ${tested[*]}"
+        run: infra/scripts/terraform-checks.sh test-modules
 
       # Each example root is planned by its own test file against mock providers, so the plan reaches every resource
       # without a credential or a backend.
       - name: "Plan the example roots with mock providers"
         if: ${{ !cancelled() }}
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          planned=()
-          for tests in infra/envs/example/*/tests/; do
-            root="${tests%/tests/}"
-            echo "::group::$root"
-            terraform -chdir="$root" init -backend=false -input=false -lockfile=readonly
-            terraform -chdir="$root" test -verbose -no-color
-            echo "::endgroup::"
-            planned+=("$root")
-          done
-          for required in \
-            infra/envs/example/aws \
-            infra/envs/example/dns-mail \
-            infra/envs/example/supabase; do
-            found=0
-            for root in "${planned[@]}"; do
-              if [ "$root" = "$required" ]; then found=1; fi
-            done
-            if [ "$found" -ne 1 ]; then
-              echo "::error::$required was not among the example roots planned (${planned[*]}). Its tests directory is missing or the glob no longer reaches it."
-              exit 1
-            fi
-          done
-          echo "planned ${#planned[@]} example roots: ${planned[*]}"
+        run: infra/scripts/terraform-checks.sh plan-examples
 
   # A fork's pull request gets no token and no secret, so this job's `if` skips it and it shows as skipped.
   plan:

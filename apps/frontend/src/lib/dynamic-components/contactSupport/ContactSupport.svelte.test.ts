@@ -16,6 +16,7 @@ const { app } = vi.hoisted(() => ({ app: { type: 'contestant' as 'contestant' | 
 vi.mock('$lib/contexts/app', () => {
   // The sentences the cases render, each with the placeholder the block fills. Every other key translates to itself.
   const sentences: Record<string, string> = {
+    'contestantApp.help.supportEmailSubject': 'Support Request: {appName}',
     'test.sentence': 'If the problem persists, {contactSupportLink}.',
     'test.hostile': '<img src="x" onerror="alert(1)">Ask {contactSupportLink}<script>alert(2)</script>'
   };
@@ -31,7 +32,10 @@ vi.mock('$lib/contexts/app', () => {
           name in params ? String(params[name]) : match
         ),
       getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-      appSettings: { admin: { email: SUPPORT_EMAIL }, contestantApp: { entityTypes: ['candidate'] } }
+      appSettings: {
+        admin: { email: SUPPORT_EMAIL },
+        contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+      }
     })
   };
 });
@@ -87,9 +91,7 @@ describe('ContactSupport', () => {
     expect(buttons).toHaveLength(1);
     const href = buttons[0].getAttribute('href') ?? '';
     expect(href.startsWith(`mailto:${SUPPORT_EMAIL}?subject=`)).toBe(true);
-    expect(decodeURIComponent(href)).toContain(
-      'contestantApp.help.supportEmailSubject: dynamic.contestantAppName.candidate'
-    );
+    expect(decodeURIComponent(href)).toContain('Support Request: dynamic.contestantAppName.candidate');
     expect(buttons[0].getAttribute('target')).toBe('_blank');
   });
 
@@ -172,9 +174,7 @@ describe('ContactSupport', () => {
       expect(links).toHaveLength(1);
       const href = links[0].getAttribute('href') ?? '';
       expect(href.startsWith(`mailto:${SUPPORT_EMAIL}?subject=`)).toBe(true);
-      expect(decodeURIComponent(href)).toContain(
-        'contestantApp.help.supportEmailSubject: dynamic.contestantAppName.candidate'
-      );
+      expect(decodeURIComponent(href)).toContain('Support Request: dynamic.contestantAppName.candidate');
       expect(target.querySelectorAll(BUTTON)).toHaveLength(0);
     });
 
@@ -210,7 +210,7 @@ describe('ContactSupport in the Admin App', () => {
       expect(buttons).toHaveLength(1);
       const href = buttons[0].getAttribute('href') ?? '';
       expect(href.startsWith(`mailto:${SUPPORT_EMAIL}?subject=`)).toBe(true);
-      expect(decodeURIComponent(href)).toContain('contestantApp.help.supportEmailSubject: adminApp.login.appSubtitle');
+      expect(decodeURIComponent(href)).toContain('Support Request: adminApp.login.appSubtitle');
       expect(buttons[0].getAttribute('target')).toBe('_blank');
     }
   );

@@ -5,12 +5,12 @@
  *
  * What it proves: every registration mode and every surface the contestant app's registration work names has at least one test in the default E2E run. Each is named by a tag the covering tests carry:
  *
- *   @reg-idp                registration with the identity provider
- *   @reg-email              registration by email, through the mailed link
- *   @reg-code               registration by registration code
- *   @org-registration       a party's own registration
- *   @entity-selection       the profile selection of an account with more than one entity
- *   @nomination-definition  the nominations editor
+ *   @registration-identity-provider  registration with the identity provider
+ *   @registration-email              registration by email, through the mailed link
+ *   @registration-code               registration by registration code
+ *   @organization-registration       a party's own registration
+ *   @entity-selection                the profile selection of an account with more than one entity
+ *   @nomination-definition           the nominations editor
  *
  * How it reads tags: from Playwright's own list of the default run, `playwright test --list --reporter=json` with the selection the root `test:e2e` script makes (`-c ./tests/playwright.config.ts ./tests --grep-invert @probe`). The JSON reporter gives each test its `tags`, which Playwright collects from the test's title, from its `{ tag }` option and from its enclosing describes, so a tag in a title and a tag in the options count alike, and a tag in a comment, or a tag-like word the parser does not take, does not count. A test is counted once per project it runs in. A test tagged `@probe` is never counted, so a list made without the default run's filter still yields the default run's census.
  *
@@ -23,9 +23,11 @@
  *
  * Output: one line per tag on stdout, `<tag>: <n> test(s)` for a tag with tests and `<tag>: no test in the default run` for one without. The closing summary line goes to stderr.
  *
+ * The self-test also runs in every census, after the census and before the verdict: no unit test runs this guard's fixture, and a guard whose fixture runs in no unit test runs it in its own gate. A census whose self-test fails is not trusted.
+ *
  * Exit codes:
- *   0 - every tag has a test; or --self-test passed
- *   1 - at least one tag has no test (each named); or --self-test found a difference
+ *   0 - every tag has a test and the self-test passed; or --self-test passed
+ *   1 - at least one tag has no test (each named), or the self-test found a difference
  *   2 - usage error, or the list cannot be produced or read (a Playwright failure, a listing error, unreadable JSON, a list with no test)
  */
 
@@ -35,18 +37,20 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compareWithExpected } from './lib/text-guard.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SELF = 'scripts/assert-e2e-coverage-tags.mjs';
+const GUARD_NAME = 'E2E coverage-tag census';
 const FIXTURE_LIST = 'scripts/fixtures/assert-e2e-coverage-tags.list.json';
 const FIXTURE_EXPECTED = 'scripts/fixtures/assert-e2e-coverage-tags.expected.violations';
 
 /** The tags whose presence in the default run this census asserts. */
 const REQUIRED_TAGS = [
-  '@reg-idp',
-  '@reg-email',
-  '@reg-code',
-  '@org-registration',
+  '@registration-identity-provider',
+  '@registration-email',
+  '@registration-code',
+  '@organization-registration',
   '@entity-selection',
   '@nomination-definition'
 ];
@@ -83,22 +87,22 @@ function cannotList(message) {
 // ── Arguments ──
 const argv = process.argv.slice(2);
 let input = null;
-let selfTest = false;
+let selfTestOnly = false;
 for (let i = 0; i < argv.length; i += 1) {
   const a = argv[i];
-  if (a === '--self-test') selfTest = true;
+  if (a === '--self-test') selfTestOnly = true;
   else if (a === '--input') {
     if (!argv[i + 1] || argv[i + 1].startsWith('--')) usageError('--input requires a file');
     input = argv[i + 1];
     i += 1;
   } else usageError(`unexpected argument '${a}'`);
 }
-if (selfTest && input) usageError('--self-test takes no other flag');
+if (selfTestOnly && input) usageError('--self-test takes no other flag');
 
 const inputPath = input ? path.resolve(process.cwd(), input) : null;
 process.chdir(REPO_ROOT);
 
-if (selfTest) runSelfTest();
+if (selfTestOnly) process.exitCode = selfTest() ? 0 : 1;
 else runCensus(inputPath ? readList(inputPath) : listDefaultRun());
 
 // ── The list ──
@@ -153,6 +157,31 @@ function listDefaultRun() {
 
 // ── The census ──
 
+// The exit status is set rather than forced: writes to a pipe are asynchronous, and an immediate exit would drop lines that are still queued.
+function runCensus(list) {
+  const result = census(list);
+  if (result.tests === 0) cannotList('the list holds no test of the default run');
+  const { lines, findings } = linesOf(result);
+  for (const line of lines) console.log(line);
+  console.error(
+    `${GUARD_NAME} — ${result.tests} test(s) in the default run; ${REQUIRED_TAGS.length - findings.length} of ${REQUIRED_TAGS.length} tag(s) have a test${findings.length ? `; no test for ${findings.map((f) => f.split(':')[0]).join(', ')}` : ''}.`
+  );
+  const selfTestPassed = selfTest();
+  if (!selfTestPassed)
+    console.error(
+      `${SELF}: the self-test did not match its committed expectations (printed above), so the census over the default run cannot be trusted.`
+    );
+  process.exitCode = findings.length > 0 || !selfTestPassed ? 1 : 0;
+}
+
+// ── Self-test: the fixture list against its committed findings ──
+function selfTest() {
+  const { findings: observed } = linesOf(census(readList(FIXTURE_LIST)));
+  return compareWithExpected(GUARD_NAME, observed, FIXTURE_EXPECTED);
+}
+
+// ── Counting ──
+
 /** Every spec of the list, at any depth of describes. */
 function specsOf(list) {
   const specs = [];
@@ -190,33 +219,4 @@ function linesOf({ counts }) {
     } else lines.push(`${tag}: ${n} test(s)`);
   }
   return { lines, findings };
-}
-
-// The exit status is set rather than forced: writes to a pipe are asynchronous, and an immediate exit would drop lines that are still queued.
-function runCensus(list) {
-  const result = census(list);
-  if (result.tests === 0) cannotList('the list holds no test of the default run');
-  const { lines, findings } = linesOf(result);
-  for (const line of lines) console.log(line);
-  console.error(
-    `E2E coverage-tag census — ${result.tests} test(s) in the default run; ${REQUIRED_TAGS.length - findings.length} of ${REQUIRED_TAGS.length} tag(s) have a test${findings.length ? `; no test for ${findings.map((f) => f.split(':')[0]).join(', ')}` : ''}.`
-  );
-  process.exitCode = findings.length > 0 ? 1 : 0;
-}
-
-// ── Self-test: the fixture list against its committed findings ──
-function runSelfTest() {
-  const { findings: observed } = linesOf(census(readList(FIXTURE_LIST)));
-  const expected = readFileSync(FIXTURE_EXPECTED, 'utf8')
-    .split('\n')
-    .filter((l) => l.trim() !== '' && !l.startsWith('#'));
-  const missing = expected.filter((l) => !observed.includes(l));
-  const unexpected = observed.filter((l) => !expected.includes(l));
-  for (const l of missing) console.log(`self-test: expected but not reported: ${l}`);
-  for (const l of unexpected) console.log(`self-test: reported but not expected: ${l}`);
-  const ok = missing.length === 0 && unexpected.length === 0 && observed.length === expected.length;
-  console.error(
-    `E2E coverage-tag census — self-test ${ok ? 'passed' : 'FAILED'}: ${observed.length} finding(s) on the fixture, ${expected.length} expected.`
-  );
-  process.exitCode = ok ? 0 : 1;
 }

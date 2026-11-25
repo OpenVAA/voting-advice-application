@@ -5,24 +5,19 @@ import { execFileSync, spawnSync } from 'child_process';
 import * as fs from 'fs/promises';
 import { compile } from 'mdsvex';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { mdsvexOptions } from '../../mdsvex.config.js';
+import { DOCS_ROOT } from '../docs-scripts.config';
 import type { Dirent } from 'fs';
-
-/**
- * The docs workspace root (`apps/docs`).
- */
-export const DOCS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 /**
  * The SvelteKit routes directory of the docs site.
  */
-export const ROUTES_DIR = path.join(DOCS_DIR, 'src', 'routes');
+export const ROUTES_DIR = path.join(DOCS_ROOT, 'src', 'routes');
 
 /**
  * Files served as-is from the site root.
  */
-export const STATIC_DIR = path.join(DOCS_DIR, 'static');
+export const STATIC_DIR = path.join(DOCS_ROOT, 'static');
 
 /**
  * The classes of findings the link checker reports.
@@ -278,7 +273,7 @@ let repoRoot: string | undefined;
  * The repository root, from `git rev-parse --show-toplevel`.
  */
 export function getRepoRoot(): string {
-  repoRoot ??= execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: DOCS_DIR, encoding: 'utf-8' }).trim();
+  repoRoot ??= execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: DOCS_ROOT, encoding: 'utf-8' }).trim();
   return repoRoot;
 }
 
@@ -303,10 +298,10 @@ export function listTrackedPaths(): TrackedPaths {
   return { files, dirs };
 }
 
-const GITHUB_SOURCE_URL =
-  /^https:\/\/github\.com\/OpenVAA\/voting-advice-application\/(?:blob|tree)\/main(?:\/|(?=[?#])|$)/;
-const BARE_GITHUB_SOURCE_URL =
-  /https:\/\/github\.com\/OpenVAA\/voting-advice-application\/(?:blob|tree)\/main(?:[/?#][^\s)<>"'`\]]*)?/g;
+/** The source pattern of the repository's `main` branch root, as a `blob` or a `tree` URL. */
+const GITHUB_SOURCE_ROOT = String.raw`https://github\.com/OpenVAA/voting-advice-application/(?:blob|tree)/main`;
+const GITHUB_SOURCE_URL = new RegExp(String.raw`^${GITHUB_SOURCE_ROOT}(?:/|(?=[?#])|$)`);
+const BARE_GITHUB_SOURCE_URL = new RegExp(String.raw`${GITHUB_SOURCE_ROOT}(?:[/?#][^\s)<>"'\`\]]*)?`, 'g');
 /** Sentence punctuation that ends a bare URL in prose rather than belonging to it. */
 const TRAILING_PUNCTUATION = /[.,;:]+$/;
 const HREF_ATTRIBUTE = /\bhref\s*=\s*(["'])(.*?)\1/g;

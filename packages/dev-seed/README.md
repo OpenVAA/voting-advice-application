@@ -149,10 +149,14 @@ against it is caused by the closure, not by the access flag.
 
 **`perm-contestant-nominations`** (prefix `e2e-perm-contestant-nominations-`) is the
 dataset on which an entity's editor defines, changes and removes the entity's
-nominations: three elections of three types (`organization_list`,
+nominations: three elections of three nomination shapes (`organization_list`,
 `organization_list_and_independents` and `candidate_only`), a candidate and a
 party with no nomination row, a candidate and a party with nominations, and the
 parties and alliances a nomination can stand under.
+
+**`perm-identity-provider`** (prefix `e2e-bankauth-idp-`) is the identity-provider
+specs' minimal dataset, and their setup adds the identity provider's
+registration mode for candidates.
 
 ### `smoke`
 
@@ -206,7 +210,7 @@ const template: Template = {
         external_id: 'election_2026',
         name: { en: 'My Demo Election' },
         election_date: '2026-11-01',
-        election_type: 'organization_list_and_independents'
+        nomination_shape: 'organization_list_and_independents'
       }
     ]
   },
@@ -325,32 +329,32 @@ in your IDE to see field-level docs. Key top-level fields:
   `organizations`, `alliances`, `factions`, `candidates`, `question_categories`,
   `questions`, `nominations`, `app_settings`, `feedback`.
 
-#### The election type and the nominations it admits
+#### The nomination shape and the nominations it admits
 
-An `elections` row may state `election_type`, one of `organization_list`,
+An `elections` row may state `nomination_shape`, one of `organization_list`,
 `organization_list_and_independents`, `candidate_only` and `organization_only`.
 The column's default in the database is
 `organization_list_and_independents`, which is also what the generator writes
 for a synthetic election (`count`) and what the minimal-template helper states.
 
-The type decides which nominations the election admits, and the database
+The shape decides which nominations the election admits, and the database
 refuses any other row, the seed writer's included: the import fails with
 `Nomination shape refused: …`.
 
-| `election_type`                      | Admits                                                        |
+| `nomination_shape`                   | Admits                                                        |
 | ------------------------------------ | ------------------------------------------------------------- |
 | `organization_list_and_independents` | every entity type; a candidate with or without a parent       |
 | `organization_list`                  | every entity type; a candidate only under a parent nomination |
 | `candidate_only`                     | candidates alone                                              |
 | `organization_only`                  | organizations and alliances                                   |
 
-So a template states an election type its own rows are admitted by: a template
+So a template states a nomination shape its own rows are admitted by: a template
 that seeds an organization's nomination does not state `candidate_only` for that
 election, and one that states `organization_list` gives each candidate's
 nomination a parent, or `requestedParentOrganization` in its `custom_data`.
 [`tests/nominationShapeCensus.builtins.test.ts`](./tests/nominationShapeCensus.builtins.test.ts)
 runs every built-in template through the pipeline and fails, naming the template
-and the row, on a nomination its election's type refuses. A custom template is
+and the row, on a nomination its election's nomination shape refuses. A custom template is
 not covered by it and meets the refusal at its import.
 
 #### Scoping a question by entity type

@@ -30,8 +30,8 @@ import type { GrantClaim } from '$lib/auth/roles';
 const writerMocks = vi.hoisted(() => ({ createDataWriter: vi.fn() }));
 vi.mock('$lib/api/dataWriter', () => ({ createDataWriter: writerMocks.createDataWriter }));
 
-const { withdrawLogoutCount } = vi.hoisted(() => ({ withdrawLogoutCount: vi.fn() }));
-vi.mock('$lib/server/auth/logoutCount', () => ({ withdrawLogoutCount }));
+const { withdrawLogoutDeadline } = vi.hoisted(() => ({ withdrawLogoutDeadline: vi.fn() }));
+vi.mock('$lib/server/auth/logoutDeadline', () => ({ withdrawLogoutDeadline }));
 
 // The shared runtime stub returns every path unlocalized. Here the locale is made visible as a prefix, so a redirect that dropped the request's locale is seen.
 vi.mock('$lib/paraglide/runtime', async (importOriginal) => ({
@@ -45,7 +45,7 @@ const LOCALE = 'fi';
 const editorGrant = { scope: 'entity', target_type: 'candidate', target_id: 'cand-1', role: 'editor' };
 
 /** What a claim answers for a user who has a password and no open invitation. */
-const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [], passwordSet: true };
+const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [] };
 
 /** A session as the verification answers it and as the request's cookies hold it; only its presence is read. */
 const SESSION = { access_token: 'access-1' };
@@ -292,13 +292,13 @@ describe('verifyMailedLink', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     writerMocks.createDataWriter.mockReset();
-    withdrawLogoutCount.mockReset();
+    withdrawLogoutDeadline.mockReset();
   });
 
   it('sends a verified magiclink to the app root, in the request locale, with nothing in its query', async () => {
     const { args, calls, verifyArguments } = requestWith({
       link: { tokenHash: 'hash-1', type: 'magiclink' },
-      claim: { claimed: [editorGrant], skipped: [], passwordSet: false }
+      claim: { claimed: [editorGrant], skipped: [] }
     });
 
     const redirected = await redirectOf(args);
@@ -354,7 +354,7 @@ describe('verifyMailedLink', () => {
   it('verifies, claims on the request client, refreshes and only then redirects when a grant was claimed', async () => {
     const { args, calls, locals, fetch } = requestWith({
       link: { tokenHash: 'hash-1', type: 'magiclink' },
-      claim: { claimed: [editorGrant], skipped: [], passwordSet: true }
+      claim: { claimed: [editorGrant], skipped: [] }
     });
 
     const redirected = await redirectOf(args);
@@ -371,7 +371,7 @@ describe('verifyMailedLink', () => {
   it('does not refresh when nothing was claimed', async () => {
     const { args, calls } = requestWith({
       link: { tokenHash: 'hash-1', type: 'magiclink' },
-      claim: { claimed: [], skipped: [{ ...editorGrant, reason: 'candidate_has_editor' }], passwordSet: true }
+      claim: { claimed: [], skipped: [{ ...editorGrant, reason: 'candidate_has_editor' }] }
     });
 
     await redirectOf(args);
@@ -558,7 +558,7 @@ describe('verifyMailedLink', () => {
     const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
     const { args, calls } = requestWith({
       link: { tokenHash: 'hash-1', type: 'magiclink' },
-      claim: { claimed: [editorGrant], skipped: [], passwordSet: true },
+      claim: { claimed: [editorGrant], skipped: [] },
       refreshError: { message: 'refresh token revoked' }
     });
 
@@ -711,21 +711,21 @@ describe('verifyMailedLink', () => {
     it('is withdrawn once, with the given cookies, request and address, when the verification answers a session, before the claim', async () => {
       const { args, calls, cookies, request, url } = requestWith({
         link: { tokenHash: 'hash-1', type: 'magiclink' },
-        claim: { claimed: [editorGrant], skipped: [], passwordSet: true }
+        claim: { claimed: [editorGrant], skipped: [] }
       });
-      withdrawLogoutCount.mockImplementation(() => {
-        calls.push('withdrawLogoutCount');
+      withdrawLogoutDeadline.mockImplementation(() => {
+        calls.push('withdrawLogoutDeadline');
       });
 
       await redirectOf(args);
 
-      expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-      const [event] = withdrawLogoutCount.mock.calls[0];
+      expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+      const [event] = withdrawLogoutDeadline.mock.calls[0];
       expect(Object.keys(event).sort()).toEqual(['cookies', 'request', 'url']);
       expect(event.cookies).toBe(cookies);
       expect(event.request).toBe(request);
       expect(event.url).toBe(url);
-      expect(calls).toEqual(['verifyOtp', 'withdrawLogoutCount', 'claimInvitations', 'refreshSession']);
+      expect(calls).toEqual(['verifyOtp', 'withdrawLogoutDeadline', 'claimInvitations', 'refreshSession']);
     });
 
     it.each([
@@ -737,7 +737,7 @@ describe('verifyMailedLink', () => {
 
       await redirectOf(args);
 
-      expect(withdrawLogoutCount).not.toHaveBeenCalled();
+      expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
     });
 
     it('is not withdrawn when an email_change link answers no session', async () => {
@@ -745,7 +745,7 @@ describe('verifyMailedLink', () => {
 
       await redirectOf(args);
 
-      expect(withdrawLogoutCount).not.toHaveBeenCalled();
+      expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
     });
   });
 });

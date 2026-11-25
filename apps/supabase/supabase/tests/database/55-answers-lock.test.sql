@@ -1,10 +1,10 @@
--- 55-answers-lock.test.sql: while a project's answers are locked, an entity's own editor writes nothing of its entity, and a project grant holder still does
+-- 55-answers-lock.test.sql: while a project's contestant editing is locked, an entity's own editor writes nothing of its entity, and a project grant holder still does
 --
--- The lock is the app setting `access.answersLocked`, stored in the project's `app_settings` row and read by `private.project_answers_locked`, the twin of `private.project_nominations_locked`. It binds the entity-scope write rules only:
+-- The lock is the value `locked` of the app setting `access.contestantEditing`, stored in the project's `app_settings` row and read by `private.project_contestant_editing`, whose answer `nominationsLocked` is the nominations lock 23-nominations-write.test.sql asserts. It binds the entity-scope write rules only:
 --   - the self-update policies `entity_update_own_candidates`, `_organizations`, `_factions` and `_alliances`;
 --   - the entity-scope nomination policies `entity_insert_nominations`, `entity_insert_parent_nominations`, `entity_update_nominations` and `entity_delete_nominations`;
 --   - the entity-scope write of `storage_path_can`, which the `entity_*_assets` storage policies ask;
---   - `upsert_answers` and `set_entity_nominations`, which refuse an entity's editor with SQLSTATE 42501 and `<function>: answers are locked in this project`, so the lock is told apart from a row the caller may not write.
+--   - `upsert_answers` and `set_entity_nominations`, which refuse an entity's editor with SQLSTATE OV002 and `upsert_answers: answers are locked in this project` or `set_entity_nominations: editing is locked in this project`; OV002 is raised for the lock alone, so the lock is told apart from a row the caller may not write.
 -- The project-scope policies do not read it, so a project editor and a project admin write the same rows, store the same objects and call the same functions while answers are locked.
 --
 -- Sections:
@@ -12,7 +12,8 @@
 --   2. with answers locked, each entity's own editor is refused on every site of the entity's own row;
 --   3. with answers locked, a project editor and a project admin are admitted on every site of the entity's own row;
 --   4. with the lock off, each entity's own editor is admitted on every site of the entity's own row;
---   5. to 7. the same three for a candidate's nominations and stored files.
+--   5. to 7. the same three for a candidate's nominations and stored files;
+--   8. with answers locked, no registration: `private.registration_mode_allowed` is false, so an open invitation is neither claimed nor answered with a link, and its code reads unknown; with the lock off the same invitation is honoured.
 --
 -- The lock is set and cleared on project A's settings row as the fixture owner between sections. A refused update is silent under row-level security, so an update is asserted by the number of rows it affected.
 --
@@ -20,10 +21,11 @@
 --
 -- Depends on:
 -- - 00-helpers.test.sql (create_test_data, test_id, test_user_id, test_user_grants, set_test_user, reset_role)
--- - 301-auth-functions.sql (private.project_answers_locked)
+-- - 301-auth-functions.sql (private.project_contestant_editing)
 -- - 302-rls.sql (the entity self-update and nomination policies)
 -- - 400-storage.sql (storage_path_can and the storage policies)
 -- - 503-entity-rpcs.sql (upsert_answers, set_entity_nominations)
+-- - 506-invitation-rpcs.sql (invitation_code_status, invitation_link_request, claim_invitations)
 BEGIN;
 
 SET
@@ -34,7 +36,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (55);
+  plan (65);
 
 SELECT
   create_test_data ();
@@ -53,10 +55,10 @@ BEGIN
 END;
 $fn$;
 
--- The helper's answer for one project. A database without the helper answers NULL here, so each row of section 1 fails as an assertion of its own rather than ending the file.
+-- Whether the helper answers `locked` for one project. A database without the helper answers NULL here, so each row of section 1 fails as an assertion of its own rather than ending the file.
 CREATE FUNCTION pg_temp.answers_locked (p_project_id uuid) RETURNS boolean LANGUAGE plpgsql AS $fn$
 BEGIN
-  RETURN private.project_answers_locked(p_project_id);
+  RETURN private.project_contestant_editing(p_project_id) = 'locked';
 EXCEPTION
   WHEN undefined_function THEN
     RETURN NULL;
@@ -76,10 +78,10 @@ BEGIN
 END;
 $fn$;
 
--- Sets project A's `access.answersLocked`, keeping every other member of the row.
+-- Sets project A's `access.contestantEditing` to `locked`, or to `open`, keeping every other member of the row.
 CREATE FUNCTION pg_temp.set_answers_locked (p_locked boolean) RETURNS void LANGUAGE sql AS $fn$
   UPDATE public.app_settings
-  SET settings = jsonb_recursive_merge(settings, jsonb_build_object('access', jsonb_build_object('answersLocked', p_locked)))
+  SET settings = jsonb_recursive_merge(settings, jsonb_build_object('access', jsonb_build_object('contestantEditing', CASE WHEN p_locked THEN 'locked' ELSE 'open' END)))
   WHERE project_id = public.test_id('project_a');
 $fn$;
 
@@ -166,7 +168,7 @@ VALUES
 -- =====================================================================
 -- Section 1: which stored values lock
 --
--- Locked for a project that does not exist and for the JSON boolean `true` at `access.answersLocked`; unlocked for everything else. The string is the case a text comparison would read as locked, and the nominations lock's key the case a helper reading the wrong key would.
+-- Locked for a project that does not exist and for the JSON string `locked` at `access.contestantEditing`; unlocked for everything else. The JSON boolean is the case a reader of the lock booleans this setting replaces would read as locked, and `nominationsLocked` the case a helper that took any value but `open` for locked would.
 -- =====================================================================
 SELECT
   is (
@@ -184,33 +186,35 @@ SELECT
 
 SELECT
   is (
-    pg_temp.answers_locked_with_access ('{"answersLocked":true}'::jsonb),
+    pg_temp.answers_locked_with_access ('{"contestantEditing":"locked"}'::jsonb),
     true,
-    'ALK: the JSON boolean true locks'
+    'ALK: the JSON string "locked" locks'
   );
 
 SELECT
   is (
-    pg_temp.answers_locked_with_access ('{"answersLocked":"true"}'::jsonb),
+    pg_temp.answers_locked_with_access ('{"contestantEditing":true}'::jsonb),
     false,
-    'ALK: the string "true" is unlocked'
+    'ALK: the JSON boolean true is unlocked'
   );
 
 SELECT
   is (
-    pg_temp.answers_locked_with_access ('{"answersLocked":false}'::jsonb),
+    pg_temp.answers_locked_with_access ('{"contestantEditing":"open"}'::jsonb),
     false,
-    'ALK: the JSON boolean false is unlocked'
+    'ALK: the JSON string "open" is unlocked'
   );
 
 SELECT
   is (
-    pg_temp.answers_locked_with_access ('{"nominationsLocked":true}'::jsonb),
+    pg_temp.answers_locked_with_access (
+      '{"contestantEditing":"nominationsLocked"}'::jsonb
+    ),
     false,
-    'ALK: an access member without the key is unlocked, the nominations lock included'
+    'ALK: the nominations lock leaves answers unlocked'
   );
 
--- `storage_path_can` reads the key inline rather than through the helper, so its entity-scope write is held to the helper's reading of the same stored values: candidate B's editor writing into candidate B's own folder in project B, under each `access` member above.
+-- `storage_path_can` reads the key through `private.contestant_editing_in` rather than through `private.project_contestant_editing`, so its entity-scope write is held to the same reading of the stored values: candidate B's editor writing into candidate B's own folder in project B, under each `access` member above.
 INSERT INTO
   public.grants (user_id, scope, target_type, target_id, role)
 VALUES
@@ -245,10 +249,13 @@ SELECT
       FROM
         (
           VALUES
-            (1, '{"answersLocked":true}'::jsonb),
-            (2, '{"answersLocked":"true"}'::jsonb),
-            (3, '{"answersLocked":false}'::jsonb),
-            (4, '{"nominationsLocked":true}'::jsonb),
+            (1, '{"contestantEditing":"locked"}'::jsonb),
+            (2, '{"contestantEditing":true}'::jsonb),
+            (3, '{"contestantEditing":"open"}'::jsonb),
+            (
+              4,
+              '{"contestantEditing":"nominationsLocked"}'::jsonb
+            ),
             (5, NULL::jsonb)
         ) AS v (ord, access)
       ORDER BY
@@ -318,7 +325,7 @@ SELECT
       $$SELECT public.upsert_answers ('candidate', '%s', '{}'::jsonb)$$,
       test_id ('candidate_a')
     ),
-    '42501',
+    'OV002',
     'upsert_answers: answers are locked in this project',
     'ALK: with answers locked, upsert_answers refuses a candidate''s own editor with the lock''s refusal'
   );
@@ -348,7 +355,7 @@ SELECT
       $$SELECT public.upsert_answers ('organization', '%s', '{}'::jsonb)$$,
       test_id ('org_a')
     ),
-    '42501',
+    'OV002',
     'upsert_answers: answers are locked in this project',
     'ALK: with answers locked, upsert_answers refuses an organization''s own editor with the lock''s refusal'
   );
@@ -783,8 +790,8 @@ SELECT
 SELECT
   throws_ok (
     pg_temp.save_kept_set (),
-    '42501',
-    'set_entity_nominations: answers are locked in this project',
+    'OV002',
+    'set_entity_nominations: editing is locked in this project',
     'ALK: with answers locked, set_entity_nominations refuses a candidate''s own editor with the lock''s refusal'
   );
 
@@ -980,6 +987,212 @@ SELECT
   lives_ok (
     pg_temp.store_object ('private-assets', 'alk-open.jpg'),
     'ALK: with the lock off, a candidate''s own editor stores a file in its folder of the private bucket'
+  );
+
+-- =====================================================================
+-- Section 8: with answers locked, no registration
+--
+-- Project A serves candidates by email and by code. One candidate of this section's own, with no editor, is promised by two open invitations: one bound to an address whose confirmed account this section writes, and one holding a code. While answers are locked the registration-mode rule allows nothing, so neither invitation is honoured; with the lock off both are.
+-- =====================================================================
+SELECT
+  reset_role ();
+
+UPDATE public.app_settings
+SET
+  settings = jsonb_recursive_merge (
+    settings,
+    '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}}}}'::jsonb
+  )
+WHERE
+  project_id = test_id ('project_a');
+
+INSERT INTO
+  public.candidates (id, project_id, first_name, last_name, confirmed)
+VALUES
+  (
+    '55550000-0000-4000-8000-000000000001',
+    test_id ('project_a'),
+    'Lock',
+    'Invitee',
+    false
+  );
+
+INSERT INTO
+  auth.users (
+    id,
+    instance_id,
+    email,
+    encrypted_password,
+    aud,
+    role,
+    email_confirmed_at,
+    raw_user_meta_data,
+    raw_app_meta_data,
+    created_at,
+    updated_at
+  )
+VALUES
+  (
+    'cccccccc-cccc-cccc-cccc-000000005504',
+    '00000000-0000-0000-0000-000000000000',
+    'alk.invitee@test.example',
+    '',
+    'authenticated',
+    'authenticated',
+    now(),
+    '{}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
+  );
+
+INSERT INTO
+  public.invitations (
+    project_id,
+    scope,
+    target_type,
+    target_id,
+    role,
+    email,
+    code_hash
+  )
+VALUES
+  (
+    test_id ('project_a'),
+    'entity',
+    'candidate',
+    '55550000-0000-4000-8000-000000000001',
+    'editor',
+    'alk.invitee@test.example',
+    NULL
+  ),
+  (
+    test_id ('project_a'),
+    'entity',
+    'candidate',
+    '55550000-0000-4000-8000-000000000001',
+    'editor',
+    NULL,
+    private.invitation_code_hash ('ALKC-ODE0-0001')
+  );
+
+SELECT
+  pg_temp.set_answers_locked (true);
+
+SELECT
+  is (
+    private.registration_mode_allowed (test_id ('project_a'), 'candidate', 'email'),
+    false,
+    'ALK: with answers locked, the registration-mode rule allows no mode the settings list'
+  );
+
+SET
+  LOCAL ROLE service_role;
+
+SELECT
+  is (
+    public.invitation_code_status (test_id ('project_a'), 'ALKC-ODE0-0001'),
+    'unknown',
+    'ALK: with answers locked, an open invitation''s code reads unknown'
+  );
+
+SELECT
+  is (
+    public.invitation_link_request (test_id ('project_a'), 'alk.invitee@test.example'),
+    NULL,
+    'ALK: with answers locked, the address of an open invitation earns no sign-in link'
+  );
+
+SELECT
+  is (
+    public.invitation_link_request (
+      test_id ('project_a'),
+      'alk.coder@test.example',
+      'ALKC-ODE0-0001'
+    ),
+    NULL,
+    'ALK: with answers locked, an open invitation''s code earns no sign-in link'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-000000005504',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.claim_invitations (test_id ('project_a')) -> 'claimed',
+    '[]'::jsonb,
+    'ALK: with answers locked, the holder of an open invitation''s address claims nothing'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        public.invitations i
+      WHERE
+        i.target_id = '55550000-0000-4000-8000-000000000001'
+        AND i.claimed_at IS NULL
+    ),
+    2,
+    'ALK: and both invitations stay open'
+  );
+
+SELECT
+  pg_temp.set_answers_locked (false);
+
+SELECT
+  is (
+    private.registration_mode_allowed (test_id ('project_a'), 'candidate', 'email'),
+    true,
+    'ALK: with the lock off, the registration-mode rule allows a mode the settings list'
+  );
+
+SET
+  LOCAL ROLE service_role;
+
+SELECT
+  is (
+    public.invitation_code_status (test_id ('project_a'), 'ALKC-ODE0-0001'),
+    'valid',
+    'ALK: with the lock off, the same code reads valid'
+  );
+
+SELECT
+  is (
+    public.invitation_link_request (test_id ('project_a'), 'alk.invitee@test.example'),
+    'alk.invitee@test.example',
+    'ALK: with the lock off, the same address earns a sign-in link'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-000000005504',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    jsonb_array_length(
+      public.claim_invitations (test_id ('project_a')) -> 'claimed'
+    ),
+    1,
+    'ALK: with the lock off, the holder of the address claims the invitation'
   );
 
 SELECT

@@ -1,6 +1,4 @@
-# Plans the whole template root offline. The provider is a mock, so no access token is read, and no
-# backend is read. The test loads the root's own terraform.tfvars, so the assert checks values a
-# forker copies.
+# Plans the whole template root offline. The provider is a mock, so no access token is read, and no backend is read. The test loads the root's own terraform.tfvars, so the assert checks values a forker copies.
 
 mock_provider "supabase" {}
 
@@ -31,7 +29,7 @@ run "example_supabase_plans" {
   }
 
   assert {
-    condition     = contains(output.managed_auth_keys, "smtp_host")
-    error_message = "With smtp set, the auth settings must include the SMTP host."
+    condition     = !contains(output.managed_auth_keys, "smtp_host") && !contains(output.managed_auth_keys, "rate_limit_email_sent")
+    error_message = "With the send-email hook on, the auth settings must hold no SMTP key and no mail rate limit: the hook sends the mail."
   }
 }

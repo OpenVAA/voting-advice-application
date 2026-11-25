@@ -4,7 +4,7 @@
  * Pure: it imports nothing at run time, reads no environment and holds no client. The caller supplies the one function that sends a request, so the same classifier runs against stand-in answers, the local function and a deployed one.
  */
 
-/** The calls one caller is admitted per window, as `invitation_caller_take` counts them. The unit test pins it to the function's `v_max`. */
+/** The calls one caller is admitted per window, as `access_caller_take` counts them under the default `private.deployment_settings.access_caller_max`. The unit test pins it to that column's default. */
 export const CALLER_LIMIT = 30;
 
 /** The length of the limit's window in seconds, and so the longest `Retry-After` a refusal can carry. The unit test pins it to the function's `v_window`. */
@@ -84,13 +84,13 @@ export function freshCheckCode(): string {
 /**
  * Calls the function until the per-caller limit refuses a call, and judges the refusal.
  *
- * It makes at most `limit + 1` calls, each with a fresh code, and stops at the first answer that is not 200. Every admitted answer must be a code status. It passes only on a 429 whose body is exactly the function's refusal and whose `Retry-After` is a whole number of seconds from 1 to the window. How many calls were admitted before it is reported, not judged, since other calls of the same caller may share the window.
+ * It makes at most `2 * limit + 1` calls, each with a fresh code, and stops at the first answer that is not 200. The budget allows for one window reset: a window that other calls of the same caller had partly used can end partway through the probe, and the window that follows admits `limit` more calls. Every admitted answer must be a code status. It passes only on a 429 whose body is exactly the function's refusal and whose `Retry-After` is a whole number of seconds from 1 to the window. How many calls were admitted before it is reported, not judged, since other calls of the same caller may share the window.
  *
  * @param post - Sends one code check and gives its answer.
  * @param freshCode - Makes the code of each call.
  * @param limit - The calls the limit admits per window.
  * @param windowSeconds - The window's length in seconds.
- * @returns `ok: true` with the calls admitted and the wait, or `ok: false` with a reason naming the call, the status and, for `Retry-After`, its value or `absent`, never quoting a body.
+ * @returns `ok: true` with the calls admitted and the wait, or `ok: false` with a reason naming the call, the status and, for `Retry-After`, its value or `absent`, never quoting a body. With no 429 at all, the reason lists the possible causes; a window that other calls of the caller had partly used is not among them, since the budget allows for its reset.
  */
 export async function probeCallerLimit(
   post: (code: string) => Promise<ProbeAnswer>,
@@ -98,7 +98,7 @@ export async function probeCallerLimit(
   limit: number = CALLER_LIMIT,
   windowSeconds: number = CALLER_WINDOW_SECONDS
 ): Promise<ProbeResult> {
-  const calls = limit + 1;
+  const calls = 2 * limit + 1;
   for (let call = 1; call <= calls; call++) {
     const answer = await post(freshCode());
     if (answer.status === 200) {
@@ -128,7 +128,12 @@ export async function probeCallerLimit(
   }
   return {
     ok: false,
-    reason: `no 429 within ${calls} calls: the per-caller limit is not in force; check private.deployment_settings.behind_cloudflare (infra/scripts/check-deployment-settings.sql)`
+    reason:
+      `no 429 within ${calls} calls: the per-caller limit was not seen to be in force. Possible causes: ` +
+      'private.deployment_settings.behind_cloudflare is not true (infra/scripts/check-deployment-settings.sql); ' +
+      `private.deployment_settings.access_caller_max is set above ${limit}; ` +
+      'cf-connecting-ip does not reach the function; the deployed account-access predates its access_caller_take; ' +
+      "this caller's address changed between calls"
   };
 }
 

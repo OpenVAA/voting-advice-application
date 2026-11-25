@@ -1,5 +1,4 @@
-# Read with terraform output after an apply. Only the origin secret is sensitive; read it with
-# terraform output -raw in the shell that needs it and never write it to a file.
+# Read with terraform output after an apply. Only the origin secret is sensitive; read it with terraform output -raw in the shell that needs it and never write it to a file.
 
 output "vpc_id" {
   description = "Id of the network."

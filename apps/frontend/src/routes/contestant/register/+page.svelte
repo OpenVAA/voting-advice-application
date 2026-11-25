@@ -8,7 +8,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
 - An address whose `mode` parameter names a listed mode, as the identity provider's error screen's Try again does, opens that mode's panel when the page mounts. The parameter is read in the page, never in a load; a mode that is not listed chooses nothing.
 - The identity provider's panel is a form whose one fact is the entity type registered, among the types the provider's mode is allowed for. With one type, a sentence names it and nothing is asked. With two, a sentence says both can be registered and a group of bordered radios asks which, with nothing chosen on arrival: Continue with none chosen sends nothing, says to choose one and moves focus to the first type. The type chosen is kept while the page is shown, when another mode is chosen and the provider's is chosen back. A line says where Continue leads. Continue posts the type to the authorize endpoint, under the page's locale, which the provider is asked to show its screens in, and, on its answer, the browser leaves for the provider; the type travels in the request's body and in an httpOnly cookie the endpoint sets, never in an address. Continue stays in its loading form until the page is left. A refusal of the type leads to the identity provider's error screen with `mode_not_allowed`, and any other failure with `registration_failed`; the page shows no provider error of its own. A page restored from the browser's page cache, by Back from the provider, ends the loading form.
 - The email panel takes an address. Continue asks for a sign-in link to it and opens the "email sent" screen when the request has settled, whatever it settled as. Nothing of the request's answer is read.
-- The code panel takes a registration code. Continue checks it: a code nobody has claimed leads to the screen that asks for an address, and a claimed code to the screen that signs its holder in. The code is held in the entry flow for that screen, and is in no address. Every other answer of the check, and a check that failed, is shown as one sentence at the field, with the code left as it was typed, so that the page says nothing of why a code was not confirmed.
+- The code panel takes a registration code. Continue checks it: a code nobody has claimed leads to the screen that asks for an address, and a claimed code to the screen that signs its holder in. The code is held in the entry flow for that screen, and is in no address. A check the function refused because the caller has made more attempts than its limit admits is shown at the field as a sentence naming the wait, in whole minutes rounded up; the refusal comes before the code is looked at, so it says nothing about the code. Every other answer of the check, and every other failed check, is shown as one sentence at the field, with the code left as it was typed, so that the page says nothing of why a code was not confirmed.
 - Continue is always available. A press with no mode chosen sends nothing, says to choose one and moves focus to the first radio. A press with the open panel's field empty or unusable sends nothing, says what to enter at the field and moves focus there.
 - Each panel is a form of its own, and the radios are in no form, so the open form holds at most one field. Each form is declared as a post although no server action answers it, so that a submit the page's script did not catch could not write an address or a code into the address bar. Continue needs the page's script, so it is natively disabled until the page has mounted.
 - What was typed in a panel is kept while the page is shown, when another mode is chosen and the first is chosen back.
@@ -16,8 +16,8 @@ Lists the ways the project lets a visitor register, and leads each where it must
 
 ## Settings
 
-- `contestantApp.registrationModes`, `contestantApp.entityTypes` and `access.answersLocked`: Together they decide which modes are listed, and which entity types the identity provider's panel registers.
-- `contestantApp.entityTypes`: The entity types the project serves also decide the app's name above the heading.
+- `contestantApp.servedEntityTypes` and `access.contestantEditing`: Together they decide which modes are listed, and which entity types the identity provider's panel registers.
+- `contestantApp.servedEntityTypes`: The entity types the project serves also decide the app's name above the heading.
 
 -->
 
@@ -32,19 +32,17 @@ Lists the ways the project lets a visitor register, and leads each where it must
   import { OIDC_ERROR } from '$contestant/utils/oidcError';
   import { identityProviderEntityTypes, listedRegistrationModes } from '$contestant/utils/registrationOffer';
   import { MainContent } from '$layouts/main';
-  import { API_ROOT } from '$lib/api/base/universalApiRoutes';
+  import { TooManyRequestsError } from '$lib/api/base/tooManyRequestsError';
   import { Button } from '$lib/components/button';
   import { EmailField } from '$lib/components/emailField';
-  import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
-  import { Radio } from '$lib/components/input';
+  import { RadioGroup } from '$lib/components/input';
+  import { leaveByFullLoad } from '$lib/components/preventNavigation/navigationGuards';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { localizeHref } from '$lib/paraglide/runtime';
   import { getUUID } from '$lib/utils/components';
-  import { leaveFor } from '$lib/utils/leaveFor';
-  import type { RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
+  import type { ContestantAppNameKey, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
   import type { SubmitFunction } from '@sveltejs/kit';
   import type { TranslationKey } from '$types';
   import type { PageData } from './$types';
@@ -112,17 +110,14 @@ Lists the ways the project lets a visitor register, and leads each where it must
   const codeFormId = getUUID();
   const providerFormId = getUUID();
 
-  /** The endpoint that starts the identity provider's flow. It is posted to under the page's locale, which it asks the provider to show its screens in. */
-  const AUTHORIZE_ENDPOINT = `${API_ROOT}/oidc/authorize`;
-
   /** The entity types the provider's panel registers, in the order they are offered. Not empty while the provider's mode is listed. */
   const providerEntityTypes = $derived(identityProviderEntityTypes(contestantCtx.appSettings));
 
   /** The panel's sentence for each set of types it can register. */
-  const PROVIDER_INTRO: Record<ServedEntityType | 'both', TranslationKey> = {
+  const PROVIDER_INTRO: Record<ContestantAppNameKey, TranslationKey> = {
     candidate: 'contestantApp.register.identityProvider.intro.candidate',
     organization: 'contestantApp.register.identityProvider.intro.organization',
-    both: 'contestantApp.register.identityProvider.intro.both'
+    candidateAndOrganization: 'contestantApp.register.identityProvider.intro.candidateAndOrganization'
   };
 
   /** The text of each type's option. */
@@ -131,13 +126,19 @@ Lists the ways the project lets a visitor register, and leads each where it must
     organization: 'contestantApp.register.identityProvider.types.organization'
   };
 
-  const providerIntro = $derived(t(PROVIDER_INTRO[providerEntityTypes.length === 1 ? providerEntityTypes[0] : 'both']));
+  const providerIntro = $derived(
+    t(PROVIDER_INTRO[providerEntityTypes.length === 1 ? providerEntityTypes[0] : 'candidateAndOrganization'])
+  );
 
   /** Whether the panel asks which type: only when it registers more than one. */
   const asksType = $derived(providerEntityTypes.length > 1);
 
-  const typeErrorId = getUUID();
-  let typeGroup: HTMLFieldSetElement | undefined = $state();
+  /** The options of the type group, in the order the types are offered. */
+  const typeOptions = $derived(
+    providerEntityTypes.map((entityType) => ({ value: entityType, label: t(TYPE_OPTION[entityType]) }))
+  );
+
+  let typeGroup: RadioGroup<ServedEntityType> | undefined = $state();
   /** The type chosen among several. Held here and not in the radios, which are removed with their panel. */
   let selectedType = $state<ServedEntityType>();
   let typeError = $state<string>();
@@ -155,8 +156,8 @@ Lists the ways the project lets a visitor register, and leads each where it must
   let code = $state('');
   let emailError = $state<string>();
   let codeError = $state<string>();
-  /** Why the code field is in error: nothing was typed, or the code typed was not confirmed. */
-  let codeErrorReason = $state<'required' | 'unconfirmed'>();
+  /** Why the code field is in error: nothing was typed, the code typed was not confirmed, or the caller has made more attempts than the limit admits. */
+  let codeErrorReason = $state<'required' | 'unconfirmed' | 'tooManyAttempts'>();
 
   let mounted = $state(false);
   /** Whether a link request is in flight. */
@@ -168,8 +169,6 @@ Lists the ways the project lets a visitor register, and leads each where it must
 
   /** How a panel's text is aligned: centred where the one panel stands alone on the page, and starting where the option's text starts inside an option's block. */
   const alignClass = $derived(listed.length === 1 ? 'text-center' : 'text-start');
-  /** How a panel's sentence is set. */
-  const sentenceClass = $derived(listed.length === 1 ? 'text-center' : 'text-start');
 
   /** The id of the open panel's form, which Continue submits. */
   const openFormId = $derived(
@@ -207,11 +206,11 @@ Lists the ways the project lets a visitor register, and leads each where it must
     const entityType = providerEntityType;
     if (asksType && !entityType) {
       typeError = t('contestantApp.register.identityProvider.types.required');
-      typeGroup?.querySelector<HTMLInputElement>('input[type="radio"]')?.focus();
+      typeGroup?.focusFirst();
       return;
     }
     leaving = true;
-    const response = await fetch(localizeHref(AUTHORIZE_ENDPOINT), {
+    const response = await fetch(getRoute.current('ContestantAppIdentityProviderAuthorize'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entityType ? { entityType } : {})
@@ -223,7 +222,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
           .catch(() => undefined)
       : undefined;
     if (typeof authorizeUrl === 'string' && authorizeUrl) {
-      leaveFor(authorizeUrl);
+      void leaveByFullLoad(authorizeUrl);
       return;
     }
     const error = response?.status === 403 ? OIDC_ERROR.modeNotAllowed : OIDC_ERROR.registrationFailed;
@@ -243,7 +242,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
     const address = email.trim();
     // Emptiness is asked first: the control reports an empty field as invalid too, and the two have different messages.
     if (!address || !emailField?.checkValidity()) {
-      emailError = address ? t('components.input.error.invalidEmail') : t('contestantApp.login.emailRequired');
+      emailError = address ? t('components.input.error.invalidEmail') : t('common.account.emailRequired');
       emailField?.focus();
       return;
     }
@@ -264,18 +263,29 @@ Lists the ways the project lets a visitor register, and leads each where it must
       return;
     }
     checking = true;
-    // A check that failed is read as a code that was not confirmed.
-    const status = await checkInvitationCode({ code: typed }).catch(() => undefined);
+    // A refusal over the attempt limit says nothing about the code, so it is named with the wait; every other failed check is read as a code that was not confirmed.
+    let retryAfterSeconds: number | undefined;
+    const status = await checkInvitationCode({ code: typed }).catch((error: unknown) => {
+      if (error instanceof TooManyRequestsError) retryAfterSeconds = error.retryAfterSeconds;
+      return undefined;
+    });
     if (status === 'valid' || status === 'used') {
       // The code is held before the navigation: the screen it leads to renders only over a held code.
       holdEntryCode({ code: typed, status });
-      await goto(getRoute.current(status === 'valid' ? 'ContestantAppRegisterEmail' : 'ContestantAppRegisterSignIn'));
+      await goto(
+        getRoute.current(status === 'valid' ? 'ContestantAppRegisterCodeEmail' : 'ContestantAppRegisterCodeSignIn')
+      );
       checking = false;
       return;
     }
     checking = false;
-    codeErrorReason = 'unconfirmed';
-    codeError = t('contestantApp.register.codeUnconfirmed');
+    if (retryAfterSeconds === undefined) {
+      codeErrorReason = 'unconfirmed';
+      codeError = t('contestantApp.register.codeUnconfirmed');
+    } else {
+      codeErrorReason = 'tooManyAttempts';
+      codeError = t('contestantApp.register.tooManyAttempts', { minutes: Math.ceil(retryAfterSeconds / 60) });
+    }
     // The main button was natively disabled during the check, so focus is placed once the field is editable again.
     await tick();
     codeField?.focus();
@@ -324,7 +334,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
           data-testid="contestant-register-registered-notice-login" />
         <Button
           href={getRoute.current('ContestantAppForgotPassword')}
-          text={t('contestantApp.login.forgotPassword')}
+          text={t('common.account.forgotPassword')}
           data-testid="contestant-register-registered-notice-forgot-password" />
         <form method="POST" action="?/dismissRegistered" use:enhance={handleDismissRegistered}>
           <Button type="submit" text={t('common.close')} data-testid="contestant-register-registered-notice-dismiss" />
@@ -344,37 +354,24 @@ Lists the ways the project lets a visitor register, and leads each where it must
           class="gap-md flex w-full flex-col"
           data-testid="register-identity-provider-form"
           data-entity-types={providerEntityTypes.join(' ')}>
-          <p class={sentenceClass}>{providerIntro}</p>
+          <p class={alignClass}>{providerIntro}</p>
           {#if asksType}
-            <fieldset
+            <RadioGroup
               bind:this={typeGroup}
-              class="gap-md flex w-full min-w-0 flex-col"
-              aria-describedby={typeError ? typeErrorId : undefined}
-              data-testid="register-entity-types">
-              <legend class="mb-sm {alignClass} font-bold">
-                {t('contestantApp.register.identityProvider.types.legend')}
-              </legend>
-              {#each providerEntityTypes as entityType (entityType)}
-                <Radio
-                  bind:group={selectedType}
-                  name="entityType"
-                  value={entityType}
-                  label={t(TYPE_OPTION[entityType])}
-                  data-testid="register-entity-type-input"
-                  data-entity-type={entityType}
-                  onchange={() => (typeError = undefined)} />
-              {/each}
-              {#if typeError}
-                <ErrorMessage
-                  inline
-                  message={typeError}
-                  id={typeErrorId}
-                  role="alert"
-                  data-testid="register-entity-types-error" />
-              {/if}
-            </fieldset>
+              bind:selected={selectedType}
+              bind:error={typeError}
+              legend={t('contestantApp.register.identityProvider.types.legend')}
+              name="entityType"
+              options={typeOptions}
+              legendProps={{ class: `mb-sm ${alignClass}` }}
+              radioProps={(entityType) => ({
+                'data-testid': 'register-entity-type-input',
+                'data-entity-type': entityType
+              })}
+              errorTestId="register-entity-types-error"
+              data-testid="register-entity-types" />
           {/if}
-          <p class="small-info {sentenceClass}">{t('contestantApp.register.identityProvider.redirectInfo')}</p>
+          <p class="small-info {alignClass}">{t('contestantApp.register.identityProvider.redirectInfo')}</p>
         </form>
       {:else if panelMode === 'email'}
         <form
@@ -383,7 +380,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
           novalidate
           onsubmit={handleEmailSubmit}
           class="gap-md flex w-full flex-col">
-          <p class={sentenceClass}>{t('contestantApp.register.emailInfo')}</p>
+          <p class={alignClass}>{t('contestantApp.register.emailInfo')}</p>
           <EmailField
             bind:this={emailField}
             bind:value={email}
@@ -394,7 +391,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
         </form>
       {:else}
         <form id={codeFormId} method="POST" novalidate onsubmit={handleCodeSubmit} class="gap-md flex w-full flex-col">
-          <p class={sentenceClass}>{t('contestantApp.register.enterCode')}</p>
+          <p class={alignClass}>{t('contestantApp.register.enterCode')}</p>
           <RegistrationCodeField
             bind:this={codeField}
             bind:value={code}
@@ -427,7 +424,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
         data-testid="register-submit" />
     {/if}
     <Button
-      href={getRoute.current('ContestantAppSignIn')}
+      href={getRoute.current('ContestantAppLoginEmail')}
       text={t('contestantApp.register.didYouAlreadyRegister')}
       data-testid="register-login-link" />
     <Button href={getRoute.current('ContestantAppLogin')} text={t('common.return')} data-testid="register-return" />

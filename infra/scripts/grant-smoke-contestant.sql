@@ -15,12 +15,12 @@
 --
 -- Environment. A value is used exactly as given; one that is empty or holds only whitespace counts as not set.
 --   Required:
---     SMOKE_CONTESTANT_EMAIL  The user's address. It is compared with each user's address case-insensitively, and exactly one user must match.
---     PUBLIC_PROJECT_ID       The project's id, a uuid. The project row must exist.
+--     SMOKE_CONTESTANT_EMAIL:  The user's address. It is compared with each user's address case-insensitively, and exactly one user must match.
+--     PUBLIC_PROJECT_ID:       The project's id, a uuid. The project row must exist.
 --
 -- Exit status, which is psql's own:
 --   0  the user holds the grant and the acceptance. A second run adds nothing.
---   2  the connection was refused or lost
+--   2  the connection was refused or lost.
 --   3  a required variable is not set, each one named on standard error; no user or more than one user has the address; the project does not exist, or its id is malformed; no `smoke_` candidate of the project has a nomination; another user already edits the chosen candidate; or the user holds a grant other than the editor grant on that candidate, which keeps an administrator's address from becoming the contestant. Nothing has been written.
 --
 -- Output: three lines, `candidate=<external_id>`, `grants=<n>` and `terms=<n>`: the chosen candidate, the number of entity-scope candidate editor grants the user holds, and the number of the user's acceptances on the project. The address is never printed: it travels as a bound parameter and is in no statement's text, and no error names it. A server that is set to log the parameters of statements that succeed, or of slow ones, logs it all the same; those settings are the server's and this script cannot change them.

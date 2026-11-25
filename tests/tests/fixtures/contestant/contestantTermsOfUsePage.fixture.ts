@@ -6,6 +6,7 @@
  * Surface:
  *  - accept()                — toggle the terms-checkbox (no submit click).
  *  - getSubmit(): Locator    — return the terms-of-use-submit Locator.
+ *  - getCheckbox(): Locator  — return the terms-checkbox Locator, for a measurement of the box itself.
  *  - acceptAndAdvance()      — composed: accept() + getSubmit().click().
  *  - open()                  — navigate to the app root and wait until the view has hydrated.
  *  - expectShown()           — the view is shown, wherever the user is.
@@ -22,6 +23,7 @@
  *  - tickTrackingOptOut()                 — check the box.
  *  - toggleTrackingOptOutByKeyboard()     — reach the box with Tab from the terms-checkbox and press Space.
  *  - isTrackingOptOutTicked(): boolean    — whether the box is ticked.
+ *  - getTrackingOptOut(): Locator         — return the box's Locator, for a measurement of the box itself.
  *  - expectTrackingOptOutInsideViewport() — the whole box lies inside the viewport.
  *  - expectUsageDataInTerms()             — open the terms text and assert the heading of its usage-data section.
  *
@@ -34,19 +36,15 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildEntityLessRoute } from '../../utils/contestantEntityUrl';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
 import type { Locator, Page } from '@playwright/test';
 
 /** The English title of the terms' usage-data section (`privacy.usageData.title`), read from the message source rather than copied, so a copy edit cannot leave the step asserting a stale string. */
-const USAGE_DATA_TITLE: string = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/privacy.json'), 'utf8')
-).privacy.usageData.title;
+const USAGE_DATA_TITLE = messageOf('privacy', 'usageData.title');
 
 export function createContestantTermsOfUsePage(page: Page) {
   return {
@@ -62,6 +60,13 @@ export function createContestantTermsOfUsePage(page: Page) {
      */
     getSubmit(): Locator {
       return page.getByTestId(testIds.contestant.terms.submit);
+    },
+
+    /**
+     * Return the terms-checkbox Locator, for a measurement of the box itself, such as its border contrast.
+     */
+    getCheckbox(): Locator {
+      return page.getByTestId(testIds.contestant.terms.checkbox);
     },
 
     /**
@@ -175,6 +180,13 @@ export function createContestantTermsOfUsePage(page: Page) {
      */
     async isTrackingOptOutTicked(): Promise<boolean> {
       return page.getByTestId(testIds.contestant.terms.trackingOptOut).isChecked();
+    },
+
+    /**
+     * Return the opt-out box's Locator, for a measurement of the box itself, such as its border contrast.
+     */
+    getTrackingOptOut(): Locator {
+      return page.getByTestId(testIds.contestant.terms.trackingOptOut);
     },
 
     /**

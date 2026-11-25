@@ -41,6 +41,7 @@ import fs from 'fs';
 import path from 'path';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { contestantSettingsUrlRe } from '../../utils/contestantEntityUrl';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
@@ -89,18 +90,6 @@ const TASK_TESTIDS: Readonly<Record<ContestantHomeTask, string>> = Object.freeze
 });
 
 /**
- * Read one message of the English message source.
- * @param file - The file's name under `apps/frontend/messages/en`, without its extension; the namespace is the file's single top-level key.
- * @param key - The message's key inside the namespace.
- */
-function englishMessage(file: string, key: string): string {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en', `${file}.json`), 'utf8')
-  ) as Record<string, Record<string, unknown>>;
-  return String(source[file][key]);
-}
-
-/**
  * The path data of a material icon, read from the icon's source rather than copied, to tell which icon an entry shows.
  * @param file - The icon's file name under `svg/material`, without its extension.
  */
@@ -117,35 +106,8 @@ function materialIconPath(file: string): string {
 /** The lock, which every entry that cannot be entered leads with. */
 const LOCK_PATH = materialIconPath('lock');
 
-/**
- * The path data of the icon an entry leads with, or `null` while its drawing is not loaded.
- * @param entry - The entry's button.
- */
-function iconPathOf(entry: Locator): Promise<string | null> {
-  return entry.evaluate((element) => element.querySelector('svg path')?.getAttribute('d') ?? null);
-}
-
-/** The computed fill of the icon an entry leads with and the computed colour of its label. */
-interface EntryColours {
-  fill: string;
-  labelColour: string;
-}
-
-/**
- * Read an entry's colours in one evaluation, so that both come from the same style.
- * @param entry - The entry's button.
- */
-function coloursOf(entry: Locator): Promise<EntryColours> {
-  return entry.evaluate((element) => {
-    const icon = element.querySelector('svg');
-    const label = [...element.children].find((child) => !child.querySelector('svg'));
-    if (!icon || !label) throw new Error('the entry holds no icon or no label');
-    return { fill: getComputedStyle(icon).fill, labelColour: getComputedStyle(label).color };
-  });
-}
-
 /** The email task's label, read from the message source rather than copied; `{email}` stands for the address. */
-const EMAIL_TASK_MESSAGE = englishMessage('contestantApp.home', 'emailTask');
+const EMAIL_TASK_MESSAGE = messageOf('contestantApp.home', 'emailTask');
 
 export function createContestantHomePage(page: Page) {
   const ids = testIds.contestant.home;
@@ -438,3 +400,30 @@ export function createContestantHomePage(page: Page) {
 }
 
 export type ContestantHomePageFixture = ReturnType<typeof createContestantHomePage>;
+
+/**
+ * The path data of the icon an entry leads with, or `null` while its drawing is not loaded.
+ * @param entry - The entry's button.
+ */
+function iconPathOf(entry: Locator): Promise<string | null> {
+  return entry.evaluate((element) => element.querySelector('svg path')?.getAttribute('d') ?? null);
+}
+
+/** The computed fill of the icon an entry leads with and the computed colour of its label. */
+interface EntryColours {
+  fill: string;
+  labelColour: string;
+}
+
+/**
+ * Read an entry's colours in one evaluation, so that both come from the same style.
+ * @param entry - The entry's button.
+ */
+function coloursOf(entry: Locator): Promise<EntryColours> {
+  return entry.evaluate((element) => {
+    const icon = element.querySelector('svg');
+    const label = [...element.children].find((child) => !child.querySelector('svg'));
+    if (!icon || !label) throw new Error('the entry holds no icon or no label');
+    return { fill: getComputedStyle(icon).fill, labelColour: getComputedStyle(label).color };
+  });
+}

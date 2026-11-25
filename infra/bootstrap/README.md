@@ -32,10 +32,12 @@ Step 8  the frontend execution role: one additive apply, once the frontend's par
 
 Step 9  the deploy role's permissions, the id conditions and the plan role's lock: plan, simulator,
         CloudTrail cross-check, then one apply and its read-back
+
+Step 10 the two GitHub Environments the deploy role trusts, created with `gh api` and read back
 ```
 
-Steps 3 to 6 are one sitting. Step 7 can take a day or more and runs alongside the other roots. Steps 8
-and 9 are one sitting each.
+Steps 3 to 6 are one sitting. Step 7 can take a day or more and runs alongside the other roots. Steps
+8, 9 and 10 are one sitting each.
 
 ## What you paste back
 
@@ -57,6 +59,7 @@ nothing from the terminal's scroll-back.
   CloudTrail cross-check), `s9d_` (the apply) and `s9e_` (the read-back), and item 7 prints
   `s9_logs_removed=`. Its address lines name resources, and its condition lines name the trusts'
   claims, which are public; neither holds a secret.
+- Step 10's lines begin `s10_`, and those about one GitHub Environment `s10_env_<name>_`.
 
 `$L` and any saved plan file (`tfplan`) hold secrets in clear text: resource ids, attribute values,
 and whatever the state or the API returned. Never share, attach or paste either. The last item of
@@ -84,7 +87,7 @@ new terminal. Each step lists the ones it needs.
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
 ```
 
 `LC_ALL=C` keeps every number and sort order independent of your workstation's locale. Give a time in
@@ -92,10 +95,11 @@ UTC, in the form `date -u +%Y-%m-%dT%H:%MZ` prints.
 
 ## Step 1: Inventory of the account
 
-Nothing in this step changes the account. The inventory script makes read-only calls only and prints
-names and counts: no session name, no e-mail address, no error text of a failed call, and no IAM user
-name outside the path `/openvaa/`. Such a user is printed as `user-<n>`; to see which one that is, run
-`aws iam list-users --query 'Users[].UserName'` on your own machine and count.
+Nothing in this step changes the account. Every command in it is a read, and none of them prints an
+IAM user name, a session name or an e-mail address: the users are counted, and an e-mail identity is
+counted rather than named. The inline-policy check prints no error text of a failed call and no IAM
+user name outside the path `/openvaa/`. Such a user is printed as `user-<n>`; to see which one that
+is, run `aws iam list-users --query 'Users[].UserName'` on your own machine and count.
 
 1. Say which identity applies Terraform by hand, `identity-center` or `iam-user`, and name its
    managed policies, each on the `answer_` line you were given for it.
@@ -112,6 +116,7 @@ name outside the path `/openvaa/`. Such a user is printed as `user-<n>`; to see 
    echo "s2_curl=$(curl --version | head -1 | cut -d' ' -f1-2)"
    echo "s2_shasum=$(shasum --version | head -1)"
    echo "s2_git=$(git --version)"
+   echo "s2_gh=$(gh --version | head -1)"
    ```
 
 3. Sign in with that identity, run the lines that begin a sitting, then print the account and the kind
@@ -122,7 +127,7 @@ name outside the path `/openvaa/`. Such a user is printed as `user-<n>`; to see 
    ```bash
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
    echo "s3_account=$(aws sts get-caller-identity --query Account --output text)"
    aws sts get-caller-identity --query Arn --output text | sed -E 's#^arn:aws:(sts|iam)::[0-9]+:##; s#^(assumed-role/[^/]+)/.*#\1#; s#^user/.*#user#; s#^#s3_principal=#'
    echo "s3_user_mfa_devices=$(aws iam list-mfa-devices --query 'length(MFADevices)' --output text)"
@@ -130,19 +135,38 @@ name outside the path `/openvaa/`. Such a user is printed as `user-<n>`; to see 
 
    `s3_account` must be `471112560111`. Any other account means stop: the shell is signed in elsewhere.
 
-4. From the repository root, the full inventory:
+4. The account as it stands: whether it belongs to an organisation, the IAM counts, the groups, the
+   roles that are not service-linked, the OIDC providers, the hosted zones, for four regions the SES
+   account state, its domain identities and a count of its address identities, the budgets, the
+   image repositories and the buckets. Error text goes to a log and is not pasted; a line that is
+   empty after its `=`, or a list that prints no line, is empty or could not be read.
+   `s4_organisation_error=AWSOrganizationsNotInUseException` means the account belongs to no
+   organisation.
 
    ```bash
-   infra/scripts/account-inventory.sh > "$L/s4.log" 2>&1; echo "s4_inventory_exit=$?"
-   sed 's/^/s4_inv=/' "$L/s4.log"
+   aws organizations describe-organization --query Organization.Id --output text > /dev/null 2> "$L/s4.log" && echo "s4_organisation=member"
+   grep -o 'An error occurred ([A-Za-z]*)' "$L/s4.log" | sed -E 's/^An error occurred \((.*)\)$/s4_organisation_error=\1/'
+   echo "s4_summary_users_groups_roles_policies_providers=$(aws iam get-account-summary --query 'SummaryMap.[Users,Groups,Roles,Policies,Providers]' --output text 2>> "$L/s4.log" | tr '\t' ',')"
+   aws iam list-groups --query 'Groups[].GroupName' --output text 2>> "$L/s4.log" | tr '\t' '\n' | sed 's/^/s4_group=/'
+   aws iam list-roles --query 'Roles[?!starts_with(Path, `/aws-service-role/`)].[Path,RoleName]' --output text 2>> "$L/s4.log" | tr '\t' ',' | sed 's/^/s4_role=/'
+   aws iam list-open-id-connect-providers --query 'OpenIDConnectProviderList[].Arn' --output text 2>> "$L/s4.log" | tr '\t' '\n' | sed 's/^/s4_oidc_provider=/'
+   aws route53 list-hosted-zones --query 'HostedZones[].[Name,Config.PrivateZone,ResourceRecordSetCount]' --output text 2>> "$L/s4.log" | tr '\t' ',' | sed 's/^/s4_zone=/'
+   for r in eu-north-1 eu-west-1 eu-central-1 us-east-1; do
+     echo "s4_ses_${r}_production_sending_max24h=$(aws sesv2 get-account --region "$r" --query '[ProductionAccessEnabled,SendingEnabled,SendQuota.Max24HourSend]' --output text 2>> "$L/s4.log" | tr '\t' ',')"
+     aws sesv2 list-email-identities --region "$r" --query "EmailIdentities[?IdentityType!='EMAIL_ADDRESS'].[IdentityName,VerificationStatus]" --output text 2>> "$L/s4.log" | tr '\t' ',' | sed "s/^/s4_ses_${r}_domain=/"
+     echo "s4_ses_${r}_address_identities=$(aws sesv2 list-email-identities --region "$r" --query "length(EmailIdentities[?IdentityType=='EMAIL_ADDRESS'])" --output text 2>> "$L/s4.log")"
+   done
+   aws budgets describe-budgets --account-id 471112560111 --query 'Budgets[].[BudgetName,BudgetLimit.Amount,CalculatedSpend.ActualSpend.Amount]' --output text 2>> "$L/s4.log" | tr '\t' ',' | sed 's/^/s4_budget=/'
+   aws ecr describe-repositories --region eu-north-1 --query 'repositories[].[repositoryName,imageTagMutability]' --output text 2>> "$L/s4.log" | tr '\t' ',' | sed 's/^/s4_repository=/'
+   aws s3api list-buckets --query 'Buckets[].Name' --output text 2>> "$L/s4.log" | tr '\t' '\n' | sed 's/^/s4_bucket=/'
    ```
 
-5. The assert mode, which exits 1 when any IAM user carries an inline policy. Like the inventory of
-   item 4, it reads the caller first and exits 1 without reading any list when the caller is not in
-   `471112560111` (`OPENVAA_ACCOUNT_ID`), so a status of 0 is about that account:
+5. From the repository root, the inline-policy check, which exits 1 when any IAM user carries an
+   inline policy. It reads the caller first and exits 1 without reading any list when the caller is
+   not in `471112560111` (`OPENVAA_ACCOUNT_ID`), so a status of 0 is about that account:
 
    ```bash
-   infra/scripts/account-inventory.sh --assert-no-inline-user-policies > "$L/s5.log" 2>&1; echo "s5_assert_users_exit=$?"
+   infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s5.log" 2>&1; echo "s5_assert_users_exit=$?"
    sed 's/^/s5_inv=/' "$L/s5.log"
    ```
 
@@ -166,7 +190,7 @@ Return: the `s2_`, `s3_`, `s4_`, `s5_` and `s9_` lines, and the `answer_` lines 
 
 ### If an IAM user carries an inline policy
 
-If `s5_assert_users_exit` is 1, decide for each user the inventory lists with a non-empty `inline=[…]`
+If `s5_assert_users_exit` is 1, decide for each user the check lists with a non-empty `inline=[…]`
 what happens to it. The choice is per user, and deleting cannot be undone.
 
 - **Convert.** Keep the user and move the permission to a customer-managed policy: save the document
@@ -174,24 +198,24 @@ what happens to it. The choice is per user, and deleting cannot be undone.
   one. Nothing that uses the user's key stops. Do not paste the policy document.
 - **Delete the user.** Check first with `aws iam list-access-keys` and `aws iam get-access-key-last-used`
   that nothing has used its key recently.
-- **Leave it for now.** The rule stays broken and the assert mode keeps exiting 1.
+- **Leave it for now.** The rule stays broken and the check keeps exiting 1.
 
 AWS documents that SMTP credentials created in the SES console carry an inline user policy named
-`AmazonSesSendingAccess`, on a user tagged `InvokedBy=SESConsole`; the inventory prints that tag's
+`AmazonSesSendingAccess`, on a user tagged `InvokedBy=SESConsole`; the check prints that tag's
 value. Such a user may still be sending mail for something.
 
-After a conversion or a deletion, run the assert mode again in a new sitting:
+After a conversion or a deletion, run the check again in a new sitting:
 
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
-infra/scripts/account-inventory.sh --assert-no-inline-user-policies > "$L/s5b.log" 2>&1; echo "s5b_assert_users_exit=$?"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
+infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s5b.log" 2>&1; echo "s5b_assert_users_exit=$?"
 sed 's/^/s5b_inv=/' "$L/s5b.log"
 test -n "$L" && rm -rf "$L" && echo "s5b_logs_removed=yes"
 ```
 
-Return: one `answer_` line per user naming your choice and the label the inventory printed for it,
+Return: one `answer_` line per user naming your choice and the label the check printed for it,
 and the three `s5b_` lines.
 
 ## Step 2: First apply with local state
@@ -215,7 +239,7 @@ by hand. Run it in one terminal, signed in with the identity of Step 1.
    ```bash
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
    export TF_VAR_alert_email='<your-address>'
    ```
 
@@ -308,7 +332,7 @@ of the address out if you track it.
 cd infra/bootstrap
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
 export TF_VAR_alert_email='<your-address>'
 B=openvaa-tfstate-471112560111
 ```
@@ -384,8 +408,8 @@ Step 6.
    ```
 
 7. The registry, the OIDC providers, the inline and attached policies of both roles, and the
-   inventory's assert mode that no role or user under the path `/openvaa/` carries an inline policy.
-   That mode does not judge attached policies, which the two `_attached` lines read:
+   inline-policy check that no role or user under the path `/openvaa/` carries an inline policy.
+   The check does not judge attached policies, which the two `_attached` lines read:
 
    ```bash
    echo "s7_registry=$(aws ecr describe-repositories --region eu-north-1 --repository-names openvaa-frontend --query 'repositories[0].[repositoryName,imageTagMutability]' --output text | tr '\t' ',')"
@@ -394,7 +418,7 @@ Step 6.
    echo "s7_deploy_inline_count=$(aws iam list-role-policies --role-name openvaa-staging-deploy --query 'length(PolicyNames)' --output text)"
    echo "s7_plan_attached=$(aws iam list-attached-role-policies --role-name openvaa-plan --query 'sort(AttachedPolicies[].PolicyName)' --output text | tr '\t' ',')"
    echo "s7_deploy_attached=$(aws iam list-attached-role-policies --role-name openvaa-staging-deploy --query 'sort(AttachedPolicies[].PolicyName)' --output text | tr '\t' ',')"
-   ../scripts/account-inventory.sh --assert-no-inline-under /openvaa/ > "$L/s7.log" 2>&1; echo "s7_assert_no_inline_exit=$?"
+   ../scripts/check-inline-policies.sh --assert-no-inline-under /openvaa/ > "$L/s7.log" 2>&1; echo "s7_assert_no_inline_exit=$?"
    ```
 
    Expected: `s7_registry=openvaa-frontend,IMMUTABLE`, one provider for
@@ -506,7 +530,7 @@ Step 6.
    export AWS_PAGER=""
    export TF_VAR_alert_email='<your-address>'
    B=openvaa-tfstate-471112560111
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
    ```
 
    Then, in terminal 2, a plan that must fail on the lock, and a read of the lock object:
@@ -564,7 +588,7 @@ once. Leave the export of the address out if you track it.
 cd infra/bootstrap
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
 export TF_VAR_alert_email='<your-address>'
 ```
 
@@ -1106,7 +1130,7 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
    `s9d_second_plan_exit=0`.
 
 6. The read-back: the policies attached to both roles, both trusts' conditions, the state bucket,
-   and the inventory's two asserts.
+   the simulator on the plan role's object and log reads, and the inline-policy check's two asserts.
 
    ```bash
    for role in plan:openvaa-plan deploy:openvaa-staging-deploy; do
@@ -1145,9 +1169,29 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
    n=$(jq '[.PublicAccessBlockConfiguration[] | select(. == true)]
      | length' "$L/s9e-blocks.json")
    echo "s9e_bucket_public_blocks=$n"
-   ../scripts/account-inventory.sh --assert-no-inline-user-policies \
+   PLAN_ROLE=$(aws iam get-role --role-name openvaa-plan --query Role.Arn \
+     --output text 2> "$L/s9e-plan-arn.err")
+   echo "s9e_plan_arn_exit=$?"
+   plan_sim() {
+     label=$1 resource=$2
+     shift 2
+     aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" \
+       --action-names "$@" --resource-arns "$resource" \
+       --query 'EvaluationResults[].[EvalActionName,EvalDecision]' \
+       --output text > "$L/s9e-$label.out" 2> "$L/s9e-$label.err"
+     echo "s9e_plan_${label}_exit=$?"
+     tr '\t' ' ' < "$L/s9e-$label.out" | sed "s/^/s9e_plan_${label}_decision=/"
+   }
+   plan_sim object "arn:aws:s3:::$B/other/object" \
+     s3:GetObject s3:GetObjectVersion
+   plan_sim object "arn:aws:s3:::openvaa-other-bucket/object" \
+     s3:GetObject s3:GetObjectVersion
+   plan_sim pipeline_state "arn:aws:s3:::$B/pipeline/staging/aws/terraform.tfstate" \
+     s3:GetObject
+   plan_sim log "*" logs:GetLogEvents
+   ../scripts/check-inline-policies.sh --assert-no-inline-user-policies \
      > "$L/s9e-users.log" 2>&1; echo "s9e_assert_users_exit=$?"
-   ../scripts/account-inventory.sh --assert-no-inline-under /openvaa/ \
+   ../scripts/check-inline-policies.sh --assert-no-inline-under /openvaa/ \
      > "$L/s9e-under.log" 2>&1; echo "s9e_assert_no_inline_exit=$?"
    ```
 
@@ -1166,6 +1210,15 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
      and the same two ids;
    - `s9e_bucket_encryption=AES256`, `s9e_bucket_versioning=Enabled` and
      `s9e_bucket_public_blocks=4`;
+   - four `s9e_plan_object_decision=` lines, `s3:GetObject explicitDeny` and
+     `s3:GetObjectVersion explicitDeny` for an object of the state bucket outside `pipeline/` and
+     again for an object of another bucket: the plan role reads no S3 object but the pipeline's;
+     `s9e_plan_pipeline_state_decision=s3:GetObject allowed`, the state the pull-request plan reads;
+     and `s9e_plan_log_decision=logs:GetLogEvents explicitDeny`. The object deny is the statement
+     `DenyObjectReadsOutsidePipeline` of `openvaa-plan-deny`. An account whose Step 9 was applied
+     before that statement existed reads `allowed` on both object lines until a hand plan and apply
+     of this root have updated `openvaa-plan-deny` in place, an update of one policy and nothing
+     else;
    - `s9e_assert_users_exit=0` and `s9e_assert_no_inline_exit=0`.
 
 7. Last item, also when you stop early or a command failed. Paste the lines of items 1 to 6 first:
@@ -1178,6 +1231,117 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
 
 Return: every `s9_` and `s9a_` to `s9e_` line, in order, and `answer_step9=applied` or
 `answer_step9=stopped-at-<item>`. Do not paste your address.
+
+## Step 10: The GitHub Environments
+
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
+
+The deploy role trusts every job that names `staging` or `staging-destroy`, the subjects of
+`deploy_subjects`. GitHub creates an environment that a job names and that does not exist yet, with
+no protection rule at all, so both are created here before any push carries a workflow naming them.
+Each gets the operator as its required reviewer, self-review allowed, no administrator bypass, and a
+custom deployment branch policy that admits `deploy/staging` and `deploy-evidence/*` only, which
+keeps `main` and every other branch out. The secrets and variables of `staging` are set afterwards,
+as [`../README.md` § The environments and their settings](../README.md#the-environments-and-their-settings)
+lists them.
+
+The step changes repository settings only, through the GitHub CLI signed in as a repository
+administrator. It is safe to run again: the environment call creates or updates, and a branch
+policy is created only when it is missing. No line prints a login or a token; the reviewer is
+printed by type, and compared with the signed-in user by numeric id.
+
+1. The opening lines, the GitHub sign-in and the reviewer's id:
+
+   ```bash
+   cd "$(git rev-parse --show-toplevel)"
+   export LC_ALL=C
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
+   REPO=OpenVAA/voting-advice-application
+   gh auth status > "$L/s10-auth.log" 2>&1; echo "s10_auth_exit=$?"
+   ME=$(gh api user --jq .id 2> "$L/s10-user.err"); echo "s10_user_read_exit=$?"
+   gh api "repos/$REPO" --jq .permissions.admin \
+     > "$L/s10-admin.txt" 2> "$L/s10-admin.err"
+   echo "s10_repo_read_exit=$?"
+   echo "s10_repo_admin=$(cat "$L/s10-admin.txt")"
+   ```
+
+   All three `_exit` lines must read 0 and `s10_repo_admin=true`. Otherwise sign in again with
+   `gh auth login`, as an administrator of the repository, and run this item again.
+
+2. Create or update both environments, then add each branch policy that is missing:
+
+   ```bash
+   jq -n --argjson id "$ME" '{wait_timer: 0, prevent_self_review: false,
+     can_admins_bypass: false, reviewers: [{type: "User", id: $id}],
+     deployment_branch_policy: {protected_branches: false,
+       custom_branch_policies: true}}' > "$L/s10-environment.json"
+   for E in staging staging-destroy; do
+     gh api --method PUT "repos/$REPO/environments/$E" \
+       --input "$L/s10-environment.json" \
+       > "$L/s10-$E-put.json" 2> "$L/s10-$E-put.err"
+     echo "s10_env_${E}_put_exit=$?"
+     gh api "repos/$REPO/environments/$E/deployment-branch-policies" \
+       --jq '.branch_policies[].name' \
+       > "$L/s10-$E-names.txt" 2> "$L/s10-$E-names.err"
+     echo "s10_env_${E}_names_exit=$?"
+     for b in deploy/staging 'deploy-evidence/*'; do
+       grep -qxF "$b" "$L/s10-$E-names.txt" && continue
+       gh api --method POST \
+         "repos/$REPO/environments/$E/deployment-branch-policies" \
+         -f name="$b" -f type=branch \
+         > /dev/null 2>> "$L/s10-$E-post.err"
+       echo "s10_env_${E}_policy_created=$b exit=$?"
+     done
+   done
+   ```
+
+   Every `_exit` line must read 0, and every `s10_env_<name>_policy_created=` line must end in
+   `exit=0`. A second run prints no `_policy_created=` line.
+
+3. The read-back, of each environment and its branch policies:
+
+   ```bash
+   for E in staging staging-destroy; do
+     gh api "repos/$REPO/environments/$E" \
+       > "$L/s10-$E.json" 2> "$L/s10-$E.err"
+     echo "s10_env_${E}_read_exit=$?"
+     jq -r --arg e "$E" --argjson me "$ME" '
+       ([.protection_rules[]? | select(.type == "required_reviewers")][0]
+         // {}) as $r
+       | "s10_env_\($e)_reviewers=\([$r.reviewers[]?.type] | join(","))",
+         "s10_env_\($e)_reviewer_is_you=\([$r.reviewers[]?.reviewer.id] == [$me])",
+         "s10_env_\($e)_prevent_self_review=\($r.prevent_self_review)",
+         "s10_env_\($e)_admins_bypass=\(.can_admins_bypass)",
+         "s10_env_\($e)_custom_branch_policies=\(.deployment_branch_policy.custom_branch_policies)",
+         "s10_env_\($e)_protected_branches=\(.deployment_branch_policy.protected_branches)"' \
+       "$L/s10-$E.json"
+     gh api "repos/$REPO/environments/$E/deployment-branch-policies" \
+       > "$L/s10-$E-policies.json" 2> "$L/s10-$E-policies.err"
+     echo "s10_env_${E}_policies_read_exit=$?"
+     jq -r --arg e "$E" '
+       "s10_env_\($e)_branch_policy=\([.branch_policies[].name] | sort | reverse | join(","))",
+       "s10_env_\($e)_branch_policy_types=\([.branch_policies[].type] | unique | join(","))"' \
+       "$L/s10-$E-policies.json"
+   done
+   ```
+
+   Expected, for `staging` and for `staging-destroy` alike: both `_read_exit` lines 0,
+   `_reviewers=User`, `_reviewer_is_you=true`, `_prevent_self_review=false`,
+   `_admins_bypass=false`, `_custom_branch_policies=true`, `_protected_branches=false`,
+   `_branch_policy=deploy/staging,deploy-evidence/*` and `_branch_policy_types=branch`.
+
+   > **A branch policy other than those two, `main` above all, means stop.** The deploy role would
+   > trust a job on that branch. Delete it under the repository's Settings, Environments, then run
+   > item 3 again.
+
+4. Last item, also when you stop early:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s10_logs_removed=yes"
+   ```
+
+Return: every `s10_` line, in order, and `answer_step10=applied` or
+`answer_step10=stopped-at-<item>`.
 
 ## Observations
 

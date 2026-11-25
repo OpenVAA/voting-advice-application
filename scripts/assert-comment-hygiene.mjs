@@ -140,7 +140,7 @@
  * empty comment family, so a Markdown file has no comment spans at all and both rules would be
  * silently inert on it. That question is also the operator's.
  *
- * INPUT SURFACE: the tracked files under `apps/`, `packages/` and `tests/` — three
+ * INPUT SURFACE: the tracked files under `apps/`, `packages/`, `tests/` and `infra/` — four
  * HARD-CODED scan roots. There is deliberately no `--files` glob, no ignore file, no
  * per-path exception roster and no warn-only tier. That is what makes the D-15 exemption
  * (`.planning/`, `.claude/`, `.agents/`, `CLAUDE.md`, and root `scripts/` itself, all of
@@ -192,7 +192,7 @@ const EMIT_FIXTURES = argv.includes('--emit-fixtures');
 
 const SCAN_EXTS = Object.keys(FAMILY_BY_EXT);
 /** Hard-coded. Not configurable, not overridable — see INPUT SURFACE in the docblock. */
-const SCAN_ROOTS = ['apps', 'packages', 'tests'];
+const SCAN_ROOTS = ['apps', 'packages', 'tests', 'infra'];
 const GLOBS = SCAN_ROOTS.map((root) => `${root}/**/*.{${SCAN_EXTS.join(',')}}`);
 
 // Generated / vendored trees. Reading these would report violations in files nobody can fix,
@@ -881,7 +881,7 @@ function printUsage() {
       'COMMENT HYGIENE GUARD (phase 152, requirement REVIEW-HYG-01)',
       '',
       'Usage:',
-      '  node scripts/assert-comment-hygiene.mjs                 scan apps/, packages/, tests/',
+      '  node scripts/assert-comment-hygiene.mjs                 scan apps/, packages/, tests/, infra/',
       '  node scripts/assert-comment-hygiene.mjs --self-test     run the committed fixtures',
       '  node scripts/assert-comment-hygiene.mjs --emit-fixtures regenerate expected files',
       '',

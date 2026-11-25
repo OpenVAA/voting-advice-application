@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     aws = {
@@ -9,8 +9,7 @@ terraform {
   }
 }
 
-# The bucket holds the state of every remote root. State objects carry secrets in clear text, so the
-# bucket is private, encrypted, versioned and refuses plain-HTTP requests.
+# The bucket holds the state of every remote root. State objects carry secrets in clear text, so the bucket is private, encrypted, versioned and refuses plain-HTTP requests.
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
 
@@ -79,8 +78,7 @@ data "aws_iam_policy_document" "tls_only" {
   }
 }
 
-# A bucket policy is a resource policy, not an IAM identity policy, so the rule that keeps inline
-# policies off roles and users does not apply to it.
+# A bucket policy is a resource policy, not an IAM identity policy, so the rule that keeps inline policies off roles and users does not apply to it.
 resource "aws_s3_bucket_policy" "this" {
   bucket = aws_s3_bucket.this.id
   policy = data.aws_iam_policy_document.tls_only.json

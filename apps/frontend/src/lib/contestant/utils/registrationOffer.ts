@@ -2,9 +2,10 @@ import {
   getServedEntityTypes,
   isRegistrationModeAllowed,
   isRegistrationModeAllowedForAnyType,
+  isRegistrationModeServedForAnyType,
   REGISTRATION_MODE
 } from '@openvaa/app-shared';
-import type { ContestantAppConfigInput, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
+import type { ContestantAppSettingsInput, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
 
 /**
  * What the Contestant App offers a visitor who is not signed in, read from the application settings.
@@ -15,10 +16,9 @@ import type { ContestantAppConfigInput, RegistrationMode, ServedEntityType } fro
  */
 
 /**
- * The settings this module reads: the Contestant App's served entity types and registration modes, and the answers lock. The merged application settings, the stored settings as a data provider returns them and `{}` are all valid, and an absent member reads as its shipped default.
+ * The settings this module reads: the Contestant App's served entity types and registration modes, `access.contestantApp` and `access.contestantEditing`. The merged application settings, the stored settings as a data provider returns them and `{}` are all valid, and an absent member reads as its shipped default.
  */
-export type RegistrationOfferSettings =
-  (NonNullable<ContestantAppConfigInput> & { access?: { answersLocked?: boolean | null } | null }) | null | undefined;
+export type RegistrationOfferSettings = ContestantAppSettingsInput;
 
 /**
  * The registration modes a visitor is offered, in the order they are listed: the identity provider, then email, then code, each at most once whatever order the settings store them in.
@@ -27,12 +27,14 @@ export type RegistrationOfferSettings =
  *
  * Each mode is listed when any served entity type allows it. Registering through the identity provider creates an entity of a type the user chooses among those {@link identityProviderEntityTypes} answers, and the invitation the email and code modes redeem names its own entity.
  *
- * While answers are locked nothing is listed.
+ * While `access.contestantEditing` is `locked` nothing is listed, as `isRegistrationModeAllowed` answers. The database applies the same rule: `private.registration_mode_allowed` is false while contestant editing is `locked`, so an invitation is neither claimed nor answered with a link then, whichever form the address or code is typed into.
+ *
+ * While `access.contestantApp` is `false` nothing is listed either, as {@link contestantAppClosed} answers: the database closes every registration of a candidate or an organization while the Contestant App is closed.
  * @param settings - The application settings to read.
  * @returns The offered modes in listing order. Empty when registration is not offered.
  */
 export function listedRegistrationModes(settings: RegistrationOfferSettings): ReadonlyArray<RegistrationMode> {
-  if (settings?.access?.answersLocked) return [];
+  if (contestantAppClosed(settings)) return [];
   const listed = new Array<RegistrationMode>();
   if (isRegistrationModeAllowedForAnyType(settings, REGISTRATION_MODE.IdentityProvider))
     listed.push(REGISTRATION_MODE.IdentityProvider);
@@ -42,16 +44,16 @@ export function listedRegistrationModes(settings: RegistrationOfferSettings): Re
 }
 
 /**
- * The entity types a registration through the identity provider may create: the served types whose row of the registration matrix allows the provider's mode, in the order candidate, organization.
+ * The entity types a registration through the identity provider may create: the served types whose registration modes include the provider's mode, in the order candidate, organization.
  *
  * The registration screen asks the user to choose among them when there are several and names the one when there is one, and the endpoint that starts the provider's flow accepts a type only from this list. The provider's mode is listed by {@link listedRegistrationModes} exactly when this list is not empty.
  *
- * While answers are locked the list is empty.
+ * While `access.contestantEditing` is `locked` the list is empty, as `isRegistrationModeAllowed` answers, and so it is while `access.contestantApp` is `false`, as {@link contestantAppClosed} answers.
  * @param settings - The application settings to read.
  * @returns The types in canonical order. Empty when the provider's mode registers nothing.
  */
 export function identityProviderEntityTypes(settings: RegistrationOfferSettings): ReadonlyArray<ServedEntityType> {
-  if (settings?.access?.answersLocked) return [];
+  if (contestantAppClosed(settings)) return [];
   return getServedEntityTypes(settings).filter((entityType) =>
     isRegistrationModeAllowed(settings, entityType, REGISTRATION_MODE.IdentityProvider)
   );
@@ -60,7 +62,7 @@ export function identityProviderEntityTypes(settings: RegistrationOfferSettings)
 /**
  * The entity type a registration through the identity provider creates: a named type when {@link identityProviderEntityTypes} lists it, and with no type named the one type that list holds.
  *
- * The endpoint that starts the provider's flow and the callback the provider returns to both decide the type here, so a type the start refused is refused on return too, and every type is refused while answers are locked.
+ * The endpoint that starts the provider's flow and the callback the provider returns to both decide the type here, so a type the start refused is refused on return too, and every type is refused while `access.contestantEditing` is `locked` or `access.contestantApp` is `false`.
  * @param settings - The application settings to read.
  * @param named - The type a request or the flow's cookie names, as sent; `undefined` when none is named.
  * @returns The type, or `undefined` when the registration is refused.
@@ -75,14 +77,34 @@ export function identityProviderEntityType(
 }
 
 /**
- * Whether the sign-in form offers to mail a sign-in link: the email mode or the identity provider's mode is allowed for at least one served entity type. An account made under either may have no password yet.
+ * Whether the sign-in form offers to mail a sign-in link: the email mode or the identity provider's mode is served for at least one entity type. An account made under either may have no password yet.
  *
- * The answers lock is not read: a user who cannot edit can still sign in.
+ * `access.contestantEditing` is not read: a user who cannot edit can still sign in. A link the form requests while contestant editing is `locked` reaches only an address that already holds a grant in the project, because the database answers no open invitation then.
  * @param settings - The application settings to read.
  */
 export function signInLinkOffered(settings: RegistrationOfferSettings): boolean {
   return (
-    isRegistrationModeAllowedForAnyType(settings, REGISTRATION_MODE.Email) ||
-    isRegistrationModeAllowedForAnyType(settings, REGISTRATION_MODE.IdentityProvider)
+    isRegistrationModeServedForAnyType(settings, REGISTRATION_MODE.Email) ||
+    isRegistrationModeServedForAnyType(settings, REGISTRATION_MODE.IdentityProvider)
   );
+}
+
+/**
+ * Whether the login screen offers to sign in with the identity provider: the provider's mode is served for at least one entity type, so the deployment has accounts the provider made.
+ *
+ * Neither `access.contestantEditing` nor `access.contestantApp` is read, and the mode need not be allowed: a sign-in creates nothing, so a user the provider registered can sign in while registration is closed, as one with a password can.
+ * @param settings - The application settings to read.
+ */
+export function identityProviderSignInOffered(settings: RegistrationOfferSettings): boolean {
+  return isRegistrationModeServedForAnyType(settings, REGISTRATION_MODE.IdentityProvider);
+}
+
+/**
+ * Whether the Contestant App is closed: `access.contestantApp` is stored as `false`. An absent or `null` value reads as open, the shipped default.
+ *
+ * Kept apart from `isRegistrationModeAllowed`, which states the rule of `private.registration_mode_allowed_in` alone. The database closes registration of a closed app in `private.project_contestant_app_closed`.
+ * @param settings - The application settings to read.
+ */
+function contestantAppClosed(settings: RegistrationOfferSettings): boolean {
+  return settings?.access?.contestantApp === false;
 }

@@ -8,12 +8,13 @@
  * 3. **The progress bar of the top bar.** It is shown for an entity that has opinion questions and for no other.
  * 4. **What an entity that has questions never sees.** The page for an entity with none is not rendered at any point between the first render and the questions page.
  *
- * The fake context's members are reactive behind getters over one raw state box, as the real accessors are. The top bar's settings are the real overlay registry, so a case reads the merged setting the header would. Messages are their keys.
+ * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are. The top bar's settings are the real overlay registry, so a case reads the merged setting the header would. Messages are their keys.
  */
 
 import { mergeSettings } from '@openvaa/app-shared';
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { settingsOverlay } from '$lib/contexts/utils/settingsOverlay.svelte';
 
 /** Everything the layout reads from the contestant context. */
@@ -31,8 +32,6 @@ const NOT_LOADED: Box = {
   unansweredRequiredInfoQuestions: []
 };
 
-let box = $state.raw<Box>(NOT_LOADED);
-
 const { goto, setProgress } = vi.hoisted(() => ({ goto: vi.fn(), setProgress: vi.fn() }));
 
 /** The top bar's settings as the header reads them: the progress bar is hidden unless an overlay shows it. */
@@ -43,22 +42,7 @@ const topBarSettings = settingsOverlay<{ progress: 'hide' | 'show' }, { progress
 
 const progress = { max: 0, current: { set: setProgress } };
 
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (route: string) => `/route/${route}` },
-  get questionsReady() {
-    return box.questionsReady;
-  },
-  get opinionQuestions() {
-    return box.opinionQuestions;
-  },
-  get unansweredOpinionQuestions() {
-    return box.unansweredOpinionQuestions;
-  },
-  get unansweredRequiredInfoQuestions() {
-    return box.unansweredRequiredInfoQuestions;
-  }
-};
+const { context, box } = fakeContestantContext(NOT_LOADED);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 vi.mock('$lib/contexts/component', () => ({
@@ -127,14 +111,14 @@ let teardown: Array<() => void> = [];
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  box = NOT_LOADED;
+  box.current = NOT_LOADED;
   progress.max = 0;
   vi.resetAllMocks();
 });
 
 /** Mount the layout for a state of the context. */
 function render(state: Box): HTMLElement {
-  box = state;
+  box.current = state;
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(QuestionsLayout, { target, props: { children: questionsPage } });
@@ -201,7 +185,7 @@ describe('the questions layout — an entity that has opinion questions', () => 
       const target = render(NOT_LOADED);
       expect(viewsOf(target)).toEqual({ loading: true, none: false, questions: false });
 
-      box = state;
+      box.current = state;
       flushSync();
 
       expect(viewsOf(target)).toEqual({ loading: false, none: false, questions: true });
@@ -257,7 +241,7 @@ describe('the questions layout — an entity that is asked no opinion question',
     const target = render(NOT_LOADED);
     expect(viewsOf(target)).toEqual({ loading: true, none: false, questions: false });
 
-    box = WITH_NONE;
+    box.current = WITH_NONE;
     flushSync();
 
     expect(viewsOf(target)).toEqual({ loading: false, none: true, questions: false });
@@ -270,11 +254,11 @@ describe('the questions layout — the progress bar follows the questions', () =
     render(WITH_QUESTIONS);
     expect(topBarSettings.current.progress).toBe('show');
 
-    box = WITH_NONE;
+    box.current = WITH_NONE;
     flushSync();
     expect(topBarSettings.current.progress).toBe('hide');
 
-    box = WITH_QUESTIONS;
+    box.current = WITH_QUESTIONS;
     flushSync();
     expect(topBarSettings.current.progress).toBe('show');
   });

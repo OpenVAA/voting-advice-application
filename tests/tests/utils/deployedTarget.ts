@@ -1,5 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+import { CALLER_LIMIT } from './callerLimitProbe';
+import { describeServedProject, SERVED_PROJECT_PLACEHOLDER } from '../support/servedProject';
+
+export { extractServedProjectId } from '../support/servedProject';
 
 /**
  * The deployed-target gate: the identity checks a smoke run against a deployed application must pass before any spec runs.
@@ -67,35 +71,168 @@ export type GateResult = {
   dedicated: DedicatedTarget;
 };
 
-const SHA_PATTERN = /^[0-9a-f]{40}$/;
-const PROJECT_REF_PATTERN = /^[a-z]{20}$/;
-const CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-const DNS_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-const SUPABASE_HOST_SUFFIX = '.supabase.co';
-const SERVED_PROJECT_ATTRIBUTE = 'data-project-id';
-const SERVED_PROJECT_PLACEHOLDER = '%projectId%';
-const ENV_LINE_PATTERN = /^[ \t]*env: (.*\})[ \t]*,?[ \t\r]*$/m;
-const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
-const PUBLIC_ORIGIN_PATTERN = /^https:\/\/[^/?#\s]+$/;
-const ORIGIN_EXPECTED =
-  'an https origin, or http on a loopback host, with no user info, that answers /api/health and / itself';
-const NOT_REQUESTED = 'not requested, the origin check refused the base URL';
-
-/** Escapes a string for use inside a regular expression. */
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/**
+ * Runs the gate against a deployed target.
+ *
+ * It reads the dedicated identity from {@link DEDICATED_SUPABASE_TFVARS} under `repoRoot`, requests `/api/health` and `/` of `baseURL` and evaluates every check. A refused connection or a timed-out request becomes a FAIL line for each check that needed it. A base URL that does not parse, or that carries user info, is not requested at all, and every check that needed it fails. It writes nothing and requests no other path.
+ *
+ * @param options - `env`, the environment to read; `baseURL`, the target; `repoRoot`, the repository root; `fetchImpl`, the fetch to use; `timeoutMs`, the timeout of each request.
+ * @returns The checks, their lines, the number of failures and the dedicated identity.
+ * @throws When the tfvars cannot be read or does not name a valid identity.
+ */
+export async function runDeployedGate({
+  env,
+  baseURL,
+  repoRoot,
+  fetchImpl = globalThis.fetch,
+  timeoutMs = 30_000
+}: {
+  env: GateEnv;
+  baseURL: string;
+  repoRoot: string;
+  fetchImpl?: typeof fetch;
+  timeoutMs?: number;
+}): Promise<GateResult> {
+  const dedicated = readDedicatedTarget(fs.readFileSync(path.join(repoRoot, DEDICATED_SUPABASE_TFVARS), 'utf8'));
+  const { url } = readTarget(baseURL);
+  const [health, page]: Array<FetchedDocument> =
+    url === null
+      ? [{ error: NOT_REQUESTED }, { error: NOT_REQUESTED }]
+      : await Promise.all([
+          fetchDocument(fetchImpl, new URL('/api/health', url), timeoutMs),
+          fetchDocument(fetchImpl, new URL('/', url), timeoutMs)
+        ]);
+  const checks = evaluateGate({ env, baseURL, health, page, dedicated });
+  return {
+    checks,
+    lines: checks.map(formatGateLine),
+    failed: checks.filter((check) => !check.pass).length,
+    dedicated
+  };
 }
 
-/** The single double-quoted value of `key` in the tfvars text, or a thrown Error naming the key and the file. */
-function readTfvarsValue(tfvarsText: string, key: string): string {
-  const pattern = new RegExp(`^[ \\t]*${escapeRegExp(key)}[ \\t]*=[ \\t]*"([^"]*)"`, 'gm');
-  const values = [...tfvarsText.matchAll(pattern)].map((match) => match[1]);
-  if (values.length !== 1) {
-    throw new Error(
-      `${key} must occur exactly once in ${DEDICATED_SUPABASE_TFVARS}, found ${values.length} occurrence(s)`
-    );
+/**
+ * Evaluates all five checks, in {@link GATE_CHECK_ORDER}.
+ *
+ * The page body is read whatever its status, so a server's error page still shows its identity. A document answered from another origin than the base URL's fails the origin check and every check that read it.
+ *
+ * @param input - The environment, the base URL, the fetched health answer and page, and the dedicated identity.
+ * @returns The five checks.
+ */
+export function evaluateGate({
+  env,
+  baseURL,
+  health,
+  page,
+  dedicated
+}: {
+  env: GateEnv;
+  baseURL: string;
+  health: FetchedDocument;
+  page: FetchedDocument;
+  dedicated: DedicatedTarget;
+}): Array<GateCheck> {
+  const target = readTarget(baseURL);
+  const targetPage = fromTarget(page, target);
+  return [
+    serviceRoleKeyCheck(env),
+    originCheck(target, health, page),
+    shaCheck(env, fromTarget(health, target)),
+    refCheck(targetPage, dedicated),
+    projectIdCheck(targetPage, dedicated)
+  ];
+}
+
+/**
+ * Writes the message a failed gate run throws.
+ *
+ * @param result - The gate run.
+ * @returns The headline with the failure count, each FAIL line indented by two spaces, and a pointer to the runbook.
+ */
+export function gateFailureMessage(result: GateResult): string {
+  const failLines = result.checks.filter((check) => !check.pass).map((check) => `  ${formatGateLine(check)}`);
+  return [
+    `${DEPLOYED_GATE_HEADLINE} — ${result.failed} of ${result.checks.length} checks failed`,
+    ...failLines,
+    'See tests/README.md § Deployed smoke run.'
+  ].join('\n');
+}
+
+/**
+ * Writes one check as a line.
+ *
+ * @param check - The evaluated check.
+ * @returns `PASS <name>` or `FAIL <name>: observed <observed>, expected <expected>`.
+ */
+export function formatGateLine(check: GateCheck): string {
+  return check.pass
+    ? `PASS ${check.name}`
+    : `FAIL ${check.name}: observed ${check.observed}, expected ${check.expected}`;
+}
+
+function serviceRoleKeyCheck(env: GateEnv): GateCheck {
+  const set = FORBIDDEN_KEY_VARIABLES.filter((name) => (env[name] ?? '').trim() !== '');
+  return {
+    name: 'service-role-key-absent',
+    pass: set.length === 0,
+    observed: set.length === 0 ? 'unset' : set.map((name) => `${name} is set (value withheld)`).join(', '),
+    expected: 'unset'
+  };
+}
+
+function originCheck(target: TargetReading, health: FetchedDocument, page: FetchedDocument): GateCheck {
+  const strays = (
+    [
+      ['/api/health', health],
+      ['/', page]
+    ] as const
+  ).flatMap(([requested, document]) => {
+    const answered = foreignOrigin(document, target);
+    return answered === null ? [] : [`${requested} answered from ${answered}`];
+  });
+  const head = target.refusal ?? target.url?.origin ?? '(no base URL)';
+  return {
+    name: 'origin',
+    pass: target.refusal === null && strays.length === 0,
+    observed: [head, ...strays].join('; '),
+    expected: ORIGIN_EXPECTED
+  };
+}
+
+function shaCheck(env: GateEnv, health: FetchedDocument): GateCheck {
+  const expectedSha = env.SMOKE_EXPECTED_SHA;
+  const expectedValid = typeof expectedSha === 'string' && SHA_PATTERN.test(expectedSha);
+  const { build, observed } = servedBuild(health);
+  return {
+    name: 'sha',
+    pass: expectedValid && build !== null && build === expectedSha,
+    observed,
+    expected: expectedValid ? expectedSha : '(SMOKE_EXPECTED_SHA is not a full 40-hex commit id)'
+  };
+}
+
+function refCheck(page: FetchedDocument, dedicated: DedicatedTarget): GateCheck {
+  const expected = `${dedicated.projectRef} (https://${dedicated.projectRef}${SUPABASE_HOST_SUFFIX})`;
+  if ('error' in page) {
+    return { name: 'ref', pass: false, observed: `(request to / failed: ${page.error})`, expected };
   }
-  return values[0];
+  const { ref, observed } = servedSupabaseRef(extractServedEnv(page.body));
+  return { name: 'ref', pass: ref !== null && ref === dedicated.projectRef, observed, expected };
+}
+
+function projectIdCheck(page: FetchedDocument, dedicated: DedicatedTarget): GateCheck {
+  const expected = dedicated.publicProjectId;
+  if ('error' in page) {
+    return { name: 'project-id', pass: false, observed: `(request to / failed: ${page.error})`, expected };
+  }
+  const reading = describeServedProject(page.body);
+  const observed =
+    reading.kind === 'absent'
+      ? '(attribute absent)'
+      : reading.kind === 'placeholder'
+        ? `(unsubstituted ${SERVED_PROJECT_PLACEHOLDER} placeholder)`
+        : reading.projectId;
+  return { name: 'project-id', pass: reading.kind === 'served' && reading.projectId === expected, observed, expected };
 }
 
 /**
@@ -134,49 +271,6 @@ export function readPublicOrigin(tfvarsText: string): string {
     throw new Error(`public_origin in ${DEDICATED_SUPABASE_TFVARS} is not an https origin: ${publicOrigin}`);
   }
   return new URL(publicOrigin).origin;
-}
-
-/**
- * Refuses to send the contestant's credentials to any origin but the dedicated deployment's.
- *
- * The gate accepts any https target that serves the dedicated identity, which a proxy in front of that deployment can do too. The contestant spec therefore calls this before any page action.
- *
- * @param baseURL - The target the spec drives.
- * @param repoRoot - The repository root, under which {@link DEDICATED_SUPABASE_TFVARS} is read.
- * @throws `SMOKE TARGET REFUSED: …`, naming `public_origin` and the base URL's origin without its user info, unless the two origins are equal.
- */
-export function requireCredentialOrigin(baseURL: string | undefined, repoRoot: string): void {
-  const publicOrigin = readPublicOrigin(fs.readFileSync(path.join(repoRoot, DEDICATED_SUPABASE_TFVARS), 'utf8'));
-  const origin = baseURL === undefined ? '(none)' : (parseURL(baseURL)?.origin ?? '(not an absolute URL)');
-  if (origin !== publicOrigin) {
-    throw new Error(
-      `SMOKE TARGET REFUSED: the contestant's credentials are sent only to ${publicOrigin}, public_origin of ${DEDICATED_SUPABASE_TFVARS}; the base URL's origin is ${origin}`
-    );
-  }
-}
-
-/**
- * The line global setup prints before the gate's check lines, naming the target with its user info withheld.
- *
- * @param baseURL - The target the gate is about to check.
- * @returns `DEPLOYED SMOKE GATE <baseURL>`. A URL with user info is printed without it and with a note, and a value that is not an absolute URL is not printed.
- */
-export function gateTargetLine(baseURL: string): string {
-  const url = parseURL(baseURL);
-  if (url === null) return 'DEPLOYED SMOKE GATE (not an absolute URL, value withheld)';
-  if (url.username === '' && url.password === '') return `DEPLOYED SMOKE GATE ${baseURL}`;
-  url.username = '';
-  url.password = '';
-  return `DEPLOYED SMOKE GATE ${url.href} (user info withheld)`;
-}
-
-/** The parsed URL, or `null` when the value is not an absolute URL. */
-function parseURL(value: string): URL | null {
-  try {
-    return new URL(value);
-  } catch {
-    return null;
-  }
 }
 
 /**
@@ -229,74 +323,6 @@ export function servedSupabaseRef(env: Record<string, unknown> | null): { ref: s
   return { ref: label, observed: value };
 }
 
-/**
- * Extracts the served project id from the `data-project-id` attribute.
- *
- * @param html - The served document.
- * @returns The attribute value, trimmed and lower-cased, or `null` when the document carries no such attribute.
- */
-export function extractServedProjectId(html: string): string | null {
-  const match = new RegExp(`${SERVED_PROJECT_ATTRIBUTE}="([^"]*)"`).exec(html);
-  return match ? match[1].trim().toLowerCase() : null;
-}
-
-/** The base URL as the gate reads it: the parsed URL when requests may be made to it, and why the origin check refuses it, if it does. */
-type TargetReading = { url: URL | null; refusal: string | null };
-
-function readTarget(baseURL: string): TargetReading {
-  const url = parseURL(baseURL);
-  if (url === null) return { url: null, refusal: `(not an absolute URL: ${baseURL})` };
-  if (url.username !== '' || url.password !== '') {
-    return { url: null, refusal: '(the base URL carries user info, value withheld)' };
-  }
-  if (url.protocol === 'https:' || (url.protocol === 'http:' && LOOPBACK_HOSTS.has(url.hostname))) {
-    return { url, refusal: null };
-  }
-  return { url, refusal: `${url.origin} (not https, and not http on a loopback host)` };
-}
-
-/** The origin a fetched document was answered from when it differs from the target's, else `null`. */
-function foreignOrigin(document: FetchedDocument, target: TargetReading): string | null {
-  if ('error' in document || target.url === null) return null;
-  const answered = parseURL(document.url)?.origin ?? `(unreadable response URL: ${document.url})`;
-  return answered === target.url.origin ? null : answered;
-}
-
-function originCheck(target: TargetReading, health: FetchedDocument, page: FetchedDocument): GateCheck {
-  const strays = (
-    [
-      ['/api/health', health],
-      ['/', page]
-    ] as const
-  ).flatMap(([requested, document]) => {
-    const answered = foreignOrigin(document, target);
-    return answered === null ? [] : [`${requested} answered from ${answered}`];
-  });
-  const head = target.refusal ?? target.url?.origin ?? '(no base URL)';
-  return {
-    name: 'origin',
-    pass: target.refusal === null && strays.length === 0,
-    observed: [head, ...strays].join('; '),
-    expected: ORIGIN_EXPECTED
-  };
-}
-
-/** The document a check reads: the fetched one, or a failed request when it was answered from another origin. */
-function fromTarget(document: FetchedDocument, target: TargetReading): FetchedDocument {
-  const answered = foreignOrigin(document, target);
-  return answered === null ? document : { error: `answered from another origin, ${answered}` };
-}
-
-function serviceRoleKeyCheck(env: GateEnv): GateCheck {
-  const set = FORBIDDEN_KEY_VARIABLES.filter((name) => (env[name] ?? '').trim() !== '');
-  return {
-    name: 'service-role-key-absent',
-    pass: set.length === 0,
-    observed: set.length === 0 ? 'unset' : set.map((name) => `${name} is set (value withheld)`).join(', '),
-    expected: 'unset'
-  };
-}
-
 function servedBuild(health: FetchedDocument): { build: string | null; observed: string } {
   if ('error' in health) return { build: null, observed: `(request to /api/health failed: ${health.error})` };
   if (health.status !== 200) return { build: null, observed: `(status ${health.status})` };
@@ -314,160 +340,38 @@ function servedBuild(health: FetchedDocument): { build: string | null; observed:
   return { build, observed: build };
 }
 
-function shaCheck(env: GateEnv, health: FetchedDocument): GateCheck {
-  const expectedSha = env.SMOKE_EXPECTED_SHA;
-  const expectedValid = typeof expectedSha === 'string' && SHA_PATTERN.test(expectedSha);
-  const { build, observed } = servedBuild(health);
-  return {
-    name: 'sha',
-    pass: expectedValid && build !== null && build === expectedSha,
-    observed,
-    expected: expectedValid ? expectedSha : '(SMOKE_EXPECTED_SHA is not a full 40-hex commit id)'
-  };
+/**
+ * The line global setup prints before the gate's check lines, naming the target with its user info withheld.
+ *
+ * @param baseURL - The target the gate is about to check.
+ * @returns `DEPLOYED SMOKE GATE <baseURL>`. A URL with user info is printed without it and with a note, and a value that is not an absolute URL is not printed.
+ */
+export function gateTargetLine(baseURL: string): string {
+  const url = parseURL(baseURL);
+  if (url === null) return 'DEPLOYED SMOKE GATE (not an absolute URL, value withheld)';
+  if (url.username === '' && url.password === '') return `DEPLOYED SMOKE GATE ${baseURL}`;
+  url.username = '';
+  url.password = '';
+  return `DEPLOYED SMOKE GATE ${url.href} (user info withheld)`;
 }
 
-function refCheck(page: FetchedDocument, dedicated: DedicatedTarget): GateCheck {
-  const expected = `${dedicated.projectRef} (https://${dedicated.projectRef}${SUPABASE_HOST_SUFFIX})`;
-  if ('error' in page) {
-    return { name: 'ref', pass: false, observed: `(request to / failed: ${page.error})`, expected };
+/**
+ * Refuses to send the contestant's credentials to any origin but the dedicated deployment's.
+ *
+ * The gate accepts any https target that serves the dedicated identity, which a proxy in front of that deployment can do too. The contestant spec therefore calls this before any page action.
+ *
+ * @param baseURL - The target the spec drives.
+ * @param repoRoot - The repository root, under which {@link DEDICATED_SUPABASE_TFVARS} is read.
+ * @throws `SMOKE TARGET REFUSED: …`, naming `public_origin` and the base URL's origin without its user info, unless the two origins are equal.
+ */
+export function requireCredentialOrigin(baseURL: string | undefined, repoRoot: string): void {
+  const publicOrigin = readPublicOrigin(fs.readFileSync(path.join(repoRoot, DEDICATED_SUPABASE_TFVARS), 'utf8'));
+  const origin = baseURL === undefined ? '(none)' : (parseURL(baseURL)?.origin ?? '(not an absolute URL)');
+  if (origin !== publicOrigin) {
+    throw new Error(
+      `SMOKE TARGET REFUSED: the contestant's credentials are sent only to ${publicOrigin}, public_origin of ${DEDICATED_SUPABASE_TFVARS}; the base URL's origin is ${origin}`
+    );
   }
-  const { ref, observed } = servedSupabaseRef(extractServedEnv(page.body));
-  return { name: 'ref', pass: ref !== null && ref === dedicated.projectRef, observed, expected };
-}
-
-function projectIdCheck(page: FetchedDocument, dedicated: DedicatedTarget): GateCheck {
-  const expected = dedicated.publicProjectId;
-  if ('error' in page) {
-    return { name: 'project-id', pass: false, observed: `(request to / failed: ${page.error})`, expected };
-  }
-  const served = extractServedProjectId(page.body);
-  const observed =
-    served === null
-      ? '(attribute absent)'
-      : served === SERVED_PROJECT_PLACEHOLDER.toLowerCase()
-        ? `(unsubstituted ${SERVED_PROJECT_PLACEHOLDER} placeholder)`
-        : served;
-  return { name: 'project-id', pass: served === expected, observed, expected };
-}
-
-/**
- * Evaluates all five checks, in {@link GATE_CHECK_ORDER}.
- *
- * The page body is read whatever its status, so a server's error page still shows its identity. A document answered from another origin than the base URL's fails the origin check and every check that read it.
- *
- * @param input - The environment, the base URL, the fetched health answer and page, and the dedicated identity.
- * @returns The five checks.
- */
-export function evaluateGate({
-  env,
-  baseURL,
-  health,
-  page,
-  dedicated
-}: {
-  env: GateEnv;
-  baseURL: string;
-  health: FetchedDocument;
-  page: FetchedDocument;
-  dedicated: DedicatedTarget;
-}): Array<GateCheck> {
-  const target = readTarget(baseURL);
-  const targetPage = fromTarget(page, target);
-  return [
-    serviceRoleKeyCheck(env),
-    originCheck(target, health, page),
-    shaCheck(env, fromTarget(health, target)),
-    refCheck(targetPage, dedicated),
-    projectIdCheck(targetPage, dedicated)
-  ];
-}
-
-/**
- * Writes one check as a line.
- *
- * @param check - The evaluated check.
- * @returns `PASS <name>` or `FAIL <name>: observed <observed>, expected <expected>`.
- */
-export function formatGateLine(check: GateCheck): string {
-  return check.pass
-    ? `PASS ${check.name}`
-    : `FAIL ${check.name}: observed ${check.observed}, expected ${check.expected}`;
-}
-
-/** The reason a request failed, with the underlying system error code when there is one. */
-function describeRequestError(error: unknown): string {
-  if (!(error instanceof Error)) return String(error);
-  const cause = (error as Error & { cause?: unknown }).cause;
-  const code =
-    typeof cause === 'object' && cause !== null && 'code' in cause && typeof cause.code === 'string'
-      ? cause.code
-      : null;
-  return code === null ? error.message : `${error.message} (${code})`;
-}
-
-async function fetchDocument(fetchImpl: typeof fetch, url: URL, timeoutMs: number): Promise<FetchedDocument> {
-  try {
-    const response = await fetchImpl(url, { redirect: 'follow', signal: AbortSignal.timeout(timeoutMs) });
-    if (response.url === '') return { error: 'the response names no URL' };
-    return { status: response.status, body: await response.text(), url: response.url };
-  } catch (error) {
-    return { error: describeRequestError(error) };
-  }
-}
-
-/**
- * Runs the gate against a deployed target.
- *
- * It reads the dedicated identity from {@link DEDICATED_SUPABASE_TFVARS} under `repoRoot`, requests `/api/health` and `/` of `baseURL` and evaluates every check. A refused connection or a timed-out request becomes a FAIL line for each check that needed it. A base URL that does not parse, or that carries user info, is not requested at all, and every check that needed it fails. It writes nothing and requests no other path.
- *
- * @param options - `env`, the environment to read; `baseURL`, the target; `repoRoot`, the repository root; `fetchImpl`, the fetch to use; `timeoutMs`, the timeout of each request.
- * @returns The checks, their lines, the number of failures and the dedicated identity.
- * @throws When the tfvars cannot be read or does not name a valid identity.
- */
-export async function runDeployedGate({
-  env,
-  baseURL,
-  repoRoot,
-  fetchImpl = globalThis.fetch,
-  timeoutMs = 30_000
-}: {
-  env: GateEnv;
-  baseURL: string;
-  repoRoot: string;
-  fetchImpl?: typeof fetch;
-  timeoutMs?: number;
-}): Promise<GateResult> {
-  const dedicated = readDedicatedTarget(fs.readFileSync(path.join(repoRoot, DEDICATED_SUPABASE_TFVARS), 'utf8'));
-  const { url } = readTarget(baseURL);
-  const [health, page]: Array<FetchedDocument> =
-    url === null
-      ? [{ error: NOT_REQUESTED }, { error: NOT_REQUESTED }]
-      : await Promise.all([
-          fetchDocument(fetchImpl, new URL('/api/health', url), timeoutMs),
-          fetchDocument(fetchImpl, new URL('/', url), timeoutMs)
-        ]);
-  const checks = evaluateGate({ env, baseURL, health, page, dedicated });
-  return {
-    checks,
-    lines: checks.map(formatGateLine),
-    failed: checks.filter((check) => !check.pass).length,
-    dedicated
-  };
-}
-
-/**
- * Writes the message a failed gate run throws.
- *
- * @param result - The gate run.
- * @returns The headline with the failure count, each FAIL line indented by two spaces, and a pointer to the runbook.
- */
-export function gateFailureMessage(result: GateResult): string {
-  const failLines = result.checks.filter((check) => !check.pass).map((check) => `  ${formatGateLine(check)}`);
-  return [
-    `${DEPLOYED_GATE_HEADLINE} — ${result.failed} of ${result.checks.length} checks failed`,
-    ...failLines,
-    'See tests/README.md § Deployed smoke run.'
-  ].join('\n');
 }
 
 /** The parts of a resolved Playwright project entry the smoke configuration's shape check reads. */
@@ -526,3 +430,107 @@ export function requireSmokeInputs(names: ReadonlyArray<string>, env: GateEnv): 
   }
   return Object.fromEntries(names.map((name) => [name, env[name] ?? '']));
 }
+/**
+ * Reads the per-caller limit the deployed project is expected to enforce, `SMOKE_ACCESS_CALLER_MAX`. The smoke cannot read `private.deployment_settings.access_caller_max` over the public API, so a deployment that sets it away from its default names the same value here.
+ *
+ * @param env - The environment to read.
+ * @returns The value as a number, or {@link CALLER_LIMIT} when the variable is unset or blank.
+ * @throws `SMOKE INPUT INVALID: SMOKE_ACCESS_CALLER_MAX must be a whole number of at least 1, got <value>` for any other value.
+ */
+export function readSmokeAccessCallerMax(env: GateEnv): number {
+  const value = (env.SMOKE_ACCESS_CALLER_MAX ?? '').trim();
+  if (value === '') return CALLER_LIMIT;
+  if (!/^[1-9][0-9]*$/.test(value) || !Number.isSafeInteger(Number(value))) {
+    throw new Error(
+      `SMOKE INPUT INVALID: SMOKE_ACCESS_CALLER_MAX must be a whole number of at least 1, got ${JSON.stringify(value)}`
+    );
+  }
+  return Number(value);
+}
+
+/** Escapes a string for use inside a regular expression. */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** The single double-quoted value of `key` in the tfvars text, or a thrown Error naming the key and the file. */
+function readTfvarsValue(tfvarsText: string, key: string): string {
+  const pattern = new RegExp(`^[ \\t]*${escapeRegExp(key)}[ \\t]*=[ \\t]*"([^"]*)"`, 'gm');
+  const values = [...tfvarsText.matchAll(pattern)].map((match) => match[1]);
+  if (values.length !== 1) {
+    throw new Error(
+      `${key} must occur exactly once in ${DEDICATED_SUPABASE_TFVARS}, found ${values.length} occurrence(s)`
+    );
+  }
+  return values[0];
+}
+
+/** The parsed URL, or `null` when the value is not an absolute URL. */
+function parseURL(value: string): URL | null {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
+
+/** The base URL as the gate reads it: the parsed URL when requests may be made to it, and why the origin check refuses it, if it does. */
+type TargetReading = { url: URL | null; refusal: string | null };
+
+function readTarget(baseURL: string): TargetReading {
+  const url = parseURL(baseURL);
+  if (url === null) return { url: null, refusal: `(not an absolute URL: ${baseURL})` };
+  if (url.username !== '' || url.password !== '') {
+    return { url: null, refusal: '(the base URL carries user info, value withheld)' };
+  }
+  if (url.protocol === 'https:' || (url.protocol === 'http:' && LOOPBACK_HOSTS.has(url.hostname))) {
+    return { url, refusal: null };
+  }
+  return { url, refusal: `${url.origin} (not https, and not http on a loopback host)` };
+}
+
+/** The origin a fetched document was answered from when it differs from the target's, else `null`. */
+function foreignOrigin(document: FetchedDocument, target: TargetReading): string | null {
+  if ('error' in document || target.url === null) return null;
+  const answered = parseURL(document.url)?.origin ?? `(unreadable response URL: ${document.url})`;
+  return answered === target.url.origin ? null : answered;
+}
+
+/** The document a check reads: the fetched one, or a failed request when it was answered from another origin. */
+function fromTarget(document: FetchedDocument, target: TargetReading): FetchedDocument {
+  const answered = foreignOrigin(document, target);
+  return answered === null ? document : { error: `answered from another origin, ${answered}` };
+}
+
+/** The reason a request failed, with the underlying system error code when there is one. */
+function describeRequestError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const cause = (error as Error & { cause?: unknown }).cause;
+  const code =
+    typeof cause === 'object' && cause !== null && 'code' in cause && typeof cause.code === 'string'
+      ? cause.code
+      : null;
+  return code === null ? error.message : `${error.message} (${code})`;
+}
+
+async function fetchDocument(fetchImpl: typeof fetch, url: URL, timeoutMs: number): Promise<FetchedDocument> {
+  try {
+    const response = await fetchImpl(url, { redirect: 'follow', signal: AbortSignal.timeout(timeoutMs) });
+    if (response.url === '') return { error: 'the response names no URL' };
+    return { status: response.status, body: await response.text(), url: response.url };
+  } catch (error) {
+    return { error: describeRequestError(error) };
+  }
+}
+
+const SHA_PATTERN = /^[0-9a-f]{40}$/;
+const PROJECT_REF_PATTERN = /^[a-z]{20}$/;
+const CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const DNS_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+const SUPABASE_HOST_SUFFIX = '.supabase.co';
+const ENV_LINE_PATTERN = /^[ \t]*env: (.*\})[ \t]*,?[ \t\r]*$/m;
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+const PUBLIC_ORIGIN_PATTERN = /^https:\/\/[^/?#\s]+$/;
+const ORIGIN_EXPECTED =
+  'an https origin, or http on a loopback host, with no user info, that answers /api/health and / itself';
+const NOT_REQUESTED = 'not requested, the origin check refused the base URL';

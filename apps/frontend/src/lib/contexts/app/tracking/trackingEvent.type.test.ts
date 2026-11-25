@@ -12,27 +12,29 @@ import type { TrackingService } from './trackingService.type';
  * @param tracking - Any value of the consumer-facing tracking service type.
  */
 function vocabularyControls(tracking: TrackingService): void {
-  const { startEvent, track } = tracking;
+  const { track } = tracking;
 
   // Calls that must not compile.
 
   // @ts-expect-error -- a name outside the vocabulary
-  startEvent('not_an_event');
+  track('not_an_event');
   // @ts-expect-error -- a former template name in its expanded form
-  startEvent('results_ranked_candidate', { entityType: 'candidate', entityId: 'c1', score: 50 });
+  track('results_ranked_candidate', { entityType: 'candidate', score: 50 });
+  // @ts-expect-error -- the drawer events never carry the id of the entity the voter opened
+  track('results_ranked_entity', { entityType: 'candidate', entityId: 'c1', score: 50 });
   // @ts-expect-error -- free text is not an attribute of the feedback events
-  startEvent('feedback_sent', { rating: 5, description: 'typed text' });
+  track('feedback_sent', { rating: 5, description: 'typed text' });
   // @ts-expect-error -- the filter names are not an attribute of filters_active
-  startEvent('filters_active', { count: 2, activeFilters: 'a,b' });
+  track('filters_active', { count: 2, activeFilters: 'a,b' });
   // @ts-expect-error -- the required attributes are missing
-  startEvent('results_ranked_entity');
+  track('results_ranked_entity');
   // @ts-expect-error -- the pageview is built by the service, never started at a call site
-  startEvent('pageview', { params: {}, duration: 0 });
+  track('pageview', { params: {}, duration: 0 });
 
   // Calls that must compile.
 
-  startEvent('menu_open');
-  startEvent('answer', { questionId: 'q1', value: 3 });
+  track('menu_open');
+  track('answer', { questionId: 'q1', value: 3 });
   track('maintenance_shown');
 }
 

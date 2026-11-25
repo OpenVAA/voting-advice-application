@@ -1,7 +1,5 @@
 /**
- * The relay refusal check, run through its own self-test: a loopback server that applies the relay's rules, one that
- * answers 204 to everything and a port nothing listens on. Then the three usage refusals: no base URL, a base URL
- * outside the allowlist and a probe id of the wrong form.
+ * The relay refusal check, run through its own self-test: a loopback server that applies the relay's rules, one that answers 204 to everything and a port nothing listens on. Then the three usage refusals: no base URL, a base URL outside the allowlist and a probe id of the wrong form.
  */
 
 import { spawnSync } from 'node:child_process';

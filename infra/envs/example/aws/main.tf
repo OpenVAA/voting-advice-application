@@ -1,9 +1,6 @@
-# A template pipeline root that a forker copies to start a deployment of their own. CI validates it;
-# nothing applies it. It has the same wiring as the staging root and differs only in its backend and
-# its variable file. Replace the bucket below with your own state bucket and the stand-in values in
-# terraform.tfvars with your own before the first apply.
+# A template pipeline root that a forker copies to start a deployment of their own. CI validates it; nothing applies it. It has the same wiring as the staging root and differs only in its backend and its variable file. Replace the bucket below with your own state bucket and the stand-in values in terraform.tfvars with your own before the first apply.
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     aws = {
@@ -16,8 +13,7 @@ terraform {
     }
   }
 
-  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this
-  # root can never be paired with another root's state key.
+  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this root can never be paired with another root's state key.
   backend "s3" {
     bucket       = "REPLACE-ME-tfstate"
     key          = "pipeline/example/aws/terraform.tfstate"
@@ -43,8 +39,7 @@ provider "aws" {
   }
 }
 
-# The CDN's certificate must be in us-east-1. The alias repeats the account guard and the tags, so that
-# the certificate is guarded and tagged like everything else in this root.
+# The CDN's certificate must be in us-east-1. The alias repeats the account guard and the tags, so that the certificate is guarded and tagged like everything else in this root.
 provider "aws" {
   alias  = "us_east_1"
   region = "us-east-1"
@@ -61,8 +56,7 @@ provider "aws" {
   }
 }
 
-# The serving path of the frontend. The zone it adds records to belongs to the dns-mail root and is
-# read by name; the execution role belongs to the bootstrap root and is given by its ARN.
+# The serving path of the frontend. The zone it adds records to belongs to the dns-mail root and is read by name; the execution role belongs to the bootstrap root and is given by its ARN.
 module "frontend" {
   source = "../../../modules/frontend-service"
 
@@ -83,6 +77,7 @@ module "frontend" {
   environment_values      = var.environment_values
   environment_overrides   = var.environment_overrides
   omit_environment        = var.omit_environment
+  identity_provider_type  = var.identity_provider_type
   task_cpu                = var.task_cpu
   task_memory             = var.task_memory
   task_floor              = var.task_floor

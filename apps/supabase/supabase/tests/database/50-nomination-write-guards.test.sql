@@ -1,9 +1,9 @@
 -- 50-nomination-write-guards.test.sql: what an entity's write of its nominations is checked against besides its own argument
 --
 -- Each assertion's description begins with the tag of the rule it pins:
---   STALE - `set_entity_nominations` takes the nominations in reach as the caller read them, each id with its updated_at, and refuses with SQLSTATE 40001 when the stored reach differs: a nomination created, moved, edited or deleted since the read is never deleted or written back by a set computed from the old read.
+--   STALE - `set_entity_nominations` takes the writable nominations as the caller read them, each id with its updated_at, and refuses with SQLSTATE OV003, the code of that refusal alone, when the stored writable nominations differs: a nomination created, moved, edited or deleted since the read is never deleted or written back by a set computed from the old read.
 --   READ  - `get_entity_nominations` states each nomination's updated_at, which is what the writer is given back.
---   EXP   - the refusals of a malformed `p_expected_reach`, SQLSTATE 22023.
+--   EXP   - the refusals of a malformed `p_expected_versions`, SQLSTATE 22023.
 --   CONST - a nomination's constituency must be one of its election's constituencies, for a new nomination and for a move; a stored nomination that stays where it is is not judged by it.
 --   ROUND - a round that is not stored is round 1, on both sides of every comparison of a nomination's round with its election's or its parent's.
 --   BOUND - `get_nomination_parent_options` refuses more contests than a writer may name nominations.
@@ -73,7 +73,7 @@ INSERT INTO
     id,
     project_id,
     name,
-    election_type,
+    nomination_shape,
     current_round
   )
 VALUES
@@ -340,14 +340,14 @@ CREATE FUNCTION pg_temp.item (
       'parent', p_parent);
 $fn$;
 
--- The nominations in reach of a candidate as the calling session reads them, each id with its updated_at: what a writer that has just read them would state.
-CREATE FUNCTION pg_temp.reach_now (p_id uuid) RETURNS jsonb LANGUAGE sql AS $fn$
+-- The writable nominations of a candidate as the calling session reads them, each id with its updated_at: what a writer that has just read them would state.
+CREATE FUNCTION pg_temp.versions_now (p_id uuid) RETURNS jsonb LANGUAGE sql AS $fn$
   SELECT COALESCE(jsonb_object_agg(n.id, n.updated_at), '{}'::jsonb)
   FROM public.nominations n
   JOIN public.elections e ON e.id = n.election_id
   WHERE n.candidate_id = p_id
     AND COALESCE(n.election_round, 1) = COALESCE(e.current_round, 1)
-    AND public.nomination_shape_rule(e.election_type, 'candidate') IN ('admitted', 'parent_required');
+    AND public.nomination_shape_rule(e.nomination_shape, 'candidate') IN ('admitted', 'parent_required');
 $fn$;
 
 -- The statement that calls the function, as text, so that a database without the four-argument function fails each assertion on its own.
@@ -374,7 +374,7 @@ CREATE FUNCTION pg_temp.changed () RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
 $fn$;
 
 CREATE FUNCTION pg_temp.malformed_expectation () RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
-  SELECT 'set_entity_nominations: p_expected_reach must be a JSON object that maps each nomination id to its updated_at';
+  SELECT 'set_entity_nominations: p_expected_versions must be a JSON object that maps each nomination id to its updated_at';
 $fn$;
 
 -- The nomination trigger's refusal of a nomination of election one at the constituency of the other election.
@@ -403,9 +403,9 @@ CREATE FUNCTION pg_temp.requesting (
   p_election text
 ) RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
   SELECT format(
-    'SET CONSTRAINTS public.nominations_parent_required IMMEDIATE; '
+    'SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE; '
     'INSERT INTO public.nominations (project_id, candidate_id, election_id, constituency_id, election_round, custom_data, confirmed) VALUES (%L, %L, %L, %L, 1, %L::jsonb, %L); '
-    'SET CONSTRAINTS public.nominations_parent_required DEFERRED; '
+    'SET CONSTRAINTS public.validate_nomination_parent_required DEFERRED; '
     'DELETE FROM public.nominations WHERE candidate_id = %L',
     test_id ('project_a'), pg_temp.eid ('cand_req'), pg_temp.eid (p_election), pg_temp.eid ('c_one'),
     p_custom_data, p_confirmed, pg_temp.eid ('cand_req'));
@@ -447,10 +447,10 @@ SELECT
           '{"kind":"keep"}'
         )
       ),
-      pg_temp.reach_now (pg_temp.eid ('cand_stale'))
+      pg_temp.versions_now (pg_temp.eid ('cand_stale'))
     ) ->> 'unchanged',
     '1',
-    'STALE: a set stated with the reach as it is stored lives'
+    'STALE: a set stated with the writable nominations as they are stored lives'
   );
 
 -- An administrator creates and confirms a second nomination of the candidate after the caller's read.
@@ -500,7 +500,7 @@ SELECT
       ),
       jsonb_build_object(pg_temp.eid ('n_stale'), '2020-01-01T00:00:00Z')
     ),
-    '40001',
+    'OV003',
     pg_temp.changed (),
     'STALE: a nomination created since the read is not deleted by a set computed from the read'
   );
@@ -562,7 +562,7 @@ SELECT
       ),
       jsonb_build_object(pg_temp.eid ('n_stale'), '2020-01-01T00:00:00Z')
     ),
-    '40001',
+    'OV003',
     pg_temp.changed (),
     'STALE: a move made since the read is not reverted by a set computed from the read'
   );
@@ -572,11 +572,11 @@ SELECT
     pg_temp.call (
       pg_temp.eid ('cand_stale'),
       '[]'::jsonb,
-      pg_temp.reach_now (pg_temp.eid ('cand_stale')) || jsonb_build_object(pg_temp.eid ('n_ghost'), '2020-01-01T00:00:00Z')
+      pg_temp.versions_now (pg_temp.eid ('cand_stale')) || jsonb_build_object(pg_temp.eid ('n_ghost'), '2020-01-01T00:00:00Z')
     ),
-    '40001',
+    'OV003',
     pg_temp.changed (),
-    'STALE: an expectation that names a nomination no longer in reach is refused'
+    'STALE: an expectation that names a nomination no longer writable is refused'
   );
 
 SELECT
@@ -586,9 +586,9 @@ SELECT
       '[]'::jsonb,
       '{}'::jsonb
     ),
-    '40001',
+    'OV003',
     pg_temp.changed (),
-    'STALE: an expectation that leaves out a nomination in reach is refused'
+    'STALE: an expectation that leaves out a writable nomination is refused'
   );
 
 SELECT
@@ -628,10 +628,10 @@ SELECT
           '{"kind":"keep"}'
         )
       ),
-      pg_temp.reach_now (pg_temp.eid ('cand_stale'))
+      pg_temp.versions_now (pg_temp.eid ('cand_stale'))
     ) ->> 'updated',
     '1',
-    'STALE: the same edit stated with the reach read afresh is stored'
+    'STALE: the same edit stated with the writable nominations read afresh is stored'
   );
 
 -- =====================================================================
@@ -709,7 +709,7 @@ SELECT
           '{"kind":"none"}'
         )
       ),
-      pg_temp.reach_now (pg_temp.eid ('cand_const'))
+      pg_temp.versions_now (pg_temp.eid ('cand_const'))
     ),
     '23514',
     pg_temp.foreign_constituency (),
@@ -768,7 +768,7 @@ SELECT
           '{"kind":"none"}'
         )
       ),
-      pg_temp.reach_now (pg_temp.eid ('cand_const'))
+      pg_temp.versions_now (pg_temp.eid ('cand_const'))
     ) ->> 'deleted',
     '1',
     'CONST: a move to another constituency of its election is stored'
@@ -787,7 +787,7 @@ SELECT
           '{"kind":"none"}'
         )
       ),
-      pg_temp.reach_now (pg_temp.eid ('cand_const_kept'))
+      pg_temp.versions_now (pg_temp.eid ('cand_const_kept'))
     ) ->> 'updated',
     '1',
     'CONST: a stored nomination that stays at a constituency outside its election is written, as it was stored'
@@ -809,10 +809,10 @@ SELECT
           '{"kind":"none"}'
         )
       ),
-      pg_temp.reach_now (pg_temp.eid ('cand_round'))
+      pg_temp.versions_now (pg_temp.eid ('cand_round'))
     ) ->> 'updated',
     '1',
-    'ROUND: a nomination at round 1 of an election whose current round is not stored is in reach'
+    'ROUND: a nomination at round 1 of an election whose current round is not stored is writable'
   );
 
 SELECT
@@ -835,10 +835,10 @@ SELECT
           )
         )
       ),
-      pg_temp.reach_now (pg_temp.eid ('cand_round_null'))
+      pg_temp.versions_now (pg_temp.eid ('cand_round_null'))
     ) ->> 'updated',
     '1',
-    'ROUND: a nomination with no round stored, in an election at round 1, is in reach and is linked to its party''s round-1 nomination'
+    'ROUND: a nomination with no round stored, in an election at round 1, is writable and is linked to its party''s round-1 nomination'
   );
 
 SELECT

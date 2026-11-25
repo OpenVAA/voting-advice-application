@@ -422,3 +422,10 @@ preventive for them, not a repair.
 `diff -r .claude/skills/ship-review-stack/sources/ .planning/phases/151-ship-v0-2-akita-review-stack/scripts/`
 reports no differences -- the byte-identity this skill asserts between its `sources/` copy and the
 phase-151 originals still holds.
+
+**Reviewed 2026-11-21** at the v2.16 stack's PR 895–897 review fixes. The audit reported
+`DRIFT 1 commits, 1 files` under the `.agents` target: `.agents/code-review-checklist.md` gained an
+_E2E Tests_ section (page-object fixture size, single-spec steps stay in their spec). It is
+**additive**: the _Shipping a Large Branch_ section this skill's disposition step reads is unchanged,
+and nothing this skill says became untrue. The `sources/` copy still matches the phase-151 scripts
+byte for byte (`diff -r` as above, no differences).

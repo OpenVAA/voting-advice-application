@@ -7,7 +7,9 @@
  *
  * 1. **A caller's error** — shown as the input's inline error, with the caller's test id and reason, marking the control invalid, and cleared by an edit.
  * 2. **The input's own error** — an entry the input refuses itself still shows in the same message and reaches the caller, unless the caller judges the entry itself.
- * 3. **The exports** — `focus()` and `checkValidity()` of a kind that renders one control.
+ * 3. **A caller's error on a kind of several controls** — every field or dropdown the multilingual, multi-text and select-multiple parts render is marked invalid.
+ * 4. **Keystroke updates** — `commitOn: 'input'` hands the caller every keystroke of a single-line text kind, unjudged.
+ * 5. **The exports** — `focus()` and `checkValidity()` of a kind that renders one control.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
@@ -27,7 +29,7 @@ const Input = (await import('./Input.svelte')).default;
 
 /** The id every subject is mounted with, so that derived ids are literals. */
 const ID = 'subject';
-const ERROR = 'contestantApp.login.emailRequired';
+const ERROR = 'common.account.emailRequired';
 /** The shared test id of an `Input`'s inline error. */
 const DEFAULT_ERROR_TEST_ID = 'input-error';
 
@@ -201,6 +203,87 @@ describe('an input whose caller judges the entry', () => {
     const { target } = render({ type: 'email', value: '', validate: false, error: ERROR });
 
     expect(alertsOf(target)).toHaveLength(1);
+  });
+});
+
+describe('an error its caller sets on a kind of several controls', () => {
+  /** Mount an `Input` with `error` bound to a parent and an object `value` passed as is, since a value of these kinds is cloned at mount and a `$state` proxy cannot be. */
+  function renderWithValue(
+    props: Record<string, unknown>
+  ): Pick<Harness, 'target'> & { parent: { error: string | undefined } } {
+    const parent = $state({ error: ERROR as string | undefined });
+    const target = document.createElement('div');
+    document.body.appendChild(target);
+    const component = mount(Input, {
+      target,
+      props: {
+        label: 'Label',
+        id: ID,
+        ...props,
+        get error() {
+          return parent.error;
+        },
+        set error(next: string | undefined) {
+          parent.error = next;
+        }
+      } as never
+    });
+    flushSync();
+    teardown.push(() => {
+      unmount(component);
+      target.remove();
+    });
+    return { target, parent };
+  }
+
+  const OPTIONS = [
+    { id: 'a', label: 'A' },
+    { id: 'b', label: 'B' }
+  ];
+
+  it.each([
+    { type: 'text-multilingual', value: { en: 'text' }, selector: 'input' },
+    { type: 'textarea-multilingual', value: { en: 'text' }, selector: 'textarea' },
+    { type: 'multiple-text', value: ['one', 'two'], selector: 'input[type="text"]' },
+    { type: 'multiple-text-multilingual', value: [{ en: 'one' }], selector: 'input[type="text"]' },
+    { type: 'select-multiple', value: ['a'], options: OPTIONS, selector: 'select' }
+  ] as const)('marks every field of a $type input invalid while shown, and none once cleared', (subject) => {
+    const { selector, ...props } = subject;
+    const { target, parent } = renderWithValue({ ...props, value: structuredClone(props.value) });
+
+    const fields = [...target.querySelectorAll<HTMLElement>(selector)];
+    expect(fields.length).toBeGreaterThan(0);
+    for (const field of fields) expect(field.getAttribute('aria-invalid')).toBe('true');
+
+    parent.error = undefined;
+    flushSync();
+
+    for (const field of target.querySelectorAll<HTMLElement>(selector))
+      expect(field.hasAttribute('aria-invalid')).toBe(false);
+  });
+});
+
+describe('an input that commits on every keystroke', () => {
+  it.each(['text', 'email', 'url'] as const)('hands the caller each keystroke of a %s input, as typed', (type) => {
+    const onChange = vi.fn();
+    const { target, parent } = render({ type, value: '', commitOn: 'input', onChange });
+
+    edit(controlOf(target), 'not one', 'input');
+
+    expect(parent.value).toBe('not one');
+    expect(onChange).toHaveBeenCalledWith('not one');
+    expect(alertsOf(target)).toHaveLength(0);
+    expect(controlOf(target).hasAttribute('commitOn')).toBe(false);
+  });
+
+  it('takes nothing in on a keystroke by default', () => {
+    const onChange = vi.fn();
+    const { target, parent } = render({ value: '', onChange });
+
+    edit(controlOf(target), 'typed', 'input');
+
+    expect(parent.value).toBe('');
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
 

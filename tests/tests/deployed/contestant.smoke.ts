@@ -17,7 +17,9 @@ import { createContestantLoginPage } from '../fixtures/contestant/contestantLogi
 import { createContestantLogoutButton } from '../fixtures/contestant/contestantLogoutButton.fixture';
 import { TIMEOUTS } from '../helpers';
 import { requireCredentialOrigin, requireSmokeInputs } from '../utils/deployedTarget';
+import { testIds } from '../utils/testIds';
 import { TESTS_DIR } from '../utils/testsDir';
+import type { Page } from '@playwright/test';
 
 test.use({ trace: 'off', screenshot: 'off', video: 'off' });
 
@@ -30,7 +32,7 @@ test('a contestant signs in with a password, sees a complete home and signs out'
   requireCredentialOrigin(baseURL, path.resolve(TESTS_DIR, '..', '..'));
   const login = createContestantLoginPage(page);
   await login.signInFromCold(email, password);
-  await login.emptyFormUnlessSignedIn();
+  await emptyFormUnlessSignedIn(page);
   await expect(page).not.toHaveURL(/.*login.*/, { timeout: TIMEOUTS.slowPage });
   await createContestantHomePage(page).expectTaskList({
     nomination: 'complete',
@@ -39,3 +41,26 @@ test('a contestant signs in with a password, sees a complete home and signs out'
   });
   await createContestantLogoutButton(page).clickWithoutDialog();
 });
+
+/**
+ * Wait for a submitted sign-in to lead away from the sign-in screen, and empty the email and password fields when it has not.
+ *
+ * A failed matcher writes an accessibility snapshot of the page into the test's `error-context.md`, and that snapshot holds the value of every input, a password field's included. Emptying the fields after a refused sign-in keeps the address and the password out of the report of the assertion that follows. A field that is not on the page is left alone.
+ *
+ * The step asserts nothing: the caller asserts where the sign-in led.
+ */
+async function emptyFormUnlessSignedIn(page: Page): Promise<void> {
+  const signedIn = await page
+    .waitForURL((url) => !/login/.test(url.href), { timeout: TIMEOUTS.slowPage, waitUntil: 'commit' })
+    .then(
+      () => true,
+      () => false
+    );
+  if (signedIn) return;
+  for (const field of [
+    page.getByTestId(testIds.contestant.login.email),
+    page.getByTestId(testIds.shared.account.password.field)
+  ]) {
+    if ((await field.count()) > 0) await field.clear({ timeout: TIMEOUTS.element });
+  }
+}

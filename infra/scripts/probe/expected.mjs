@@ -1,41 +1,26 @@
 /**
- * The values a hosted project is expected to serve, read from tracked files only. The probe holds no expected value of
- * its own: every value here is read from the file that sets it for the deployment.
+ * The values a hosted project is expected to serve, read from tracked files only. The probe holds no expected value of its own: every value here is read from the file that sets it for the deployment.
  *
- *   ref                  `project_ref` of the target root's `terraform.tfvars`, twenty lower-case letters
- *   publicOrigin         `public_origin` of the root's `terraform.tfvars`
- *   hooks                `{ accessToken, sendEmail }`: the root's `enable_access_token_hook` and `enable_send_email_hook`
- *   smtp                 the root's `smtp` object (`host`, `port`, `admin_email`, `sender_name`), or null when the root
- *                        sets none
- *   maxRows              `{ json, pageSize }`: `api.max_rows` of `infra/modules/supabase/hosted-settings.json` and
- *                        `dataAdapter.pageSize` of `packages/app-shared/src/settings/staticSettings.ts`
- *   auth                 the `auth` group of the JSON
- *   authHook             the `auth_hook` group of the JSON
- *   authSendEmailHook    the `auth_send_email_hook` group of the JSON
- *   redirectPaths        `redirect_callback_paths` of the JSON
- *   oauthServer          `{ enabled, allow_dynamic_registration }` of `[auth.oauth_server]` in
- *                        `apps/supabase/supabase/config.toml`
- *   api                  `{ db_schema, db_extra_search_path }` of the JSON's `api` group
- *   functions            `[{ slug, verifyJwt }]`, sorted by slug: one entry per directory under
- *                        `apps/supabase/supabase/functions/` that holds an `index.ts`, with `verify_jwt` of its
- *                        `[functions.<slug>]` table in config.toml, or `true` when the table or the key is absent (the
- *                        platform verifies a JWT unless told not to)
- *   publicProjectId      `public_project_id` of the root's `terraform.tfvars`, a lower-case canonical uuid, or null
- *                        when the root sets none: the project whose rows the public read asks for
- *   projectUrl           `https://<ref>.supabase.co`, the project's own API
- *   buckets              `[{ id, public }]`, sorted by id: one entry per `[storage.buckets.<id>]` table of config.toml
- *   anonTimeout          the `statement_timeout` of the last `ALTER ROLE anon SET statement_timeout` among
- *                        `apps/supabase/supabase/migrations/*.sql`, in filename order
- *   postgresMajor        `major_version` of the `[db]` table of config.toml
- *   hookFunctions        the signatures `<schema>.<name>(jsonb)` of the functions the JSON's two hook URIs name,
- *                        the access-token hook first
+ *   ref:                `project_ref` of the target root's `terraform.tfvars`, twenty lower-case letters
+ *   publicOrigin:       `public_origin` of the root's `terraform.tfvars`
+ *   hooks:              `{ accessToken, sendEmail }`: the root's `enable_access_token_hook` and `enable_send_email_hook`
+ *   smtp:               the root's `smtp` object (`host`, `port`, `admin_email`, `sender_name`), or null when the root sets none
+ *   maxRows:            `{ json, pageSize }`: `api.max_rows` of `infra/modules/supabase/hosted-settings.json` and `dataAdapter.pageSize` of `packages/app-shared/src/settings/staticSettings.ts`
+ *   auth:               the `auth` group of the JSON
+ *   authHook:           the `auth_hook` group of the JSON
+ *   authSendEmailHook:  the `auth_send_email_hook` group of the JSON
+ *   redirectPaths:      `redirect_callback_paths` of the JSON
+ *   oauthServer:        `{ enabled, allow_dynamic_registration }` of `[auth.oauth_server]` in `apps/supabase/supabase/config.toml`
+ *   api:                `{ db_schema, db_extra_search_path }` of the JSON's `api` group
+ *   functions:          `[{ slug, verifyJwt }]`, sorted by slug: one entry per directory under `apps/supabase/supabase/functions/` that holds an `index.ts`, with `verify_jwt` of its `[functions.<slug>]` table in config.toml, or `true` when the table or the key is absent (the platform verifies a JWT unless told not to)
+ *   publicProjectId:    `public_project_id` of the root's `terraform.tfvars`, a lower-case canonical uuid, or null when the root sets none: the project whose rows the public read asks for
+ *   projectUrl:         `https://<ref>.supabase.co`, the project's own API
+ *   buckets:            `[{ id, public }]`, sorted by id: one entry per `[storage.buckets.<id>]` table of config.toml
+ *   anonTimeout:        the `statement_timeout` of the last `ALTER ROLE anon SET statement_timeout` among `apps/supabase/supabase/migrations/*.sql`, in filename order
+ *   postgresMajor:      `major_version` of the `[db]` table of config.toml
+ *   hookFunctions:      the signatures `<schema>.<name>(jsonb)` of the functions the JSON's two hook URIs name, the access-token hook first
  *
- * The reading rules are the hosted-settings parity guard's: the JSON is parsed whole, `pageSize` is a line read inside
- * the `dataAdapter` block, a `terraform.tfvars` assignment is a line `name = value` with an optional trailing comment
- * (the `smtp` object is written one attribute per line between `smtp = {` and `}`), and a `config.toml` table runs from
- * its `[name]` header to the next header, holding lines `key = value` with an optional trailing comment. A file that
- * cannot be read, or a value that is missing, written twice or malformed, throws a `ProbeInputError` whose message
- * names the file and the value.
+ * The reading rules are the hosted-settings parity guard's, and the config.toml and `pageSize` readers are its own, from `scripts/lib/config-toml.mjs` and `scripts/lib/static-settings.mjs`: the JSON is parsed whole, `pageSize` is a line read inside the `dataAdapter` block, a `terraform.tfvars` assignment is a line `name = value` with an optional trailing comment (the `smtp` object is written one attribute per line between `smtp = {` and `}`), and a `config.toml` table runs from its `[name]` header to the next header, holding lines `key = value` with an optional trailing comment. A file that cannot be read, or a value that is missing, written twice or malformed, throws a `ProbeInputError` whose message names the file and the value.
  *
  * This module has no side effect on import.
  */
@@ -43,6 +28,8 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { plainHeaders, plainTableName, readConfig, TABLE_HEADER } from '../../../scripts/lib/config-toml.mjs';
+import { readPageSize as readPageSizeLine } from '../../../scripts/lib/static-settings.mjs';
 
 export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 
@@ -121,8 +108,7 @@ export function readTfvarsBool(file, text, name) {
 }
 
 /**
- * One object assignment of a `terraform.tfvars` whose attributes are quoted strings, written one attribute per line
- * between `name = {` and a line holding only `}`. Blank lines and comment lines inside it are skipped.
+ * One object assignment of a `terraform.tfvars` whose attributes are quoted strings, written one attribute per line between `name = {` and a line holding only `}`. Blank lines and comment lines inside it are skipped.
  *
  * @param attributes - The attribute names the object must hold, and the only ones it may hold.
  * @returns The object, or `null` when the file does not assign the name or assigns it `null`.
@@ -163,27 +149,9 @@ export function readTfvarsObject(file, text, name, attributes) {
  * @throws ProbeInputError when the block or the value is missing, unreadable or written twice.
  */
 export function readPageSize(file, text) {
-  const lines = text.split('\n');
-  const start = lines.findIndex((l) => /^\s*dataAdapter\s*:\s*\{/.test(l));
-  if (start === -1) throw new ProbeInputError(file, 'no `dataAdapter` block was found, so pageSize is missing');
-  let depth = 0;
-  const values = [];
-  let unreadable = false;
-  for (let i = start; i < lines.length; i += 1) {
-    const code = lines[i].replace(/\/\/.*$/, '');
-    if (i > start && depth === 1 && /^\s*pageSize\s*:/.test(code)) {
-      const m = /^\s*pageSize\s*:\s*(\d+)\s*,?\s*$/.exec(code);
-      if (m) values.push(Number(m[1]));
-      else unreadable = true;
-    }
-    depth += (code.match(/\{/g) ?? []).length - (code.match(/\}/g) ?? []).length;
-    if (depth <= 0) break;
-  }
-  if (unreadable) throw new ProbeInputError(file, 'a pageSize line is not an integer the line read can read');
-  if (values.length === 0) throw new ProbeInputError(file, 'the `dataAdapter` block holds no pageSize');
-  if (values.length > 1)
-    throw new ProbeInputError(file, `the \`dataAdapter\` block holds pageSize ${values.length} times`);
-  return values[0];
+  const pageSize = readPageSizeLine(text);
+  if (!pageSize.ok) throw new ProbeInputError(file, pageSize.what);
+  return pageSize.value;
 }
 
 /**
@@ -254,68 +222,18 @@ export function readSettingsGroups(file, text) {
   return groups;
 }
 
-const TABLE_HEADER = /^\s*\[\[?\s*([^\]]*?)\s*\]\]?\s*(?:#.*)?$/;
-const KEY_LINE = /^\s*([A-Za-z0-9_-]+)\s*=\s*(.*)$/;
-
-/** A table name in its plain form: each dotted part trimmed and a quoted bare key written without its quotes. */
-function tableName(header) {
-  return header
-    .split('.')
-    .map((part) => part.trim().replace(/^"([A-Za-z0-9_-]+)"$|^'([A-Za-z0-9_-]+)'$/, '$1$2'))
-    .join('.');
-}
-
-/** The value text of an assignment with its trailing comment removed; `null` when a `#` sits inside a quoted string. */
-function valueText(rest) {
-  let inQuote = false;
-  for (let i = 0; i < rest.length; i += 1) {
-    const c = rest[i];
-    if (c === '"') inQuote = !inQuote;
-    else if (c === '#') {
-      if (inQuote) return null;
-      return rest.slice(0, i).trim();
-    }
-  }
-  return rest.trim();
-}
-
-/** A boolean, an integer or a quoted string without escapes; `undefined` for any other form. */
-function scalarValue(raw) {
-  if (raw === 'true') return true;
-  if (raw === 'false') return false;
-  if (/^-?\d+$/.test(raw)) return Number(raw);
-  if (/^"[^"\\]*"$/.test(raw)) return raw.slice(1, -1);
-  return undefined;
-}
-
 /** The value `readConfigTables` records for a key whose value cannot be read, or that is written twice. */
 export const UNREADABLE = Symbol('unreadable');
 
 /**
- * The keys of the `config.toml` tables a predicate selects, by a line read. A key whose value is not a boolean, an
- * integer or a plain quoted string, or that is written twice in one table, is recorded as `UNREADABLE`, so that only a
- * reader that needs that key fails on it.
+ * The keys of the `config.toml` tables a predicate selects, read by `readConfig` after each table header is written in its plain form. A key that `readConfig` reports as a problem, such as one whose value form cannot be read exactly or one written twice in one table, is recorded as `UNREADABLE`, so that only a reader that needs that key fails on it.
  *
  * @param wanted - Whether a table, by its plain name, is read.
  * @returns A map from `<table>/<key>` to the value or `UNREADABLE`.
  */
 export function readConfigTables(text, wanted) {
-  const keys = new Map();
-  let table = null;
-  for (const line of text.split('\n')) {
-    const header = TABLE_HEADER.exec(line);
-    if (header) {
-      table = tableName(header[1]);
-      continue;
-    }
-    if (table === null || !wanted(table)) continue;
-    const assignment = KEY_LINE.exec(line);
-    if (!assignment) continue;
-    const id = `${table}/${assignment[1]}`;
-    const raw = valueText(assignment[2]);
-    const value = raw === null ? undefined : scalarValue(raw);
-    keys.set(id, keys.has(id) || value === undefined ? UNREADABLE : value);
-  }
+  const { keys, problems } = readConfig(plainHeaders(text).text, { inTables: wanted });
+  for (const { id } of problems) keys.set(id, UNREADABLE);
   return keys;
 }
 
@@ -337,8 +255,7 @@ export function readOauthServer(file, text) {
 }
 
 /**
- * The functions of the repository: each directory of the functions directory that holds an `index.ts`, with the
- * `verify_jwt` its `[functions.<slug>]` table of config.toml declares, `true` when the table or the key is absent.
+ * The functions of the repository: each directory of the functions directory that holds an `index.ts`, with the `verify_jwt` its `[functions.<slug>]` table of config.toml declares, `true` when the table or the key is absent.
  *
  * @returns `[{ slug, verifyJwt }]`, sorted by slug.
  * @throws ProbeInputError when the directory cannot be read or holds no function, or a declared `verify_jwt` is not a
@@ -372,9 +289,7 @@ export function readFunctions(repoRoot, config) {
 const ANON_TIMEOUT = /ALTER ROLE anon SET statement_timeout (?:=|TO) '([^']*)'/gi;
 
 /**
- * The `statement_timeout` the migrations set for `anon`: the value of the last `ALTER ROLE anon SET
- * statement_timeout = '<value>'` among the migrations, read in filename order with whitespace collapsed, so that a
- * statement written over several lines is found.
+ * The `statement_timeout` the migrations set for `anon`: the value of the last `ALTER ROLE anon SET statement_timeout = '<value>'` among the migrations, read in filename order with whitespace collapsed, so that a statement written over several lines is found.
  *
  * @throws ProbeInputError when the directory cannot be read or no migration sets it.
  */
@@ -414,8 +329,7 @@ const HOOK_URI = /^pg-functions:\/\/postgres\/([^/]+)\/([^/]+)$/;
 const SQL_NAME = /^[a-z_][a-z0-9_]*$/;
 
 /**
- * The signature `<schema>.<name>(jsonb)` of the database function a hook URI `pg-functions://postgres/<schema>/<name>`
- * names. The schema and the name are written into SQL, so each must be a plain lower-case identifier.
+ * The signature `<schema>.<name>(jsonb)` of the database function a hook URI `pg-functions://postgres/<schema>/<name>` names. The schema and the name are written into SQL, so each must be a plain lower-case identifier.
  *
  * @throws ProbeInputError when the URI is not of that form.
  */
@@ -441,7 +355,8 @@ export function readBuckets(file, text) {
   const ids = new Set();
   for (const line of text.split('\n')) {
     const header = TABLE_HEADER.exec(line);
-    const bucket = header ? BUCKET_TABLE.exec(tableName(header[1])) : null;
+    const name = header ? plainTableName(header[1]) : null;
+    const bucket = name === null ? null : BUCKET_TABLE.exec(name);
     if (bucket) ids.add(bucket[1]);
   }
   if (ids.size === 0) throw new ProbeInputError(file, 'declares no [storage.buckets.<id>] table');

@@ -2,63 +2,42 @@
 #
 # build-push-image.sh -- Build the frontend image of one pushed commit, tag it with that commit's id and push it.
 #
-# The image tag is the full commit id of HEAD, and the image's BUILD_SHA is the same string, so a tag in the registry
-# always names a commit anyone can fetch from origin. The script refuses every tree for which that would not hold.
+# The image tag is the full commit id of HEAD, and the image's BUILD_SHA is the same string, so a tag in the registry always names a commit anyone can fetch from origin. The script refuses every tree for which that would not hold.
 #
-# What it checks, in this order. Each refusal prints one `refused=<reason>` line on standard output and exits 1, and
-# every refusal but the last comes before any AWS call:
+# What it checks, in this order. Each refusal prints one `refused=<reason>` line on standard output and exits 1, and every refusal but the last comes before any AWS call:
 #   dirty-tree        `git status --porcelain`, untracked files included, is not empty.
 #   not-a-commit-id   `git rev-parse HEAD` is not 40 lower-case hexadecimal characters, compared as a whole string.
-#   planning-in-tree  HEAD's tree or the working tree holds `.planning/`. The commit is public once pushed, and the
-#                     planning record is not published with it.
+#   planning-in-tree  HEAD's tree or the working tree holds `.planning/`. The commit is public once pushed, and the planning record is not published with it.
 #   head-not-pushed   No line of `git ls-remote origin` carries HEAD's id. `failed=ls-remote` when origin cannot be read.
-#   account           `aws sts get-caller-identity` fails or names another account than OPENVAA_ACCOUNT_ID. The line
-#                     names the expected account only.
+#   account           `aws sts get-caller-identity` fails or names another account than OPENVAA_ACCOUNT_ID. The line names the expected account only.
 #
 # What it does then:
-#   1. Looks the tag up with `aws ecr describe-images`. When the registry holds it, prints `tag_exists=yes
-#      image_digest=<digest>` and exits 3 without building: the repository's tags are immutable, and a second build
-#      of one commit is not the image the tag already names.
-#   2. Signs docker in to the registry. The password goes from `aws ecr get-login-password` straight to `docker login`
-#      on standard input; it is never held in a variable, never on a command line and never written by this script.
-#      Where docker keeps the login is docker's own credential store; the script signs docker out again on exit.
-#   3. Builds apps/frontend/Dockerfile, target production, natively for the platform, with BUILD_SHA=<id> and with the
-#      provenance and SBOM attestations turned off, so the pushed artifact is one image manifest and not an index. The
-#      build runs from a copy of the commit's tree, never from the working tree: `git archive` of the commit is written
-#      to a file in the script's temporary directory and extracted there, so the context holds the commit's tracked
-#      files and nothing else, and no ignored or untracked file can reach the image. `.dockerignore` then applies to
-#      that copy. The image is loaded into the local image store and tagged <url>:<id>.
+#   1. Looks the tag up with `aws ecr describe-images`. When the registry holds it, prints `tag_exists=yes image_digest=<digest>` and exits 3 without building: the repository's tags are immutable, and a second build of one commit is not the image the tag already names.
+#   2. Signs docker in to the registry. The password goes from `aws ecr get-login-password` straight to `docker login` on standard input; it is never held in a variable, never on a command line and never written by this script. Where docker keeps the login is docker's own credential store; the script signs docker out again on exit.
+#   3. Builds apps/frontend/Dockerfile, target production, natively for the platform, with BUILD_SHA=<id> and with the provenance and SBOM attestations turned off, so the pushed artifact is one image manifest and not an index. The build runs from a copy of the commit's tree, never from the working tree: `git archive` of the commit is written to a file in the script's temporary directory and extracted there, so the context holds the commit's tracked files and nothing else, and no ignored or untracked file can reach the image. `.dockerignore` then applies to that copy. The image is loaded into the local image store and tagged <url>:<id>.
 #   4. Pushes <url>:<id>, reads its digest back from the registry and prints `image_tag=<id>` and `image_digest=<digest>`.
 #   A step that fails prints `failed=<step>`, the step being describe-images, login, context, build, push or read-digest.
 #   `failed=context` means the commit's archive could not be written or extracted; nothing is built or pushed.
 #
-# What it does not check: that the commit's tests passed, that the commit is on any particular branch, or that the image
-# starts. Those belong to the caller.
+# What it does not check: that the commit's tests passed, that the commit is on any particular branch, or that the image starts. Those belong to the caller.
 #
 # Usage (from a shell signed in to the account, with the AWS CLI and docker with buildx on the PATH):
+#   ```sh
 #   infra/scripts/build-push-image.sh --repository-url <url>
 #   infra/scripts/build-push-image.sh --repository-url <url> --platform linux/amd64
 #   infra/scripts/build-push-image.sh --self-test
+#   ```
 #
-#   --repository-url <url>  REQUIRED. The image repository, <account>.dkr.ecr.<region>.amazonaws.com/<name>, the
-#                           bootstrap root's output registry_url. Its account must be OPENVAA_ACCOUNT_ID and its region
-#                           AWS_REGION.
-#   --platform <platform>   OPTIONAL. The platform to build for. Default: linux/arm64, the platform the service runs on.
-#                           Built natively: on another host architecture the build is emulated and slow.
-#   --self-test             Run the checks against throwaway local repositories with the AWS CLI and docker replaced by
-#                           stubs. Needs no credential and no network. Each case prints `self_test <name> PASS|FAIL`.
+#   --repository-url <url>  REQUIRED. The image repository, <account>.dkr.ecr.<region>.amazonaws.com/<name>, the bootstrap root's output registry_url. Its account must be OPENVAA_ACCOUNT_ID and its region AWS_REGION.
+#   --platform <platform>   OPTIONAL. The platform to build for. Default: linux/arm64, the platform the service runs on. Built natively: on another host architecture the build is emulated and slow.
+#   --self-test             Run the checks against throwaway local repositories with the AWS CLI and docker replaced by stubs. Needs no credential and no network. Each case prints `self_test <name> PASS|FAIL`.
 #   -h, --help              Print this header and exit 0.
 #
-# For a workflow caller: read the status directly, never through a pipe. Status 0 prints two lines, `image_tag=<id>`
-# and `image_digest=<digest>`. Status 3 prints one line, `tag_exists=yes image_digest=<digest>`, and means the registry
-# already holds this commit's image, which the caller deploys as it is. Any other status comes with a `refused=` or
-# `failed=` line on standard output naming the reason.
+# For a workflow caller: read the status directly, never through a pipe. Status 0 prints two lines, `image_tag=<id>` and `image_digest=<digest>`. Status 3 prints one line, `tag_exists=yes image_digest=<digest>`, and means the registry already holds this commit's image, which the caller deploys as it is. Any other status comes with a `refused=` or `failed=` line on standard output naming the reason.
 #
-# The script judges the repository it lies in: the git checks and the build both use the top level of the working tree
-# that holds this file, whatever the current directory is. Run it from a worktree of the commit to build that commit.
+# The script judges the repository it lies in: the git checks and the build both use the top level of the working tree that holds this file, whatever the current directory is. Run it from a worktree of the commit to build that commit.
 #
-# Environment: OPENVAA_ACCOUNT_ID (default 471112560111) is the account the caller must be in; AWS_REGION (default
-# eu-north-1) is the region of the registry.
+# Environment: OPENVAA_ACCOUNT_ID (default 471112560111) is the account the caller must be in; AWS_REGION (default eu-north-1) is the region of the registry.
 #
 # Exit codes:
 #   0:  the image was built and pushed, or every self-test case passed
@@ -82,13 +61,20 @@ export AWS_REGION="$REGION"
 
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd -P)"
+SCRIPT_NAME="build-push-image.sh"
+USAGE_LINE="--repository-url <url> [--platform <platform>] | --self-test | -h | --help"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$SCRIPT_DIR/../../scripts/lib/cli.sh"
+# shellcheck source=../../scripts/lib/aws.sh
+. "$SCRIPT_DIR/../../scripts/lib/aws.sh"
+# shellcheck source=../../scripts/lib/self-test.sh
+. "$SCRIPT_DIR/../../scripts/lib/self-test.sh"
 
 DEFAULT_PLATFORM="linux/arm64"
 DOCKERFILE="apps/frontend/Dockerfile"
 BUILD_TARGET="production"
 
-# The commands the script runs. The self-test replaces the two that reach outside the host with stubs, and wraps the
-# third so that it can make an extraction fail.
+# The commands the script runs. The self-test replaces the two that reach outside the host with stubs, and wraps the third so that it can make an extraction fail.
 AWS="aws"
 DOCKER="docker"
 TAR="tar"
@@ -102,33 +88,9 @@ SHA=""
 WORK=""
 LOGGED_IN=0
 
-usage_line() {
-  echo "usage: build-push-image.sh --repository-url <url> [--platform <platform>] | --self-test | -h | --help" >&2
-}
-
-print_header() {
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$SCRIPT_PATH"
-}
-
-usage_error() {
-  echo "build-push-image.sh: $1" >&2
-  usage_line
-  exit 2
-}
-
-note() {
-  echo "build-push-image.sh: $1" >&2
-}
-
 refuse() {
   echo "refused=$1"
   note "$2"
-  exit 1
-}
-
-fail_step() {
-  echo "failed=$1"
-  [ -z "${2:-}" ] || note "$2"
   exit 1
 }
 
@@ -137,20 +99,7 @@ is_commit_id() {
   [[ "$1" =~ $re ]]
 }
 
-is_digest() {
-  local re='^sha256:[0-9a-f]{64}$'
-  [[ "$1" =~ $re ]]
-}
-
-# The error code of a failed AWS call, read from its standard error, or "unknown".
-error_code() {
-  local code
-  code="$(awk 'match($0, /An error occurred \([A-Za-z][A-Za-z0-9.]*\)/) { print substr($0, RSTART + 19, RLENGTH - 20); exit }' "$1")"
-  printf '%s' "${code:-unknown}"
-}
-
-# Splits the repository URL into the registry host and the repository name. Refuses, as a usage error, a URL that is
-# not an image repository of OPENVAA_ACCOUNT_ID in AWS_REGION.
+# Splits the repository URL into the registry host and the repository name. Refuses, as a usage error, a URL that is not an image repository of OPENVAA_ACCOUNT_ID in AWS_REGION.
 parse_url() {
   local host_re='^([0-9]{12})\.dkr\.ecr\.([a-z0-9-]+)\.amazonaws\.com$'
   local name_re='^[a-z0-9]([a-z0-9._/-]*[a-z0-9])?$'
@@ -179,8 +128,7 @@ on_exit() {
 }
 
 # ---------------------------------------------------------------------------------------------------
-# The checks and the build. Every status is read directly; nothing relies on `set -e`, because the self-test runs this
-# in a subshell whose status it reads.
+# The checks and the build. Every status is read directly; nothing relies on `set -e`, because the self-test runs this in a subshell whose status it reads.
 # ---------------------------------------------------------------------------------------------------
 
 check_tree() {
@@ -298,8 +246,7 @@ deploy() {
 }
 
 # ---------------------------------------------------------------------------------------------------
-# Self-test. No credential, no network: origin is a bare repository in a temporary directory, and the AWS CLI and docker
-# are shell functions that record each call.
+# Self-test. No credential, no network: origin is a bare repository in a temporary directory, and the AWS CLI and docker are shell functions that record each call.
 # ---------------------------------------------------------------------------------------------------
 
 ST_CASES=0
@@ -311,30 +258,7 @@ ST_STATUS=0
 ST_OUT=""
 ST_TRACKED=""
 
-st_result() {
-  ST_CASES=$((ST_CASES + 1))
-  if [ "$2" = "pass" ]; then
-    echo "self_test $1 PASS"
-  else
-    echo "self_test $1 FAIL"
-    ST_FAILED=$((ST_FAILED + 1))
-  fi
-}
-
-# st_expect <case> <condition...>: the case passes when the condition holds.
-st_expect() {
-  local name="$1"
-  shift
-  if "$@"; then st_result "$name" pass; else st_result "$name" fail; fi
-}
-
-has() { case "$1" in *"$2"*) return 0 ;; *) return 1 ;; esac; }
-lacks() { case "$1" in *"$2"*) return 1 ;; *) return 0 ;; esac; }
-equals() { [ "$1" = "$2" ]; }
-
-# The AWS CLI stub. The caller's account is ST_ACCOUNT; describe-images answers from the files ST/describe.<n>, n being
-# the count of earlier describe-images calls: a file holding a digest answers with it, a file holding an error code
-# fails with that code.
+# The AWS CLI stub. The caller's account is ST_ACCOUNT; describe-images answers from the files ST/describe.<n>, n being the count of earlier describe-images calls: a file holding a digest answers with it, a file holding an error code fails with that code.
 st_aws() {
   printf '%s\n' "$*" >> "$ST/aws.log"
   case "$1 $2" in
@@ -361,9 +285,7 @@ st_aws() {
   esac
 }
 
-# The docker stub. A build records the context it was given (its last argument), the script's temporary directory, and
-# what the context holds: whether the ignored file the self-test plants is in it, and whether the tracked file holds
-# ST_TRACKED. A build fails when the file ST/build-fails exists.
+# The docker stub. A build records the context it was given (its last argument), the script's temporary directory, and what the context holds: whether the ignored file the self-test plants is in it, and whether the tracked file holds ST_TRACKED. A build fails when the file ST/build-fails exists.
 st_docker() {
   printf '%s\n' "$*" >> "$ST/docker.log"
   case "$1" in

@@ -45,15 +45,8 @@ class NominationAndQuestionStateImpl {
     if (!types?.length) types = Object.values(ENTITY_TYPE);
     const tree: Partial<NominationAndQuestionTree> = {};
     for (const election of elecs) {
-      // `getApplicableConstituency` throws when more than one constituency matches the election's groups (hierarchical selection — a municipality and its parent region both end up in the selected list for an election whose cgs include both Regions and Municipalities). Pick the FIRST match deterministically (earlier in the array — the selector pushes the implied parent ahead of the child) so the election's nomination tree still resolves (variant-startfromcg.spec.ts:145 hierarchy edge case).
-      let constituency: Constituency | undefined;
-      try {
-        constituency = election.getApplicableConstituency(constits);
-      } catch {
-        constituency = constits.find(({ id }) =>
-          election.constituencyGroups.some((group) => group.data.constituencyIds.includes(id))
-        );
-      }
+      // A municipality and its parent region may both be selected for an election whose groups include both; the election resolves to the most specific of them, the municipality.
+      const constituency = election.getMostSpecificConstituency(constits);
       if (!constituency) continue;
 
       let candidateNominationsWithMissingAnswers: Set<Id> | undefined;
@@ -77,7 +70,7 @@ class NominationAndQuestionStateImpl {
             // Check that the entities have answers to all opinion questions
             if (entityType === ENTITY_TYPE.Candidate && hideIfMissing?.candidate) {
               nominations = nominations.filter((n) => {
-                const hasAllAnswers = opinionQuestions.every((q) => n.entity.getAnswer(q) != null);
+                const hasAllAnswers = answersEvery(n.entity, opinionQuestions);
                 if (!hasAllAnswers) {
                   candidateNominationsWithMissingAnswers ??= new Set();
                   candidateNominationsWithMissingAnswers.add(n.id);
@@ -86,7 +79,7 @@ class NominationAndQuestionStateImpl {
               });
             }
             if (entityType === ENTITY_TYPE.Organization && hideIfMissing?.organization) {
-              nominations = nominations.filter((n) => opinionQuestions.every((q) => n.entity.getAnswer(q) != null));
+              nominations = nominations.filter((n) => answersEvery(n.entity, opinionQuestions));
             }
             if (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) {
               // We need to also purge child nomination ids from the data if they don't have answers to all opinion questions
@@ -113,6 +106,13 @@ class NominationAndQuestionStateImpl {
   get value(): NominationAndQuestionTree {
     return this.#value;
   }
+}
+
+/**
+ * Whether an entity's saved answers answer every one of the questions, by each question's own `isAnswered`: the rule the Contestant App counts an entity's unanswered questions by.
+ */
+function answersEvery(entity: AnyNominationVariant['entity'], questions: Array<AnyQuestionVariant>): boolean {
+  return questions.every((q) => q.isAnswered(entity.answers[q.id]));
 }
 
 /**

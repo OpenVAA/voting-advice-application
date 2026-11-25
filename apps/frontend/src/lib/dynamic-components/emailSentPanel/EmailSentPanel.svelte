@@ -59,8 +59,7 @@ Accesses `AppContext` through the support sentence.
   const { t } = getComponentContext();
 
   /** The attributes of the bold address inside the first sentence: its test id, and the marks that keep it untranslated, unhyphenated and wrapping anywhere. */
-  const ADDRESS_ATTRIBUTES =
-    'data-testid="email-sent-address" translate="no" class="[overflow-wrap:anywhere] hyphens-none"';
+  const ADDRESS_ATTRIBUTES = 'data-testid="email-sent-address" translate="no" class="wrap-anywhere hyphens-none"';
 
   /** The address to show, or nothing for an absent or blank one, and nothing for the code wording, whose sentence names none. */
   const address = $derived(wording === 'code' ? undefined : email?.trim() || undefined);
@@ -72,8 +71,8 @@ Accesses `AppContext` through the support sentence.
       : sanitizeHtml(
           t(
             wording === 'recovery'
-              ? 'contestantApp.emailSent.intro.recoveryTo'
-              : 'contestantApp.emailSent.intro.signInTo',
+              ? 'common.account.emailSent.intro.recoveryTo'
+              : 'common.account.emailSent.intro.signInTo',
             {
               email: escapeHtml(address)
             }
@@ -83,17 +82,17 @@ Accesses `AppContext` through the support sentence.
 
   const intro = $derived(
     wording === 'recovery'
-      ? t('contestantApp.emailSent.intro.recovery')
+      ? t('common.account.emailSent.intro.recovery')
       : wording === 'code'
-        ? t('contestantApp.emailSent.intro.code')
-        : t('contestantApp.emailSent.intro.signIn')
+        ? t('common.account.emailSent.intro.code')
+        : t('common.account.emailSent.intro.signIn')
   );
 
   const statusText = $derived(
     status === 'requested'
-      ? t('contestantApp.emailSent.resendRequested')
+      ? t('common.account.emailSent.resendRequested')
       : status === 'ready'
-        ? t('contestantApp.emailSent.resendReady')
+        ? t('common.account.emailSent.resendReady')
         : ''
   );
 </script>
@@ -105,13 +104,15 @@ Accesses `AppContext` through the support sentence.
     <p class="text-center" data-testid="email-sent-intro">{intro}</p>
   {/if}
   <p class="text-center">
-    {address ? t('contestantApp.emailSent.notFound.withAddress') : t('contestantApp.emailSent.notFound.withoutAddress')}
+    {address
+      ? t('common.account.emailSent.notFound.withAddress')
+      : t('common.account.emailSent.notFound.withoutAddress')}
   </p>
-  <p class="text-center">{t('contestantApp.emailSent.newest')}</p>
+  <p class="text-center">{t('common.account.emailSent.newest')}</p>
   {#if askedAgain}
-    <p class="text-center" data-testid="email-sent-asked-again">{t('contestantApp.emailSent.askedAgain')}</p>
+    <p class="text-center" data-testid="email-sent-asked-again">{t('common.account.emailSent.askedAgain')}</p>
   {/if}
-  <ContactSupport sentence="contestantApp.emailSent.support" class="mt-lg" data-testid="email-sent-support" />
+  <ContactSupport sentence="common.account.emailSent.support" class="mt-lg" data-testid="email-sent-support" />
   {#if resend}
     <div class="mt-lg w-full">
       {@render resend()}

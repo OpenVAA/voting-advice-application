@@ -23,8 +23,8 @@ import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
 const writerMocks = vi.hoisted(() => ({ createDataWriter: vi.fn() }));
 vi.mock('$lib/api/dataWriter', () => ({ createDataWriter: writerMocks.createDataWriter }));
 
-const { withdrawLogoutCount } = vi.hoisted(() => ({ withdrawLogoutCount: vi.fn() }));
-vi.mock('$lib/server/auth/logoutCount', () => ({ withdrawLogoutCount }));
+const { withdrawLogoutDeadline } = vi.hoisted(() => ({ withdrawLogoutDeadline: vi.fn() }));
+vi.mock('$lib/server/auth/logoutDeadline', () => ({ withdrawLogoutDeadline }));
 
 // The shared runtime stub returns every path unlocalized. Here the locale is made visible as a prefix, so a redirect that dropped the request's locale is seen.
 vi.mock('$lib/paraglide/runtime', async (importOriginal) => ({
@@ -37,7 +37,7 @@ const LOCALE = 'fi';
 const projectGrant = { scope: 'project', target_type: null, target_id: 'project-1', role: 'editor' };
 
 /** What a claim answers for a user who has a password and no open invitation. */
-const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [], passwordSet: true };
+const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [] };
 
 /** A session as the verification answers it; only its presence is read. */
 const SESSION = { access_token: 'access-1' };
@@ -228,7 +228,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks();
   writerMocks.createDataWriter.mockReset();
-  withdrawLogoutCount.mockReset();
+  withdrawLogoutDeadline.mockReset();
 });
 
 describe('the confirm page load', () => {
@@ -302,7 +302,7 @@ describe('the confirm page load', () => {
 describe('the confirm page action', () => {
   it('verifies the posted token, claims, refreshes and lands a magiclink where the posted next names', async () => {
     const { locals, fetch, calls, verifyArguments } = requestWith({
-      claim: { claimed: [projectGrant], skipped: [], passwordSet: true }
+      claim: { claimed: [projectGrant], skipped: [] }
     });
 
     const redirected = await redirectOf(() =>
@@ -509,7 +509,7 @@ describe('the confirm page in a browser that is signed in', () => {
   it('signs the held session out locally before it verifies, then claims, refreshes and lands', async () => {
     const { locals, fetch, calls, signOutArguments } = requestWith({
       heldSession: heldSessionWith([CANDIDATE_EDITOR_GRANT]),
-      claim: { claimed: [projectGrant], skipped: [], passwordSet: true }
+      claim: { claimed: [projectGrant], skipped: [] }
     });
 
     const redirected = await redirectOf(() =>
@@ -581,14 +581,14 @@ describe('the logout count', () => {
    * @param calls - The request's ordered call names.
    */
   function recordWithdrawals(calls: Array<string>): void {
-    withdrawLogoutCount.mockImplementation(() => {
-      calls.push('withdrawLogoutCount');
+    withdrawLogoutDeadline.mockImplementation(() => {
+      calls.push('withdrawLogoutDeadline');
     });
   }
 
   it("is withdrawn with the request's event once the verification has set the session, when no session is held", async () => {
     const { locals, fetch, calls } = requestWith({
-      claim: { claimed: [projectGrant], skipped: [], passwordSet: true }
+      claim: { claimed: [projectGrant], skipped: [] }
     });
     recordWithdrawals(calls);
     const url = pageUrl('');
@@ -596,18 +596,18 @@ describe('the logout count', () => {
 
     await redirectOf(() => confirm({ url, locals, fetch, request }));
 
-    expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-    const [event] = withdrawLogoutCount.mock.calls[0];
+    expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+    const [event] = withdrawLogoutDeadline.mock.calls[0];
     expect(event.request).toBe(request);
     expect(event.url).toBe(url);
     expect(event.cookies).toBeDefined();
-    expect(calls).toEqual(['verifyOtp', 'withdrawLogoutCount', 'claimInvitations', 'refreshSession']);
+    expect(calls).toEqual(['verifyOtp', 'withdrawLogoutDeadline', 'claimInvitations', 'refreshSession']);
   });
 
   it('is withdrawn once the verification has set the session, after the sign-out of a held session worked', async () => {
     const { locals, fetch, calls } = requestWith({
       heldSession: heldSessionWith([CANDIDATE_EDITOR_GRANT]),
-      claim: { claimed: [projectGrant], skipped: [], passwordSet: true }
+      claim: { claimed: [projectGrant], skipped: [] }
     });
     recordWithdrawals(calls);
 
@@ -615,8 +615,8 @@ describe('the logout count', () => {
       confirm({ url: pageUrl(''), locals, fetch, request: postOf({ token_hash: 'hash-1', type: 'magiclink' }) })
     );
 
-    expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-    expect(calls).toEqual(['signOut', 'verifyOtp', 'withdrawLogoutCount', 'claimInvitations', 'refreshSession']);
+    expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+    expect(calls).toEqual(['signOut', 'verifyOtp', 'withdrawLogoutDeadline', 'claimInvitations', 'refreshSession']);
   });
 
   it.each([['answers { error }' as const], ['rejects' as const]])(
@@ -634,7 +634,7 @@ describe('the logout count', () => {
       expect(isHttpError(failed, 503)).toBe(true);
       expect((failed as unknown as { body: unknown }).body).toEqual({ message: 'error.default' });
       expect(calls).toEqual(['signOut']);
-      expect(withdrawLogoutCount).not.toHaveBeenCalled();
+      expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
       expect(cookieWrites).toEqual([]);
       expect(error).toHaveBeenCalledTimes(1);
     }
@@ -653,7 +653,7 @@ describe('the logout count', () => {
       confirm({ url: pageUrl(''), locals, fetch, request: postOf({ token_hash: 'hash-1', type: 'magiclink' }) })
     );
 
-    expect(calls).toEqual(['signOut', 'verifyOtp', 'withdrawLogoutCount', 'claimInvitations']);
+    expect(calls).toEqual(['signOut', 'verifyOtp', 'withdrawLogoutDeadline', 'claimInvitations']);
     expect(redirected.location).toBe(APP_ROOT);
   });
 
@@ -674,8 +674,8 @@ describe('the logout count', () => {
       );
 
       expect(redirected.location).toBe(LOGIN_WITH_AUTH_ERROR);
-      expect(withdrawLogoutCount).not.toHaveBeenCalled();
-      expect(calls).not.toContain('withdrawLogoutCount');
+      expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
+      expect(calls).not.toContain('withdrawLogoutDeadline');
     }
   );
 
@@ -684,6 +684,6 @@ describe('the logout count', () => {
 
     await redirectOf(() => confirm({ url: pageUrl(''), locals, fetch, request: postOf({ type: 'magiclink' }) }));
 
-    expect(withdrawLogoutCount).not.toHaveBeenCalled();
+    expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
   });
 });

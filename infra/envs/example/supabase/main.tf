@@ -1,23 +1,16 @@
-# A template Supabase root that a forker copies to start a deployment of their own. CI validates
-# it; nothing applies it. It has the same wiring as the staging root and differs only in its backend
-# and its variable file. In a deployment, the project is created by hand and imported; a plan that
-# shows a creation, a destroy or a replacement of the project is never applied, and the root is
-# applied by hand from an operator's shell with its state key under the hand/ prefix.
+# A template Supabase root that a forker copies to start a deployment of their own. CI validates it; nothing applies it. It has the same wiring as the staging root and differs only in its backend and its variable file. In a deployment, the project is created by hand and imported; a plan that shows a creation, a destroy or a replacement of the project is never applied, and the root is applied by hand from an operator's shell with its state key under the hand/ prefix.
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
-    # Exact: the runbook's stop rules on decoding and import rest on a reading of this version's
-    # source. Raise it together with a new reading of those paths.
+    # Exact: the runbook's stop rules on decoding and import rest on a reading of this version's source. Raise it together with a new reading of those paths.
     supabase = {
       source  = "supabase/supabase"
       version = "= 1.11.0"
     }
   }
 
-  # Replace the bucket with your own state bucket. The name here is never read, because validation
-  # initialises with -backend=false. The S3 backend reads AWS credentials from the operator's shell
-  # by itself, so this root declares no AWS provider.
+  # Replace the bucket with your own state bucket. The name here is never read, because validation initialises with -backend=false. The S3 backend reads AWS credentials from the operator's shell by itself, so this root declares no AWS provider.
   backend "s3" {
     bucket       = "REPLACE-ME-tfstate"
     key          = "hand/example/supabase/terraform.tfstate"
@@ -30,9 +23,7 @@ terraform {
 # The provider reads SUPABASE_ACCESS_TOKEN from the environment of the operator's shell.
 provider "supabase" {}
 
-# The project already exists and is only ever imported. Against a state that lacks it, this block
-# plans an import instead of a creation, and a ref that names no project fails the plan. Once the
-# project is in state, the block plans nothing.
+# The project already exists and is only ever imported. Against a state that lacks it, this block plans an import instead of a creation, and a ref that names no project fails the plan. Once the project is in state, the block plans nothing.
 import {
   to = module.supabase.supabase_project.this
   id = var.project_ref
@@ -53,6 +44,10 @@ module "supabase" {
   smtp_user                = var.smtp_user
   smtp_password            = var.smtp_password
   public_project_id        = var.public_project_id
+
+  identity_provider                 = var.identity_provider
+  identity_provider_decryption_jwks = var.identity_provider_decryption_jwks
+  identity_callback_server_secret   = var.identity_callback_server_secret
 }
 
 output "project_ref" {

@@ -8,12 +8,17 @@
     "awaitingConfirmation": "Väntar på bekräftelse",
     "emailIntro": "Ange den e-postadress du vill logga in med nästa gång. Vi skickar en bekräftelselänk till den. Du kan fortsätta direkt. Tills du öppnar länken loggar du in med bank-id.",
     "emailInUse": "Den här e-postadressen används redan av ett annat konto. Ange en annan adress, eller logga in med den adressen i stället.",
+    "emailInvited": "En inbjudan har skickats till den här e-postadressen. Logga ut och logga i stället in via e-post med den inbjudan, och kontakta supporten för att få registreringen du just gjorde borttagen.",
     "emailTakenNotice": "Adressen du angav tidigare används nu av ett annat konto, så den kunde inte läggas till ditt. Ange en annan adress.",
     "error": {
       "cancelled": {
         "content": "Du avbröt identifieringen, och ingenting sparades. Du kan identifiera dig igen när du är redo.",
         "support": "Om du behöver hjälp, {contactSupportLink}.",
         "title": "Identifieringen avbröts"
+      },
+      "noAccount": {
+        "content": "Inget konto har registrerats med den identitet du använde. Om du registrerade dig med en e-postadress loggar du in med den i stället.",
+        "title": "Inget konto hittades"
       },
       "noRetry": {
         "content": "Vi beklagar, det här är ett problem hos oss, och det hjälper inte att försöka igen. Kontakta supporten.",

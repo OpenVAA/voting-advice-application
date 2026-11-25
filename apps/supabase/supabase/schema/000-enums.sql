@@ -8,7 +8,8 @@
 -- - grant_role_type - grant role levels
 -- - grant_permission - the permission verbs user_can is written in
 -- - storage_verb - the read/write split storage_path_can maps to two different permissions
--- - nomination_shape - which of the four nomination flows an election runs; the type of elections.election_type
+-- - nomination_shape - which of the four nomination flows an election runs; the type of elections.nomination_shape
+-- - nomination_admission - what a nomination shape answers for one entity type; the type nomination_shape_rule returns
 CREATE TYPE public.question_type AS ENUM(
   'text',
   'number',
@@ -68,14 +69,19 @@ CREATE TYPE public.grant_permission AS ENUM(
 -- An enum rather than text: a typo in a text literal inside a policy predicate denies silently, where a typo in an enum literal fails to apply.
 CREATE TYPE public.storage_verb AS ENUM('read', 'write');
 
--- The four nomination flows an election can run. It is the type of elections.election_type, and like grant_scope_type it is named for what it means rather than for the column that holds it.
+-- The four nomination flows an election can run. It is the type of elections.nomination_shape.
 --
 -- organization_list_and_independents is a list election in which a candidate may also stand without a party.
 --
--- The members are exactly the four flows, so any other value in elections.election_type is a PostgreSQL error rather than a stored string.
+-- The members are exactly the four flows, so any other value in elections.nomination_shape is a PostgreSQL error rather than a stored string.
 CREATE TYPE public.nomination_shape AS ENUM(
   'organization_only',
   'candidate_only',
   'organization_list',
   'organization_list_and_independents'
 );
+
+-- What a nomination shape answers for one entity type, as public.nomination_shape_rule returns it: the entity type is admitted, admitted only with a parent when the transaction ends, or refused.
+--
+-- An enum rather than text, so a caller that compares the answer with a misspelt literal raises on first execution instead of comparing false.
+CREATE TYPE public.nomination_admission AS ENUM('admitted', 'parent_required', 'refused');

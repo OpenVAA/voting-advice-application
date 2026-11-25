@@ -66,8 +66,9 @@ const PRUNED_DIRECTORIES = new Set(['node_modules', '.svelte-kit']);
 /** The file of a page's server load. */
 const PAGE_SERVER_FILE = '+page.server.ts';
 
-/** A declared export of `load`, anchored at the start of a line so that a comment naming one cannot satisfy it. */
-const EXPORTED_LOAD = /^export\s+(?:(?:async\s+)?function\s+load\b|const\s+load\b)/m;
+/** A declared or re-exported `load`, anchored at the start of a line so that a comment naming one cannot satisfy it. */
+const EXPORTED_LOAD =
+  /^export\s+(?:(?:async\s+)?function\s+load\b|const\s+load\b|\{[^}]*\b(?:\w+\s+as\s+)?load\s*(?:,[^}]*)?\}\s*from\b)/m;
 
 /** The files whose presence makes a directory an addressable page rather than a grouping or layout-only node. */
 const PAGE_FILES = ['+page.svelte', '+page.server.ts', '+page.ts'];
@@ -482,7 +483,7 @@ describe('C5 — every gated application subtree has a row in the gate table (D1
   );
 
   it('the admin row bounces with the same error message the admin protected layout redirects with', () => {
-    const adminGate = APP_GATES.find((gate) => gate.loginRoute === 'AdminAppLogin');
+    const adminGate = APP_GATES.find((gate) => gate.whenUnauthenticatedInProtectedGroup.route === 'AdminAppLogin');
     expect(
       adminGate,
       'No row of APP_GATES names the admin login route, so the admin application has no gate row at all and the check below has nothing to compare.'

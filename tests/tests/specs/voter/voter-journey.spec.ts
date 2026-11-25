@@ -253,7 +253,7 @@ async function expectQuestionAndAdvance({
 /**
  * Answer a NUMBER-scale opinion question at max and advance.
  *
- * The NumberScaleInput renders a native `<input type=range>` (no question-choice options); a matchable number question carries no radio/checkbox options, so `expectQuestionAndAdvance` cannot drive it. Focus the slider and press End to land the exact max value (the native-range keyboard contract), then click Next explicitly — number inputs never auto-advance. The key press waits for the navigation's focus reset, and Next waits until the answer is stored (`question-delete` enabled), so a lost key press fails here rather than as a missing answer several questions later.
+ * The NumberScaleInput renders a native `<input type=range>` (no question-choice options); a matchable number question carries no radio/checkbox options, so `expectQuestionAndAdvance` cannot drive it. Focus the slider and press End to land the exact max value (the native-range keyboard contract), then click Next explicitly — number inputs never auto-advance. The key press waits for the navigation's focus reset (see `waitForNavigationFocusReset`), and Next waits until the answer is stored (`question-delete` enabled), so a lost key press fails here rather than as a missing answer several questions later.
  */
 async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
   await expectUrlChange(page, async (capture) => {
@@ -261,7 +261,6 @@ async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text
     await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
     const slider = page.getByTestId(testIds.voter.questions.numberSlider);
     await expect(slider.first()).toBeVisible({ timeout: TIMEOUTS.element });
-    // A Q→Q navigation swaps the DOM before its View Transition ends, and the focus reset lands only after it. A click waits that window out, since Playwright retries it until the element is the hit target; `focus()` and `keyboard.press()` do not, so the reset would take focus back from the slider. The reset completes the navigation, so it gets the route-transition budget.
     await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
     await slider.first().focus();
     await page.keyboard.press('End'); // native range → exact max

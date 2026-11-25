@@ -5,7 +5,7 @@
  * What this file holds:
  *
  * 1. **Who is served** — a signed-in caller only, and only a JSON request from the endpoint's own origin.
- * 2. **The names** — written to the organization the identity registered alone, found by the record and never by the request, only while it is unconfirmed and only with text in the default locale.
+ * 2. **The names** — written to the organization the identity registered alone, found by the user-level read and never by the request, only while it is unconfirmed and only with text in the default locale.
  * 3. **The address** — handed to the confirmation request only for an account with no proved address, its three outcomes mapped, and the names saved first.
  * 4. **The resend and the acknowledgement** — the pending address asked for again, and the marker cleared.
  * 5. **What an answer carries** — the result alone, from a closed set.
@@ -17,12 +17,10 @@ import {
   IDENTITY_PROVIDER_REGISTRATION_RESULT
 } from './identityProviderRegistration';
 import type { BasicUserData, UserEntity } from '$lib/api/base/dataWriter.type';
-import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
+import type { AddressStateName } from '$lib/contestant/utils/identityProviderAccount';
 import type { IdentityProviderRegistrationDeps } from './identityProviderRegistration';
 
 const ORIGIN = 'http://localhost:5173';
-const PROJECT = '00000000-0000-0000-0000-000000000001';
-const OTHER_PROJECT = '00000000-0000-0000-0000-000000000002';
 const OWN_ORGANIZATION = '6f1c2a3b-4d5e-4f60-8a71-92b3c4d5e6f7';
 const OTHER_ORGANIZATION = '8b3c4d5e-6f70-4a81-9c92-b3d4e5f60718';
 const TYPED = 'typed@example.test';
@@ -30,18 +28,12 @@ const PENDING = 'pending@example.test';
 const NAME = { en: 'The Party', fi: 'Puolue' };
 const SHORT_NAME = { en: 'TP' };
 
-/** The record of an identity that registered the own organization in the project. */
-const APP_METADATA = {
-  identity_provider: 'idura-ftn',
-  registered_entities: { [PROJECT]: { organization: OWN_ORGANIZATION } }
-};
-
 /**
  * User-level data in one address state.
  * @param addressState - The state.
  * @returns The user.
  */
-function userIn(addressState: AddressState): BasicUserData {
+function userIn(addressState: AddressStateName): BasicUserData {
   return {
     id: 'user-1',
     email: addressState === 'proved' ? TYPED : '',
@@ -50,10 +42,14 @@ function userIn(addressState: AddressState): BasicUserData {
     settings: {},
     termsOfUseAccepted: null,
     passwordSet: false,
-    addressState,
-    pendingEmail: addressState === 'pending' ? PENDING : null,
-    ownOrganizationUnnamed: true,
-    pendingEmailTaken: false
+    address:
+      addressState === 'pending'
+        ? { state: 'pending', email: PENDING }
+        : addressState === 'none'
+          ? { state: 'none', pendingTaken: false }
+          : { state: 'proved' },
+    ownOrganizationId: OWN_ORGANIZATION,
+    ownOrganizationUnnamed: true
   };
 }
 
@@ -75,11 +71,10 @@ function organization(id: string, confirmed = false): UserEntity {
 function depsWith(overrides: Partial<IdentityProviderRegistrationDeps> = {}) {
   const given: IdentityProviderRegistrationDeps = {
     origin: ORIGIN,
-    projectId: PROJECT,
     defaultLocale: 'en',
     locale: 'fi',
     supportedLocales: ['en', 'fi', 'sv'],
-    getVerifiedUser: async () => ({ appMetadata: APP_METADATA }),
+    getVerifiedUser: async () => ({ id: 'user-1' }),
     getAnswersLocked: async () => false,
     getBasicUserData: async () => userIn('none'),
     getUserEntities: async () => [organization(OWN_ORGANIZATION)],
@@ -249,15 +244,8 @@ describe('save, the names', () => {
     ]);
   });
 
-  it.each([
-    ['the account has no record', { identity_provider: 'idura-ftn' }],
-    [
-      'the record names an organization of another project',
-      { registered_entities: { [OTHER_PROJECT]: { organization: OWN_ORGANIZATION } } }
-    ],
-    ['the record names a candidate only', { registered_entities: { [PROJECT]: { candidate: OWN_ORGANIZATION } } }]
-  ])('refuses when %s, writing nothing', async (_label, appMetadata) => {
-    const deps = depsWith({ getVerifiedUser: vi.fn(async () => ({ appMetadata })) });
+  it('refuses when the identity registered no organization in the project, writing nothing', async () => {
+    const deps = depsWith({ getBasicUserData: async () => ({ ...userIn('none'), ownOrganizationId: null }) });
 
     expect((await handleIdentityProviderRegistration(post({ intent: 'save', name: NAME }), deps)).body.result).toBe(
       'failed'
@@ -314,7 +302,7 @@ describe('save, the names', () => {
 });
 
 describe('save, the address', () => {
-  it.each<AddressState>(['none', 'pending'])(
+  it.each<AddressStateName>(['none', 'pending'])(
     'asks for the typed address to be proved for an account whose address is %s, then clears the marker',
     async (state) => {
       const deps = depsWith({ getBasicUserData: vi.fn(async () => userIn(state)) });
@@ -343,6 +331,15 @@ describe('save, the address', () => {
 
     expect((await handleIdentityProviderRegistration(post({ intent: 'save', email: TYPED }), deps)).body.result).toBe(
       'in-use'
+    );
+    expect(deps.deleteArrivalMarker).not.toHaveBeenCalled();
+  });
+
+  it('answers invited when an open invitation is addressed to the address, and keeps the marker', async () => {
+    const deps = depsWith({ requestAddressConfirmation: vi.fn(async () => 'invited' as const) });
+
+    expect((await handleIdentityProviderRegistration(post({ intent: 'save', email: TYPED }), deps)).body.result).toBe(
+      'invited'
     );
     expect(deps.deleteArrivalMarker).not.toHaveBeenCalled();
   });
@@ -410,7 +407,7 @@ describe('resend', () => {
     expect(deps.deleteArrivalMarker).not.toHaveBeenCalled();
   });
 
-  it.each(['in-use', 'refused'] as const)('answers failed when the request answers %s', async (outcome) => {
+  it.each(['in-use', 'invited', 'refused'] as const)('answers failed when the request answers %s', async (outcome) => {
     const deps = depsWith({
       getBasicUserData: vi.fn(async () => userIn('pending')),
       requestAddressConfirmation: vi.fn(async () => outcome)
@@ -419,7 +416,7 @@ describe('resend', () => {
     expect((await handleIdentityProviderRegistration(post({ intent: 'resend' }), deps)).body.result).toBe('failed');
   });
 
-  it.each<AddressState>(['none', 'proved'])('answers failed in the state %s, asking nothing', async (state) => {
+  it.each<AddressStateName>(['none', 'proved'])('answers failed in the state %s, asking nothing', async (state) => {
     const deps = depsWith({ getBasicUserData: vi.fn(async () => userIn(state)) });
 
     expect((await handleIdentityProviderRegistration(post({ intent: 'resend' }), deps)).body.result).toBe('failed');
@@ -442,11 +439,12 @@ describe('acknowledge', () => {
 });
 
 describe('what an answer carries', () => {
-  it('holds five results, frozen', () => {
+  it('holds six results, frozen', () => {
     expect(Object.values(IDENTITY_PROVIDER_REGISTRATION_RESULT).sort()).toEqual([
       'acknowledged',
       'failed',
       'in-use',
+      'invited',
       'saved',
       'sent'
     ]);

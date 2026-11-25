@@ -212,19 +212,19 @@ const NON_PROJECT_SCOPED_TABLES = {
  * holds, and the adapter asks it only when the caller can read no `app_settings` row. It takes the
  * project as a required argument, so it is held to check 4.
  *
- * `contestant_app_public_config` returns five stored settings values of one project and never a
- * row: whether the Contestant app is accessible, whether answers are locked, the entity types it
- * serves, its registration modes and whether usage events are tracked. The adapter asks it only when
- * the caller can read no `app_settings` row and the project is not open for voters. It takes the
- * project as a required argument, so it is held to check 4.
+ * `get_public_app_settings` returns four stored settings values of one project and never a
+ * row: whether the Contestant app is accessible, how far contestants may edit their own data
+ * (`access.contestantEditing`), the entity types it serves with the registration modes of each, and whether usage events are tracked. The adapter
+ * asks it only when the caller can read no `app_settings` row and the project is not open for
+ * voters. It takes the project as a required argument, so it is held to check 4.
  *
  * `user_can` returns only a boolean about the caller's own grants claim, and the admin writer asks it
  * of the adapter's own project. Its target argument is `p_target_id`, not `p_project_id`, so it is
  * dispositioned by identity rather than held to check 4's key test.
  *
  * `claim_invitations` returns, to the signed-in caller alone, the grants it wrote for that caller's
- * own confirmed address from the open invitations of one project, the promises it left open and
- * whether the caller has a password. It takes the project as a required argument and no other, so it
+ * own confirmed address from the open invitations of one project and the promises it left open.
+ * It takes the project as a required argument and no other, so it
  * is held to check 4.
  *
  * `get_user_project_grants` returns, to the signed-in caller alone, the caller's own grants that
@@ -243,6 +243,11 @@ const NON_PROJECT_SCOPED_TABLES = {
  * other entity. It takes the project as a required argument beside the entity's type and id, and
  * reads entities and nominations of that project alone, so it is held to check 4.
  *
+ * `get_caller_account_state` returns, to the signed-in caller alone, two facts about the caller's
+ * own account: whether it holds a password, and whether the address it is changing to is another
+ * account's. It reads no row of any project and takes no argument, so it is dispositioned by
+ * identity.
+ *
  * `set_entity_nominations` writes the nominations of the one entity named by its type and id, and the
  * nominations it creates for the entities named as their parents. It takes no project: it runs with
  * the caller's own rights, refuses a caller who does not hold `nomination.edit` on the named entity,
@@ -254,6 +259,7 @@ const PROJECT_SCOPED_RPCS = {
   get_nominations: 'requires p_project_id',
   get_questions: 'requires p_project_id',
   get_user_entities: 'requires p_project_id',
+  get_caller_account_state: 'scoped-by-identity: auth.uid() alone, takes no argument and reads no project row',
   get_entity_user_data: 'requires p_project_id',
   get_entity_nominations: 'requires p_project_id',
   get_nomination_parent_options: 'requires p_project_id',
@@ -263,7 +269,8 @@ const PROJECT_SCOPED_RPCS = {
   set_entity_nominations: 'scoped-by-identity: entity type + entity id + RLS',
   merge_question_custom_data: 'scoped-by-identity: question id + RLS',
   project_open_for_voters: 'requires p_project_id',
-  contestant_app_public_config: 'requires p_project_id',
+  get_public_app_settings: 'requires p_project_id',
+  get_caller_account_state: 'scoped-by-identity: the caller account alone, no project read',
   user_can:
     'scoped-by-identity: the caller JWT grants claim, asked of the target the call names (the adapter passes its own project id)'
 };
@@ -280,9 +287,9 @@ const PROJECT_SCOPED_RPCS = {
  * dispositioned. The map is keyed by function name because the disposition belongs to the function,
  * whichever file invokes it.
  *
- * `account-access` and `identity-callback` read no project from their environment and act in the
- * project their request names, because one edge runtime serves every project of a deployment and
- * the frontend, not the function, knows which one a visitor is in.
+ * `identity-callback` reads no project from its environment and acts in the project its request
+ * names. `account-access` serves the project its `PUBLIC_PROJECT_ID` names and refuses a request
+ * that names another, so its request carries the project too.
  */
 const PROJECT_SCOPED_EDGE_FUNCTIONS = {
   'send-email': 'requires a project term',

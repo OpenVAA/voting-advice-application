@@ -3,14 +3,14 @@
 
 The two addresses are compared trimmed and without regard to case. The mismatch is shown at the confirmation when that field loses focus while both hold text, and by `validate()`; an edit of either field removes it. Neither field rewrites what was typed or pasted.
 
-A screen that sends the address on can show what the server answered about it at the address field with `showEmailError()`, as an address another account holds. The message is shown as the fields' own are, carries `data-reason="in-use"`, and is removed by the next edit of either field or by `validate()`.
+A screen that sends the address on can show what the server answered about it at the address field with `showEmailError()`, naming the server's reason: `in-use` for an address another account holds, `invited` for one an invitation was sent to. The message is shown as the fields' own are, carries that reason as `data-reason`, and is removed by the next edit of either field or by `validate()`.
 
 ### Properties
 
 - `email`: Bindable: The address in the first field. Default: `''`
 - `id`: The base of the two controls' ids: the address takes `<id>-email` and its confirmation `<id>-confirmation`. Default: a generated id
 - `validate`: Bindable: Function that judges the two fields. It returns `true` for two equal, usable addresses. Otherwise it returns `false`, shows at each field what is wrong with it and moves focus to the first field in error.
-- `showEmailError`: Bindable: Function that shows a message at the address field, with `data-reason="in-use"` on it, and moves focus to that field. What was typed is kept.
+- `showEmailError`: Bindable: Function that shows a message at the address field, with the server's reason as its `data-reason`, and moves focus to that field. What was typed is kept.
 - Any valid attributes of a `<div>` element.
 
 ### Accessibility
@@ -37,7 +37,7 @@ function handleSubmit(event: SubmitEvent): void {
   import { EmailField } from '$lib/components/emailField';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass, getUUID } from '$lib/utils/components';
-  import type { EmailEntryProps } from './EmailEntry.type';
+  import type { EmailEntryErrorReason, EmailEntryProps } from './EmailEntry.type';
 
   let { email = $bindable(''), id: idProp = undefined, ...restProps }: EmailEntryProps = $props();
 
@@ -47,11 +47,11 @@ function handleSubmit(event: SubmitEvent): void {
    */
   export function validate(): boolean {
     emailErrorReason = undefined;
-    if (!email.trim()) emailError = t('contestantApp.login.emailRequired');
+    if (!email.trim()) emailError = t('common.account.emailRequired');
     else if (!emailField?.checkValidity()) emailError = t('components.input.error.invalidEmail');
     else emailError = undefined;
 
-    if (!confirmation.trim()) showAtConfirmation(t('contestantApp.login.emailRequired'), false);
+    if (!confirmation.trim()) showAtConfirmation(t('common.account.emailRequired'), false);
     else if (!sameAddress()) showAtConfirmation(t('contestantApp.register.emailEntry.mismatch'), true);
     else showAtConfirmation(undefined, false);
 
@@ -61,19 +61,17 @@ function handleSubmit(event: SubmitEvent): void {
   }
 
   /**
-   * Show a message at the address field and move focus to it, as for an address the server says another account holds. The next edit of either field removes it.
+   * Show a message at the address field and move focus to it, naming the server's reason in its `data-reason`. The next edit of either field removes it.
    * @param message - The sentence to show.
+   * @param reason - What the server answered about the address.
    */
-  export function showEmailError(message: string): void {
+  export function showEmailError(message: string, reason: EmailEntryErrorReason): void {
     emailError = message;
-    emailErrorReason = IN_USE_REASON;
+    emailErrorReason = reason;
     emailField?.focus();
   }
 
   const { t } = getComponentContext();
-
-  /** The reason written on a message `showEmailError()` shows. */
-  const IN_USE_REASON = 'in-use';
 
   // Generated once, so that the two ids are the same on every read.
   const fallbackId = getUUID();
@@ -82,7 +80,7 @@ function handleSubmit(event: SubmitEvent): void {
   let confirmation = $state('');
   let emailError = $state<string>();
   /** The reason of the message at the address field, while it is one `showEmailError()` put there. */
-  let emailErrorReason = $state<string>();
+  let emailErrorReason = $state<EmailEntryErrorReason>();
   let confirmationError = $state<string>();
   /** Whether the message at the confirmation is the mismatch, which an edit of either field removes. */
   let mismatchShown = $state(false);

@@ -2,9 +2,10 @@ import { expect, test } from '../../fixtures/shared/invitationFlow.fixture';
 import { TIMEOUTS } from '../../helpers/timeouts';
 import { SIGN_IN_LINK_EMAIL_SUBJECT, SIGN_IN_LINK_EMAIL_SUBJECT_FI } from '../../utils/invitationConstants';
 import type { SeededInvitation } from '@openvaa/dev-seed';
+import type { GrantClaim } from '../../../../apps/frontend/src/lib/auth/roles';
 import type { ReceivedSignInLink } from '../../fixtures/shared/invitationFlow.fixture';
 import type { AccountAccessAnswer } from '../../utils/accountAccessClient';
-import type { GrantSpec, SessionTokens } from '../../utils/authApi';
+import type { SessionTokens } from '../../utils/authApi';
 
 /**
  * # The server contract of invitations, with no screen
@@ -51,17 +52,20 @@ function noSuchCode(): string {
 }
 
 /** The answer of a claim that claimed and skipped nothing. */
-function nothingClaimed(passwordSet: boolean) {
-  return { status: 200, body: { claimed: [], skipped: [], password_set: passwordSet } };
+const NOTHING_CLAIMED = { status: 200, body: { claimed: [], skipped: [] } };
+
+/** The account state of a user with no pending address, with or without a password. */
+function accountStateWith(passwordSet: boolean) {
+  return { status: 200, body: { password_set: passwordSet, pending_email_taken: false } };
 }
 
 test.describe('the server contract of invitations', () => {
   test.describe.configure({ mode: 'serial' });
 
   /** The grant an invitation for the reserved candidate promises. */
-  let candidateGrant: GrantSpec;
+  let candidateGrant: GrantClaim;
   /** The grant an invitation for the reserved organization promises. */
-  let organizationGrant: GrantSpec;
+  let organizationGrant: GrantClaim;
   /** The address invited by email to the reserved candidate. */
   let invitedAddress: string;
   /** The invitation seeded for {@link invitedAddress}. */
@@ -153,14 +157,15 @@ test.describe('the server contract of invitations', () => {
 
     expect(await flow.claim(session)).toEqual({
       status: 200,
-      body: { claimed: [candidateGrant], skipped: [], password_set: false }
+      body: { claimed: [candidateGrant], skipped: [] }
     });
 
     const refreshed = await flow.refresh(session);
     expect(flow.grantsClaimOf(refreshed)).toEqual([candidateGrant]);
     expect(await flow.grantRowsOf(invitedAddress)).toEqual([candidateGrant]);
 
-    expect(await flow.claim(refreshed)).toEqual(nothingClaimed(false));
+    expect(await flow.claim(refreshed)).toEqual(NOTHING_CLAIMED);
+    expect(await flow.accountState(refreshed)).toEqual(accountStateWith(false));
     expect(await flow.grantRowsOf(invitedAddress)).toEqual([candidateGrant]);
 
     invitedSession = refreshed;
@@ -175,7 +180,8 @@ test.describe('the server contract of invitations', () => {
     const other = await flow.createUserWithPassword();
     const session = await flow.signInWithPassword(other);
 
-    expect(await flow.claim(session)).toEqual(nothingClaimed(true));
+    expect(await flow.claim(session)).toEqual(NOTHING_CLAIMED);
+    expect(await flow.accountState(session)).toEqual(accountStateWith(true));
     expect(await flow.grantRowsOf(other.email)).toEqual([]);
 
     // PGRST202 is the API's answer for a function it does not have under the arguments given.
@@ -256,7 +262,7 @@ test.describe('the server contract of invitations', () => {
     expect(flow.grantsClaimOf(session)).toEqual([]);
     expect(await flow.claim(session)).toEqual({
       status: 200,
-      body: { claimed: [organizationGrant], skipped: [], password_set: false }
+      body: { claimed: [organizationGrant], skipped: [] }
     });
 
     const refreshed = await flow.refresh(session);
@@ -287,7 +293,8 @@ test.describe('the server contract of invitations', () => {
     expect(await flow.mailSubjects(claimant.address)).toHaveLength(2);
 
     const session = await flow.signInWithPassword(await flow.createUserWithPassword({ email: other }));
-    expect(await flow.claim(session)).toEqual(nothingClaimed(true));
+    expect(await flow.claim(session)).toEqual(NOTHING_CLAIMED);
+    expect(await flow.accountState(session)).toEqual(accountStateWith(true));
     expect(await flow.grantRowsOf(other)).toEqual([]);
     expect(await flow.grantRowsOf(claimant.address)).toEqual([organizationGrant]);
     expect(await flow.checkCode(code)).toEqual(CODE_USED);
@@ -327,7 +334,8 @@ test.describe('the server contract of invitations', () => {
 
     const session = await flow.signInWithLink(await flow.receiveSignInLink(returning.email));
     expect(flow.grantsClaimOf(session)).toEqual([organizationGrant]);
-    expect(await flow.claim(session)).toEqual(nothingClaimed(true));
+    expect(await flow.claim(session)).toEqual(NOTHING_CLAIMED);
+    expect(await flow.accountState(session)).toEqual(accountStateWith(true));
     expect(await flow.grantRowsOf(returning.email)).toEqual([organizationGrant]);
   });
 
@@ -356,7 +364,7 @@ test.describe('the server contract of invitations', () => {
 
     expect(await flow.claim(invitedSession)).toEqual({
       status: 200,
-      body: { claimed: [candidateGrant], skipped: [], password_set: false }
+      body: { claimed: [candidateGrant], skipped: [] }
     });
     expect(await flow.grantRowsOf(invitedAddress)).toEqual([candidateGrant]);
     expect((await flow.invitationsFor('candidate')).map((invitation) => invitation.claimed)).toEqual([true, true]);

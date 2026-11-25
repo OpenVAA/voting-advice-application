@@ -11,6 +11,7 @@ import {
   isRedirectAdmitted,
   LINK_TYPES as MODULE_LINK_TYPES
 } from './signInLink.ts';
+import type { LinkApp } from './contract.ts';
 import type { SignInMailLocale } from './mailTemplates.ts';
 import type { LinkType } from './signInLink.ts';
 
@@ -62,7 +63,9 @@ describe('buildSignInLink', () => {
   it.each(EVERY_LOCALE_AND_TYPE)(
     'builds the link for %s of the type %s with exactly the two query parameters',
     (locale, type) => {
-      const link = new URL(buildSignInLink({ siteUrl: SITE_URL, locale, tokenHash: 'abc123', type }));
+      const link = new URL(
+        buildSignInLink({ siteUrl: SITE_URL, locale, tokenHash: 'abc123', type, app: 'contestant' })
+      );
       expect(link.origin).toBe(SITE_URL);
       expect(link.pathname).toBe(`/${locale}/auth/confirm`);
       expect([...link.searchParams.keys()]).toEqual(['token_hash', 'type']);
@@ -73,25 +76,44 @@ describe('buildSignInLink', () => {
   );
 
   it('writes the sign-in link character for character as `<confirm page>?token_hash=<token>&type=magiclink`', () => {
-    expect(buildSignInLink({ siteUrl: SITE_URL, locale: 'fi', tokenHash: 'abc123', type: 'magiclink' })).toBe(
-      `${SITE_URL}/fi/auth/confirm?token_hash=abc123&type=magiclink`
-    );
+    expect(
+      buildSignInLink({ siteUrl: SITE_URL, locale: 'fi', tokenHash: 'abc123', type: 'magiclink', app: 'contestant' })
+    ).toBe(`${SITE_URL}/fi/auth/confirm?token_hash=abc123&type=magiclink`);
   });
 
   it('writes the recovery link as the sign-in link with the type recovery and no other difference', () => {
-    const signIn = buildSignInLink({ siteUrl: SITE_URL, locale: 'fi', tokenHash: 'abc123', type: 'magiclink' });
-    const recovery = buildSignInLink({ siteUrl: SITE_URL, locale: 'fi', tokenHash: 'abc123', type: 'recovery' });
+    const signIn = buildSignInLink({
+      siteUrl: SITE_URL,
+      locale: 'fi',
+      tokenHash: 'abc123',
+      type: 'magiclink',
+      app: 'contestant'
+    });
+    const recovery = buildSignInLink({
+      siteUrl: SITE_URL,
+      locale: 'fi',
+      tokenHash: 'abc123',
+      type: 'recovery',
+      app: 'contestant'
+    });
     expect(recovery).toBe(`${SITE_URL}/fi/auth/confirm?token_hash=abc123&type=recovery`);
     expect(recovery).toBe(signIn.replace(/magiclink$/, 'recovery'));
   });
 
   it('writes the address-confirmation link as the sign-in link with the type email_change and no other difference', () => {
-    const signIn = buildSignInLink({ siteUrl: SITE_URL, locale: 'fi', tokenHash: 'abc123', type: 'magiclink' });
+    const signIn = buildSignInLink({
+      siteUrl: SITE_URL,
+      locale: 'fi',
+      tokenHash: 'abc123',
+      type: 'magiclink',
+      app: 'contestant'
+    });
     const confirmation = buildSignInLink({
       siteUrl: SITE_URL,
       locale: 'fi',
       tokenHash: 'abc123',
-      type: 'email_change'
+      type: 'email_change',
+      app: 'contestant'
     });
     expect(confirmation).toBe(`${SITE_URL}/fi/auth/confirm?token_hash=abc123&type=email_change`);
     expect(confirmation).toBe(signIn.replace(/magiclink$/, 'email_change'));
@@ -101,7 +123,7 @@ describe('buildSignInLink', () => {
     'carries a token holding &, = and # through a round trip in a link of the type %s',
     (type) => {
       const tokenHash = 'a&type=invite=b#c&next=https://elsewhere.example';
-      const link = new URL(buildSignInLink({ siteUrl: SITE_URL, locale: 'en', tokenHash, type }));
+      const link = new URL(buildSignInLink({ siteUrl: SITE_URL, locale: 'en', tokenHash, type, app: 'contestant' }));
       expect(link.searchParams.get('token_hash')).toBe(tokenHash);
       expect(link.searchParams.getAll('type')).toEqual([type]);
       expect([...link.searchParams.keys()]).toEqual(['token_hash', 'type']);
@@ -121,7 +143,7 @@ describe('buildSignInLink', () => {
     ['recovery&next=x']
   ])('throws for the type %j, which is outside the set of three', (type) => {
     expect(() =>
-      buildSignInLink({ siteUrl: SITE_URL, locale: 'en', tokenHash: 'x', type: type as LinkType })
+      buildSignInLink({ siteUrl: SITE_URL, locale: 'en', tokenHash: 'x', type: type as LinkType, app: 'contestant' })
     ).toThrow();
   });
 
@@ -129,16 +151,18 @@ describe('buildSignInLink', () => {
     'throws for a site URL that is not a bare origin, for a link of the type %s',
     (type) => {
       expect(() =>
-        buildSignInLink({ siteUrl: 'https://vaa.example/app', locale: 'en', tokenHash: 'x', type })
+        buildSignInLink({ siteUrl: 'https://vaa.example/app', locale: 'en', tokenHash: 'x', type, app: 'contestant' })
       ).toThrow();
-      expect(() => buildSignInLink({ siteUrl: 'javascript:alert(1)', locale: 'en', tokenHash: 'x', type })).toThrow();
-      expect(() => buildSignInLink({ siteUrl: '', locale: 'en', tokenHash: 'x', type })).toThrow();
+      expect(() =>
+        buildSignInLink({ siteUrl: 'javascript:alert(1)', locale: 'en', tokenHash: 'x', type, app: 'contestant' })
+      ).toThrow();
+      expect(() => buildSignInLink({ siteUrl: '', locale: 'en', tokenHash: 'x', type, app: 'contestant' })).toThrow();
     }
   );
 
   describe('a link a request for an app earns', () => {
-    it('names the path of each app from a fixed map: the Admin App at /admin', () => {
-      expect(APP_NEXT).toEqual({ admin: '/admin' });
+    it('names the path of each app from a fixed map: none for the Contestant App, /admin for the Admin App', () => {
+      expect(APP_NEXT).toEqual({ contestant: null, admin: '/admin' });
       expect(Object.isFrozen(APP_NEXT)).toBe(true);
     });
 
@@ -151,7 +175,13 @@ describe('buildSignInLink', () => {
     it.each(LINK_TYPES.map((type) => [type]))(
       'adds `next` and nothing else to a link of the type %s made for the Admin App',
       (type) => {
-        const plain = buildSignInLink({ siteUrl: SITE_URL, locale: 'en', tokenHash: 'abc123', type });
+        const plain = buildSignInLink({
+          siteUrl: SITE_URL,
+          locale: 'en',
+          tokenHash: 'abc123',
+          type,
+          app: 'contestant'
+        });
         const forAdmin = new URL(
           buildSignInLink({ siteUrl: SITE_URL, locale: 'en', tokenHash: 'abc123', type, app: 'admin' })
         );
@@ -162,12 +192,28 @@ describe('buildSignInLink', () => {
       }
     );
 
-    it('writes the link of a request that names no app as it writes one with no app at all', () => {
-      const plain = buildSignInLink({ siteUrl: SITE_URL, locale: 'fi', tokenHash: 'abc123', type: 'magiclink' });
-      expect(
-        buildSignInLink({ siteUrl: SITE_URL, locale: 'fi', tokenHash: 'abc123', type: 'magiclink', app: null })
-      ).toBe(plain);
+    it('writes the link of the Contestant App with no `next`', () => {
+      const link = new URL(
+        buildSignInLink({ siteUrl: SITE_URL, locale: 'fi', tokenHash: 'abc123', type: 'magiclink', app: 'contestant' })
+      );
+      expect([...link.searchParams.keys()]).toEqual(['token_hash', 'type']);
     });
+
+    it.each([['__proto__'], ['constructor'], ['toString']])(
+      'writes no `next` for an app of %j that is not one of the set',
+      (app) => {
+        const link = new URL(
+          buildSignInLink({
+            siteUrl: SITE_URL,
+            locale: 'fi',
+            tokenHash: 'abc123',
+            type: 'magiclink',
+            app: app as LinkApp
+          })
+        );
+        expect(link.searchParams.has('next')).toBe(false);
+      }
+    );
   });
 });
 

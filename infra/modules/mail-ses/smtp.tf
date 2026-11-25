@@ -1,6 +1,4 @@
-# The SMTP user holds a long-lived access key, because SES derives the SMTP password from a secret key and
-# temporary credentials cannot be used for that. The key's secret and the derived password are written to
-# the state of the root that calls this module.
+# The SMTP user holds a long-lived access key, because SES derives the SMTP password from a secret key and temporary credentials cannot be used for that. The key's secret and the derived password are written to the state of the root that calls this module.
 resource "aws_iam_user" "smtp" {
   name = "${var.name_prefix}-ses-smtp"
   path = var.iam_path
@@ -10,8 +8,7 @@ resource "aws_iam_access_key" "smtp" {
   user = aws_iam_user.smtp.name
 }
 
-# The only permission: send raw mail through this identity, as the one From address.
-# SES authorises an SMTP send against the identity's ARN under this condition.
+# The only permission: send raw mail through this identity, as the one From address. SES authorises an SMTP send against the identity's ARN under this condition.
 data "aws_iam_policy_document" "ses_send" {
   statement {
     effect    = "Allow"

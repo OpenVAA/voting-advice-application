@@ -1,12 +1,7 @@
 /**
- * Status-reading steps of the pipeline workflows, run the way a GitHub-hosted runner runs a `run:` step that names no
- * `shell:`: as `bash -e <script file>`, against stub commands.
+ * Status-reading steps of the pipeline workflows, run the way a GitHub-hosted runner runs a `run:` step that names no `shell:`: as `bash -e <script file>`, against stub commands.
  *
- * Under `bash -e` a command that fails ends the step unless it stands in an `||` list, so a step that reads a status
- * with `$?` on the line after its command would end before it prints its own diagnosis. These cases take each step's
- * script from the parsed workflow and run it in a temporary root whose `PATH` holds only stub commands and links to
- * local file utilities, with an environment built from nothing, so no host credential and no network command reaches
- * the script.
+ * Under `bash -e` a command that fails ends the step unless it stands in an `||` list, so a step that reads a status with `$?` on the line after its command would end before it prints its own diagnosis. These cases take each step's script from the parsed workflow and run it in a temporary root whose `PATH` holds only stub commands and links to local file utilities, with an environment built from nothing, so no host credential and no network command reaches the script.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -135,8 +130,7 @@ function failingStub(name: string): string {
 }
 
 /**
- * A stub with a local utility's name that fails, printing `stub <name> failed`, when one of its arguments contains
- * `text`, and otherwise runs the real utility by the path resolved for `utils/`.
+ * A stub with a local utility's name that fails, printing `stub <name> failed`, when one of its arguments contains `text`, and otherwise runs the real utility by the path resolved for `utils/`.
  */
 function selectiveStub(name: (typeof LOCAL_UTILITIES)[number], text: string): string {
   return [
@@ -161,8 +155,7 @@ const HARNESS_VARIABLES = new Set([
 ]);
 
 /**
- * A stand-in value for every key of a step's `env:`, and for every upper-case variable its script reads as `$NAME` or
- * `${NAME}` that the harness does not set, because the scripts run with `-u`.
+ * A stand-in value for every key of a step's `env:`, and for every upper-case variable its script reads as `$NAME` or `${NAME}` that the harness does not set, because the scripts run with `-u`.
  */
 function standInEnv(step: WorkflowStep, script: string): Record<string, string> {
   const names = new Set(isRecord(step.env) ? Object.keys(step.env) : []);
@@ -207,8 +200,7 @@ const SWEEP_STUBS = [
 ] as const;
 
 /**
- * The working directory of a sweep case: a failing stub at every `infra/scripts/<name>.sh` and `node_modules/.bin/<name>`
- * the script names, and a copy of every other file of this repository under `infra/` or `apps/` it names.
+ * The working directory of a sweep case: a failing stub at every `infra/scripts/<name>.sh` and `node_modules/.bin/<name>` the script names, and a copy of every other file of this repository under `infra/` or `apps/` it names.
  */
 function sweepFiles(script: string): Record<string, WorkspaceFile> {
   const files: Record<string, WorkspaceFile> = {};
@@ -257,10 +249,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 /**
  * Run a step's script as a GitHub-hosted runner runs a `run:` step with no `shell:`, as `bash -e <file>`.
  *
- * The run gets a temporary root holding `ws/` (its working directory and `GITHUB_WORKSPACE`), `runner-temp/`
- * (`RUNNER_TEMP`, which also holds `GITHUB_OUTPUT`, `GITHUB_ENV` and `GITHUB_STEP_SUMMARY`), `stubs/` and `utils/`. Its
- * `PATH` names those last two only, and its environment holds nothing else of the host's. The root is removed when the
- * run ends.
+ * The run gets a temporary root holding `ws/` (its working directory and `GITHUB_WORKSPACE`), `runner-temp/` (`RUNNER_TEMP`, which also holds `GITHUB_OUTPUT`, `GITHUB_ENV` and `GITHUB_STEP_SUMMARY`), `stubs/` and `utils/`. Its `PATH` names those last two only, and its environment holds nothing else of the host's. The root is removed when the run ends.
  *
  * @param script - The step's script.
  * @param options - The stubs, the working directory's files and the case's own variables.

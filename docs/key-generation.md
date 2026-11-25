@@ -2,11 +2,18 @@
 
 ## Overview
 
-OpenVAA's identity provider integration requires two RSA key pairs:
+Bank authentication uses up to two RSA key pairs of your own. They work in opposite directions, which is why there are two private-key variables:
 
-1. **Signing key pair** -- Used for JWT Authorization Requests (JAR) and `private_key_jwt` client authentication when using the Idura provider. The private key signs JWTs sent to the identity provider; the public key is registered in the provider's dashboard.
+| Key pair | Which provider needs it | What it does | Private half goes to | Public half goes to |
+| --- | --- | --- | --- | --- |
+| **Signing** | Idura only | Your server signs the authorization request (JAR) and the `private_key_jwt` client assertion, so the provider knows a request came from your client. | `IDURA_SIGNING_JWKS`, read by the frontend server only | The provider's dashboard, which verifies your signatures with it |
+| **Encryption** | Idura and Signicat | The provider encrypts the ID token to you (a JWE), so only you can read the identity it carries. | `IDENTITY_PROVIDER_DECRYPTION_JWKS`, read by the frontend server and by the `identity-callback` Edge Function, which both decrypt the token | The provider's dashboard, which encrypts tokens for you with it |
 
-2. **Encryption key pair** -- Used for JWE decryption of id_tokens returned by the identity provider. The private key decrypts incoming JWE tokens; the public key is registered in the provider's dashboard so it can encrypt tokens for your application.
+Signicat authenticates your client with a client secret (`IDENTITY_PROVIDER_CLIENT_SECRET`) instead of a signed assertion, so a Signicat deployment generates only the encryption key pair and has no `IDURA_SIGNING_JWKS`.
+
+The two pairs are kept separate rather than one key doing both jobs: each JWK carries a single `use` (`sig` or `enc`), the provider looks each one up by its `kid`, and either can be rotated without touching the other.
+
+The **public** halves are not secret and go into no variable and no file of the repository: you register them with the provider (Step 3), and that is their only use. The **private** halves are secrets and go into the variables of Step 2, stored as Step 4 describes.
 
 Both key pairs must be RSA 2048-bit or larger, per Traficom 213/2023 Finnish Trust Network specification.
 
@@ -39,7 +46,7 @@ yarn workspace @openvaa/dev-tools keygen \
   --alg RSA-OAEP
 ```
 
-Each invocation prints two JSON blocks to stdout: the private JWK (paste into the env var) and the public JWK (register in the provider dashboard). Redirect to files or a password manager as needed.
+Each invocation prints two JSON blocks to stdout: the private JWK (for the variable, Step 2) and the public JWK (for the provider dashboard, Step 3). Redirect to files or a password manager as needed.
 
 ## Step 1b (Alternative): Convert Existing PEM Files
 
@@ -74,9 +81,9 @@ yarn workspace @openvaa/dev-tools keygen --help
 
 > **Note:** paths passed to `pem-to-jwk` are resolved relative to `packages/dev-tools`, so use `$PWD/...` or absolute paths when running from the repo root.
 
-## Step 3: Create JWKS for Environment Variables
+## Step 2: Format the Private Keys for the Variables
 
-Environment variables expect a JSON array of JWK objects.
+The variables expect a JSON array of private JWK objects. The `keygen` output's first block is already in this shape; the second block, the public JWK, is for Step 3 only.
 
 ### IDURA_SIGNING_JWKS
 
@@ -109,15 +116,15 @@ Set this to match the `kid` field of the signing key:
 IDURA_SIGNING_KEY_KID=openvaa-signing-1
 ```
 
-## Step 4: Register Public Keys
+## Step 3: Register the Public Keys with the Provider
 
-Public keys must be registered with the identity provider so it can verify your signed requests and encrypt tokens for your application.
+The second JSON block that `keygen` prints, under `# Public JWK — register in the provider dashboard`, goes into the identity provider's dashboard, nowhere else. The provider uses it to verify what you sign and to encrypt the ID token for you. It is not secret, but there is no variable for it: keep a copy next to the private key in your password manager so that you can register it again. A public JWK can also be recovered from the private one by dropping its private fields (`d`, `p`, `q`, `dp`, `dq` and `qi`).
 
 ### Idura
 
-1. Log in to the Idura Dashboard
-2. Navigate to Application > OpenID Connect > Client JWKS
-3. Register both public keys (signing + encryption) as a JWKS:
+1. Log in to the Idura Dashboard.
+2. Navigate to Application > OpenID Connect > Client JWKS.
+3. Register both public keys, signing and encryption, as one JWKS: put the two public JWKs into the `keys` array of a single document.
 
 ```json
 {
@@ -130,14 +137,26 @@ Public keys must be registered with the identity provider so it can verify your 
 
 ### Signicat
 
-1. Log in to the Signicat Dashboard
-2. Navigate to OIDC Clients > your client > Public Keys
-3. Upload the encryption public key (Signicat manages signing keys server-side)
+1. Log in to the Signicat Dashboard.
+2. Navigate to OIDC Clients > your client > Public Keys.
+3. Upload the encryption public key. There is no signing key to register: Signicat authenticates the client with its client secret.
+
+## Step 4: Store the Private Keys
+
+Where the private keys and the other secrets go depends on where the application runs. In every case they stay out of version control.
+
+| Where | `IDURA_SIGNING_JWKS` (Idura) | `IDENTITY_PROVIDER_DECRYPTION_JWKS` |
+| --- | --- | --- |
+| Local development | The root `.env`, which git ignores | The root `.env`, and `apps/supabase/supabase/functions/.env` for `identity-callback` |
+| AWS deployment, frontend task | An SSM SecureString parameter under the AWS root's `parameter_path` | An SSM SecureString parameter under the same path |
+| AWS deployment, `identity-callback` | Not needed: the function never signs | `TF_VAR_identity_provider_decryption_jwks`, exported in the shell that plans and applies the Supabase root |
+
+The deployment guide's [Identity provider settings](https://openvaa.org/developers-guide/deployment#identity-provider-settings) section gives the commands for the AWS path.
 
 ## Security Notes
 
 - **Never commit private keys** to version control. Store them as environment variables or secrets.
-- **Supabase deployments**: Store JWKS as Supabase secrets (`supabase secrets set IDURA_SIGNING_JWKS='...'`).
+- **Supabase deployments**: `identity-callback` reads only `IDENTITY_PROVIDER_DECRYPTION_JWKS` of the two key sets. On the AWS path the Supabase root sends it as a function secret; never give the function `IDURA_SIGNING_JWKS`, which it does not use.
 - **SvelteKit**: Private keys are accessed via `$env/dynamic/private` which ensures they are never exposed to the client.
 - **Key rotation**: When rotating keys, generate new key pairs with incremented KIDs (e.g., `openvaa-signing-2`), register the new public keys, update env vars, then remove old keys from the provider dashboard.
 - **Minimum key size**: RSA 2048-bit per Traficom 213/2023 Finnish Trust Network specification. Using 4096-bit provides additional security margin at the cost of slightly slower operations. Override the default via `--size 4096` on the `keygen` script.

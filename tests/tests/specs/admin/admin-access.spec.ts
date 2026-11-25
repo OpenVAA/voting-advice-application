@@ -41,13 +41,15 @@ const UNRESOLVABLE_QUESTION_ID = '00000000-0000-4000-8000-00000000dead';
 /**
  * The cookies this application sets `httpOnly`, spelled here rather than imported.
  *
- * `apps/frontend/src/lib/cookies/index.ts` is the single declaration of the names, but it does not say which of them are `httpOnly`. The copy is not unguarded: the unit spec `apps/frontend/src/routes/admin/(protected)/layout.server.test.ts` pins that map's names, so a newly registered cookie reddens there rather than slipping past here unnoticed.
+ * `apps/frontend/src/lib/cookies/index.ts` is the single declaration of the names, but it does not say which of them are `httpOnly`. The unit spec `apps/frontend/src/routes/admin/(protected)/subtreeCookieFilter.server.test.ts` pins that map's names, so a newly registered cookie reddens there; nothing compares this copy with it, so the comment at that pin names this list, and a new `httpOnly` cookie is added to both.
  */
 const HTTP_ONLY_COOKIE_NAMES = [
   'oidc_state',
   'oidc_nonce',
   'oidc_code_verifier',
   'oidc_entity_type',
+  'oidc_intent',
+  'oidc_locale',
   'identity_provider_arrival',
   'registered'
 ] as const;
@@ -113,7 +115,7 @@ test.describe('admin-access (D10-C11 / D10-C08 / D10-C12)', () => {
     // 3. THE HOOK GATE, ON THE ARM THAT DISCRIMINATES.
     //
     // An authenticated caller asking for the admin LOGIN page must be bounced to the admin home.
-    // The load of `admin/login/+page.server.ts` returns no data, so the login page itself cannot produce this answer — only `appGateHandle`'s `whenAuthenticatedOnLogin` descriptor can. With the admin row deleted from `APP_GATES` this is a 200 on the login page instead.
+    // The load of `admin/login/+page.server.ts` returns no data, so the login page itself cannot produce this answer — only `appGateHandle`'s `whenAuthenticatedOnEntry` descriptor can. With the admin row deleted from `APP_GATES` this is a 200 on the login page instead.
     //
     // `maxRedirects: 0` is what makes the observation the FIRST response rather than wherever the chain settles; the request context is the page's own, so it carries this context's cookies.
     // ---------------------------------------------------------------------

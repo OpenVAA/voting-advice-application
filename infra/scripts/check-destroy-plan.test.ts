@@ -1,9 +1,7 @@
 /**
  * The destroy-plan guard, run against fixture plans.
  *
- * Each case writes a small plan in the form of `terraform show -json` and a state list in the form of
- * `terraform state list` into a throwaway directory, and runs the script on them. No plan is made and no account is
- * read. The child gets a minimal environment, so no credential of the shell that runs the suite reaches it.
+ * Each case writes a small plan in the form of `terraform show -json` and a state list in the form of `terraform state list` into a throwaway directory, and runs the script on them. No plan is made and no account is read. The child gets a minimal environment, so no credential of the shell that runs the suite reaches it.
  */
 
 import { spawnSync } from 'node:child_process';

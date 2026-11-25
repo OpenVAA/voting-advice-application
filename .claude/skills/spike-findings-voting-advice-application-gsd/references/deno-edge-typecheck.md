@@ -197,6 +197,23 @@ code commits (the functions tree of `61149b276` and every later head).
   per-function copies, until its next deploy, which is the first with
   `_shared/`. Nothing was deployed in phase 180 (D-27).
 
+### The tree as of 2026-11-20
+
+The section above is the measurement of its date. Read from the tree on
+2026-11-20 (no `deno check`, bundle or LSP run was made for this list):
+
+- `functions/_shared/` holds seven modules, each with its test:
+  `envConfig.ts`, `deploymentProject.ts` (`isDeploymentProject`), `placeholderEmail.ts` (`placeholderEmailFor`,
+  `isPlaceholderEmail`; the module named `placeholderAddress.ts` above),
+  `guards.ts`, `constantTimeEqual.ts`, `actionLink.ts` and `mailTransport.ts`
+  (`git ls-files apps/supabase/supabase/functions/_shared`).
+- `_shared/placeholderEmail.test.ts` is the parity test that reads the
+  frontend's copy of the placeholder domain in
+  `apps/frontend/src/lib/contestant/utils/identityProviderAccount.ts`.
+- The tracked non-test `.ts` files under the functions tree number 26
+  (`git ls-files apps/supabase/supabase/functions | grep -v test | grep -c '\.ts$'`),
+  the population `deno check .` checks.
+
 ## Requirements
 
 From `.planning/spikes/MANIFEST.md` § `deno-edge-typecheck`:

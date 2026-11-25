@@ -6,7 +6,7 @@
  * Surface:
  *   - `test`   — Playwright test extended with the page fixtures the contestant tests speak in.
  *   - `expect` — re-exported from @playwright/test.
- *   - `chooseConstituencyGroupFirst`, `restoreConstituencyGroupFirst`, `removeCandidateNominations`, `clearWrittenNominations`, `setElectionType` — the state steps.
+ *   - `chooseConstituencyGroupFirst`, `restoreConstituencyGroupFirst`, `removeCandidateNominations`, `clearWrittenNominations`, `setNominationShape` — the state steps.
  *
  * A contestant test's body holds no locator: a step it needs is a method of a fixture registered here.
  *
@@ -21,9 +21,22 @@ import { expect, test as base } from '@playwright/test';
 import { createContestantEntityHomePage } from './contestantEntityHomePage.fixture';
 import { createContestantNominationEditor } from './contestantNominationEditor.fixture';
 import { createContestantNominationsPage } from './contestantNominationsPage.fixture';
-import { CANDIDATE_EXTERNAL_ID, FIRST_GROUP_EXTERNAL_ID, SEEDED_ELECTION_TYPES } from '../../utils/permStartFromCgData';
+import {
+  CANDIDATE_EDITOR,
+  CANDIDATE_EXTERNAL_ID,
+  FIRST_GROUP_EXTERNAL_ID,
+  SEEDED_NOMINATION_SHAPES
+} from '../../utils/permStartFromCgData';
+import {
+  attempt,
+  clearWrittenNominations as clearWrittenNominationsOfEntities,
+  deleteNominationsWithDescendants,
+  readRows,
+  setNominationShape as setElectionNominationShape
+} from '../../utils/permStateSteps';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import type { ElectionTypeName } from '../../utils/permContestantNominationsData';
+import type { Enums } from '@openvaa/supabase-types';
+import type { Row } from '../../utils/permStateSteps';
 import type { ContestantEntityHomePageFixture } from './contestantEntityHomePage.fixture';
 import type { ContestantNominationEditorFixture } from './contestantNominationEditor.fixture';
 import type { ContestantNominationsPageFixture } from './contestantNominationsPage.fixture';
@@ -51,61 +64,6 @@ export const test = base.extend<StartFromCgContestantFixtures>({
 });
 
 export { expect };
-
-type Row = Record<string, unknown>;
-
-/**
- * Run a read or a write and name the step in what it throws.
- * @throws With the step's name, what was attempted and the cause.
- */
-async function attempt<TResult>(step: string, what: string, action: () => Promise<TResult>): Promise<TResult> {
-  try {
-    return await action();
-  } catch (error) {
-    throw new Error(`${step}: ${what} failed: ${error instanceof Error ? error.message : String(error)}`, {
-      cause: error
-    });
-  }
-}
-
-/**
- * The rows of a table of the suite's project that match the filters.
- * @throws If the read fails.
- */
-async function readRows(
-  admin: SupabaseAdminClient,
-  step: string,
-  table: string,
-  filters: Record<string, unknown>
-): Promise<Array<Row>> {
-  const found = await admin.findData(table, filters);
-  if (found.type !== 'success') throw new Error(`${step}: reading ${table} failed: ${found.cause}`);
-  return found.data ?? [];
-}
-
-/**
- * The nomination rows of the dataset's candidate. A candidate that is no longer in the database has none.
- * @throws If a read fails.
- */
-async function candidateNominationRows(admin: SupabaseAdminClient, step: string): Promise<Array<Row>> {
-  const candidates = await readRows(admin, step, 'candidates', { external_id: { $eq: CANDIDATE_EXTERNAL_ID } });
-  if (!candidates.length) return [];
-  return readRows(admin, step, 'nominations', { candidate_id: { $eq: String(candidates[0].id) } });
-}
-
-/**
- * Delete nominations of the dataset's candidate by id. Nothing stands under a candidate's nomination, so the order does not matter.
- * @throws If the delete fails, or removes another number of rows than it named.
- */
-async function deleteNominations(admin: SupabaseAdminClient, step: string, rows: ReadonlyArray<Row>): Promise<void> {
-  if (!rows.length) return;
-  const ids = rows.map((row) => String(row.id));
-  const result = await attempt(step, 'deleting nominations', () => admin.bulkDelete({ nominations: { ids } }));
-  const deleted = (result.nominations as { deleted?: number } | undefined)?.deleted;
-  if (deleted !== ids.length) {
-    throw new Error(`${step}: ${ids.length} nomination(s) were to be deleted and ${deleted} were`);
-  }
-}
 
 /**
  * Name the dataset's group of municipalities in `elections.startFromConstituencyGroup`, as an administrator would, so that a constituency of that group is chosen before an election. No other setting is written.
@@ -152,7 +110,14 @@ export async function restoreConstituencyGroupFirst(prior: string | null): Promi
 export async function removeCandidateNominations(): Promise<void> {
   const step = 'removeCandidateNominations';
   const admin = new SupabaseAdminClient();
-  await deleteNominations(admin, step, await candidateNominationRows(admin, step));
+  const rows = await candidateNominationRows(admin, step);
+  if (rows.length) {
+    await deleteNominationsWithDescendants(
+      admin,
+      step,
+      rows.map((row) => String(row.id))
+    );
+  }
 }
 
 /**
@@ -163,34 +128,28 @@ export async function removeCandidateNominations(): Promise<void> {
  * @throws If a read or the delete fails.
  */
 export async function clearWrittenNominations(): Promise<void> {
-  const step = 'clearWrittenNominations';
-  const admin = new SupabaseAdminClient();
-  const rows = await candidateNominationRows(admin, step);
-  await deleteNominations(
-    admin,
-    step,
-    rows.filter((row) => row.external_id == null)
-  );
+  await clearWrittenNominationsOfEntities([CANDIDATE_EDITOR.grant]);
 }
 
 /**
- * Change the type of an election of the dataset, as an administrator would. Nothing else of the election is changed.
+ * Change the nomination shape of an election of the dataset, as an administrator would. Nothing else of the election is changed.
  *
- * A nomination stored under the old type is not checked again: it stays as it is, and only a later write of it is judged by the new type. The caller puts the seeded type back in a `finally`, because every later test reads it, and the step after a flip is a full page load.
+ * A nomination stored under the old shape is not checked again: it stays as it is, and only a later write of it is judged by the new shape. The caller puts the seeded shape back in a `finally`, because every later test reads it, and the step after a flip is a full page load.
  *
  * @param electionExternalId - The `external_id` of an election of the dataset.
- * @param type - The type the election is given.
+ * @param shape - The nomination shape the election is given.
  * @throws If the election is not of the dataset, or if a read or the write fails.
  */
-export async function setElectionType(electionExternalId: string, type: ElectionTypeName): Promise<void> {
-  const step = 'setElectionType';
-  if (!Object.hasOwn(SEEDED_ELECTION_TYPES, electionExternalId)) {
-    throw new Error(`${step}: ${electionExternalId} is not an election of the start-from-constituency dataset`);
-  }
-  const admin = new SupabaseAdminClient();
-  const elections = await readRows(admin, step, 'elections', { external_id: { $eq: electionExternalId } });
-  if (elections.length !== 1) throw new Error(`${step}: the election ${electionExternalId} was not found`);
-  await attempt(step, 'writing the type', () =>
-    admin.update('elections', String(elections[0].id), { election_type: type })
-  );
+export async function setNominationShape(electionExternalId: string, shape: Enums<'nomination_shape'>): Promise<void> {
+  await setElectionNominationShape(electionExternalId, shape, Object.keys(SEEDED_NOMINATION_SHAPES));
+}
+
+/**
+ * The nomination rows of the dataset's candidate. A candidate that is no longer in the database has none.
+ * @throws If a read fails.
+ */
+async function candidateNominationRows(admin: SupabaseAdminClient, step: string): Promise<Array<Row>> {
+  const candidates = await readRows(admin, step, 'candidates', { external_id: { $eq: CANDIDATE_EXTERNAL_ID } });
+  if (!candidates.length) return [];
+  return readRows(admin, step, 'nominations', { candidate_id: { $eq: String(candidates[0].id) } });
 }

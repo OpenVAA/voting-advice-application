@@ -5,25 +5,30 @@
  *
  * Pure and synchronous, so a server load decides the state and no component needs to know the domain.
  *
- * THE IDENTITY'S OWN ORGANIZATION. `identity-callback` records in the account's `app_metadata`, under {@link REGISTERED_ENTITIES_KEY}, the entity the identity registered, per project and per entity type. {@link ownOrganizationId} reads the organization of one project from it, and {@link hasDefaultLocaleName} says whether a stored name has text in one locale, so the user-level read can tell whether that organization still needs a name. An organization the account edits by any other grant is never named by the record.
+ * THE IDENTITY'S OWN ORGANIZATION. The user-level read is told by the database which organization the identity registered in the project, and {@link hasDefaultLocaleName} says whether a stored name has text in one locale, so that read can tell whether that organization still needs a name.
  *
- * ONE DOMAIN, TWO COPIES. The Edge Functions' module `apps/supabase/supabase/functions/_shared/placeholderAddress.ts` holds its own copy of the domain, because the frontend cannot import an Edge Function module. `apps/supabase/supabase/functions/_shared/placeholderAddress.test.ts` holds the two equal.
+ * ONE DOMAIN, TWO COPIES. The Edge Functions' module `apps/supabase/supabase/functions/_shared/placeholderEmail.ts` holds its own copy of the domain, because the frontend cannot import an Edge Function module. `apps/supabase/supabase/functions/_shared/placeholderEmail.test.ts` holds the two equal.
  *
  * Tested in `identityProviderAccount.test.ts`.
  */
 
+import { isPlainObject } from '@openvaa/app-shared';
 import { isBlankText } from '$lib/utils/localizedText';
 
 /** The domain of every placeholder address. Nobody receives mail for it. */
 export const PLACEHOLDER_EMAIL_DOMAIN = 'bank-auth.placeholder';
 
 /**
- * The address state of an account.
- * - `none`: an identity-provider account that holds only its placeholder and has no address pending.
- * - `pending`: an identity-provider account that holds only its placeholder, with an address pending proof.
- * - `proved`: any other account, whose address is its holder's own.
+ * The address state of an account, with what each state carries.
+ * - `proved`: any account whose address is its holder's own, which is every account an identity provider did not make.
+ * - `pending`: an identity-provider account that holds only its placeholder, with `email` pending proof by the link mailed to it.
+ * - `none`: an identity-provider account that holds only its placeholder and has no address it can still prove. `pendingTaken` is `true` when it was waiting to prove an address that has since become another account's.
  */
-export type AddressState = 'none' | 'pending' | 'proved';
+export type AddressState =
+  { state: 'proved' } | { state: 'pending'; email: string } | { state: 'none'; pendingTaken: boolean };
+
+/** The name of an address state, as {@link addressStateOf} tells it from the verified user alone. */
+export type AddressStateName = AddressState['state'];
 
 /** The facts of the verified user the address state is told from. */
 export interface AddressFacts {
@@ -47,53 +52,21 @@ export function isPlaceholderAddress(address: unknown): boolean {
   return at > 0 && normalised.slice(at + 1) === PLACEHOLDER_EMAIL_DOMAIN;
 }
 
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim() !== '';
-}
-
 /**
- * The address state of an account.
+ * The name of an account's address state.
  *
  * An account whose app metadata names no identity provider is `proved`, and so is an identity-provider account on an address that is not a placeholder. An identity-provider account on its placeholder, or on no address at all, is `pending` when an address is pending and `none` otherwise.
  * @param facts - The facts of the verified user.
- * @returns The account's address state.
+ * @returns The name of the account's address state.
  */
-export function addressStateOf({ email, newEmail, identityProvider }: AddressFacts): AddressState {
+export function addressStateOf({ email, newEmail, identityProvider }: AddressFacts): AddressStateName {
   const holdsOnlyPlaceholder = !isNonEmptyString(email) || isPlaceholderAddress(email);
   if (!isNonEmptyString(identityProvider) || !holdsOnlyPlaceholder) return 'proved';
   return isNonEmptyString(newEmail) ? 'pending' : 'none';
 }
 
-/** The key of `app_metadata` under which `identity-callback` records the entity an identity registered, per project and per entity type. The test of this module holds it equal to the function's own. */
-export const REGISTERED_ENTITIES_KEY = 'registered_entities';
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * The value of an own member of an object, or `undefined` for anything else.
- * @param value - The object, of any type.
- * @param key - The member's name.
- * @returns The member's value when `value` is an object holding it as its own.
- */
-function ownMember(value: unknown, key: string): unknown {
-  return isRecord(value) && Object.hasOwn(value, key) ? value[key] : undefined;
-}
-
-/**
- * The organization the identity registered in a project, as the account's `app_metadata` records it.
- *
- * Only own members are read, and anything that is not a recorded uuid answers `null`: an unreadable record names no organization, so nothing is asked about one.
- * @param appMetadata - The verified user's `app_metadata`, of any type.
- * @param projectId - The project the application serves.
- * @returns The organization's id, or `null` when the record names none for the project.
- */
-export function ownOrganizationId(appMetadata: unknown, projectId: string): string | null {
-  const recorded = ownMember(ownMember(ownMember(appMetadata, REGISTERED_ENTITIES_KEY), projectId), 'organization');
-  return typeof recorded === 'string' && UUID_PATTERN.test(recorded) ? recorded : null;
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && !isBlankText(value);
 }
 
 /**
@@ -104,4 +77,14 @@ export function ownOrganizationId(appMetadata: unknown, projectId: string): stri
  */
 export function hasDefaultLocaleName(name: unknown, locale: string): boolean {
   return !isBlankText(ownMember(name, locale));
+}
+
+/**
+ * The value of an own member of an object, or `undefined` for anything else.
+ * @param value - The object, of any type.
+ * @param key - The member's name.
+ * @returns The member's value when `value` is an object holding it as its own.
+ */
+function ownMember(value: unknown, key: string): unknown {
+  return isPlainObject(value) && Object.hasOwn(value, key) ? value[key] : undefined;
 }

@@ -1,7 +1,7 @@
 /**
  * The "email sent" screen, mounted for real with its real body, resend control and support block against a fake contestant context, under a fake clock.
  *
- * The fake context's `entryFlow` is reactive behind a getter and replaced whole on every write, as the real accessor is. Its `t` returns its key, followed by its parameters when it has any; the two first sentences that name an address return their key and the address in `<strong>`, as their translations hold it. Its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `entryFlow` is reactive behind a getter and replaced whole on every write, as the real accessor is. Its `t` returns its key, followed by its parameters when it has any; the two first sentences that name an address return their key and the address in `<strong>`, as their translations hold it. Its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -16,6 +16,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RESEND_WAIT_SECONDS } from '$lib/auth/entryFlow';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { EntryFlow, EntryHeldRequest } from '$lib/auth/entryFlow';
 import type { Route, RouteOptions } from '$lib/routes';
@@ -23,9 +24,9 @@ import type { Route, RouteOptions } from '$lib/routes';
 const { goto, resendEntryLink, fakeT } = vi.hoisted(() => {
   /** The first sentences that name an address, as the fake `t` writes them: their key, then the address in bold, as their translations hold it. */
   const withAddress: Record<string, string> = {
-    'contestantApp.emailSent.intro.signInTo': 'contestantApp.emailSent.intro.signInTo <strong>{email}</strong>',
-    'contestantApp.emailSent.intro.recoveryTo': 'contestantApp.emailSent.intro.recoveryTo <strong>{email}</strong>',
-    'contestantApp.emailSent.support': 'contestantApp.emailSent.support {contactSupportLink}'
+    'common.account.emailSent.intro.signInTo': 'common.account.emailSent.intro.signInTo <strong>{email}</strong>',
+    'common.account.emailSent.intro.recoveryTo': 'common.account.emailSent.intro.recoveryTo <strong>{email}</strong>',
+    'common.account.emailSent.support': 'common.account.emailSent.support {contactSupportLink}'
   };
   return {
     goto: vi.fn(),
@@ -44,18 +45,21 @@ const { goto, resendEntryLink, fakeT } = vi.hoisted(() => {
 // The other members stay the resolvable stubs: components the page reaches import them too.
 vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), goto }));
 
-/** What the fake context holds. Replaced whole on every write, never changed in place. */
-let heldFlow = $state.raw<EntryFlow | undefined>(undefined);
-
-const context = {
-  t: fakeT,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  resendEntryLink,
-  appSettings: { admin: { email: 'support@example.test' }, contestantApp: { entityTypes: ['candidate'] } },
-  get entryFlow() {
-    return heldFlow;
-  }
-};
+/** What the fake context holds. Its entry flow is replaced whole on every write, never changed in place. */
+const { context, box } = fakeContestantContext(
+  {
+    entryFlow: undefined as EntryFlow | undefined,
+    appSettings: {
+      admin: { email: 'support@example.test' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    }
+  },
+  () => ({
+    t: fakeT,
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    resendEntryLink
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -147,7 +151,7 @@ let teardown: Array<() => void> = [];
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(SETTLED_AT);
-  heldFlow = undefined;
+  box.set({ entryFlow: undefined });
   goto.mockResolvedValue(undefined);
   resendEntryLink.mockResolvedValue(undefined);
   // Every error message shown is also logged: keep the log out of the test output.
@@ -168,7 +172,7 @@ afterEach(() => {
  * @returns The element the page was mounted into.
  */
 function renderOver(held: EntryFlow | undefined): HTMLElement {
-  heldFlow = held;
+  box.set({ entryFlow: held });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(EmailSentPage, { target, props: {} as never });
@@ -240,7 +244,7 @@ describe('with nothing held', () => {
     const target = render(requestWith());
     expect(target.querySelector(FRAME)).not.toBeNull();
     expect(goto).not.toHaveBeenCalled();
-    heldFlow = undefined;
+    box.set({ entryFlow: undefined });
     flushSync();
     expect(target.querySelector(FRAME)).toBeNull();
     expect(goto).toHaveBeenCalledTimes(1);
@@ -256,7 +260,7 @@ describe('the frame', () => {
   ] as const)('carries the wording %s of the held request, and shows its first sentence', (wording, request) => {
     const target = render(request);
     expect(one(target, FRAME).getAttribute('data-wording')).toBe(wording);
-    expect(target.textContent).toContain(`contestantApp.emailSent.intro.${wording}`);
+    expect(target.textContent).toContain(`common.account.emailSent.intro.${wording}`);
     expect(goto).not.toHaveBeenCalled();
   });
 
@@ -264,7 +268,7 @@ describe('the frame', () => {
     const target = render(requestWith());
     const heading = one(target, 'h1');
     expect(heading.getAttribute('tabindex')).toBe('-1');
-    expect(heading.textContent?.trim()).toBe('contestantApp.emailSent.title');
+    expect(heading.textContent?.trim()).toBe('common.account.emailSent.title');
     expect(target.textContent).toContain('dynamic.contestantAppName.');
     heading.focus();
     expect(document.activeElement).toBe(heading);
@@ -272,7 +276,7 @@ describe('the frame', () => {
 
   it('shows the envelope as a presentational figure', () => {
     const target = render(requestWith());
-    expect(one(target, 'figure[role="presentation"]').textContent?.trim()).toBe('contestantApp.emailSent.heroEmoji');
+    expect(one(target, 'figure[role="presentation"]').textContent?.trim()).toBe('common.account.emailSent.heroEmoji');
   });
 
   it('says that the request was asked again when the held request says so', () => {
@@ -282,7 +286,7 @@ describe('the frame', () => {
 
   it('follows a request that replaces the held one', () => {
     const target = render(requestWith());
-    heldFlow = { request: requestWith({ origin: 'forgotPassword', wording: 'recovery' }) };
+    box.set({ entryFlow: { request: requestWith({ origin: 'forgotPassword', wording: 'recovery' }) } });
     flushSync();
     expect(one(target, FRAME).getAttribute('data-wording')).toBe('recovery');
   });
@@ -296,20 +300,20 @@ describe('the address and the way back to it', () => {
     expect(address.tagName).toBe('STRONG');
     expect(address.textContent).toBe(ADDRESS);
     const intro = address.closest('p');
-    expect(intro?.textContent?.trim()).toBe(`contestantApp.emailSent.intro.signInTo ${ADDRESS}`);
+    expect(intro?.textContent?.trim()).toBe(`common.account.emailSent.intro.signInTo ${ADDRESS}`);
     expect(target.querySelector('dl')).toBeNull();
   });
 
   it.each([
-    ['the sign-in screen', 'signIn', 'ContestantAppSignIn'],
+    ['the sign-in screen', 'signIn', 'ContestantAppLoginEmail'],
     ['the registration page', 'register', 'ContestantAppRegister'],
     ['the forgot-password page', 'forgotPassword', 'ContestantAppForgotPassword'],
-    ['the screen that takes the address for a registration code', 'registerEmail', 'ContestantAppRegisterEmail']
+    ['the screen that takes the address for a registration code', 'registerEmail', 'ContestantAppRegisterCodeEmail']
   ] as const)('links back to %s for an address typed there', (_name, origin, route) => {
     const target = render(requestWith({ origin, wording: origin === 'forgotPassword' ? 'recovery' : 'signIn' }));
     const link = one(target, CHANGE_ADDRESS);
     expect(link.getAttribute('href')).toBe(routeOf(route));
-    expect(link.textContent?.trim()).toBe('contestantApp.emailSent.changeAddress');
+    expect(link.textContent?.trim()).toBe('common.account.emailSent.changeAddress');
   });
 
   it('links back to the screen that took the address for a code the flow still holds', () => {
@@ -320,7 +324,7 @@ describe('the address and the way back to it', () => {
     flushSync();
     expect(one(target, FRAME).getAttribute('data-address')).toBe('shown');
     expect(one(target, ADDRESS_SHOWN).textContent).toBe(ADDRESS);
-    expect(one(target, CHANGE_ADDRESS).getAttribute('href')).toBe(routeOf('ContestantAppRegisterEmail'));
+    expect(one(target, CHANGE_ADDRESS).getAttribute('href')).toBe(routeOf('ContestantAppRegisterCodeEmail'));
     expect(target.innerHTML, 'the code is nowhere in the document').not.toContain('a-code');
   });
 
@@ -329,7 +333,7 @@ describe('the address and the way back to it', () => {
     expect(one(target, FRAME).getAttribute('data-address')).toBe('none');
     expect(target.querySelector(ADDRESS_SHOWN)).toBeNull();
     expect(target.querySelector(CHANGE_ADDRESS)).toBeNull();
-    expect(target.textContent).toContain('contestantApp.emailSent.notFound.withoutAddress');
+    expect(target.textContent).toContain('common.account.emailSent.notFound.withoutAddress');
   });
 
   it('shows neither for the code wording even when the request carries an address', () => {
@@ -347,9 +351,9 @@ describe('asking again', () => {
     expect(one(target, FRAME).getAttribute('data-resend')).toBe('waiting');
     const resend = one(target, RESEND);
     expect(resend.getAttribute('aria-disabled')).toBe('true');
-    expect(resend.getAttribute('aria-describedby')).toBe(one(target, COUNTDOWN).id);
+    expect(resend.hasAttribute('aria-describedby'), 'the count is in the name alone').toBe(false);
     expect(resend.contains(one(target, COUNTDOWN)), 'the count is inside Send again').toBe(true);
-    expect(one(target, COUNTDOWN).textContent).toContain('contestantApp.emailSent.resendIn');
+    expect(one(target, COUNTDOWN).textContent).toContain('common.account.emailSent.resendIn');
     expect(one(target, COUNTDOWN).textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS}`);
     press(target, RESEND);
     expect(resendEntryLink).not.toHaveBeenCalled();
@@ -365,7 +369,7 @@ describe('asking again', () => {
     expect(one(target, FRAME).getAttribute('data-resend')).toBe('ready');
     expect(target.querySelector(COUNTDOWN)).toBeNull();
     expect(one(target, RESEND).hasAttribute('aria-disabled')).toBe(false);
-    expect(one(target, STATUS).textContent?.trim()).toBe('contestantApp.emailSent.resendReady');
+    expect(one(target, STATUS).textContent?.trim()).toBe('common.account.emailSent.resendReady');
   });
 
   it('is ready at once for a request that settled longer ago than the wait', () => {
@@ -382,20 +386,20 @@ describe('asking again', () => {
     await settle();
     expect(resendEntryLink).toHaveBeenCalledTimes(1);
     expect(resendEntryLink).toHaveBeenCalledWith();
-    expect(one(target, STATUS).textContent?.trim()).toBe('contestantApp.emailSent.resendRequested');
+    expect(one(target, STATUS).textContent?.trim()).toBe('common.account.emailSent.resendRequested');
     const resend = one(target, RESEND);
     expect(resend.getAttribute('aria-busy')).toBe('true');
     expect(resend.getAttribute('aria-disabled')).toBe('true');
     press(target, RESEND);
     expect(resendEntryLink, 'a press while the request runs calls nothing').toHaveBeenCalledTimes(1);
 
-    heldFlow = { request: requestWith({ settledAt: Date.now() }) };
+    box.set({ entryFlow: { request: requestWith({ settledAt: Date.now() }) } });
     settlers[0]();
     await settle();
     expect(one(target, RESEND).hasAttribute('aria-busy')).toBe(false);
     expect(one(target, FRAME).getAttribute('data-resend')).toBe('waiting');
     expect(one(target, COUNTDOWN).textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS}`);
-    expect(one(target, STATUS).textContent?.trim()).toBe('contestantApp.emailSent.resendRequested');
+    expect(one(target, STATUS).textContent?.trim()).toBe('common.account.emailSent.resendRequested');
   });
 
   it('shows the same screen whatever the repeated request resolved to', async () => {
@@ -408,7 +412,7 @@ describe('asking again', () => {
     expect(one(target, FRAME).getAttribute('data-wording')).toBe(before);
     expect(target.querySelector('[data-testid="error-message"]')).toBeNull();
     expect(target.querySelector('[role="alert"]')).toBeNull();
-    expect(one(target, STATUS).textContent?.trim()).toBe('contestantApp.emailSent.resendRequested');
+    expect(one(target, STATUS).textContent?.trim()).toBe('common.account.emailSent.resendRequested');
   });
 
   it('stops reading the clock when the page is destroyed', () => {
@@ -424,7 +428,7 @@ describe('the panel and the actions', () => {
   it('gives support as a link inside the panel’s sentence, to the support section of the Help page, and by no button', () => {
     const target = render(requestWith());
     const sentence = one(one(target, PANEL), SUPPORT_SENTENCE);
-    expect(sentence.textContent).toContain('contestantApp.emailSent.support');
+    expect(sentence.textContent).toContain('common.account.emailSent.support');
     const links = sentence.querySelectorAll('a');
     expect(links).toHaveLength(1);
     expect(links[0].getAttribute('href')).toBe(`${routeOf('ContestantAppHelp')}#support`);

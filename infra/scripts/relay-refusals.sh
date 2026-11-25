@@ -2,49 +2,42 @@
 #
 # relay-refusals.sh -- Send the relay's refusal cases to one deployment and name the status each one got.
 #
-# The relay at `/api/usage` refuses a request that is not same-origin, one whose body is over 32768 bytes and one whose
-# envelope carries a key it does not admit, and it drops, silently and with 204, an event that carries an attribute it
-# does not admit. This script sends one request per case and compares the status with the one expected. The refusals
-# can be seen only while a provider is active: with provider `none` the relay answers 204 before it reads anything.
+# The relay at `/api/usage` refuses a request that is not same-origin, one whose body is over 32768 bytes and one whose envelope carries a key it does not admit, and it drops, silently and with 204, an event that carries an attribute it does not admit. This script sends one request per case and compares the status with the one expected. The refusals can be seen only while a provider is active: with provider `none` the relay answers 204 before it reads anything.
 #
-# What it does. Nine POSTs to `<base>/api/usage`, one `curl` each with a 10-second limit, all with
-# `Content-Type: application/json` and, except in the two origin cases, `Sec-Fetch-Site: same-origin`. Every body is a
-# valid batch envelope (route `/(voters)`, locale `en`) holding one `answer` event whose question id is the probe id
-# with a one-letter suffix naming the case, unless the case is about the body itself:
-#   cross_site            Sec-Fetch-Site: cross-site                                       expected 403
-#   foreign_origin        no Sec-Fetch-Site, Origin: https://evil.example                   expected 403
-#   declared_33k          a 33792-byte body with its Content-Length                         expected 413
-#   chunked_33k           the same body, Transfer-Encoding: chunked, over HTTP/1.1          expected 413
-#   envelope_destination  a valid envelope plus the key `destination`                       expected 400
-#   envelope_host         a valid envelope plus the key `host`                              expected 400
-#   event_url             a valid envelope whose event carries `url`, question id <probe>u  expected 204
-#   event_host            a valid envelope whose event carries `host`, question id <probe>h expected 204
-#   control               one valid event, question id <probe>, `ago` 0 so its time is now  expected 204
+# What it does. Nine POSTs to `<base>/api/usage`, one `curl` each with a 10-second limit, all with `Content-Type: application/json` and, except in the two origin cases, `Sec-Fetch-Site: same-origin`. Every body is a valid batch envelope (route `/(voters)`, locale `en`) holding one `answer` event whose question id is the probe id with a one-letter suffix naming the case, unless the case is about the body itself:
+#   cross_site:            Sec-Fetch-Site: cross-site                                       expected 403
+#   foreign_origin:        no Sec-Fetch-Site, Origin: https://evil.example                   expected 403
+#   declared_33k:          a 33792-byte body with its Content-Length                         expected 413
+#   chunked_33k:           the same body, Transfer-Encoding: chunked, over HTTP/1.1          expected 413
+#   envelope_destination:  a valid envelope plus the key `destination`                       expected 400
+#   envelope_host:         a valid envelope plus the key `host`                              expected 400
+#   event_url:             a valid envelope whose event carries `url`, question id <probe>u  expected 204
+#   event_host:            a valid envelope whose event carries `host`, question id <probe>h expected 204
+#   control:               one valid event, question id <probe>, `ago` 0 so its time is now  expected 204
 # Each case prints one line
+#   ```text
 #   c01_<case> status=<n> expected=<n> result=PASS|FAIL
+#   ```
 # with the three-digit status, or 000 when no answer came, and the last line is
+#   ```text
 #   c01_summary cases=9 failed=<m>
-# The two `event_` cases answer 204 whether or not the event was kept; that the provider received the control event
-# and neither of them is read from the provider's side, by the question ids.
+#   ```
+# The two `event_` cases answer 204 whether or not the event was kept; that the provider received the control event and neither of them is read from the provider's side, by the question ids.
 #
-# What it does not record: no response body and no response header is printed or written. A redirect is not followed.
-# The request bodies are written to a private temporary directory and removed on exit.
+# What it does not record: no response body and no response header is printed or written. A redirect is not followed. The request bodies are written to a private temporary directory and removed on exit.
 #
-# The base URL is limited to https://staging.openvaa.org and a loopback origin, so the requests cannot be aimed at
-# anything else. A CDN in front of the relay may buffer a chunked body and forward it with a Content-Length; the
-# chunked case's 413 then comes from the declared-length check, and the line cannot tell the two apart.
+# The base URL is limited to https://staging.openvaa.org and a loopback origin, so the requests cannot be aimed at anything else. A CDN in front of the relay may buffer a chunked body and forward it with a Content-Length; the chunked case's 413 then comes from the declared-length check, and the line cannot tell the two apart.
 #
 # Usage:
+#   ```sh
 #   infra/scripts/relay-refusals.sh --base-url https://staging.openvaa.org --probe refusals-s-20261118T120000Z
 #   infra/scripts/relay-refusals.sh --base-url http://localhost:5274 --probe refusals-l-20261118T120000Z
 #   infra/scripts/relay-refusals.sh --self-test
+#   ```
 #
-#   --base-url <origin>     REQUIRED. https://staging.openvaa.org, or http://localhost:<port> or
-#                           http://127.0.0.1:<port>. No path and no trailing slash.
-#   --probe <id>            REQUIRED. 1 to 40 letters, digits, `_` or `-`. The question id of the control event and the
-#                           stem of the others' ids, so the run's events can be found at the provider.
-#   --self-test             Run the cases against loopback servers started with node. Needs no credential and no
-#                           network beyond 127.0.0.1. Each case prints `self_test <name> PASS|FAIL`.
+#   --base-url <origin>     REQUIRED. https://staging.openvaa.org, or http://localhost:<port> or http://127.0.0.1:<port>. No path and no trailing slash.
+#   --probe <id>            REQUIRED. 1 to 40 letters, digits, `_` or `-`. The question id of the control event and the stem of the others' ids, so the run's events can be found at the provider.
+#   --self-test             Run the cases against loopback servers started with node. Needs no credential and no network beyond 127.0.0.1. Each case prints `self_test <name> PASS|FAIL`.
 #   -h, --help              Print this header and exit 0.
 #
 # Exit codes:
@@ -58,6 +51,12 @@ set -f
 export LC_ALL=C
 
 SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_NAME="relay-refusals.sh"
+USAGE_LINE="--base-url <origin> --probe <id> | --self-test | -h | --help"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$(dirname "$SCRIPT_PATH")/../../scripts/lib/cli.sh"
+# shellcheck source=../../scripts/lib/self-test.sh
+. "$(dirname "$SCRIPT_PATH")/../../scripts/lib/self-test.sh"
 
 BASE_URL=""
 PROBE=""
@@ -65,20 +64,6 @@ L=""
 
 # The relay's cap is 32768 bytes; 33 KiB is over it by a margin no rounding can absorb.
 BIG_BODY_BYTES=33792
-
-usage_line() {
-  echo "usage: relay-refusals.sh --base-url <origin> --probe <id> | --self-test | -h | --help" >&2
-}
-
-print_header() {
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$SCRIPT_PATH"
-}
-
-usage_error() {
-  echo "relay-refusals.sh: $1" >&2
-  usage_line
-  exit 2
-}
 
 cleanup() {
   [ -z "$L" ] || rm -rf "$L"
@@ -158,10 +143,7 @@ ST=""
 ST_SERVER_PIDS=""
 ST_PORT=""
 
-# A server on a free loopback port. Mode rules applies the relay's rules in its order: Sec-Fetch-Site other than
-# same-origin 403; no Sec-Fetch-Site and an Origin other than its own 403; a declared or a received body over 32768
-# bytes 413; a body that is not a JSON object with routeId, locale and events and no other key 400; otherwise 204.
-# Mode always-204 answers 204 to every request. A refusal carries a body the script must not record.
+# A server on a free loopback port. Mode rules applies the relay's rules in its order: Sec-Fetch-Site other than same-origin 403; no Sec-Fetch-Site and an Origin other than its own 403; a declared or a received body over 32768 bytes 413; a body that is not a JSON object with routeId, locale and events and no other key 400; otherwise 204. Mode always-204 answers 204 to every request. A refusal carries a body the script must not record.
 ST_SERVER_JS='
 const http = require("node:http");
 const fs = require("node:fs");
@@ -192,43 +174,10 @@ const server = http.createServer((request, response) => {
 server.listen(0, "127.0.0.1", () => fs.writeFileSync(portFile, String(server.address().port)));
 '
 
-st_result() {
-  ST_CASES=$((ST_CASES + 1))
-  if [ "$2" = "pass" ]; then
-    echo "self_test $1 PASS"
-  else
-    echo "self_test $1 FAIL"
-    ST_FAILED=$((ST_FAILED + 1))
-  fi
-}
-
-st_expect() {
-  local name="$1"
-  shift
-  if "$@"; then st_result "$name" pass; else st_result "$name" fail; fi
-}
-
-has() { case "$1" in *"$2"*) return 0 ;; *) return 1 ;; esac; }
-lacks() { case "$1" in *"$2"*) return 1 ;; *) return 0 ;; esac; }
-equals() { [ "$1" = "$2" ]; }
-
 # Whether the output holds the line of the case with the given status and result.
 st_case_line() {
   local out="$1" name="$2" status="$3" expected="$4" result="$5"
   printf '%s\n' "$out" | grep -qxF "c01_${name} status=${status} expected=${expected} result=${result}"
-}
-
-# Starts a server of the given mode and sets ST_PORT.
-st_start_server() {
-  local port_file="$ST/port.$1" waited=0
-  node -e "$ST_SERVER_JS" "$1" "$port_file" &
-  ST_SERVER_PIDS="$ST_SERVER_PIDS $!"
-  while [ ! -s "$port_file" ] && [ "$waited" -lt 50 ]; do
-    sleep 0.1
-    waited=$((waited + 1))
-  done
-  ST_PORT="$(cat "$port_file" 2> /dev/null || true)"
-  [ -n "$ST_PORT" ]
 }
 
 st_cleanup() {

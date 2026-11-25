@@ -9,6 +9,7 @@
  *  - open()                 — navigate to the app's root.
  *  - reload()               — load the page again at its own address.
  *  - expectLanded(entity)   — the home's status message is shown and the URL is the home of that entity: its type, and the id of the row that carries its external id.
+ *  - expectHydrated()       — the home, loaded as a new document, has hydrated, so that a link followed on it is the application's own navigation.
  *  - expectQuestionsButton(present) — the home offers the questions task, or holds no button for it.
  *  - followMainAction()     — press the home's main action, wait for the page it leads to, and say which page that is.
  *  - followNominationTask() — press the nomination row of the home's task list, wait for the page it leads to, and say which page that is.
@@ -119,6 +120,13 @@ export function createContestantEntityHomePage(page: Page, admin: SupabaseAdminC
         new URL(page.url()).pathname,
         `the home shown is that of the ${entity.entityType} ${entity.externalId}`
       ).toContain(`/${entity.entityType}/${entityId}`);
+    },
+
+    /**
+     * Wait until the home, loaded as a new document, has hydrated: the root layout's focus reset has landed. Until then a link followed on the page is taken by the browser itself and loads a new document, not by the application's router. The step is for a home on which nothing has moved focus since it loaded.
+     */
+    async expectHydrated(): Promise<void> {
+      await waitForNavigationFocusReset(page);
     },
 
     /**

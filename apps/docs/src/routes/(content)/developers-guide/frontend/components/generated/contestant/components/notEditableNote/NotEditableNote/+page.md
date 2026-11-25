@@ -13,7 +13,7 @@ Accesses `ContestantContext`.
 - `reason`: Why the content cannot be edited. Selects the sentence the note shows.
   - `'answersLocked'`: Answers can no longer be edited.
   - `'nominationsLocked'`: Nominations can no longer be changed in the application.
-  - `'nominationsAnswersLocked'`: Nominations can no longer be changed because editing has ended in the application. A page gives it where it shows nominations while answers are locked and nominations are not.
+  - `'nominationsAnswersLocked'`: Nominations can no longer be changed because editing has ended in the application. A page gives it where it shows nominations while access.contestantEditing is locked, which closes answers and nominations alike.
 - `children`: An optional second sentence rendered after the reason, e.g. that the profile is hidden because answers are missing.
 - Any valid attributes of a `<div>` element.
 

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { parseRpcAnswer } from './rpcAnswer';
 import type { Json } from '@openvaa/supabase-types';
 
 /** The members every entry of the list carries, whatever its type. The JSONB members are kept as JSON and parsed by whoever renders them. */
@@ -26,7 +27,7 @@ const OrganizationEntrySchema = z.object({
 /**
  * The list in the answer of the `get_user_entities` RPC: one object whose `entities` array holds one entry per entity the caller edits in the project.
  *
- * Unknown members are dropped rather than refused, at the top level and inside an entry, so a fact added to the answer later does not fail the read. The answer's `password_set` and `pending_email_taken` are such members: {@link parseCallerPasswordSet} and {@link parseCallerPendingEmailTaken} read them.
+ * Unknown members are dropped rather than refused, at the top level and inside an entry, so a fact added to the answer later does not fail the read. The answer's `organization` is such a member: {@link parseRegisteredOrganization} reads it.
  */
 export const UserEntitiesSchema = z.object({
   entities: z.array(z.discriminatedUnion('entity_type', [CandidateEntrySchema, OrganizationEntrySchema]))
@@ -38,56 +39,59 @@ export type UserEntityEntry = z.infer<typeof UserEntitiesSchema>['entities'][num
 /**
  * Narrow the answer of the `get_user_entities` RPC to its entries.
  *
- * A malformed answer is a failed read and throws: answering with an empty list instead would tell a user who edits entities that they edit none. The message names the paths the schema refused and never a stored value.
+ * A malformed answer is a failed read and throws: answering with an empty list instead would tell a user who edits entities that they edit none.
  * @param raw - The unvalidated value the RPC returned.
  * @returns The entries, in the order the RPC listed them.
- * @throws Error when the value does not match {@link UserEntitiesSchema}.
+ * @throws Error when the value does not match {@link UserEntitiesSchema}, naming the paths the schema refused and never a stored value.
  */
 export function parseUserEntities(raw: Json | undefined): Array<UserEntityEntry> {
-  const result = UserEntitiesSchema.safeParse(raw);
-  if (!result.success) {
-    const issues = result.error.issues.map((issue) => issue.path.join('.') || '(root)');
-    throw new Error(`The list of the user's entities did not match its schema at: ${issues.join(', ')}`);
-  }
-  return result.data.entities;
+  return parseRpcAnswer(UserEntitiesSchema, raw, 'get_user_entities').entities;
 }
 
-/** A member of the `get_user_entities` answer that is a fact about the caller and not about an entity. */
-const CallerPasswordSetSchema = z.object({ password_set: z.boolean() });
+/**
+ * The answer of the `get_caller_account_state` RPC: two facts about the caller's own account. Unknown members are dropped rather than refused.
+ */
+const CallerAccountStateSchema = z.object({
+  password_set: z.boolean(),
+  pending_email_taken: z.boolean()
+});
+
+/** The two facts about the caller's own account, as the frontend names them. */
+export type CallerAccountState = {
+  /** Whether the account has a password. */
+  passwordSet: boolean;
+  /** Whether the address the account is changing to is already another account's; `false` when nothing is pending. */
+  pendingEmailTaken: boolean;
+};
 
 /**
- * Read one fact about the caller from the answer of the `get_user_entities` RPC: whether the caller's own account has a password.
+ * Narrow the answer of the `get_caller_account_state` RPC.
  *
- * Anything but a boolean throws. An absent, null or otherwise malformed fact is a failed read, neither "has a password" nor "has none", and answering either for it would be a guess. The message names the path the schema refused and never a stored value.
- * @param answer - The unvalidated value the RPC returned.
- * @returns `true` when the account has a password and `false` when it has none.
- * @throws Error when the value is no object or its `password_set` is not a boolean.
+ * Anything but a boolean for either fact throws. An absent, null or otherwise malformed fact is a failed read, neither "yes" nor "no", and answering either for it would be a guess.
+ * @param raw - The unvalidated value the RPC returned.
+ * @returns The two facts.
+ * @throws Error when the value is no object or either fact is not a boolean, naming the paths the schema refused and never a stored value.
  */
-export function parseCallerPasswordSet(answer: unknown): boolean {
-  const result = CallerPasswordSetSchema.safeParse(answer);
-  if (!result.success) {
-    const issues = result.error.issues.map((issue) => issue.path.join('.') || '(root)');
-    throw new Error(`The caller's password fact did not match its schema at: ${issues.join(', ')}`);
-  }
-  return result.data.password_set;
+export function parseCallerAccountState(raw: unknown): CallerAccountState {
+  const { password_set, pending_email_taken } = parseRpcAnswer(
+    CallerAccountStateSchema,
+    raw,
+    'get_caller_account_state'
+  );
+  return { passwordSet: password_set, pendingEmailTaken: pending_email_taken };
 }
 
-/** The other member of the `get_user_entities` answer that is a fact about the caller. */
-const CallerPendingEmailTakenSchema = z.object({ pending_email_taken: z.boolean() });
+/** The member of the `get_user_entities` answer that names the organization the caller's identity registered. */
+const RegisteredOrganizationSchema = z.object({ organization: z.guid().optional() });
 
 /**
- * Read one fact about the caller from the answer of the `get_user_entities` RPC: whether the address the caller's own account is changing to is already another account's.
+ * Read the organization the caller's identity registered in the project through an identity provider from the answer of the `get_user_entities` RPC. The answer names it whether or not the caller still edits it, and has no `organization` member when the identity registered none.
  *
- * Anything but a boolean throws, as for {@link parseCallerPasswordSet}: an absent, null or otherwise malformed fact is a failed read and never a guess. The message names the path the schema refused and never a stored value.
- * @param answer - The unvalidated value the RPC returned.
- * @returns `true` when the pending address is another account's, `false` otherwise or when nothing is pending.
- * @throws Error when the value is no object or its `pending_email_taken` is not a boolean.
+ * A member that is present but not a uuid throws, so a malformed answer is a failed read and never "registered none".
+ * @param raw - The unvalidated value the RPC returned.
+ * @returns The organization's id, or `null` when the answer names none.
+ * @throws Error when the value is no object or its `organization` is not a uuid, naming the paths the schema refused and never a stored value.
  */
-export function parseCallerPendingEmailTaken(answer: unknown): boolean {
-  const result = CallerPendingEmailTakenSchema.safeParse(answer);
-  if (!result.success) {
-    const issues = result.error.issues.map((issue) => issue.path.join('.') || '(root)');
-    throw new Error(`The caller's pending-address fact did not match its schema at: ${issues.join(', ')}`);
-  }
-  return result.data.pending_email_taken;
+export function parseRegisteredOrganization(raw: unknown): string | null {
+  return parseRpcAnswer(RegisteredOrganizationSchema, raw, 'get_user_entities').organization ?? null;
 }

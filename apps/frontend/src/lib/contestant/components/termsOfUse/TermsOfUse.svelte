@@ -1,11 +1,11 @@
 <!--
 @component A utility component for displaying contestant app terms of use and privacy statement.
 
-After the two dynamic texts it shows a section on usage data, `privacy.usageData.title` and `privacy.usageData.content`, when `analytics.trackEvents` is on and an analytics provider is configured (`projection.active` of the app context's `analyticsGate`). The keys are not dynamic, so an override of the dynamic texts does not remove the section. The visitor's own Global Privacy Control signal does not hide it: the terms are the same for every user.
+After the two dynamic texts it shows a section on usage data, `privacy.usageData.title` and `privacy.usageData.content.gated` or `privacy.usageData.content.free` by the consent mode (`projection.consentMode`), when `analytics.trackEvents` is on and an analytics provider is configured (`projection.active` of the app context's `analyticsPolicy`). The keys are not dynamic, so an override of the dynamic texts does not remove the section. The visitor's own Global Privacy Control signal does not hide it: the terms are the same for every user.
 
 ### Dynamic component
 
-Accesses `AppContext`: `appSettings` and `analyticsGate`.
+Accesses `AppContext`: `appSettings` and `analyticsPolicy`.
 
 ### Usage
 
@@ -38,7 +38,9 @@ Accesses `AppContext`: `appSettings` and `analyticsGate`.
     t('dynamic.contestantAppPrivacy.otherTermsOfUse.content', { appName: t('dynamic.appName') })
   );
   // With no provider configured nothing is kept, so a statement that usage is measured would be untrue.
-  const showUsageData = $derived(ctx.appSettings.analytics.trackEvents && ctx.analyticsGate.current.projection.active);
+  const showUsageData = $derived(
+    ctx.appSettings.analytics.trackEvents && ctx.analyticsPolicy.current.projection.active
+  );
 </script>
 
 {#if t('dynamic.contestantAppPrivacy.registryStatement.title') && registryStatement}
@@ -61,7 +63,11 @@ Accesses `AppContext`: `appSettings` and `analyticsGate`.
   <section>
     <h2>{t('privacy.usageData.title')}</h2>
     <div class="prose">
-      <p>{t('privacy.usageData.content')}</p>
+      <p>
+        {ctx.analyticsPolicy.current.projection.consentMode === 'gated'
+          ? t('privacy.usageData.content.gated')
+          : t('privacy.usageData.content.free')}
+      </p>
     </div>
   </section>
 {/if}

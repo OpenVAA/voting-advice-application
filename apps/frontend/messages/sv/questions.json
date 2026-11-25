@@ -53,16 +53,16 @@
           }
         ]
       },
-      "start": "Börja svara på frågor"
+      "start": "Svara på {numQuestions} frågor"
     },
     "multiChoice": {
       "selectExact": [
         {
-          "declarations": ["input count", "local countPlural = count: plural"],
-          "selectors": ["countPlural"],
+          "declarations": ["input count"],
+          "selectors": ["count"],
           "match": {
-            "countPlural=one": "Välj 1 alternativ.",
-            "countPlural=*": "Välj {count} alternativ."
+            "count=1": "Välj 1 alternativ.",
+            "count=*": "Välj {count} alternativ."
           }
         }
       ],

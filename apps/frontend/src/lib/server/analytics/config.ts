@@ -2,10 +2,10 @@ import { CONSENT_MODES, VISIT_ID_MODES } from '$lib/analytics/modes';
 import type { AnalyticsProjection, ConsentMode, VisitIdMode } from '$lib/analytics/modes';
 
 /** The providers the relay can hand events to. `none` keeps nothing, `log` writes one line per event, `posthog` forwards to PostHog. */
-export const PROVIDERS = ['none', 'log', 'posthog'] as const;
+export const ANALYTICS_PROVIDERS = ['none', 'log', 'posthog'] as const;
 
-/** One of {@link PROVIDERS}. */
-export type ProviderName = (typeof PROVIDERS)[number];
+/** One of {@link ANALYTICS_PROVIDERS}. */
+export type AnalyticsProviderName = (typeof ANALYTICS_PROVIDERS)[number];
 
 /** The private environment variables the analytics configuration is read from. None is `PUBLIC_`, so none reaches the browser bundle. */
 export const ANALYTICS_ENV = {
@@ -34,7 +34,7 @@ const LOOPBACK_HOSTNAMES: ReadonlyArray<string> = ['localhost', '127.0.0.1'];
 
 /** The resolved analytics configuration of a deployment. */
 export type AnalyticsConfig = {
-  provider: ProviderName;
+  provider: AnalyticsProviderName;
   consentMode: ConsentMode;
   visitIdMode: VisitIdMode;
   /** How often the queue hands its events to the provider, in milliseconds. */
@@ -70,7 +70,7 @@ export function resolveAnalyticsConfig(env: AnalyticsEnv): {
 } {
   const problems: Array<AnalyticsConfigProblem> = [];
 
-  const provider = readVocabulary(env, ANALYTICS_ENV.provider, PROVIDERS, 'none', problems);
+  const provider = readVocabulary(env, ANALYTICS_ENV.provider, ANALYTICS_PROVIDERS, 'none', problems);
   const consentMode = readVocabulary(env, ANALYTICS_ENV.consentMode, CONSENT_MODES, 'gated', problems);
   const visitIdMode = readVocabulary(env, ANALYTICS_ENV.visitIdMode, VISIT_ID_MODES, 'memory', problems);
 

@@ -27,42 +27,33 @@
  * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { expectLabelInRow } from '../../utils/labelInRow';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
 
 /**
- * The view's title in a locale, read from that locale's message source rather than copied.
- *
- * @param locale - A locale the application has a catalogue for.
+ * @param page - The page the view is rendered on.
+ * @param scope - Where the password setter's fields, the main button and the account's address are looked for: the page by default, or the root of another app's view that renders the same set-password view inside it.
  */
-function titleIn(locale: string): string {
-  const file = path.join(TESTS_DIR, '../../apps/frontend/messages', locale, 'contestantApp.setPassword.json');
-  const messages = (JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, Record<string, unknown>>)[
-    'contestantApp.setPassword'
-  ];
-  return String(messages.title);
-}
+export function createContestantSetPasswordGate(page: Page, scope: Page | Locator = page) {
+  const ids = { ...testIds.shared.account.setPasswordGate, container: testIds.contestant.setPasswordGate.container };
+  const setterIds = testIds.shared.account.passwordSetter;
 
-export function createContestantSetPasswordGate(page: Page) {
-  const ids = testIds.contestant.setPasswordGate;
-  const setterIds = testIds.contestant.passwordSetter;
-
-  /** Type into both fields of the password setter, then press the view's main button. */
+  /** Type into both fields of the password setter, then press the view's main button once the view's script runs. */
   async function fillAndPress(password: string, confirmation: string): Promise<void> {
-    const field = testIds.contestant.password.field;
-    await page.getByTestId(setterIds.password).getByTestId(field).fill(password);
-    await page.getByTestId(setterIds.confirm).getByTestId(field).fill(confirmation);
-    await page.getByTestId(testIds.contestant.password.submit).click();
+    const field = testIds.shared.account.password.field;
+    await scope.getByTestId(setterIds.password).getByTestId(field).fill(password);
+    await scope.getByTestId(setterIds.confirm).getByTestId(field).fill(confirmation);
+    const submit = scope.getByTestId(testIds.shared.account.password.submit);
+    await expect(submit).toBeEnabled({ timeout: TIMEOUTS.slowPage });
+    await submit.click();
   }
 
   return {
@@ -110,7 +101,9 @@ export function createContestantSetPasswordGate(page: Page) {
      * @param locale - The locale the page was asked for in.
      */
     async expectTitle(locale: string): Promise<void> {
-      await expect(page.getByTestId(ids.container).getByRole('heading', { level: 1 })).toHaveText(titleIn(locale));
+      await expect(page.getByTestId(ids.container).getByRole('heading', { level: 1 })).toHaveText(
+        messageOf('common', 'account.setPassword.title', locale)
+      );
     },
 
     /**
@@ -124,7 +117,7 @@ export function createContestantSetPasswordGate(page: Page) {
      * Assert that the view names the account by an address, shown as text.
      */
     async expectAddress(address: string): Promise<void> {
-      await expect(page.getByTestId(ids.email)).toHaveText(address);
+      await expect(scope.getByTestId(ids.email)).toHaveText(address);
     },
 
     /**
@@ -180,7 +173,7 @@ export function createContestantSetPasswordGate(page: Page) {
       const username = page.locator('form input[name="username"]');
       await expect(username).toHaveAttribute('type', 'email');
       await expect(username).toHaveAttribute('autocomplete', 'username');
-      const field = testIds.contestant.password.field;
+      const field = testIds.shared.account.password.field;
       const password = page.getByTestId(setterIds.password).getByTestId(field);
       await expect(password).toHaveAttribute('name', 'new-password');
       await expect(password).toHaveAttribute('autocomplete', 'new-password');
@@ -193,7 +186,7 @@ export function createContestantSetPasswordGate(page: Page) {
      * Assert that each of the form's two password fields has its label in its row.
      */
     async expectFieldsInRows(): Promise<void> {
-      const field = testIds.contestant.password.field;
+      const field = testIds.shared.account.password.field;
       await expectLabelInRow(page.getByTestId(setterIds.password).getByTestId(field));
       await expectLabelInRow(page.getByTestId(setterIds.confirm).getByTestId(field));
     },
@@ -202,7 +195,9 @@ export function createContestantSetPasswordGate(page: Page) {
      * Press the view's Log Out button once the view's script runs: the button signs out from the script, so a press before then does nothing. The main button is unavailable until the script runs, so it is the witness. The caller asserts the screen it leads to.
      */
     async logOut(): Promise<void> {
-      await expect(page.getByTestId(testIds.contestant.password.submit)).toBeEnabled({ timeout: TIMEOUTS.slowPage });
+      await expect(page.getByTestId(testIds.shared.account.password.submit)).toBeEnabled({
+        timeout: TIMEOUTS.slowPage
+      });
       await page.getByTestId(ids.logout).click();
     },
 

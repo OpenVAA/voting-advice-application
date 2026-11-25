@@ -101,6 +101,90 @@
       "source": "value",
       "required": false,
       "description": "Set to true to switch on /api/diagnostics, which reports the resolved origin, client address and forwarding headers; set it only while a proxy setup is being checked, and false otherwise."
+    },
+    {
+      "name": "PUBLIC_IDENTITY_PROVIDER_TYPE",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The identity provider bank authentication uses, signicat-ftn or idura-ftn. The module sets it from the root's identity_provider_type, so environment_values does not."
+    },
+    {
+      "name": "PUBLIC_IDENTITY_PROVIDER_CLIENT_ID",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The client id of the application at the identity provider; identity-callback checks the same value, its IDENTITY_PROVIDER_CLIENT_ID secret, as the token's audience."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_JWKS_URI",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The URL of the identity provider's signing key set, the jwks_uri of its live openid-configuration, verbatim; identity-callback reads the same value."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_ISSUER",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The issuer of the identity provider's tokens, the issuer of its live openid-configuration, verbatim; identity-callback reads the same value."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_DECRYPTION_JWKS",
+      "source": "parameter",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The private key set, a JSON array, that decrypts the identity provider's encrypted ID tokens; a secret, and identity-callback reads the same value."
+    },
+    {
+      "name": "IDENTITY_CALLBACK_SERVER_SECRET",
+      "source": "parameter",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The secret the server sends to identity-callback, which refuses every request without it; a secret that must equal the function's IDENTITY_CALLBACK_SERVER_SECRET."
+    },
+    {
+      "name": "PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn"],
+      "description": "Signicat's authorization endpoint, from its openid-configuration, to which the browser is sent to sign in."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_TOKEN_ENDPOINT",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn"],
+      "description": "Signicat's token endpoint, from its openid-configuration, at which the server exchanges the authorization code."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_CLIENT_SECRET",
+      "source": "parameter",
+      "required": false,
+      "identity_providers": ["signicat-ftn"],
+      "description": "The client secret of the application at Signicat, with which the server exchanges the authorization code; a secret."
+    },
+    {
+      "name": "IDURA_DOMAIN",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["idura-ftn"],
+      "description": "The domain of the Idura broker, such as example.idura.broker."
+    },
+    {
+      "name": "IDURA_SIGNING_KEY_KID",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["idura-ftn"],
+      "description": "The key id, in IDURA_SIGNING_JWKS, of the key the server signs its Idura requests with."
+    },
+    {
+      "name": "IDURA_SIGNING_JWKS",
+      "source": "parameter",
+      "required": false,
+      "identity_providers": ["idura-ftn"],
+      "description": "The private key set, a JSON array, with which the server signs its requests to Idura and authenticates as the client; a secret."
     }
   ]
 }

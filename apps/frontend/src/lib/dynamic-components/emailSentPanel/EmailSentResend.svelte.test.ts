@@ -1,12 +1,12 @@
 /**
- * `EmailSentResend`, the "Send again" button, mounted for real against a fake component context whose `t` returns its key, followed by its parameters when it has any.
+ * `EmailSentResend`, the "Send again" button, mounted for real against a fake component context whose `t` returns its key, followed by its parameters when it has any, and a fake app context whose `track` records its calls.
  *
  * Assertions are on the DOM, never on component state.
  *
  * What this file holds:
  *
- * 1. **While seconds are left** — one button, unavailable and still a tab stop, whose label is followed by the count in a suffix of its own that describes it and is not live.
- * 2. **With no seconds left** — the plain label, no suffix, a press that calls `onresend` once.
+ * 1. **While seconds are left** — one button, unavailable and still a tab stop, whose label is followed by the count in a suffix of its own that is neither its description nor live.
+ * 2. **With no seconds left** — the plain label, no suffix, a press that calls `onresend` once and sends `emailSent_resend`.
  * 3. **While a request is in flight** — unavailable, busy and reading as loading.
  * 4. **Under test ids of another screen** — the given ids on the button and on the count.
  */
@@ -22,6 +22,10 @@ vi.mock('$lib/contexts/component', () => ({
   })
 }));
 
+const { track } = vi.hoisted(() => ({ track: vi.fn() }));
+
+vi.mock('$lib/contexts/app', () => ({ getAppContext: () => ({ track }) }));
+
 const { EmailSentResend } = await import('.');
 
 const RESEND = '[data-testid="email-sent-resend"]';
@@ -32,6 +36,7 @@ let teardown: Array<() => void> = [];
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
+  track.mockClear();
 });
 
 /** Mount the component and return the element it was mounted into. */
@@ -59,7 +64,7 @@ describe('EmailSentResend — while seconds are left', () => {
     const buttons = target.querySelectorAll('button');
     expect(buttons).toHaveLength(1);
     expect(buttons[0].matches(RESEND)).toBe(true);
-    expect(textOf(buttons[0])).toBe('contestantApp.emailSent.resend contestantApp.emailSent.resendIn {"seconds":12}');
+    expect(textOf(buttons[0])).toBe('common.account.emailSent.resend common.account.emailSent.resendIn {"seconds":12}');
     expect(target.querySelector('p')).toBeNull();
   });
 
@@ -69,7 +74,7 @@ describe('EmailSentResend — while seconds are left', () => {
     const suffix = target.querySelector<HTMLElement>(COUNTDOWN);
     expect(suffix?.tagName).toBe('SPAN');
     expect(suffix?.closest(RESEND)).not.toBeNull();
-    expect(textOf(suffix)).toBe('contestantApp.emailSent.resendIn {"seconds":12}');
+    expect(textOf(suffix)).toBe('common.account.emailSent.resendIn {"seconds":12}');
     expect(suffix?.classList.contains('font-normal')).toBe(true);
     expect(suffix?.classList.contains('text-secondary')).toBe(true);
   });
@@ -77,15 +82,16 @@ describe('EmailSentResend — while seconds are left', () => {
   it.each([1, 2, 65])('gives the count of %i seconds to the message of the suffix', (secondsLeft) => {
     const target = render({ secondsLeft, onresend: vi.fn() });
 
-    expect(textOf(target.querySelector(COUNTDOWN))).toBe(`contestantApp.emailSent.resendIn {"seconds":${secondsLeft}}`);
+    expect(textOf(target.querySelector(COUNTDOWN))).toBe(
+      `common.account.emailSent.resendIn {"seconds":${secondsLeft}}`
+    );
   });
 
-  it('is described by the suffix, which is not live', () => {
+  it('is not described by the suffix, which is in its name alone and is not live', () => {
     const target = render({ secondsLeft: 42, onresend: vi.fn() });
 
     const suffix = target.querySelector<HTMLElement>(COUNTDOWN);
-    expect(suffix?.id).toBeTruthy();
-    expect(target.querySelector(RESEND)?.getAttribute('aria-describedby')).toBe(suffix?.id);
+    expect(target.querySelector(RESEND)?.hasAttribute('aria-describedby')).toBe(false);
     expect(suffix?.hasAttribute('aria-live')).toBe(false);
     expect(suffix?.hasAttribute('role')).toBe(false);
   });
@@ -107,6 +113,7 @@ describe('EmailSentResend — while seconds are left', () => {
     target.querySelector<HTMLButtonElement>(RESEND)?.click();
 
     expect(onresend).not.toHaveBeenCalled();
+    expect(track).not.toHaveBeenCalled();
   });
 
   it('follows the count in the same suffix, and drops it when the count ends', () => {
@@ -116,13 +123,13 @@ describe('EmailSentResend — while seconds are left', () => {
 
     props.secondsLeft = 2;
     flushSync();
-    expect(textOf(target.querySelector(COUNTDOWN))).toBe('contestantApp.emailSent.resendIn {"seconds":2}');
+    expect(textOf(target.querySelector(COUNTDOWN))).toBe('common.account.emailSent.resendIn {"seconds":2}');
 
     props.secondsLeft = 0;
     flushSync();
     expect(target.querySelector(COUNTDOWN)).toBeNull();
     expect(target.querySelector(RESEND)).toBe(button);
-    expect(textOf(button)).toBe('contestantApp.emailSent.resend');
+    expect(textOf(button)).toBe('common.account.emailSent.resend');
   });
 
   it('keeps focus when it becomes unavailable while focused', () => {
@@ -148,7 +155,7 @@ describe('EmailSentResend — with no seconds left', () => {
     const target = render({ secondsLeft: 0, onresend: vi.fn() });
 
     const button = target.querySelector<HTMLButtonElement>(RESEND);
-    expect(textOf(button)).toBe('contestantApp.emailSent.resend');
+    expect(textOf(button)).toBe('common.account.emailSent.resend');
     expect(button?.getAttribute('aria-disabled')).not.toBe('true');
     expect(button?.disabled).toBe(false);
     expect(button?.hasAttribute('aria-describedby')).toBe(false);
@@ -162,6 +169,14 @@ describe('EmailSentResend — with no seconds left', () => {
     target.querySelector<HTMLButtonElement>(RESEND)?.click();
 
     expect(onresend).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends `emailSent_resend` once when it is pressed', () => {
+    const target = render({ secondsLeft: 0, onresend: vi.fn() });
+
+    target.querySelector<HTMLButtonElement>(RESEND)?.click();
+
+    expect(track.mock.calls).toEqual([['emailSent_resend']]);
   });
 
   it('submits no form it stands in', () => {
@@ -199,6 +214,7 @@ describe('EmailSentResend — while a request is in flight', () => {
     target.querySelector<HTMLButtonElement>(RESEND)?.click();
 
     expect(onresend).not.toHaveBeenCalled();
+    expect(track).not.toHaveBeenCalled();
   });
 });
 
@@ -215,7 +231,6 @@ describe('EmailSentResend — under test ids of another screen', () => {
     const suffix = target.querySelector<HTMLElement>('[data-testid="other-countdown"]');
     expect(button).not.toBeNull();
     expect(suffix?.closest('[data-testid="other-resend"]')).toBe(button);
-    expect(button?.getAttribute('aria-describedby')).toBe(suffix?.id);
     expect(target.querySelector(RESEND)).toBeNull();
     expect(target.querySelector(COUNTDOWN)).toBeNull();
   });

@@ -13,7 +13,7 @@ Asks which elections the entity the user edits stands in. The address of this st
 
 Nothing is written on this step.
 
-Everything that differs between entity types is read from the descriptor of the selected entity's type.
+Everything that differs between entity types is a text whose key the page builds from the selected entity's type.
 
 ### Settings
 
@@ -32,14 +32,14 @@ Everything that differs between entity types is read from the descriptor of the 
   import { ElectionSelector } from '$lib/components/electionSelector';
   import { Loading } from '$lib/components/loading';
   import { admissibleElectionsOf } from '$lib/contestant/nominations';
-  import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
+  import { servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { electionsHeldIn } from '$lib/routes';
   import {
     afterElections,
     constituenciesOf,
     EDITOR_STEP_ROUTE,
-    reachedNominationsOf,
+    managedNominationsOf,
     selectionSearch
   } from '../stepSelection';
   import type { Id } from '@openvaa/core';
@@ -62,8 +62,8 @@ Everything that differs between entity types is read from the descriptor of the 
   /** The id of the sentence that describes Continue while no election is checked. */
   const HINT_ID = 'contestant-nomination-elections-hint';
 
-  /** Everything that differs by entity type. */
-  const descriptor = $derived(entityDescriptorOf(contestantCtx.selectedEntity?.type));
+  /** The type whose texts the page shows: each text that differs by type alone has a key ending in it. */
+  const textType = $derived(servedEntityTypeOf(contestantCtx.selectedEntity?.type));
 
   /** Whether the elections are on the page. They are not in the server-rendered markup. */
   const ready = $derived(contestantCtx.dataRoot.elections.length > 0);
@@ -114,22 +114,25 @@ Everything that differs between entity types is read from the descriptor of the 
       appSettings: contestantCtx.appSettings,
       dataRoot: contestantCtx.dataRoot,
       admissible,
-      nominations: reachedNominationsOf(contestantCtx.nominations, data.nominationFacts),
-      selection: { electionIds: chosen, constituencyIds: data.nominationSelection.constituencyIds }
+      nominations: managedNominationsOf(contestantCtx.nominations, data.nominationScope),
+      selection: { ...data.nominationSelection, electionIds: chosen },
+      severalConstituencies: !!data.nominationScope?.severalConstituencies
     });
     await goto(getRoute.current({ route: EDITOR_STEP_ROUTE[forward.step], ...selectionSearch(forward.selection) }));
   }
 </script>
 
-<MainContent title={t(descriptor.nominationElectionsTitle)} data-testid="contestant-nomination-elections">
-  <p class="text-center">{t(descriptor.nominationElectionsIngress)}</p>
+<MainContent
+  title={t(`contestantApp.nominations.elections.title.${textType}`)}
+  data-testid="contestant-nomination-elections">
+  <p class="text-center">{t(`contestantApp.nominations.elections.ingress.${textType}`)}</p>
 
   {#if ready}
     <ElectionSelector
       {elections}
       bind:selected
       role="group"
-      aria-label={t(descriptor.nominationElectionsTitle)}
+      aria-label={t(`contestantApp.nominations.elections.title.${textType}`)}
       data-testid="contestant-nomination-elections-list" />
     {#if !chosen.length}
       <p class="small-info mt-sm text-center" id={HINT_ID} data-testid="contestant-nomination-elections-hint">

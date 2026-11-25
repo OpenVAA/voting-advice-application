@@ -4,10 +4,10 @@
 --   - validate_answer_value: rejects malformed answer data by type
 --   - validate_answers_jsonb: smart trigger only validates changed keys
 --   - validate_nomination: rejects invalid hierarchy and mismatched election/constituency
---   - nomination_shape_rule, validate_nomination and nominations_parent_required: the election-type rule, cell by cell and for every role
+--   - nomination_shape_rule, validate_nomination and validate_nomination_parent_required: the nomination-shape rule, cell by cell and for every role
 --   - enforce_external_id_immutability: blocks external_id changes once set
 --
--- Tests run as postgres role since triggers fire regardless of role, and we need to bypass RLS for test data manipulation. Section 12 also writes as a project administrator, as an entity's own editor and as the service role, to show that the election-type rule exempts none of them.
+-- Tests run as postgres role since triggers fire regardless of role, and we need to bypass RLS for test data manipulation. Section 12 also writes as a project administrator, as an entity's own editor and as the service role, to show that the nomination-shape rule exempts none of them.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
 --             000-functions.sql (validate_answer_value, validate_nomination) 006-answers-jsonb.sql (validate_answers_jsonb trigger) 015-external-id.sql (enforce_external_id_immutability trigger)
@@ -21,7 +21,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (113);
+  plan (116);
 
 -- Create test fixture data
 SELECT
@@ -522,9 +522,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 12: the election-type rule -- which entity types an election admits
+-- Section 12: the nomination-shape rule -- which entity types an election admits
 --
--- `public.nomination_shape_rule` states the matrix once. `validate_nomination` refuses, at the statement, a row whose entity type the election's type does not admit: SQLSTATE 23514 and a message that begins `Nomination shape refused: `. Where the matrix answers `parent_required`, the constraint trigger `nominations_parent_required` refuses, at the end of the transaction, a candidate's row that has neither a parent nomination nor `requestedParentOrganization` in its custom data: SQLSTATE 23514 and a message that begins `Nomination parent required: `.
+-- `public.nomination_shape_rule` states the matrix once. `validate_nomination` refuses, at the statement, a row whose entity type the election's nomination shape does not admit: SQLSTATE 23514 and a message that begins `Nomination shape refused: `. Where the matrix answers `parent_required`, the constraint trigger `validate_nomination_parent_required` refuses, at the end of the transaction, a candidate's row that has neither a parent nomination nor `requestedParentOrganization` in its custom data: SQLSTATE 23514 and a message that begins `Nomination parent required: `.
 --
 -- An election that must prove a refusal states its type. The fixture's own election states none and takes the column default, which admits every entity type.
 --
@@ -535,7 +535,7 @@ SELECT
 
 -- Three elections of project A that each state a type, linked to the fixture's constituency group as the fixture's own election is.
 INSERT INTO
-  elections (id, project_id, name, election_type)
+  elections (id, project_id, name, nomination_shape)
 VALUES
   (
     'eeeeeeee-eeee-eeee-eeee-000000000401'::uuid,
@@ -621,7 +621,7 @@ $fn$;
 
 -- `forced` appends the two statements that fire the pending parent rule and put the constraint back to deferred.
 CREATE FUNCTION pg_temp.forced (p_statements text) RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
-  SELECT p_statements || '; SET CONSTRAINTS public.nominations_parent_required IMMEDIATE; SET CONSTRAINTS public.nominations_parent_required DEFERRED';
+  SELECT p_statements || '; SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE; SET CONSTRAINTS public.validate_nomination_parent_required DEFERRED';
 $fn$;
 
 -- `parent_rule_is_deferred` answers whether a lone party-less candidate row in the list election raises nothing at its own statement. The row is deleted in the same block, so the pending rule finds nothing to judge afterwards.
@@ -646,9 +646,9 @@ CREATE FUNCTION pg_temp.parent_rule_probe_while_immediate () RETURNS boolean LAN
 DECLARE
   v_deferred boolean;
 BEGIN
-  SET CONSTRAINTS public.nominations_parent_required IMMEDIATE;
+  SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE;
   v_deferred := pg_temp.parent_rule_is_deferred ();
-  SET CONSTRAINTS public.nominations_parent_required DEFERRED;
+  SET CONSTRAINTS public.validate_nomination_parent_required DEFERRED;
   RETURN v_deferred;
 EXCEPTION WHEN undefined_object THEN
   RETURN NULL;
@@ -808,7 +808,7 @@ SELECT
       $$SELECT public.nomination_shape_rule(NULL, 'candidate')$$
     ),
     NULL,
-    'nomination_shape_rule: no election type answers NULL'
+    'nomination_shape_rule: no nomination shape answers NULL'
   );
 
 SELECT
@@ -818,6 +818,60 @@ SELECT
     ),
     NULL,
     'nomination_shape_rule: no entity type answers NULL'
+  );
+
+-- The answer is a member of public.nomination_admission, so a caller comparing it with a word that is no member raises instead of comparing false.
+SELECT
+  is (
+    (
+      SELECT
+        p.prorettype::regtype::text
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'public'
+        AND p.proname = 'nomination_shape_rule'
+    ) || ':' || (
+      SELECT
+        string_agg(
+          e.enumlabel,
+          ','
+          ORDER BY
+            e.enumsortorder
+        )
+      FROM
+        pg_enum e
+      WHERE
+        e.enumtypid = 'public.nomination_admission'::regtype
+    ),
+    'nomination_admission:admitted,parent_required,refused',
+    'nomination_shape_rule answers the enum nomination_admission, whose members are admitted, parent_required and refused'
+  );
+
+SELECT
+  throws_ok (
+    $$SELECT public.nomination_shape_rule('organization_list', 'candidate') = 'parent-required'$$,
+    '22P02',
+    NULL,
+    'a misspelt answer compared with the shape rule raises instead of comparing false'
+  );
+
+-- `nomination_requests_parent` is the one reading of a requested parent: a string at `requestedParentOrganization` that holds something other than white space.
+SELECT
+  is (
+    ARRAY[
+      public.nomination_requests_parent (
+        '{"requestedParentOrganization": "Party X"}'::jsonb
+      ),
+      public.nomination_requests_parent ('{"requestedParentOrganization": " \t "}'::jsonb),
+      public.nomination_requests_parent ('{"requestedParentOrganization": 7}'::jsonb),
+      public.nomination_requests_parent ('{"other": "Party X"}'::jsonb),
+      public.nomination_requests_parent ('"Party X"'::jsonb),
+      public.nomination_requests_parent (NULL)
+    ],
+    ARRAY[true, false, false, false, false, false],
+    'nomination_requests_parent: a string with text asks for a parent; white space, a number, another key, a value that is no object and NULL do not'
   );
 
 -- The matrix reads no table and no role, and neither does either function that asks it: all three exist, and none names the caller.
@@ -876,10 +930,10 @@ SELECT
         pg_trigger t
       WHERE
         t.tgrelid = 'public.nominations'::regclass
-        AND t.tgname = 'nominations_parent_required'
+        AND t.tgname = 'validate_nomination_parent_required'
     ),
     true,
-    'nominations_parent_required fires AFTER INSERT OR UPDATE for each row, deferrable and initially deferred'
+    'validate_nomination_parent_required fires AFTER INSERT OR UPDATE for each row, deferrable and initially deferred'
   );
 
 SELECT
@@ -903,7 +957,7 @@ SELECT
   is (
     (
       SELECT
-        e.election_type::text
+        e.nomination_shape::text
       FROM
         elections e
       WHERE
@@ -916,7 +970,7 @@ SELECT
 -- ---------------------------------------------------------------------
 -- 12b: one write per cell, as the owner of the tables
 --
--- A faction's row names the nomination of its own organization at the same contest wherever that nomination can exist, so the refusal asserted is the election type's and not the hierarchy's. In a candidates-only election no organization nomination can exist, and the faction's row is refused before the hierarchy is asked.
+-- A faction's row names the nomination of its own organization at the same contest wherever that nomination can exist, so the refusal asserted is the nomination shape's and not the hierarchy's. In a candidates-only election no organization nomination can exist, and the faction's row is refused before the hierarchy is asked.
 -- ---------------------------------------------------------------------
 -- organization_list
 SELECT
@@ -1038,8 +1092,8 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
-    'candidate_only x organization: the write is refused, 23514, naming the entity type, the election type and the election'
+    'Nomination shape refused: an organization cannot be nominated in an election whose nomination shape is candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'candidate_only x organization: the write is refused, 23514, naming the entity type, the nomination shape and the election'
   );
 
 SELECT
@@ -1051,8 +1105,8 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: a faction cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
-    'candidate_only x faction: the write is refused, 23514, for the election type and not for its missing parent'
+    'Nomination shape refused: a faction cannot be nominated in an election whose nomination shape is candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'candidate_only x faction: the write is refused, 23514, for the nomination shape and not for its missing parent'
   );
 
 SELECT
@@ -1064,8 +1118,8 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: an alliance cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
-    'candidate_only x alliance: the write is refused, 23514, naming the entity type, the election type and the election'
+    'Nomination shape refused: an alliance cannot be nominated in an election whose nomination shape is candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'candidate_only x alliance: the write is refused, 23514, naming the entity type, the nomination shape and the election'
   );
 
 -- organization_only
@@ -1102,8 +1156,8 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
-    'organization_only x candidate: the write is refused, 23514, naming the entity type, the election type and the election'
+    'Nomination shape refused: a candidate cannot be nominated in an election whose nomination shape is organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'organization_only x candidate: the write is refused, 23514, naming the entity type, the nomination shape and the election'
   );
 
 SELECT
@@ -1116,7 +1170,7 @@ SELECT
       'eeeeeeee-eeee-eeee-eeee-000000000431'
     ),
     '23514',
-    'Nomination shape refused: a faction cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'Nomination shape refused: a faction cannot be nominated in an election whose nomination shape is organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
     'organization_only x faction: the write is refused, 23514, although its parent is the nomination of its own organization'
   );
 
@@ -1125,7 +1179,7 @@ SELECT
   throws_ok (
     $$UPDATE public.nominations SET election_id = 'eeeeeeee-eeee-eeee-eeee-000000000403' WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000421'$$,
     '23514',
-    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'Nomination shape refused: a candidate cannot be nominated in an election whose nomination shape is organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
     'an UPDATE that moves a candidate nomination into an organization_only election is refused, 23514'
   );
 
@@ -1150,7 +1204,7 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'Nomination shape refused: an organization cannot be nominated in an election whose nomination shape is candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
     'a project administrator: candidate_only x organization is refused, 23514'
   );
 
@@ -1163,7 +1217,7 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: a faction cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'Nomination shape refused: a faction cannot be nominated in an election whose nomination shape is candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
     'a project administrator: candidate_only x faction is refused, 23514'
   );
 
@@ -1176,7 +1230,7 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: an alliance cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'Nomination shape refused: an alliance cannot be nominated in an election whose nomination shape is candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
     'a project administrator: candidate_only x alliance is refused, 23514'
   );
 
@@ -1189,7 +1243,7 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'Nomination shape refused: a candidate cannot be nominated in an election whose nomination shape is organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
     'a project administrator: organization_only x candidate is refused, 23514'
   );
 
@@ -1203,7 +1257,7 @@ SELECT
       'eeeeeeee-eeee-eeee-eeee-000000000431'
     ),
     '23514',
-    'Nomination shape refused: a faction cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'Nomination shape refused: a faction cannot be nominated in an election whose nomination shape is organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
     'a project administrator: organization_only x faction is refused, 23514'
   );
 
@@ -1222,7 +1276,7 @@ SELECT
   throws_ok (
     $$UPDATE public.nominations SET election_id = 'eeeeeeee-eeee-eeee-eeee-000000000402' WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000431'$$,
     '23514',
-    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'Nomination shape refused: an organization cannot be nominated in an election whose nomination shape is candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
     'a project administrator: an UPDATE that moves an organization nomination into a candidate_only election is refused, 23514'
   );
 
@@ -1243,7 +1297,7 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'Nomination shape refused: a candidate cannot be nominated in an election whose nomination shape is organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
     'a candidate''s own editor: organization_only x candidate is refused, 23514 and not 42501'
   );
 
@@ -1273,7 +1327,7 @@ SELECT
       test_id ('candidate_a2')
     ),
     '23514',
-    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'Nomination shape refused: a candidate cannot be nominated in an election whose nomination shape is organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
     'a candidate''s own editor: an UPDATE that moves its nomination into an organization_only election is refused, 23514'
   );
 
@@ -1319,7 +1373,7 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'Nomination shape refused: an organization cannot be nominated in an election whose nomination shape is candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
     'an organization''s own editor: candidate_only x organization is refused, 23514 and not 42501'
   );
 
@@ -1350,7 +1404,7 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'Nomination shape refused: a candidate cannot be nominated in an election whose nomination shape is organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
     'the service role: organization_only x candidate is refused, 23514'
   );
 
@@ -1363,7 +1417,7 @@ SELECT
       1
     ),
     '23514',
-    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'Nomination shape refused: an organization cannot be nominated in an election whose nomination shape is candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
     'the service role: candidate_only x organization is refused, 23514'
   );
 
@@ -1640,13 +1694,13 @@ SELECT
   );
 
 -- ---------------------------------------------------------------------
--- 12e: an election's type is changed
+-- 12e: an election's nomination shape is changed
 --
--- Nothing re-checks the nominations an election holds when its type changes. The rule is asked when a nomination is written, so a later write of a row the new type refuses is refused.
+-- Nothing re-checks the nominations an election holds when its nomination shape changes. The rule is asked when a nomination is written, so a later write of a row the new shape refuses is refused.
 -- ---------------------------------------------------------------------
 SELECT
   lives_ok (
-    $$UPDATE public.elections SET election_type = 'organization_only' WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000402'$$,
+    $$UPDATE public.elections SET nomination_shape = 'organization_only' WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000402'$$,
     'an election that holds candidate nominations can be changed to organization_only'
   );
 
@@ -1669,13 +1723,13 @@ SELECT
   throws_ok (
     $$UPDATE public.nominations SET custom_data = '{"note": "edited"}'::jsonb WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000421'$$,
     '23514',
-    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'Nomination shape refused: a candidate cannot be nominated in an election whose nomination shape is organization_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
     'a later write of a stored row that the election''s new type refuses is refused, 23514'
   );
 
 UPDATE elections
 SET
-  election_type = 'candidate_only'
+  nomination_shape = 'candidate_only'
 WHERE
   id = 'eeeeeeee-eeee-eeee-eeee-000000000402'::uuid;
 

@@ -12,10 +12,14 @@ While seconds are left, and while a request the button made is in flight, the bu
 - `countdownTestId`: The test id of the suffix that counts the seconds. Default: `'email-sent-countdown'`
 - Any valid attributes of a `<div>` element.
 
+### Tracking events
+
+- `emailSent_resend`: Sent when the button is pressed while it is available.
+
 ### Accessibility
 
 - While unavailable the button is `aria-disabled` and still a tab stop. It is never natively `disabled`, which would drop the focus it holds.
-- While seconds are left the count is part of the button's name, and the button is also described by it. The count is not a live region, so it is not announced every second.
+- While seconds are left the count is part of the button's name and nothing else: it is neither the button's description nor a live region, so focus reads it once.
 - While a request is in flight the button is `aria-busy`.
 
 ### Usage
@@ -27,8 +31,9 @@ While seconds are left, and while a request the button made is in flight, the bu
 
 <script lang="ts">
   import { Button } from '$lib/components/button';
+  import { getAppContext } from '$lib/contexts/app';
   import { getComponentContext } from '$lib/contexts/component';
-  import { concatClass, getUUID } from '$lib/utils/components';
+  import { concatClass } from '$lib/utils/components';
   import type { EmailSentResendProps } from './EmailSentResend.type';
 
   let {
@@ -41,8 +46,7 @@ While seconds are left, and while a request the button made is in flight, the bu
   }: EmailSentResendProps = $props();
 
   const { t } = getComponentContext();
-
-  const countdownId = `${getUUID()}-countdown`;
+  const { track } = getAppContext();
 
   const waiting = $derived(secondsLeft > 0);
   const unavailable = $derived(waiting || loading);
@@ -51,6 +55,7 @@ While seconds are left, and while a request the button made is in flight, the bu
 
   function handlePress(): void {
     if (unavailable) return;
+    track('emailSent_resend');
     void onresend();
   }
 </script>
@@ -58,12 +63,11 @@ While seconds are left, and while a request the button made is in flight, the bu
 <div {...concatClass(restProps, 'flex w-full flex-col items-center')}>
   <Button
     type="button"
-    text={loading ? t('common.loading') : t('contestantApp.emailSent.resend')}
-    suffix={counting ? t('contestantApp.emailSent.resendIn', { seconds: secondsLeft }) : undefined}
-    suffixProps={{ id: countdownId, 'data-testid': countdownTestId }}
+    text={loading ? t('common.loading') : t('common.account.emailSent.resend')}
+    suffix={counting ? t('common.account.emailSent.resendIn', { seconds: secondsLeft }) : undefined}
+    suffixProps={{ 'data-testid': countdownTestId }}
     aria-disabled={unavailable ? 'true' : undefined}
     aria-busy={loading ? 'true' : undefined}
-    aria-describedby={counting ? countdownId : undefined}
     onclick={handlePress}
     data-testid={resendTestId} />
 </div>

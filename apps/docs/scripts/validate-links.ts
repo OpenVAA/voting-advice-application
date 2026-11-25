@@ -56,9 +56,13 @@ const SRC_DIR = path.join(ROUTES_DIR, '..');
 const NAVIGATION_CONFIG = path.join(SRC_DIR, 'lib', 'navigation.config.ts');
 const DOCS_ROUTES_PREFIX = 'apps/docs/src/routes/';
 
+/**
+ * The parsed command-line options of the link check.
+ */
 export interface CliOptions {
   check: boolean;
   only: Set<LinkCheckClass>;
+  /** The `--scope` routes; `subtree` is set when the value ended in `/**`, so the routes below it match too. */
   scopes: Array<{ route: string; subtree: boolean }>;
 }
 

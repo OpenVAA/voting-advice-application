@@ -2,7 +2,7 @@
 
 # Contestant app preview own profile page
 
-Shows the entity the user edits a preview of its own profile, using the `EntityDetails` component. What differs between the entity types is read from the entity's descriptor: the note above the card, the tabs the card leaves out, and whether the card begins with a line that shows how the entity is marked beside its candidates.
+Shows the entity the user edits a preview of its own profile, using the `EntityDetails` component. What differs between the entity types is the note above the card, whose key is built from the entity's type, and, read from the entity's descriptor, the tabs the card leaves out and whether the card begins with a line that shows how the entity is marked beside its candidates.
 
 ## Settings
 
@@ -18,7 +18,7 @@ Shows the entity the user edits a preview of its own profile, using the `EntityD
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
-  import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
+  import { entityDescriptorOf, servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { EntityDetails } from '$lib/dynamic-components/entityDetails';
@@ -35,8 +35,10 @@ Shows the entity the user edits a preview of its own profile, using the `EntityD
   const locale = $derived(ctx.locale);
   const { pageStyles, topBarSettings } = getLayoutContext();
 
-  // Everything on this page that differs by entity type. `selectedEntity` is a reactive accessor, read on the context.
+  // What differs by entity type on this page beyond a text's key. `selectedEntity` is a reactive accessor, read on the context.
   const descriptor = $derived(entityDescriptorOf(ctx.selectedEntity?.type));
+  /** The type whose texts the page shows: each text that differs by type alone has a key ending in it. */
+  const textType = $derived(servedEntityTypeOf(ctx.selectedEntity?.type));
 
   ////////////////////////////////////////////////////////////////////
   // Get the entity object
@@ -105,7 +107,7 @@ Shows the entity the user edits a preview of its own profile, using the `EntityD
 <SingleCardContent title={t('contestantApp.preview.title')}>
   {#snippet note()}
     <Icon name="info" />
-    {t(descriptor.previewTip)}
+    {t(`contestantApp.preview.tip.${textType}`)}
   {/snippet}
   <!-- The card -->
   <div data-testid="contestant-preview-container">

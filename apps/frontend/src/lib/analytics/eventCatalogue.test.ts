@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { EVENT_NAMES, SENSITIVE_EVENTS } from './events.schema';
+import { tableRowsUnder } from '../../../../../scripts/lib/docTokens.mjs';
 
 /** The repository root, five directories above this file. */
 const REPOSITORY_ROOT = fileURLToPath(new URL('../../../../../', import.meta.url));
@@ -27,17 +28,11 @@ type CatalogueRow = { name: string; lastCell: string };
  * @returns The rows, or `undefined` when the page has no catalogue heading or no table row under it.
  */
 function catalogueRows(page: string): Array<CatalogueRow> | undefined {
-  const lines = page.split('\n');
-  const start = lines.findIndex((line) => line.trim() === CATALOGUE_HEADING);
-  if (start < 0) return undefined;
-  const rest = lines.slice(start + 1);
-  const end = rest.findIndex((line) => line.startsWith('## '));
-  const rows = (end < 0 ? rest : rest.slice(0, end)).filter((line) => line.trimStart().startsWith('|'));
-  if (rows.length === 0) return undefined;
-  return rows.flatMap((row) => {
-    const cells = row.trim().split('|').slice(1, -1);
-    const match = /^`([^`]+)`$/.exec((cells[0] ?? '').trim());
-    return match ? [{ name: match[1], lastCell: (cells.at(-1) ?? '').trim() }] : [];
+  const rows = tableRowsUnder(page, CATALOGUE_HEADING);
+  if (rows === undefined || rows.length === 0) return undefined;
+  return rows.flatMap((cells) => {
+    const match = /^`([^`]+)`$/.exec(cells[0] ?? '');
+    return match ? [{ name: match[1], lastCell: cells.at(-1) ?? '' }] : [];
   });
 }
 

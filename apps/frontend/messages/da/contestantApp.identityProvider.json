@@ -8,12 +8,17 @@
     "awaitingConfirmation": "Afventer bekræftelse",
     "emailIntro": "Indtast den e-mailadresse, du vil logge ind med næste gang. Vi sender et bekræftelseslink til den. Du kan fortsætte med det samme. Indtil du åbner linket, skal du logge ind med BankID.",
     "emailInUse": "Denne e-mailadresse bruges allerede af en anden konto. Indtast en anden adresse, eller log i stedet ind med den adresse.",
+    "emailInvited": "Der er sendt en invitation til denne e-mailadresse. Log ud, og log i stedet ind via e-mail med den invitation, og kontakt support for at få fjernet den registrering, du lige har foretaget.",
     "emailTakenNotice": "Adressen, du indtastede tidligere, bruges nu af en anden konto, så den kunne ikke føjes til din. Indtast en anden adresse.",
     "error": {
       "cancelled": {
         "content": "Du afbrød identifikationen, og intet blev gemt. Du kan identificere dig igen, når du er klar.",
         "support": "Hvis du har brug for hjælp, {contactSupportLink}.",
         "title": "Identifikationen blev afbrudt"
+      },
+      "noAccount": {
+        "content": "Der er ikke registreret nogen konto med den identitet, du brugte. Hvis du har registreret dig med en e-mailadresse, så log ind med den i stedet.",
+        "title": "Ingen konto fundet"
       },
       "noRetry": {
         "content": "Vi beklager, det er et problem hos os, og det hjælper ikke at prøve igen. Kontakt support.",

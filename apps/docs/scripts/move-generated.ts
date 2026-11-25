@@ -7,6 +7,7 @@ import { mkdir, readdir, readFile, rename, rm, writeFile } from 'fs/promises';
 import { join, resolve, sep } from 'path';
 import { COPY_TARGETS, DOCS_ROUTES_DIR, GENERATED_DIR } from './docs-scripts.config';
 import { isMainModule } from './utils/cli';
+import { mapOutsideFences } from './utils/markdown';
 
 const generatedDir = GENERATED_DIR;
 
@@ -18,17 +19,7 @@ const generatedDir = GENERATED_DIR;
  * A link with a scheme is left as it is, and so is everything inside a fenced code block.
  */
 export function transformMarkdownLinks(content: string): string {
-  let inFence = false;
-  return content
-    .split('\n')
-    .map((line) => {
-      if (/^\s*(```|~~~)/.test(line)) {
-        inFence = !inFence;
-        return line;
-      }
-      return inFence ? line : transformLinksInLine(line);
-    })
-    .join('\n');
+  return mapOutsideFences(content, transformLinksInLine);
 }
 
 function transformLinksInLine(line: string): string {

@@ -1,7 +1,4 @@
-# The optional rate rule in front of the analytics relay. It exists only when relay_rate_limit is
-# set: then every request to the distribution passes through this web ACL, which allows everything
-# except a viewer address that sends more than the limit to /api/usage within the window, and answers
-# that address 429 until its count falls back under the limit.
+# The optional rate rule in front of the analytics relay. It exists only when relay_rate_limit is set: then every request to the distribution passes through this web ACL, which allows everything except a viewer address that sends more than the limit to /api/usage within the window, and answers that address 429 until its count falls back under the limit.
 
 locals {
   # The relay's path after decoding and normalisation, behind at most one leading segment.
@@ -38,12 +35,7 @@ resource "aws_wafv2_web_acl" "relay" {
         evaluation_window_sec = var.relay_rate_limit.window_seconds
         aggregate_key_type    = "IP"
 
-        # Only requests to the relay are counted, and only they are blocked; the rest of the site
-        # never meets the rule. The application serves the relay at /api/usage and, because its
-        # reroute hook strips one leading locale segment, at /<locale>/api/usage too, and it
-        # percent-decodes the path before it matches a route. So the path is decoded and
-        # normalised first, and then matched as /api/usage, behind at most one segment of any
-        # name, ending there or at a slash.
+        # Only requests to the relay are counted, and only they are blocked; the rest of the site never meets the rule. The application serves the relay at /api/usage and, because its reroute hook strips one leading locale segment, at /<locale>/api/usage too, and it percent-decodes the path before it matches a route. So the path is decoded and normalised first, and then matched as /api/usage, behind at most one segment of any name, ending there or at a slash.
         scope_down_statement {
           regex_match_statement {
             regex_string = local.relay_path_pattern

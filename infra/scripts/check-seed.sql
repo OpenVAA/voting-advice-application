@@ -13,9 +13,9 @@
 -- Run it by itself. Included from another script with `\i`, a finding ends this script only, and the status is the including script's.
 --
 -- Exit status, which is psql's own and is the verdict:
---   0  nothing of the seed was found
---   2  the connection was refused or lost
---   3  a finding, reported in an error whose message begins `check-seed:`. Any other error with this status means the check could not run.
+--   0:  nothing of the seed was found
+--   2:  the connection was refused or lost
+--   3:  a finding, reported in an error whose message begins `check-seed:`. Any other error with this status means the check could not run.
 \set ON_ERROR_STOP on
 
 DO $check$

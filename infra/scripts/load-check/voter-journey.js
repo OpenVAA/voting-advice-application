@@ -1,12 +1,7 @@
 /**
- * The voter-journey load script, for k6 2.4.0. It is run by `infra/scripts/load-check.sh`, never by Node: `k6/http`
- * resolves only inside k6.
+ * The voter-journey load script, for k6 2.4.0. It is run by `infra/scripts/load-check.sh`, never by Node: `k6/http` resolves only inside k6.
  *
- * One iteration is one journey: every request of the journey file in its order, and after each page request, a document
- * navigation, one relay post of a valid batch. An asset request (a font, a stylesheet, an `/api/` read) is sent with no
- * relay post and counts toward no page threshold. The run is a series of steps, one `constant-arrival-rate` scenario each, started one after the
- * other and tagged `step: <index from 1>`, so every request carries the step it was made in and the thresholds below
- * can be read per step. The method, and how the figure is read from the summary, are in `README.md` beside this file.
+ * One iteration is one journey: every request of the journey file in its order, and after each page request, a document navigation, one relay post of a valid batch. An asset request (a font, a stylesheet, an `/api/` read) is sent with no relay post and counts toward no page threshold. The run is a series of steps, one `constant-arrival-rate` scenario each, started one after the other and tagged `step: <index from 1>`, so every request carries the step it was made in and the thresholds below can be read per step. The method, and how the figure is read from the summary, are in `README.md` beside this file.
  *
  * Inputs, from the environment only:
  *   STEPS              Comma-separated arrival rates, in journeys per minute, one per step, rising strictly, e.g.
@@ -17,8 +12,7 @@
  *   SUPABASE_ANON_KEY  The anon key, sent as `apikey` and `Authorization: Bearer` to the journey's Supabase host only.
  *                      Required only when the journey holds a data request.
  *
- * The summary is written to `/out/summary.json`: k6's own summary data with one added member, `load_check`, which holds
- * the step rates and the step length the figure is computed with.
+ * The summary is written to `/out/summary.json`: k6's own summary data with one added member, `load_check`, which holds the step rates and the step length the figure is computed with.
  */
 
 import http from 'k6/http';
@@ -33,8 +27,7 @@ const STEP_ERROR_RATE = 0.01;
 const ABORT_ERROR_RATE = 0.05;
 const ABORT_DELAY = '1m';
 /**
- * The bound of the data requests' per-step p95, in milliseconds: never reached, so it fails no step. It makes k6 keep
- * that sub-metric in the summary, where it shows whether the Supabase project slowed at a step.
+ * The bound of the data requests' per-step p95, in milliseconds: never reached, so it fails no step. It makes k6 keep that sub-metric in the summary, where it shows whether the Supabase project slowed at a step.
  */
 const DATA_P95_OBSERVED_MS = 3600000;
 /** The relay path, the same as `RELAY_PATH` of the frontend. */
@@ -100,8 +93,7 @@ const REQUESTS = JOURNEY.requests.map((entry, index) => {
 const PAGE_COUNT = REQUESTS.filter((entry) => entry.kind === 'page').length;
 
 /**
- * Enough virtual users for each step's rate: the journeys that start in one minute, times a journey's request count
- * at an assumed second each, doubled, so a slower answer does not leave the executor short of users.
+ * Enough virtual users for each step's rate: the journeys that start in one minute, times a journey's request count at an assumed second each, doubled, so a slower answer does not leave the executor short of users.
  */
 function vusFor(rate) {
   const perJourneySeconds = REQUESTS.length + PAGE_COUNT;

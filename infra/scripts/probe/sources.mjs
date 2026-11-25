@@ -1,60 +1,27 @@
 /**
- * The probe's readers of a hosted project. Each source answers a preflight before any of its reads is made, so that a
- * source that is down gives one could-not-run line instead of a failing line for every check that reads it.
+ * The probe's readers of a hosted project. Each source answers a preflight before any of its reads is made, so that a source that is down gives one could-not-run line instead of a failing line for every check that reads it.
  *
- *   management   The Management API, with the access token in `SUPABASE_ACCESS_TOKEN` sent as a bearer token.
- *                Preflight: `GET /v1/projects/{ref}` answers 200. Reads:
- *                  `GET /v1/projects/{ref}/postgrest`     `max_rows`, `db_schema`, `db_extra_search_path`
- *                  `GET /v1/projects/{ref}/config/auth`   the fields of `AUTH_FIELDS`, every key of the JSON's `auth`,
- *                                                         `auth_hook` and `auth_send_email_hook` groups, and of the
- *                                                         SMTP user name only whether it is a non-empty string
- *                  `GET /v1/projects/{ref}/functions`     `slug`, `status` and `verify_jwt` of each function
- *                  `GET /v1/projects/{ref}/storage/buckets`  `id` (or `name` when an entry has no `id`) and
- *                                                         `public` of each bucket
- *                The key model is read last, for a note that is not a check: `type` and `name` of each entry of
- *                `GET /v1/projects/{ref}/api-keys?reveal=false`, and `enabled` of `GET /v1/projects/{ref}/api-keys/legacy`,
- *                where a 404 means the endpoint is gone. A failure of either read is recorded in the note, never thrown,
- *                so the key model never changes what the probe reports or how it exits.
- *                The base address is `PROBE_MANAGEMENT_API_URL` when set (a test seam pointed at a local stub) and
- *                `https://api.supabase.com` otherwise.
+ * - `management`: the Management API, with the access token in `SUPABASE_ACCESS_TOKEN` sent as a bearer token. Preflight: `GET /v1/projects/{ref}` answers 200. Reads:
+ *   - `GET /v1/projects/{ref}/postgrest`: `max_rows`, `db_schema`, `db_extra_search_path`.
+ *   - `GET /v1/projects/{ref}/config/auth`: the fields of `AUTH_FIELDS`, every key of the JSON's `auth`, `auth_hook` and `auth_send_email_hook` groups, and of the SMTP user name only whether it is a non-empty string.
+ *   - `GET /v1/projects/{ref}/functions`: `slug`, `status` and `verify_jwt` of each function.
+ *   - `GET /v1/projects/{ref}/storage/buckets`: `id` (or `name` when an entry has no `id`) and `public` of each bucket.
  *
- *   public       The project's own API, with the key in `SUPABASE_ANON_KEY` only. Before any request the key is
- *                inspected: an unset key, a secret key (`sb_secret_`) and a JWT whose role is `service_role` are
- *                refused, because the probe never takes the service-role key. Preflight: `GET /auth/v1/settings`
- *                with the `apikey` header answers 200. Each read sends `apikey` and
- *                `Authorization: Bearer <anon key>`, the call shape of the frontend, except where stated:
- *                  `GET /auth/v1/settings`                `disable_signup`, `mailer_autoconfirm`
- *                  `GET /rest/v1/nominations?select=id&project_id=eq.<public_project_id>` with
- *                                                         `Prefer: count=exact`: the status, the `Content-Range`
- *                                                         header and the number of rows in the body
- *                  `POST /functions/v1/account-access`    a `check-code` of a random code: the status and the kind
- *                                                         of body
- *                  `GET /functions/v1/send-email`         the status and the kind of body
- *                  `GET` and `POST {}` of `/functions/v1/identity-callback`, with no `apikey` and no
- *                                                         `Authorization`, as the identity provider's browser redirect
- *                                                         arrives: the status and the kind of body of each
- *                A kind of body is one of the two fixed bodies the functions write, a JSON object with a `status`
- *                member, other JSON, or not JSON (`bodyKind`); no body of this source is kept. Neither POST
- *                writes: a `check-code` reads, and `identity-callback` without a provider configured refuses
- *                before it reads its body. The base address is `PROBE_PROJECT_URL` when set (a test seam) and
- *                `https://<ref>.supabase.co` otherwise.
+ *   The key model is read last, for a note that is not a check: `type` and `name` of each entry of `GET /v1/projects/{ref}/api-keys?reveal=false`, and `enabled` of `GET /v1/projects/{ref}/api-keys/legacy`, where a 404 means the endpoint is gone. A failure of either read is recorded in the note, never thrown, so the key model never changes what the probe reports or how it exits.
+ *   The base address is `PROBE_MANAGEMENT_API_URL` when set (a test seam pointed at a local stub) and `https://api.supabase.com` otherwise.
  *
- *   catalog      The database over psql (`PROBE_PSQL` when set, a test seam, else `psql`), with the connection in the
- *                PG* variables only: no argument carries an address, and the `SUPABASE_*` variables are not passed
- *                on. Before psql is called the connection must name the root's project: PGHOST `db.<ref>.supabase.co`,
- *                or a session pooler host with PGUSER ending in `.<ref>`; PGPORT not 6543; PGHOSTADDR and PGSERVICE
- *                unset. Preflight: one query (`-X -A -t -v ON_ERROR_STOP=1 -c`) answers a JSON object of the server's
- *                major version, the `rolconfig` of `anon`, whether each hook function resolves with
- *                `to_regprocedure`, the current role and its `rolbypassrls`; a role that does not bypass row-level
- *                security is refused, because the seed check would read no rows under it. Read: `psql -X -f
- *                infra/scripts/check-seed.sql`, whose status is the verdict: 0 clean, 3 a finding, of whose message
- *                only the class words `seed user`, `local address` and `demo key` are kept, and any other status
- *                could not run.
+ * - `public`: the project's own API, with the key in `SUPABASE_ANON_KEY` only. Before any request the key is inspected: an unset key, a secret key (`sb_secret_`) and a JWT whose role is `service_role` are refused, because the probe never takes the service-role key. Preflight: `GET /auth/v1/settings` with the `apikey` header answers 200. Each read sends `apikey` and `Authorization: Bearer <anon key>`, the call shape of the frontend, except where stated:
+ *   - `GET /auth/v1/settings`: `disable_signup`, `mailer_autoconfirm`.
+ *   - `GET /rest/v1/nominations?select=id&project_id=eq.<public_project_id>` with `Prefer: count=exact`: the status, the `Content-Range` header and the number of rows in the body.
+ *   - `POST /functions/v1/account-access`, a `check-code` of a random code: the status and the kind of body.
+ *   - `GET /functions/v1/send-email`: the status and the kind of body.
+ *   - `GET` and `POST {}` of `/functions/v1/identity-callback`, with no `apikey` and no `Authorization`, as the identity provider's browser redirect arrives: the status and the kind of body of each.
  *
- * A response body can hold secrets next to the compared fields: the PostgREST settings hold the JWT secret, the auth
- * settings hold the SMTP credentials, and the key list holds the keys themselves. Each body is parsed, the named fields are copied out and the body is dropped
- * at once; nothing keeps or prints a whole body. A `SourceError` reason names the endpoint path and the status, never a
- * body or a header.
+ *   A kind of body is one of the two fixed bodies the functions write, a JSON object with a `status` member, other JSON, or not JSON (`bodyKind`); no body of this source is kept. Neither POST writes: a `check-code` reads, and `identity-callback` without a provider configured refuses before it reads its body. The base address is `PROBE_PROJECT_URL` when set (a test seam) and `https://<ref>.supabase.co` otherwise.
+ *
+ * - `catalog`: the database over psql (`PROBE_PSQL` when set, a test seam, else `psql`), with the connection in the PG* variables only: no argument carries an address, and the `SUPABASE_*` variables are not passed on. Before psql is called the connection must name the root's project: PGHOST `db.<ref>.supabase.co`, or a session pooler host with PGUSER ending in `.<ref>`; PGPORT not 6543; PGHOSTADDR and PGSERVICE unset. Preflight: one query (`-X -A -t -v ON_ERROR_STOP=1 -c`) answers a JSON object of the server's major version, the `rolconfig` of `anon`, whether each hook function resolves with `to_regprocedure`, the current role and its `rolbypassrls`; a role that does not bypass row-level security is refused, because the seed check would read no rows under it. Read: `psql -X -f infra/scripts/check-seed.sql`, whose status is the verdict: 0 clean, 3 a finding, of whose message only the class words `seed user`, `local address` and `demo key` are kept, and any other status could not run.
+ *
+ * A response body can hold secrets next to the compared fields: the PostgREST settings hold the JWT secret, the auth settings hold the SMTP credentials, and the key list holds the keys themselves. Each body is parsed, the named fields are copied out and the body is dropped at once; nothing keeps or prints a whole body. A `SourceError` reason names the endpoint path and the status, never a body or a header.
  *
  * This module has no side effect on import.
  */
@@ -108,8 +75,7 @@ function failureName(error) {
 }
 
 /**
- * The named fields of one JSON object, each of which it must hold. For each entry `name: [a, b]` of `firstOf` the
- * result holds `name`, the value of the first of `a` and `b` that the object holds.
+ * The named fields of one JSON object, each of which it must hold. For each entry `name: [a, b]` of `firstOf` the result holds `name`, the value of the first of `a` and `b` that the object holds.
  */
 function pick(source, endpoint, object, fields, firstOf = {}) {
   const kept = {};
@@ -127,11 +93,9 @@ function pick(source, endpoint, object, fields, firstOf = {}) {
 }
 
 /**
- * One GET whose answer must be 200. The body is read only when `fields` is given; then it is parsed as JSON and only the
- * named fields are returned:
+ * One GET whose answer must be 200. The body is read only when `fields` is given; then it is parsed as JSON and only the named fields are returned:
  *
- *   - by default the body is an object, and the result holds its named fields and, for each name in `presence`,
- *     `<name>_present`: whether the body holds a non-empty string there. The value of a `presence` field is never kept;
+ *   - by default the body is an object, and the result holds its named fields and, for each name in `presence`, `<name>_present`: whether the body holds a non-empty string there. The value of a `presence` field is never kept;
  *   - with `each`, the body is an array of objects, and the result holds the named fields of each.
  *
  * `firstOf` names fields of which the first present one is kept, as `pick` describes.
@@ -196,8 +160,7 @@ async function getJson({
 }
 
 /**
- * The key model: the type and name of each issued key, and whether the legacy keys are enabled. A read that fails is
- * recorded as `issuedError` or `legacyError` instead of thrown.
+ * The key model: the type and name of each issued key, and whether the legacy keys are enabled. A read that fails is recorded as `issuedError` or `legacyError` instead of thrown.
  *
  * @returns `{ issued: [{ type, name }] | null, issuedError?, legacy: 'enabled' | 'disabled' | 'gone' | null,
  *   legacyError? }`.
@@ -323,9 +286,7 @@ async function readRows(base, headers, projectId, fetchImpl) {
 const NEVER_SERVICE_ROLE = 'the probe never takes the service-role key';
 
 /**
- * The anon key from `SUPABASE_ANON_KEY`, refused before any request when it is a key that bypasses row-level
- * security: a secret key (`sb_secret_`), or a JWT whose role is `service_role`. A JWT whose payload cannot be read is
- * refused too, since its role cannot be checked.
+ * The anon key from `SUPABASE_ANON_KEY`, refused before any request when it is a key that bypasses row-level security: a secret key (`sb_secret_`), or a JWT whose role is `service_role`. A JWT whose payload cannot be read is refused too, since its role cannot be checked.
  */
 function anonKey(env) {
   const key = env.SUPABASE_ANON_KEY;
@@ -364,8 +325,7 @@ const DEFAULT_CONNECT_TIMEOUT = '15';
 const SEED_CLASSES = ['seed user', 'local address', 'demo key'];
 
 /**
- * One psql run, with the connection in the PG* variables of `env` and no address on its command line. The variables
- * named `SUPABASE_*` are not passed on.
+ * One psql run, with the connection in the PG* variables of `env` and no address on its command line. The variables named `SUPABASE_*` are not passed on.
  *
  * @returns `{ status, stdout, stderr }`, where `status` is null when psql was stopped by a signal.
  */
@@ -397,10 +357,7 @@ function runPsql(psql, args, env) {
 }
 
 /**
- * Refuses, before psql is called, a connection that may not reach the root's project: PGHOST must be
- * `db.<ref>.supabase.co`, or a session pooler host `<name>.pooler.supabase.com` with PGUSER ending in `.<ref>`;
- * PGPORT must not be 6543, the transaction pooler, which loses a session's settings between transactions; and
- * neither PGHOSTADDR nor PGSERVICE may be set, since either can send psql to another address than PGHOST.
+ * Refuses, before psql is called, a connection that may not reach the root's project: PGHOST must be `db.<ref>.supabase.co`, or a session pooler host `<name>.pooler.supabase.com` with PGUSER ending in `.<ref>`; PGPORT must not be 6543, the transaction pooler, which loses a session's settings between transactions; and neither PGHOSTADDR nor PGSERVICE may be set, since either can send psql to another address than PGHOST.
  */
 function assertCatalogTarget(env, ref) {
   for (const name of ['PGHOSTADDR', 'PGSERVICE'])
@@ -427,8 +384,7 @@ function assertCatalogTarget(env, ref) {
 const SIGNATURE = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*\(jsonb\)$/;
 
 /**
- * The one catalog query: a JSON object of the server's major version, the `rolconfig` of `anon`, whether each hook
- * signature resolves, the current role and whether it bypasses row-level security (a superuser does too).
+ * The one catalog query: a JSON object of the server's major version, the `rolconfig` of `anon`, whether each hook signature resolves, the current role and whether it bypasses row-level security (a superuser does too).
  */
 function catalogQuery(signatures) {
   for (const signature of signatures)
@@ -466,8 +422,7 @@ function plainRole(role) {
 }
 
 /**
- * The seed check's verdict: clean, or the finding classes its message names. Only the class words are kept; every
- * other word of the message, which names addresses and URLs, is dropped.
+ * The seed check's verdict: clean, or the finding classes its message names. Only the class words are kept; every other word of the message, which names addresses and URLs, is dropped.
  */
 function seedVerdict({ status, stderr }) {
   if (status === 0) return { clean: true };

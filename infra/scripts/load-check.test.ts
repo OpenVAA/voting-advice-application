@@ -1,7 +1,5 @@
 /**
- * The load check, without Docker and without traffic: the wrapper's refusals through its own self-test, the figure on
- * synthetic summaries of the shape k6 2.4.0 writes, the k6 script read as text, and the journey extractor on synthetic
- * trace lines.
+ * The load check, without Docker and without traffic: the wrapper's refusals through its own self-test, the figure on synthetic summaries of the shape k6 2.4.0 writes, the k6 script read as text, and the journey extractor on synthetic trace lines.
  */
 
 import { spawnSync } from 'node:child_process';

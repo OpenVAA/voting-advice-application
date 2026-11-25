@@ -15,13 +15,13 @@
 --
 -- Environment. A value is used exactly as given; one that is empty or holds only whitespace counts as not set.
 --   Required:
---     ADMIN_EMAIL        The user's address. It is compared with each user's address case-insensitively, and exactly one user must match.
---     PUBLIC_PROJECT_ID  The project's id, a uuid. The project row must exist.
+--     ADMIN_EMAIL:        The user's address. It is compared with each user's address case-insensitively, and exactly one user must match.
+--     PUBLIC_PROJECT_ID:  The project's id, a uuid. The project row must exist.
 --
 -- Exit status, which is psql's own:
---   0  the user holds the grant. A second run adds nothing.
---   2  the connection was refused or lost
---   3  a required variable is not set, each one named on standard error; no user or more than one user has the address; the project does not exist; or the project id is malformed. Nothing has been written.
+--   0:  the user holds the grant. A second run adds nothing.
+--   2:  the connection was refused or lost
+--   3:  a required variable is not set, each one named on standard error; no user or more than one user has the address; the project does not exist; or the project id is malformed. Nothing has been written.
 --
 -- Output: one line, `grants_on_project=<n>`, the number of project-scope grants the user holds on the project. The address is never printed: it travels as a bound parameter and is in no statement's text, and no error names it. A server that is set to log the parameters of statements that succeed, or of slow ones, logs it all the same; those settings are the server's and this script cannot change them.
 \set ON_ERROR_STOP on

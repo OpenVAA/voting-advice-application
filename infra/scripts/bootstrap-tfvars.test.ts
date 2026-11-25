@@ -1,8 +1,5 @@
 /**
- * Guards the trust inputs that a hand apply of the bootstrap root carries: the numeric ids of the repository and of its
- * owner, the subjects each role trusts, and the plan role's permissions over the pipeline's state lock. A wrong id or
- * subject makes a role unassumable, and nothing short of the first credentialed workflow run would show it, so the
- * values are held here. The files are read as text; no Terraform runs and no account is reached.
+ * Guards the trust inputs that a hand apply of the bootstrap root carries: the numeric ids of the repository and of its owner, the subjects each role trusts, and the plan role's permissions over the pipeline's state lock. A wrong id or subject makes a role unassumable, and nothing short of the first credentialed workflow run would show it, so the values are held here. The files are read as text; no Terraform runs and no account is reached.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';

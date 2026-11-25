@@ -2,14 +2,16 @@
  * The identity-callback Edge Function, called directly (no browser, no live identity provider).
  *
  * Each test builds a synthetic JWE-encrypted Idura id_token (fixed test keys, kid test-enc-1/test-sig-1) with `buildTestIdToken`'s defaults: the issuer `MOCK_ISSUER` and the audience `MOCK_AUDIENCE` of the mock OIDC issuer (tests/tests/support/mockOidcIssuer.ts), so this spec and the browser specs are served by one `identity-callback` environment. It POSTs the token with a project and an entity type as the frontend server does, with the run's server secret in the credential header, and asserts the function's closed answer and what it wrote:
- * 1. A new identity gets an account, a confirmed candidate with the token's names, one editor grant and a record of the candidate in `app_metadata`, which holds the provider, the match property and the match value and neither `hetu` nor `birthdate`.
+ * 1. A new identity gets an account, a confirmed candidate with the token's names, one editor grant and a registration of the candidate, and an `app_metadata` that holds the provider, the match property and the match value and neither a record of registrations, `hetu` nor `birthdate`.
  * 2. The same identity is found again, and the two claims an older account still holds are removed.
- * 3. The same identity registers an organization beside the candidate: unconfirmed, nameless, its own grant and record entry.
- * 4. A record whose grant is gone answers `no_entity` and creates nothing.
- * 5. A type the project does not allow is refused before any account is created.
- * 6. A token the function cannot decrypt or verify, and a body without a token, get the one result each.
- * 7. A call without the server's secret, and a call with another secret, are refused before anything is read, and create no account.
- * 8. Five first sign-ins of one new identity sent at once make one account, one candidate and one editor grant.
+ * 3. The same identity registers an organization beside the candidate: unconfirmed, nameless, its own grant and registration, which the account's own session reads back through `get_user_entities`.
+ * 4. A sign-in of the same identity answers `signed_in` with a token that opens the account's own session, and writes no account, entity, grant or registration.
+ * 5. A registration whose grant is gone answers `no_entity` and creates nothing.
+ * 6. A type the project does not allow is refused before any account is created.
+ * 7. A sign-in of an identity no account holds answers `no_account` and creates no account.
+ * 8. A token the function cannot decrypt or verify, and a body without a token, get the one result each.
+ * 9. A call without the server's secret, and a call with another secret, are refused before anything is read, and create no account.
+ * 10. Five first sign-ins of one new identity sent at once make one account, one candidate and one editor grant.
  *
  * The spec owns two projects of its own, so the registration-mode matrices it needs never touch the settings row of the project the rest of the suite seeds: one allows the identity provider's mode for candidates and organizations, the other for neither. Both are removed, with every account and row the tests created, before and after the tests.
  *
@@ -19,29 +21,16 @@
 import { createServiceRoleClient } from '@openvaa/dev-seed';
 import { expect, test } from '@playwright/test';
 import * as jose from 'jose';
+import { userEntities, verifyTokenHash } from '../../utils/authApi';
 import { buildTestIdToken } from '../../utils/buildTestIdToken';
 import { supabaseAnonKey } from '../../utils/supabaseAnonKey';
+import { supabaseServiceRoleKey } from '../../utils/supabaseServiceRoleKey';
+import { supabaseUrl } from '../../utils/supabaseUrl';
 import { getTestKeys } from '../../utils/testKeys';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
-
 /**
- * The service-role key of the stack the suite runs against, read when a hook needs it, never at module load: a throw at module load fails `playwright test --list` and every project of the run, not only this one.
- *
- * @throws Error naming the variable when it is not set.
- */
-function serviceRoleKey(): string {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (!key)
-    throw new Error(
-      'SUPABASE_SERVICE_ROLE_KEY is not set; the bank-auth tests read and remove what identity-callback created with it.'
-    );
-  return key;
-}
-
-/**
- * The secret the frontend server sends to the function, which the E2E wrapper generates for each run and gives to the function and to Playwright alike. Read when a hook needs it, for the reason above.
+ * The secret the frontend server sends to the function, which the E2E wrapper generates for each run and gives to the function and to Playwright alike. Read when a hook needs it, never at module load: a throw at module load fails `playwright test --list` and every project of the run, not only this one.
  *
  * @throws Error naming the variable when it is not set.
  */
@@ -72,14 +61,15 @@ const CLOSED_PROJECT_ID = '00000000-0000-0000-0000-00000000ba02';
 const PROJECT_SETTINGS: Record<string, Record<string, unknown>> = {
   [OPEN_PROJECT_ID]: {
     contestantApp: {
-      entityTypes: ['candidate', 'organization'],
-      registrationModes: { candidate: ['identity_provider'], organization: ['identity_provider'] }
+      servedEntityTypes: {
+        candidate: { registrationModes: ['identity_provider'] },
+        organization: { registrationModes: ['identity_provider'] }
+      }
     }
   },
   [CLOSED_PROJECT_ID]: {
     contestantApp: {
-      entityTypes: ['candidate', 'organization'],
-      registrationModes: { candidate: ['email'], organization: [] }
+      servedEntityTypes: { candidate: { registrationModes: ['email'] }, organization: { registrationModes: [] } }
     }
   }
 };
@@ -108,6 +98,9 @@ const CONCURRENT_IDENTITY = {
   given_name: 'Samanaikainen',
   family_name: 'Kirjautuja'
 };
+
+/** A fifth synthetic identity, which signs in without having registered. */
+const UNREGISTERED_IDENTITY = { ...TEST_IDENTITY, sub: 'test-bank-auth-sub-005' };
 
 /** How many first sign-ins of the fourth identity are sent at once. */
 const CONCURRENT_SIGN_INS = 5;
@@ -141,7 +134,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     body: Record<string, unknown>,
     credential: string | null = secret
   ): Promise<FunctionAnswer> {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/identity-callback`, {
+    const response = await fetch(`${supabaseUrl()}/functions/v1/identity-callback`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -164,6 +157,32 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     return callFunction({ id_token: idToken, project_id: projectId, entity_type: entityType });
   }
 
+  /** POST a fresh token of an identity to sign in to a project, with no entity type. */
+  async function signIn(identity: typeof TEST_IDENTITY, projectId: string): Promise<FunctionAnswer> {
+    const idToken = await buildTestIdToken(identity, testKeys.sigPriv, testKeys.encPubJwk);
+    return callFunction({ id_token: idToken, project_id: projectId, intent: 'sign_in' });
+  }
+
+  /** The ids of every account whose `app_metadata` holds the match value. Other projects of a run make accounts of their own meanwhile, so the accounts are counted by identity, never all of them. */
+  async function accountIdsOf(sub: string): Promise<Array<string>> {
+    const ids = new Array<string>();
+    for (let page = 1; ; page++) {
+      const { data, error } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error) throw new Error(`listUsers failed: ${error.message}`);
+      ids.push(...data.users.filter((user) => user.app_metadata?.identity_match_value === sub).map((user) => user.id));
+      if (data.users.length < 1000) return ids;
+    }
+  }
+
+  /** The entities the database records the account as having registered, which the test-only `test_identity_registrations` lists for the service role. */
+  async function registrationsOf(id: string): Promise<Array<Record<string, unknown>>> {
+    const { data, error } = await adminClient.rpc('test_identity_registrations', { p_user_ids: [id] });
+    if (error) throw new Error(`test_identity_registrations failed: ${error.message}`);
+    return ((data ?? []) as Array<Record<string, unknown>>).sort((a, b) =>
+      String(a.entity_type).localeCompare(String(b.entity_type))
+    );
+  }
+
   /** The account whose `app_metadata` holds the match value, or undefined. */
   async function accountOf(sub: string): Promise<User | undefined> {
     for (let page = 1; ; page++) {
@@ -180,6 +199,20 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     const { data, error } = await adminClient.auth.admin.getUserById(id);
     if (error) throw new Error(`getUserById failed: ${error.message}`);
     return data.user.app_metadata ?? {};
+  }
+
+  /**
+   * The organization the account registered in a project, as the account's own session reads it from `get_user_entities`: the registrations are rows no API role can read, the service role included, so they are read through the session the function's sign-in token opens. The token is spent by the read.
+   *
+   * @param token - The sign-in token of a successful answer.
+   * @param projectId - The project.
+   * @returns The id, or undefined when the answer names none.
+   */
+  async function registeredOrganizationOf(token: unknown, projectId: string): Promise<unknown> {
+    const session = await verifyTokenHash({ tokenHash: String(token), type: 'magiclink' });
+    const answer = await userEntities({ accessToken: session.accessToken, projectId });
+    expect(answer.status).toBe(200);
+    return (answer.body as Record<string, unknown> | null)?.organization;
   }
 
   /** The grants the account holds, without their ids. */
@@ -202,7 +235,13 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
 
   /** Remove both identities' accounts and grants, and both projects with every row in them. */
   async function removeEverything(): Promise<void> {
-    for (const identity of [TEST_IDENTITY, REFUSED_IDENTITY, UNCREDENTIALLED_IDENTITY, CONCURRENT_IDENTITY]) {
+    for (const identity of [
+      TEST_IDENTITY,
+      REFUSED_IDENTITY,
+      UNCREDENTIALLED_IDENTITY,
+      CONCURRENT_IDENTITY,
+      UNREGISTERED_IDENTITY
+    ]) {
       const account = await accountOf(identity.sub);
       if (!account) continue;
       const { error: grantError } = await adminClient.from('grants').delete().eq('user_id', account.id);
@@ -216,7 +255,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
 
   test.beforeAll(async () => {
     // Built through dev-seed's guarded factory, which refuses a non-local SUPABASE_URL before any service-role request is sent.
-    adminClient = createServiceRoleClient(SUPABASE_URL, serviceRoleKey());
+    adminClient = createServiceRoleClient(supabaseUrl(), supabaseServiceRoleKey());
     anonKey = supabaseAnonKey();
     secret = serverSecret();
     testKeys = await getTestKeys();
@@ -266,9 +305,10 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(metadata.identity_provider).toBe('idura-ftn');
     expect(metadata.identity_match_prop).toBe('sub');
     expect(metadata.identity_match_value).toBe(TEST_IDENTITY.sub);
-    expect(metadata.registered_entities).toEqual({ [OPEN_PROJECT_ID]: { candidate: candidateId } });
+    expect(metadata.registered_entities).toBeUndefined();
     expect(metadata.hetu).toBeUndefined();
     expect(metadata.birthdate).toBeUndefined();
+    expect(await registeredOrganizationOf(answer.body.token, OPEN_PROJECT_ID)).toBeUndefined();
   });
 
   test('refuses a token encrypted for a key the function does not hold, with the invalid-token result alone', async () => {
@@ -312,7 +352,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     ]);
 
     const metadata = await metadataOf(userId);
-    expect(metadata.registered_entities).toEqual({ [OPEN_PROJECT_ID]: { candidate: candidateId } });
+    expect(metadata.registered_entities).toBeUndefined();
     expect(metadata.hetu).toBeUndefined();
     expect(metadata.birthdate).toBeUndefined();
   });
@@ -335,10 +375,43 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
       { scope: 'entity', target_type: 'organization', target_id: organizationId, role: 'editor' }
     ]);
 
-    const metadata = await metadataOf(userId);
-    expect(metadata.registered_entities).toEqual({
-      [OPEN_PROJECT_ID]: { candidate: candidateId, organization: organizationId }
-    });
+    expect((await metadataOf(userId)).registered_entities).toBeUndefined();
+    expect(await registeredOrganizationOf(answer.body.token, OPEN_PROJECT_ID)).toBe(organizationId);
+  });
+
+  test("signs in the same identity's account with a sign-in and writes no account, entity, grant or registration", async () => {
+    expect(organizationId, 'the organization test ran').toBeTruthy();
+    const before = {
+      accounts: await accountIdsOf(TEST_IDENTITY.sub),
+      candidates: await rowsIn('candidates', OPEN_PROJECT_ID, 'id'),
+      organizations: await rowsIn('organizations', OPEN_PROJECT_ID, 'id'),
+      grants: await grantsOf(userId),
+      registrations: await registrationsOf(userId)
+    };
+    expect(before.accounts).toEqual([userId]);
+    expect(before.registrations).toEqual([
+      { entity_type: 'candidate', entity_id: candidateId },
+      { entity_type: 'organization', entity_id: organizationId }
+    ]);
+
+    const answer = await signIn(TEST_IDENTITY, OPEN_PROJECT_ID);
+
+    expect(answer.status).toBe(200);
+    expect(answer.body.result).toBe('signed_in');
+    expect(typeof answer.body.token).toBe('string');
+    expect(answer.body.token).not.toBe('');
+    expect(Object.keys(answer.body).sort()).toEqual(['result', 'token']);
+
+    const session = await verifyTokenHash({ tokenHash: String(answer.body.token), type: 'magiclink' });
+    expect(jose.decodeJwt(session.accessToken).sub, 'the user the token signs in').toBe(userId);
+
+    expect({
+      accounts: await accountIdsOf(TEST_IDENTITY.sub),
+      candidates: await rowsIn('candidates', OPEN_PROJECT_ID, 'id'),
+      organizations: await rowsIn('organizations', OPEN_PROJECT_ID, 'id'),
+      grants: await grantsOf(userId),
+      registrations: await registrationsOf(userId)
+    }).toEqual(before);
   });
 
   test('answers no_entity and creates nothing when the grant on the recorded candidate is gone', async () => {
@@ -371,8 +444,16 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(await rowsIn('candidates', CLOSED_PROJECT_ID, 'id')).toEqual([]);
   });
 
+  test('answers a sign-in of an identity no account holds with the no-account result alone and creates no account', async () => {
+    const answer = await signIn(UNREGISTERED_IDENTITY, OPEN_PROJECT_ID);
+
+    expect(answer.status).toBe(404);
+    expect(answer.body).toEqual({ result: 'no_account' });
+    expect(await accountIdsOf(UNREGISTERED_IDENTITY.sub)).toEqual([]);
+  });
+
   test('should handle CORS preflight correctly', async () => {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/identity-callback`, {
+    const response = await fetch(`${supabaseUrl()}/functions/v1/identity-callback`, {
       method: 'OPTIONS',
       headers: {
         Origin: 'http://localhost:5174',

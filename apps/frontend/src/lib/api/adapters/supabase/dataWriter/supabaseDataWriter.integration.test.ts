@@ -13,13 +13,13 @@
  *
  * 5. **An entity's editor reads its own nominations, and no one else's.** A candidate nominated under an organization's nomination reads one nomination with the organization's type, id and names, the election's and the constituency's names and its own state; the organization's editor reads the organization's one nomination, which has no parent; an entity with no nomination reads an empty list beside its entity; and another user's entity resolves to no user data, the database's function answering it with a null and no error.
  *
- * 6. **An entity's editor writes its nominations as one set, and reads the entities a nomination may be placed under.** A candidate's first save with a typed party name, a save that links a listed party with no nomination at the contest, and a repeat of the stored set come back as the writer's saved result with the function's counts. A removal of a nomination with a candidate listed under it, and a save that would create one unconfirmed parent nomination too many, come back as the writer's two named refusals, and each refusal is also read through the editor's own client: its code and what the writer recognises it by. Under the nominations lock, and for a candidate with neither a party nor a typed name in an election that requires one, the save rejects. Nothing of a refused or rejected save is stored. The parent options hold a confirmed organization with the contest it is nominated at and no unconfirmed one, an alliance for an organization, and resolve to no value for an entity the caller does not edit. One row is inserted past the writer, by the editor's own client: a candidate's nomination with no party in an election that requires one, which the database refuses when the request's transaction ends.
+ * 6. **An entity's editor writes its nominations as one set, and reads the entities a nomination may be placed under.** A candidate's first save with a typed party name, a save that links a listed party with no nomination at the contest, and a repeat of the stored set come back as the writer's saved result with the function's counts. A removal of a nomination with a candidate listed under it, and a save that would create one unconfirmed parent nomination too many, come back as the writer's two named refusals, and each refusal is also read through the editor's own client: its code and what the writer recognises it by. Under the nominations lock the save comes back as the writer's `nominationsLocked` refusal, and for a candidate with neither a party nor a typed name in an election that requires one the save rejects. Nothing of a refused or rejected save is stored. The parent options hold a confirmed organization with the contest it is nominated at and no unconfirmed one, an alliance for an organization, and resolve to no value for an entity the caller does not edit. One row is inserted past the writer, by the editor's own client: a candidate's nomination with no party in an election that requires one, which the database refuses when the request's transaction ends.
  *
  * 7. **A signed-in editor's user-level data says whether the account has a password, and what state its address is in.** An editor the file created with a password reads `passwordSet` as `true`, beside its address and the contestant role, through the read the database makes for the caller alone. The same editor, whom no identity provider made, reads its address as proved, nothing pending and no pending address taken.
  *
  * Every refusal asserts the rejection and the unchanged state separately, so a write that silently did nothing and a write that was refused cannot be mistaken for each other.
  *
- * Gating: `describe.skipIf(!process.env.SUPABASE_URL)`. The file skips where no local Supabase is declared, which includes the default unit run and every CI job. No CI job runs it. A run that is meant to execute it sets `CONTESTANT_WRITER_INTEGRATION_REQUIRED=1`, which makes the file throw at import when `SUPABASE_URL` is unset, so it cannot skip silently.
+ * Gating: `describe.skipIf(!process.env.SUPABASE_URL)`. The file skips where no local Supabase is declared, which includes the default unit run. The CI job `dev-seed-integration` in `.github/workflows/main.yaml` runs it against the stack it starts. A run that is meant to execute it sets `CONTESTANT_WRITER_INTEGRATION_REQUIRED=1`, which makes the file throw at import when `SUPABASE_URL` is unset, so it cannot skip silently.
  *
  * To run it, with the local stack up: `SUPABASE_URL=… SUPABASE_ANON_KEY=… SUPABASE_SERVICE_ROLE_KEY=… CONTESTANT_WRITER_INTEGRATION_REQUIRED=1 yarn workspace @openvaa/frontend vitest run supabaseDataWriter.integration`.
  *
@@ -33,7 +33,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { SupabaseDataWriter } from './supabaseDataWriter';
+import { REFUSAL_CODES, SupabaseDataWriter } from './supabaseDataWriter';
 import type { Database, Json } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { DesiredNomination, LocalizedAnswers } from '$lib/api/base/dataWriter.type';
@@ -63,8 +63,6 @@ const PASSWORD = `Pw-${RUN_ID}`;
 type EntityTable = 'candidates' | 'organizations';
 type Target = { type: 'candidate' | 'organization'; table: EntityTable; id: string };
 
-/** How the refusal of a changed name on a confirmed row begins, as `enforce_entity_immutability` raises it. */
-const NAME_REFUSAL_PREFIX = 'Entity name is immutable once confirmed: column ';
 /** The names the confirmed organization is created with, which no editor's write may change. */
 const CONFIRMED_NAME = { en: `Writer integration confirmed ${RUN_ID}`, fi: `Vahvistettu ${RUN_ID}` };
 const CONFIRMED_SHORT_NAME = { en: 'WIC' };
@@ -75,10 +73,6 @@ const CONSTITUENCY_NAME = { en: `Writer integration constituency ${RUN_ID}` };
 /** The custom data the organization's nomination is created with. */
 const NOMINATION_CUSTOM_DATA = { writerIntegration: RUN_ID };
 
-/** How the refusal of one unconfirmed parent nomination too many begins, as `enforce_nomination_confirmation` raises it. */
-const PENDING_CAP_REFUSAL_PREFIX = 'A caller may originate at most ';
-/** The foreign key the database names when it refuses to remove a nomination that others are listed under. */
-const PARENT_NOMINATION_FOREIGN_KEY = 'nominations_parent_nomination_id_fkey';
 /** How the refusal of a candidate's nomination with neither a party nor a typed name begins, as `validate_nomination_parent_required` raises it. */
 const PARENT_REQUIRED_REFUSAL_PREFIX = 'Nomination parent required: ';
 /** The most unconfirmed parent nominations one caller may have originated. */
@@ -510,9 +504,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
     async () => {
       const user = await organizationEditor.getBasicUserData();
 
-      expect(user.addressState).toBe('proved');
-      expect(user.pendingEmail).toBeNull();
-      expect(user.pendingEmailTaken).toBe(false);
+      expect(user.address).toEqual({ state: 'proved' });
       expect(user.ownOrganizationUnnamed).toBe(false);
       expect(user.username).toBe(user.email);
     },
@@ -564,7 +556,8 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
 
         await expect(
           writer().updateEntityProperties({
-            target: { type: target().type, id: target().id },
+            // reason: the target's type is known only as either served type, and the image is a property of both.
+            target: { type: target().type as never, id: target().id },
             // reason: the public option type names a stored image, and the file-carrying shape under test is the one the profile form produces.
             properties: { image: { file } as never }
           })
@@ -579,7 +572,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
 
   describe("an editor's writes of its own entity's names and colour", () => {
     it(
-      "the refusal a signed-in editor receives for a changed name on a confirmed row carries the trigger's code and the start of its message",
+      "the refusal a signed-in editor receives for a changed name on a confirmed row carries the trigger's own code",
       async () => {
         const { data, error } = await confirmedOrganizationClient
           .from('organizations')
@@ -589,8 +582,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
           .single();
 
         expect(data).toBeNull();
-        expect(error?.code).toBe('P0001');
-        expect(error?.message.startsWith(NAME_REFUSAL_PREFIX)).toBe(true);
+        expect(error?.code).toBe(REFUSAL_CODES.nameImmutable);
 
         expect((await storedOrganizationProperties(confirmedOrganization)).name).toEqual(CONFIRMED_NAME);
       },
@@ -720,6 +712,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
           confirmed: false,
           customData: null,
           updatedAt: expect.any(String),
+          writable: true,
           parent: {
             entityType: 'organization',
             entityId: confirmedOrganization.id,
@@ -754,7 +747,8 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
           electionSymbol: '',
           confirmed: true,
           customData: NOMINATION_CUSTOM_DATA,
-          updatedAt: expect.any(String)
+          updatedAt: expect.any(String),
+          writable: true
         }
       ]);
       expect(userData?.nominations.every((nomination) => !Object.hasOwn(nomination, 'parent'))).toBe(true);
@@ -976,10 +970,14 @@ describe.skipIf(!hasSupabase)(
     /**
      * The nominations of an entity as a write states the read it was computed from.
      * @param target - The entity.
-     * @returns Each stored nomination's id with the time it was last updated.
+     * @returns Each stored nomination's id with the time it was last updated, as writable: every nomination of this group is at its election's current round, in an election that admits its entity.
      */
     async function readOf(target: Target) {
-      return (await storedNominations(target)).map((row) => ({ id: row.id, updatedAt: row.updated_at }));
+      return (await storedNominations(target)).map((row) => ({
+        id: row.id,
+        updatedAt: row.updated_at,
+        writable: true
+      }));
     }
 
     /**
@@ -1004,7 +1002,7 @@ describe.skipIf(!hasSupabase)(
         typeof settings.access === 'object' && settings.access !== null && !Array.isArray(settings.access)
           ? settings.access
           : {};
-      return { ...settings, access: { ...access, nominationsLocked: true } };
+      return { ...settings, access: { ...access, contestantEditing: 'nominationsLocked' } };
     }
 
     /**
@@ -1035,7 +1033,7 @@ describe.skipIf(!hasSupabase)(
 
       ({ electionId: closedListElectionId, constituencyId: closedListConstituencyId } = await insertContest(
         'closed list',
-        { election_type: 'organization_list' }
+        { nomination_shape: 'organization_list' }
       ));
       ({ electionId: openElectionId, constituencyId: openConstituencyId } = await insertContest('open list'));
 
@@ -1252,7 +1250,7 @@ describe.skipIf(!hasSupabase)(
 
         const result = await candidateEditor.writer.setEntityNominations({
           target: { type: 'candidate', id: candidate.id },
-          readFrom: stored.map((row) => ({ id: row.id, updatedAt: row.updated_at })),
+          readFrom: stored.map((row) => ({ id: row.id, updatedAt: row.updated_at, writable: true })),
           nominations: [
             desired(
               { electionId: closedListElectionId, constituencyId: closedListConstituencyId },
@@ -1285,7 +1283,7 @@ describe.skipIf(!hasSupabase)(
         // The read names one of the two nominations, at a time before its last update: the set leaves the other out.
         const result = await candidateEditor.writer.setEntityNominations({
           target: { type: 'candidate', id: candidate.id },
-          readFrom: [{ id: typed?.id ?? '', updatedAt: '2000-01-01T00:00:00+00:00' }],
+          readFrom: [{ id: typed?.id ?? '', updatedAt: '2000-01-01T00:00:00+00:00', writable: true }],
           nominations: [
             desired(
               { electionId: closedListElectionId, constituencyId: closedListConstituencyId },
@@ -1318,16 +1316,15 @@ describe.skipIf(!hasSupabase)(
           unconfirmedPartyNominationId
         ]);
 
-        // The refusal itself, through the editor's own client: the code and the foreign key the writer recognises it by.
+        // The refusal itself, through the editor's own client: the code the writer recognises it by.
         const { data, error } = await unconfirmedPartyEditor.client.rpc('set_entity_nominations', {
           p_entity_type: 'organization',
           p_entity_id: unconfirmedParty.id,
           p_nominations: [],
-          p_expected_reach: Object.fromEntries(before.map((row) => [row.id, row.updated_at]))
+          p_expected_versions: Object.fromEntries(before.map((row) => [row.id, row.updated_at]))
         });
         expect(data).toBeNull();
-        expect(error?.code).toBe('23503');
-        expect(error?.message).toContain(PARENT_NOMINATION_FOREIGN_KEY);
+        expect(error?.code).toBe(REFUSAL_CODES.listedUnder);
       },
       HANG_GUARD_MS
     );
@@ -1357,7 +1354,7 @@ describe.skipIf(!hasSupabase)(
         expect(await storedNominations(cappedCandidate)).toEqual([]);
         expect(await storedNominations(listedParty)).toEqual(partyBefore);
 
-        // The refusal itself, through the editor's own client: the code and the start of the message the writer recognises it by.
+        // The refusal itself, through the editor's own client: the code the writer recognises it by.
         const { data, error } = await cappedCandidateEditor.client.rpc('set_entity_nominations', {
           p_entity_type: 'candidate',
           p_entity_id: cappedCandidate.id,
@@ -1369,17 +1366,16 @@ describe.skipIf(!hasSupabase)(
               parent: { kind: 'entity', entity_type: 'organization', entity_id: listedParty.id }
             }
           ],
-          p_expected_reach: {}
+          p_expected_versions: {}
         });
         expect(data).toBeNull();
-        expect(error?.code).toBe('P0001');
-        expect(error?.message.startsWith(PENDING_CAP_REFUSAL_PREFIX)).toBe(true);
+        expect(error?.code).toBe(REFUSAL_CODES.pendingParentCap);
       },
       HANG_GUARD_MS
     );
 
     it(
-      'with nominations locked a save that changes a symbol rejects and the stored symbol is what it was, and with the lock off the same save is stored',
+      'with nominations locked a save that changes a symbol is refused as nominationsLocked and the stored symbol is what it was, and with the lock off the same save is stored',
       async () => {
         const target = { type: 'candidate', id: listedCandidate.id } as const;
         const nominations = [
@@ -1395,15 +1391,13 @@ describe.skipIf(!hasSupabase)(
         try {
           await expect(
             listedCandidateEditor.writer.setEntityNominations({ target, nominations, readFrom })
-          ).rejects.toThrow(
-            /^setEntityNominations: set_entity_nominations: a nomination could not be written; nominations are locked /
-          );
+          ).resolves.toEqual({ type: 'refused', reason: 'nominationsLocked' });
           expect((await storedNominations(listedCandidate)).map((row) => row.election_symbol)).toEqual(['3']);
         } finally {
           if (originalSettings !== undefined) await writeSettings(originalSettings);
         }
 
-        // The same call with the lock off: the rejection above was the lock's.
+        // The same call with the lock off: the refusal above was the lock's.
         await expect(
           listedCandidateEditor.writer.setEntityNominations({ target, nominations, readFrom })
         ).resolves.toEqual({
@@ -1672,9 +1666,9 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter and the invitation contract ag
   );
 
   it(
-    'claims nothing for that session, whose invitation is already claimed, and reports that the user has a password',
+    'claims nothing for that session, whose invitation is already claimed',
     async () => {
-      expect(await writer.claimInvitations()).toStrictEqual({ claimed: [], skipped: [], passwordSet: true });
+      expect(await writer.claimInvitations()).toStrictEqual({ claimed: [], skipped: [] });
     },
     HANG_GUARD_MS
   );

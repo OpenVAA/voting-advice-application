@@ -2,29 +2,35 @@
 --
 -- Functions:
 -- - create_invitations() - seed a batch of invitations in one project, stating whether each invited entity is confirmed and which nominations it holds, and return each generated code once
+-- - private.access_throttle_take() - count one take against a throttle key
+-- - private.email_hash(), private.email_link_slot_key(), private.email_link_slots_take() - the throttle keys of an address, and the two slots a sign-in or recovery mail takes
 -- - private.invitation_mode_allowed() - whether the project allows the registration mode of an open invitation
+-- - private.invitation_is_open() - whether an invitation is unclaimed and unexpired
+-- - private.email_holds_allowed_invitation() - whether an open invitation of a project, whose registration mode is allowed, is addressed to an address
 -- - private.email_holds_grant_in_project() - whether a user with a confirmed address holds a grant that reaches a project
 -- - invitation_code_status() - whether a code is valid, used or unknown
 -- - invitation_link_request() - the address a sign-in mail may go to, or null
 -- - invitation_link_release() - give back what a link request took when no mail went out
 -- - recovery_link_request() - which mail a recovery request for an address earns, or null
--- - address_confirmation_request() - whether one confirmation mail may go to an address for a signed-in account, under the address's and the account's limits
--- - address_confirmation_release() - give back the address's slot of a confirmation that mailed nothing
--- - address_holds_open_invitation() - whether an open invitation of a project holds an address
+-- - email_confirmation_request() - whether one confirmation mail may go to an address for a signed-in account, under the address's and the account's limits
+-- - email_confirmation_release() - give back the address's slot of a confirmation that mailed nothing
+-- - email_invitation_hold() - which hold an open invitation of a project has on an address: one the project would honour, one it would not, or none
 -- - invitation_code_claimant_email() - the claimant's address of a used code, under an attempt limit
--- - invitation_caller_take() - count one invitation operation against the limit of the address it came from
--- - invitation_link_witness_open(), invitation_link_witness() - whether the background work of one link request has ended
+-- - identity_account_find() - the account an identity provider's identity resolves to, by its match value or its placeholder address
+-- - identity_entity_find_or_create() - the entity an identity provider's user registered in a project, found or created
+-- - access_caller_take() - count one anonymous account-access operation against the limit of the address it came from
 -- - claim_invitations() - turn the caller's open invitations into grants
 --
--- The seven `invitation_*` functions, recovery_link_request, the two `address_confirmation_*` functions and address_holds_open_invitation are the service role's: an Edge Function calls them with values a visitor typed, and no API role can execute them. claim_invitations is the signed-in user's and nobody else's.
+-- The four `invitation_*` functions, access_caller_take, recovery_link_request, the two `email_confirmation_*` functions, email_invitation_hold and the two `identity_*` functions are the service role's: an Edge Function calls them with values a visitor typed or an identity provider asserted, and no API role can execute them. claim_invitations is the signed-in user's and nobody else's.
 --
 -- Depends on:
 -- - 102-entities.sql (the four entity tables)
--- - 104-nominations.sql (public.nominations, its triggers and the constraint trigger nominations_parent_required)
+-- - 104-nominations.sql (public.nominations, its triggers and the constraint trigger validate_nomination_parent_required)
 -- - 300-auth-tables.sql (public.grants)
--- - 301-auth-functions.sql (private.entity_project_id, private.user_password_set, private.registration_mode_allowed)
+-- - 100-tenancy.sql (public.projects, which private.identity_registrations references)
+-- - 301-auth-functions.sql (private.entity_project_id, private.registration_mode_allowed, private.project_contestant_app_closed, private.grant_reaches_project)
 -- - 305-invitations.sql (public.invitations, its insert trigger, its policies and private.invitation_code_hash)
--- - 503-entity-rpcs.sql (private.nomination_list_checked, private.nomination_object_checked, private.parent_nomination_resolved)
+-- - 503-entity-rpcs.sql (private.nomination_list_checked, private.nomination_object_checked, private.parent_nomination_resolved, private.nomination_parent_target)
 -- - auth.users (Supabase Auth)
 --------------------------------------------------------------------------------
 -- localized_has_text: does a localized string say anything
@@ -76,11 +82,11 @@ service_role;
 --   name, short_name, info, color, image - a JSON object or null; sort_order - an integer or null; subtype, external_id - a string or null. Each optional.
 -- On an object with an `id`, a column the object does not state keeps its stored value. Any other key is not read.
 --
--- An object creates or updates a nomination; an invitation never deletes one. For a parent of kind `entity`, the parent's nomination at the contest is asked of `private.parent_nomination_resolved`, which refuses a parent of another project and creates the parent's bare, unconfirmed row where it holds none. A new nomination is then inserted with its parent set and without `confirmed`, which the INSERT column grant leaves out, so it starts unconfirmed, and an object that states it confirmed is confirmed by an UPDATE of the new row. An object with an `id` whose values all equal the stored row's is not written; otherwise one UPDATE writes every column at its target, the stated confirmation included. The custom data is the stated object written over the stored one, then `other` sets the requested name, `entity` and `none` remove it, and `keep` leaves it.
+-- An object creates or updates a nomination; an invitation never deletes one. For a parent of kind `entity`, the parent's nomination at the contest is asked of `private.parent_nomination_resolved`, which refuses a parent of another project and creates the parent's bare, unconfirmed row where it holds none. A new nomination is then inserted with its parent set and without `confirmed`, which the INSERT column grant leaves out, so it starts unconfirmed, and an object that states it confirmed is confirmed by an UPDATE of the new row. An object with an `id` whose values all equal the stored row's is not written; otherwise one UPDATE writes every column at its target, the stated confirmation included. The custom data is the stated object written over the stored one, then `other` sets the requested name, `entity` and `none` remove it, and `keep` leaves it, as `private.nomination_parent_target` states for both nomination writers.
 --
 -- Every UPDATE reads back the confirmation it wrote. Row-level security refuses an UPDATE without an error, and enforce_nomination_confirmation turns off the confirmation of a row that a caller without `nomination.confirm` edits; so an UPDATE that affects no row, a parent's nomination that cannot be found after it was created, and a confirmation read back other than the one stated each raise SQLSTATE 42501 with `<label> could not be written as stated`. A caller without `nomination.confirm` that states a new nomination confirmed meets enforce_nomination_confirmation's own refusal.
 --
--- Where an election's type requires a candidate's nomination to have a parent or a requested name, `nominations_parent_required` judges it when the transaction ends. A call that wrote a nomination forces that constraint after its last item and sets it back to deferred, so the refusal (SQLSTATE 23514) is raised inside the call. A call that wrote none leaves the rows an earlier statement of the caller's transaction left pending to the end of the transaction.
+-- Where an election's nomination shape requires a candidate's nomination to have a parent or a requested name, `validate_nomination_parent_required` judges it when the transaction ends. A call that wrote a nomination forces that constraint after its last item and sets it back to deferred, so the refusal (SQLSTATE 23514) is raised inside the call. A call that wrote none leaves the rows an earlier statement of the caller's transaction left pending to the end of the transaction.
 --
 -- Each item is checked before anything of it is written, its nominations whole, and is then written in this order: the invitation, the entity's confirmation, the nominations. The function creates no entity and no user and sends nothing. The whole batch is the caller's one transaction: a refused item, a duplicate or an unknown `external_id` raises, and no row of the batch is written. A malformed batch, item or object raises SQLSTATE 22023 naming the item's index, and an object's as `p_invitations[<i>].nominations[<j>]`, and never an address. Refused besides the shapes: `nominations` on a project-scope item or on an item for a faction or an alliance; the nominations of one entity on two items of the batch; nominations for an invited entity that is no entity of p_project_id the caller can read; an `id` that another object of the array names or that names no nomination of the invited entity; an election, a constituency or a round other than the named nomination's.
 --
@@ -446,11 +452,20 @@ BEGIN
       v_kind := v_entry ->> 'kind';
       v_round := (v_entry ->> 'round')::integer;
 
-      -- The parent: `keep` leaves the stored one, `entity` asks for the parent's nomination at the contest, created where it holds none, and `none` and `other` link nothing.
-      v_target_parent := NULL;
-      IF v_kind = 'keep' THEN
-        v_target_parent := (v_stored ->> 'parent_nomination_id')::uuid;
-      ELSIF v_kind = 'entity' THEN
+      -- The custom data: the stated keys over the stored ones.
+      v_target_custom := NULLIF(v_stored -> 'custom_data', 'null'::jsonb);
+      IF jsonb_typeof(v_entry -> 'custom_data') = 'object' THEN
+        v_target_custom := CASE WHEN jsonb_typeof(v_target_custom) = 'object' THEN v_target_custom ELSE '{}'::jsonb END
+          || (v_entry -> 'custom_data');
+      END IF;
+
+      -- The parent and the custom data for the parent's kind; `entity` then asks for the parent's nomination at the contest, created where it holds none.
+      SELECT t.parent_nomination_id, t.custom_data
+      INTO v_target_parent, v_target_custom
+      FROM private.nomination_parent_target(
+        v_kind, (v_stored ->> 'parent_nomination_id')::uuid, v_target_custom, v_entry ->> 'name') AS t;
+
+      IF v_kind = 'entity' THEN
         SELECT r.nomination_id, r.created
         INTO v_target_parent, v_parent_created
         FROM private.parent_nomination_resolved(
@@ -466,19 +481,6 @@ BEGIN
           RAISE EXCEPTION 'create_invitations: % could not be written as stated', v_label
             USING ERRCODE = '42501';
         END IF;
-      END IF;
-
-      -- The custom data: the stated keys over the stored ones, then the parent's kind.
-      v_target_custom := NULLIF(v_stored -> 'custom_data', 'null'::jsonb);
-      IF jsonb_typeof(v_entry -> 'custom_data') = 'object' THEN
-        v_target_custom := CASE WHEN jsonb_typeof(v_target_custom) = 'object' THEN v_target_custom ELSE '{}'::jsonb END
-          || (v_entry -> 'custom_data');
-      END IF;
-      IF v_kind = 'other' THEN
-        v_target_custom := CASE WHEN jsonb_typeof(v_target_custom) = 'object' THEN v_target_custom ELSE '{}'::jsonb END
-          || jsonb_build_object(c_requested, v_entry ->> 'name');
-      ELSIF v_kind IN ('entity', 'none') AND jsonb_typeof(v_target_custom) = 'object' THEN
-        v_target_custom := v_target_custom - c_requested;
       END IF;
 
       -- What the row is to hold: each column stated, or as stored when not stated.
@@ -590,8 +592,8 @@ BEGIN
 
   -- Raise the end-of-transaction parent rule inside this call when it wrote a nomination, and leave the constraint deferred.
   IF v_wrote_nomination THEN
-    SET CONSTRAINTS public.nominations_parent_required IMMEDIATE;
-    SET CONSTRAINTS public.nominations_parent_required DEFERRED;
+    SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE;
+    SET CONSTRAINTS public.validate_nomination_parent_required DEFERRED;
   END IF;
 
   RETURN v_out;
@@ -609,7 +611,7 @@ EXECUTE ON FUNCTION public.create_invitations (uuid, jsonb, boolean) TO authenti
 service_role;
 
 --------------------------------------------------------------------------------
--- invitation_throttle: the windowed counters of the invitation helpers
+-- access_throttle: the windowed counters of the invitation, recovery and address-confirmation helpers
 --
 -- One row per key, in one of seven forms:
 -- - `link:<project id>:<sha256 hex of the address>` counts the sign-in and recovery mails to one address in one project, one a minute.
@@ -618,23 +620,23 @@ service_role;
 -- - `code:<project id>:<code hash>` counts claimant look-ups of one used code, which are password attempts.
 -- - `confirm:<user id>` counts one signed-in account's address-confirmation requests, whatever project they name.
 -- - `confirm-address:<sha256 hex of the address>` counts the address-confirmation mails to one address, whatever project their requests name.
--- - `caller:<project id>:<address, or the /64 of an IPv6 address>` counts the invitation operations from one caller in one project, thirty per ten minutes, taken by `invitation_caller_take` from the address the Edge Function passes.
+-- - `caller:<project id>:<address, or the /64 of an IPv6 address>` counts the anonymous account-access operations from one caller in one project, `private.deployment_settings.access_caller_max` per ten minutes, taken by `access_caller_take` from the address the Edge Function passes.
 --
--- Only a `caller:` key holds an address in clear, and only while its window runs: each take of `invitation_caller_take` deletes the `caller:` rows whose window has ended. A `link:` or `link-address:` key is taken only for an address a mail would go to, a `code-bind:` key only for an open code row, which also bounds how many addresses a code holder can make a mail go to, a `code:` key only for a code that names a claimed row, and a `confirm:` key only for an account the service role read from a signed-in caller's own token that registered in the project the request names, whose count also bounds the `confirm-address:` keys that account's requests can take; so a caller cannot fill the table with keys of its own making. A `caller:` key is the one key derived from a request header: it is taken only from an address Cloudflare names, which a caller cannot choose, and only for a project that exists.
+-- Only a `caller:` key holds an address in clear, and only while its window runs: each take of `access_caller_take` deletes the `caller:` rows whose window has ended. Every other address is hashed by private.email_hash. A `link:` or `link-address:` key is taken only for an address a mail would go to, a `code-bind:` key only for an open code row, which also bounds how many addresses a code holder can make a mail go to, a `code:` key only for a code that names a claimed row, and a `confirm:` key only for an account the service role read from a signed-in caller's own token that registered in the project the request names, whose count also bounds the `confirm-address:` keys that account's requests can take; so a caller cannot fill the table with keys of its own making. A `caller:` key is the one key derived from a request header: it is taken only from an address Cloudflare names, which a caller cannot choose, and only for a project that exists.
 --
 -- Only the SECURITY DEFINER functions of this file read or write it: row-level security is enabled with no policy and every API role's privileges are revoked.
 --------------------------------------------------------------------------------
-CREATE TABLE private.invitation_throttle (
+CREATE TABLE private.access_throttle (
   key text PRIMARY KEY,
   -- Takes in the current window.
   count integer NOT NULL DEFAULT 1,
-  -- When the current window began; invitation_throttle_take starts a new one once it has ended.
+  -- When the current window began; access_throttle_take starts a new one once it has ended.
   window_start timestamptz NOT NULL DEFAULT now()
 );
 
-ALTER TABLE private.invitation_throttle ENABLE ROW LEVEL SECURITY;
+ALTER TABLE private.access_throttle ENABLE ROW LEVEL SECURITY;
 
-REVOKE ALL ON TABLE private.invitation_throttle
+REVOKE ALL ON TABLE private.access_throttle
 FROM
   PUBLIC,
   anon,
@@ -642,21 +644,21 @@ FROM
   service_role;
 
 --------------------------------------------------------------------------------
--- invitation_throttle_take: count one take against a key
+-- access_throttle_take: count one take against a key
 --
 -- Returns true when the key, counting this take, is within p_max takes in its current window of p_window. A first take creates the key; a take after the window has ended starts a new window at 1. A refused take is counted and does not move the window. The advisory lock serialises concurrent takes of one key until the transaction ends.
 --
 -- Only the SECURITY DEFINER functions of this file call it, as their owner, so no API role holds EXECUTE.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION private.invitation_throttle_take (p_key text, p_max integer, p_window interval) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER
+CREATE OR REPLACE FUNCTION private.access_throttle_take (p_key text, p_max integer, p_window interval) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER
 SET
   search_path = '' AS $$
 DECLARE
   v_count integer;
 BEGIN
-  PERFORM pg_advisory_xact_lock(hashtext('invitation_throttle:' || p_key));
+  PERFORM pg_advisory_xact_lock(hashtext('access_throttle:' || p_key));
 
-  INSERT INTO private.invitation_throttle AS t (key, count, window_start)
+  INSERT INTO private.access_throttle AS t (key, count, window_start)
   VALUES (p_key, 1, now())
   ON CONFLICT (key) DO UPDATE
     SET count = CASE WHEN t.window_start + p_window <= now() THEN 1 ELSE t.count + 1 END,
@@ -668,7 +670,7 @@ END;
 $$;
 
 REVOKE
-EXECUTE ON FUNCTION private.invitation_throttle_take (text, integer, interval)
+EXECUTE ON FUNCTION private.access_throttle_take (text, integer, interval)
 FROM
   PUBLIC,
   anon,
@@ -676,59 +678,100 @@ FROM
   service_role;
 
 --------------------------------------------------------------------------------
--- invitation_caller_take: count one invitation operation against the caller's limit in a project
+-- email_hash: the form in which an address enters a throttle key
 --
--- Returns 0 when the take is admitted, and otherwise the whole seconds until the caller's window ends, at least 1: thirty takes per caller per project per ten minutes. A refused take is counted, as every take of invitation_throttle_take is.
+-- The sha256 hex of the address trimmed and lower-cased, so the keys of one address agree whatever its case and surrounding white space. Null for a null address, which makes every key built on it null and so matches no row.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.email_hash (p_email text) RETURNS text LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT encode(sha256(convert_to(lower(btrim(p_email)), 'UTF8')), 'hex');
+$$;
+
+--------------------------------------------------------------------------------
+-- email_link_slot_key: the `link:` key of an address in a project
 --
--- The caller is p_address, the address the Edge Function read from `cf-connecting-ip`, keyed as `caller:<project id>:<caller>`, where the caller is the host of an IPv4 address, the IPv4 host of an IPv4-mapped IPv6 address (`::ffff:a.b.c.d`), and the /64 of any other IPv6 address, so a mask in the header cannot widen a key. The address is trusted only when `private.deployment_settings.behind_cloudflare` is true, because only behind Cloudflare is `cf-connecting-ip` the connecting client rather than a value the client chose. An untrusted, absent, blank or unparseable address, and an id that names no project, are admitted with no row written: such takes would otherwise all share one bucket, so one caller could spend everyone's slots, or fill the table with keys of its own making.
+-- The one-a-minute slot of the sign-in and recovery mails, stated once for the two functions that take it (through email_link_slots_take), the one that gives it back (invitation_link_release) and the trigger that deletes it with its invitation. Null when either argument is null.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.email_link_slot_key (p_project_id uuid, p_email text) RETURNS text LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT 'link:' || p_project_id::text || ':' || private.email_hash(p_email);
+$$;
+
+--------------------------------------------------------------------------------
+-- email_link_slots_take: take the two slots one sign-in or recovery mail to an address spends
+--
+-- Takes the address's minute slot in the project (email_link_slot_key, one per 60 seconds) and then its day slot in every project together (`link-address:<email_hash>`, twenty a day), and answers true only when both were taken. The minute slot is taken first, so a request inside the minute spends nothing of the day. invitation_link_request and recovery_link_request call it, so a sign-in mail and a recovery mail to one address are limited together.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.email_link_slots_take (p_project_id uuid, p_email text) RETURNS boolean LANGUAGE plpgsql
+SET
+  search_path = '' AS $$
+BEGIN
+  IF NOT private.access_throttle_take(private.email_link_slot_key(p_project_id, p_email), 1, interval '60 seconds') THEN
+    RETURN false;
+  END IF;
+
+  RETURN private.access_throttle_take('link-address:' || private.email_hash(p_email), 20, interval '1 day');
+END;
+$$;
+
+-- The three run as the definer functions of this file that call them, so no API role holds EXECUTE.
+REVOKE
+EXECUTE ON FUNCTION private.email_hash (text),
+private.email_link_slot_key (uuid, text),
+private.email_link_slots_take (uuid, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- access_caller_take: count one anonymous account-access operation against the caller's limit in a project
+--
+-- Returns 0 when the take is admitted, and otherwise the whole seconds until the caller's window ends, at least 1: `private.deployment_settings.access_caller_max` takes per caller per project per ten minutes. A refused take is counted, as every take of access_throttle_take is.
+--
+-- The caller is p_address, the address the Edge Function read from `cf-connecting-ip`, keyed as `caller:<project id>:<caller>`, where the caller is the bucket private.client_address_bucket gives it (107-feedback.sql): the host of an IPv4 address, the IPv4 host of an IPv4-mapped IPv6 address and the /64 of any other IPv6 address. The address is trusted only when `private.deployment_settings.behind_cloudflare` is true, because only behind Cloudflare is `cf-connecting-ip` the connecting client rather than a value the client chose. An untrusted, absent, blank or unparseable address, and an id that names no project, are admitted with no row written: such takes would otherwise all share one bucket, so one caller could spend everyone's slots, or fill the table with keys of its own making.
 --
 -- After its own take, each take deletes the other `caller:` rows whose window has ended, so an address is held in clear only while its window runs. The take holds its key's advisory lock until the transaction ends, so the cleanup must wait for nothing: it leaves out its own key and skips a row another transaction has locked rather than wait for it. A row skipped is deleted by a later take.
 --
--- SECURITY DEFINER because the throttle table is the owner's alone. It checks nothing about its caller, so only the service role may execute it.
+-- SECURITY DEFINER because the throttle table and the deployment settings are the owner's alone. It checks nothing about its caller, so only the service role may execute it.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.invitation_caller_take (p_project_id uuid, p_address text) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER
+CREATE OR REPLACE FUNCTION public.access_caller_take (p_project_id uuid, p_address text) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER
 SET
   search_path = '' AS $$
 DECLARE
-  v_max constant integer := 30;
   v_window constant interval := interval '10 minutes';
-  v_inet inet;
+  v_trusted boolean;
+  v_max integer;
   v_caller text;
   v_key text;
   v_admitted boolean;
   v_start timestamptz;
 BEGIN
+  SELECT s.behind_cloudflare, s.access_caller_max INTO v_trusted, v_max FROM private.deployment_settings s;
+
   -- A missing settings row reads as false, so the address is then not trusted.
-  IF NOT COALESCE((SELECT s.behind_cloudflare FROM private.deployment_settings s), false)
-     OR NULLIF(btrim(p_address), '') IS NULL THEN
+  IF NOT COALESCE(v_trusted, false) THEN
     RETURN 0;
   END IF;
 
-  BEGIN
-    v_inet := btrim(p_address)::inet;
-  EXCEPTION
-    WHEN invalid_text_representation THEN
-      RETURN 0;
-  END;
-
-  v_caller := CASE
-    WHEN family(v_inet) = 6 AND set_masklen(v_inet, 128) <<= '::ffff:0:0/96'::inet
-      THEN host('0.0.0.0'::inet + (v_inet - '::ffff:0:0'::inet))
-    WHEN family(v_inet) = 6 THEN network(set_masklen(v_inet, 64))::text
-    ELSE host(v_inet)
-  END;
+  v_caller := private.client_address_bucket(p_address);
+  IF v_caller IS NULL THEN
+    RETURN 0;
+  END IF;
 
   IF NOT EXISTS (SELECT 1 FROM public.projects p WHERE p.id = p_project_id) THEN
     RETURN 0;
   END IF;
 
   v_key := 'caller:' || p_project_id::text || ':' || v_caller;
-  v_admitted := private.invitation_throttle_take(v_key, v_max, v_window);
+  v_admitted := private.access_throttle_take(v_key, v_max, v_window);
 
-  DELETE FROM private.invitation_throttle t
+  DELETE FROM private.access_throttle t
   WHERE t.key IN (
     SELECT x.key
-    FROM private.invitation_throttle x
+    FROM private.access_throttle x
     WHERE x.key LIKE 'caller:%'
       AND x.key <> v_key
       AND x.window_start + v_window <= now()
@@ -739,37 +782,37 @@ BEGIN
     RETURN 0;
   END IF;
 
-  SELECT t.window_start INTO v_start FROM private.invitation_throttle t WHERE t.key = v_key;
+  SELECT t.window_start INTO v_start FROM private.access_throttle t WHERE t.key = v_key;
   RETURN GREATEST(1, ceil(extract(epoch FROM (v_start + v_window - now())))::integer);
 END;
 $$;
 
 REVOKE
-EXECUTE ON FUNCTION public.invitation_caller_take (uuid, text)
+EXECUTE ON FUNCTION public.access_caller_take (uuid, text)
 FROM
   PUBLIC,
   anon,
   authenticated;
 
 GRANT
-EXECUTE ON FUNCTION public.invitation_caller_take (uuid, text) TO service_role;
+EXECUTE ON FUNCTION public.access_caller_take (uuid, text) TO service_role;
 
 --------------------------------------------------------------------------------
--- cleanup_invitation_throttle_on_delete: a deleted invitation leaves no throttle key
+-- cleanup_access_throttle_on_delete: a deleted invitation leaves no throttle key
 --
 -- Deletes the `link:` keys of the row's address and of its pending address in the row's project, the row's `code-bind:` key and the `code:` key of its code. An invitation that is deleted and seeded again is therefore not answered with the wait its predecessor left behind. An address's `link-address:` key is not deleted: it counts the address's mails in every project, and no one row owns it.
 --
 -- SECURITY DEFINER because the deleting caller holds nothing on the throttle table. search_path is pinned as on every definer function here.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.cleanup_invitation_throttle_on_delete () RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+CREATE OR REPLACE FUNCTION public.cleanup_access_throttle_on_delete () RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET
   search_path = '' AS $$
 BEGIN
   -- A null address or code hash makes its key null, which matches no row.
-  DELETE FROM private.invitation_throttle t
+  DELETE FROM private.access_throttle t
   WHERE t.key IN (
-    'link:' || OLD.project_id::text || ':' || encode(sha256(convert_to(OLD.email, 'UTF8')), 'hex'),
-    'link:' || OLD.project_id::text || ':' || encode(sha256(convert_to(OLD.pending_email, 'UTF8')), 'hex'),
+    private.email_link_slot_key(OLD.project_id, OLD.email),
+    private.email_link_slot_key(OLD.project_id, OLD.pending_email),
     'code-bind:' || OLD.id::text,
     'code:' || OLD.project_id::text || ':' || OLD.code_hash
   );
@@ -777,13 +820,13 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER cleanup_invitation_throttle
+CREATE TRIGGER cleanup_access_throttle
 AFTER DELETE ON public.invitations FOR EACH ROW
-EXECUTE FUNCTION public.cleanup_invitation_throttle_on_delete ();
+EXECUTE FUNCTION public.cleanup_access_throttle_on_delete ();
 
 -- Not an RPC. A trigger fires whatever EXECUTE its function carries, so nothing is lost by revoking it from the API roles.
 REVOKE
-EXECUTE ON FUNCTION public.cleanup_invitation_throttle_on_delete ()
+EXECUTE ON FUNCTION public.cleanup_access_throttle_on_delete ()
 FROM
   PUBLIC,
   anon,
@@ -792,23 +835,26 @@ FROM
 --------------------------------------------------------------------------------
 -- invitation_mode_allowed: does the project allow the registration mode of this invitation?
 --
--- The registration-mode condition, stated once for the three functions that read an open invitation: invitation_code_status, invitation_link_request and claim_invitations. Each treats a row this function refuses as absent.
+-- The registration-mode condition, stated once for the functions that read an open invitation: invitation_code_status, invitation_link_request and recovery_link_request (through email_holds_allowed_invitation), email_invitation_hold and claim_invitations. Each treats a row this function refuses as absent.
 --
--- WHICH ROWS ARE JUDGED. An entity-scope row whose target is a candidate or an organization: the registration-mode matrix has a row for those two types and for no other. Such a row is allowed when private.registration_mode_allowed says so for the row's project, its target type and its mode.
+-- WHICH ROWS ARE NOT JUDGED. A project-scope promise is a project editor or admin grant, used in the Admin App, so it is allowed whatever the Contestant App's settings say.
 --
--- WHICH ARE NOT. A project-scope promise has no entity type, and the matrix has no row for a faction or an alliance: each is always allowed.
+-- A CLOSED CONTESTANT APP REFUSES EVERY ENTITY ROW. While the project's stored `access.contestantApp` is the JSON boolean false (private.project_contestant_app_closed), no entity-scope row is allowed, whatever its type or its mode: an invitation that leads to the Contestant App is not honoured while that app is switched off.
+--
+-- WHICH ROWS ARE JUDGED BY THE MATRIX. An entity-scope row whose target is a candidate or an organization: the registration-mode matrix has a row for those two types and for no other. Such a row is allowed when private.registration_mode_allowed says so for the row's project, its target type and its mode, which it never does while the project's contestant editing is `locked`. The matrix has no row for a faction or an alliance, so such a row is allowed while the Contestant App is not closed.
 --
 -- A ROW'S MODE is read from which of its two bindings is set: `code` for a row that holds a code hash, `email` for a row bound to an address.
 --
 -- The callers ask it of open rows only, so a claimed row is never judged: a registration that is finished stays as it is whatever the matrix says later. create_invitations does not ask it, so an invitation can be seeded while its mode is off and is honoured once the mode is on.
 --
--- It runs as its caller. The three callers are definer functions, so no API role holds EXECUTE.
+-- It runs as its caller. The callers are definer functions, so no API role holds EXECUTE.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION private.invitation_mode_allowed (p_invitation public.invitations) RETURNS boolean LANGUAGE sql STABLE
 SET
   search_path = '' AS $$
   SELECT CASE
     WHEN (p_invitation).scope <> 'entity' THEN true
+    WHEN private.project_contestant_app_closed((p_invitation).project_id) THEN false
     WHEN (p_invitation).target_type NOT IN ('candidate', 'organization') THEN true
     ELSE private.registration_mode_allowed(
       (p_invitation).project_id,
@@ -818,8 +864,46 @@ SET
   END;
 $$;
 
+--------------------------------------------------------------------------------
+-- invitation_is_open: is this invitation unclaimed and unexpired?
+--
+-- Open is `claimed_at IS NULL` and no `expires_at`, or one still in the future. Stated once for the functions that read open rows: invitation_link_release, email_holds_allowed_invitation, email_invitation_hold and claim_invitations. invitation_code_status tells the closed states apart by itself, because it answers them differently.
+--
+-- It runs as its caller. The callers are definer functions, so no API role holds EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.invitation_is_open (p_invitation public.invitations) RETURNS boolean LANGUAGE sql STABLE
+SET
+  search_path = '' AS $$
+  SELECT (p_invitation).claimed_at IS NULL
+    AND ((p_invitation).expires_at IS NULL OR (p_invitation).expires_at > now());
+$$;
+
+--------------------------------------------------------------------------------
+-- email_holds_allowed_invitation: is an open invitation of the project, whose registration mode is allowed, addressed to this address?
+--
+-- True when p_project_id holds an invitation whose `email` is p_email, that is open (private.invitation_is_open) and whose registration mode the project allows (private.invitation_mode_allowed). A code row bound to the address as its pending address does not count: only the code's holder may ask for its mail. Stated once for the two functions that decide whether a mail may go to an address without a code: invitation_link_request and recovery_link_request. public.email_invitation_hold asks the wider question of whether any open invitation, honoured or not, reserves an address.
+--
+-- p_email is compared as given, so the callers pass it trimmed and lower-cased, the form in which the table stores it.
+--
+-- It runs as its caller. The two callers are definer functions, so no API role holds EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.email_holds_allowed_invitation (p_project_id uuid, p_email text) RETURNS boolean LANGUAGE sql STABLE
+SET
+  search_path = '' AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.invitations i
+    WHERE i.project_id = p_project_id
+      AND i.email = p_email
+      AND private.invitation_is_open(i)
+      AND private.invitation_mode_allowed(i)
+  );
+$$;
+
 REVOKE
-EXECUTE ON FUNCTION private.invitation_mode_allowed (public.invitations)
+EXECUTE ON FUNCTION private.invitation_mode_allowed (public.invitations),
+private.invitation_is_open (public.invitations),
+private.email_holds_allowed_invitation (uuid, text)
 FROM
   PUBLIC,
   anon,
@@ -905,9 +989,9 @@ $$;
 --
 -- AN OPEN CODE IS BOUND BEFORE THE ADDRESS IS ASKED ABOUT. The row's pending address is set to the candidate and its 60-second cooldown starts before the address's slots are taken, so what the row's holder can observe afterwards, the row and its cooldown, is the same whether the typed address's slot was free or not. Whether that slot is taken depends on whether the address is eligible without the code, so the holder of one code learns nothing about another address's invitations or grants by asking for it. A request refused by the address's slots has therefore bound the row and mails nothing; a request refused by the cooldown, the binding limit or anything before them has changed no row.
 --
--- Without a code, p_email is the candidate when the project holds an open invitation for it whose registration mode is allowed, or when a user with that confirmed address holds a grant that reaches the project (private.email_holds_grant_in_project): a project-scope grant on the project, an entity-scope grant on one of its entities, any global-scope grant, or an account-scope grant on the project's account, whatever its role.
+-- Without a code, p_email is the candidate when the project holds an open invitation for it whose registration mode is allowed (private.email_holds_allowed_invitation), or when a user with that confirmed address holds a grant that reaches the project (private.email_holds_grant_in_project): a project-scope grant on the project, an entity-scope grant on one of its entities, any global-scope grant, or an account-scope grant on the project's account, whatever its role.
 --
--- A candidate then takes its address's two slots, and the answer is null when either is taken:
+-- A candidate then takes its address's two slots through private.email_link_slots_take, and the answer is null when either is taken:
 -- - `link:<project id>:<sha256 hex>`, one per address per project per 60 seconds. recovery_link_request takes the same slot, so a recovery mail and a sign-in mail to one address are limited together.
 -- - `link-address:<sha256 hex>`, twenty per address per day in every project together and for both kinds of mail. It bounds how often an anonymous caller can have one address mailed, and so how often a caller can stop that address's unopened link, because a later link of either kind stops an earlier one.
 -- The minute slot is taken first, so a request inside the minute spends nothing of the day. No slot is taken for an address no mail would go to.
@@ -929,7 +1013,6 @@ DECLARE
   v_email text := NULLIF(lower(btrim(p_email)), '');
   v_row public.invitations%ROWTYPE;
   v_candidate text;
-  v_hash text;
 BEGIN
   IF p_project_id IS NULL THEN
     RETURN NULL;
@@ -959,7 +1042,7 @@ BEGIN
       RETURN NULL;
     ELSE
       IF v_row.pending_email IS DISTINCT FROM v_email
-        AND NOT private.invitation_throttle_take('code-bind:' || v_row.id::text, 5, interval '1 day') THEN
+        AND NOT private.access_throttle_take('code-bind:' || v_row.id::text, 5, interval '1 day') THEN
         RETURN NULL;
       END IF;
 
@@ -970,31 +1053,13 @@ BEGIN
       v_candidate := v_email;
     END IF;
   ELSIF v_email IS NOT NULL AND (
-    EXISTS (
-      SELECT 1
-      FROM public.invitations i
-      WHERE i.project_id = p_project_id
-        AND i.email = v_email
-        AND i.claimed_at IS NULL
-        AND (i.expires_at IS NULL OR i.expires_at > now())
-        AND private.invitation_mode_allowed(i)
-    )
+    private.email_holds_allowed_invitation(p_project_id, v_email)
     OR private.email_holds_grant_in_project(p_project_id, v_email)
   ) THEN
     v_candidate := v_email;
   END IF;
 
-  IF v_candidate IS NULL THEN
-    RETURN NULL;
-  END IF;
-
-  v_hash := encode(sha256(convert_to(lower(btrim(v_candidate)), 'UTF8')), 'hex');
-
-  IF NOT private.invitation_throttle_take('link:' || p_project_id::text || ':' || v_hash, 1, interval '60 seconds') THEN
-    RETURN NULL;
-  END IF;
-
-  IF NOT private.invitation_throttle_take('link-address:' || v_hash, 20, interval '1 day') THEN
+  IF v_candidate IS NULL OR NOT private.email_link_slots_take(p_project_id, v_candidate) THEN
     RETURN NULL;
   END IF;
 
@@ -1018,21 +1083,18 @@ SET
   search_path = '' AS $$
 DECLARE
   v_email text := NULLIF(lower(btrim(p_email)), '');
-  v_hash text;
 BEGIN
   IF p_project_id IS NULL OR v_email IS NULL THEN
     RETURN;
   END IF;
 
-  v_hash := encode(sha256(convert_to(v_email, 'UTF8')), 'hex');
-
-  DELETE FROM private.invitation_throttle t
-  WHERE t.key = 'link:' || p_project_id::text || ':' || v_hash;
+  DELETE FROM private.access_throttle t
+  WHERE t.key = private.email_link_slot_key(p_project_id, v_email);
 
   IF FOUND THEN
-    UPDATE private.invitation_throttle t
+    UPDATE private.access_throttle t
     SET count = t.count - 1
-    WHERE t.key = 'link-address:' || v_hash
+    WHERE t.key = 'link-address:' || private.email_hash(v_email)
       AND t.count > 0;
   END IF;
 
@@ -1041,8 +1103,7 @@ BEGIN
     SET pending_email_at = NULL
     WHERE i.project_id = p_project_id
       AND i.code_hash = private.invitation_code_hash(p_code)
-      AND i.claimed_at IS NULL
-      AND (i.expires_at IS NULL OR i.expires_at > now())
+      AND private.invitation_is_open(i)
       AND i.pending_email = v_email;
   END IF;
 END;
@@ -1054,10 +1115,10 @@ $$;
 -- Returns `{"email": <the address, trimmed and lower-cased>, "mail": <one of two words>}`, or null for "do nothing". The caller sends exactly one mail of the named kind to a non-null answer, or gives the answer back through invitation_link_release.
 --
 -- - `recovery` when a user with that confirmed address holds a grant that reaches p_project_id (private.email_holds_grant_in_project): a project-scope grant on it, an entity-scope grant on one of its entities, any global-scope grant, or an account-scope grant on its account, whatever its role. Whether the user has a password is not asked: opening a recovery link stores none, and the page it leads to sets one.
--- - `sign-in` when no such user exists and the project holds an open, unexpired invitation for the address whose registration mode is allowed (private.invitation_mode_allowed). Such an address has no password to recover, so it is sent the mail a sign-in request would have earned it.
+-- - `sign-in` when no such user exists and the project holds an open, unexpired invitation for the address whose registration mode is allowed (private.email_holds_allowed_invitation). Such an address has no password to recover, so it is sent the mail a sign-in request would have earned it.
 -- - null for everything else: an address the project knows nothing of, the holder of an account grant on another account or of grants in other projects only, an unconfirmed address, an expired or a claimed invitation, a null project and a blank address.
 --
--- A non-null candidate then takes the address's two slots, the ones invitation_link_request takes under the same keys, and the answer is null when either is taken: one per address per project per 60 seconds, and twenty per address per day in every project together. A later link of either kind stops an unopened earlier one of either kind, so the two requests are limited together. No slot is taken for an address no mail would go to.
+-- A non-null candidate then takes the address's two slots through private.email_link_slots_take, as invitation_link_request does, and the answer is null when either is taken: one per address per project per 60 seconds, and twenty per address per day in every project together. A later link of either kind stops an unopened earlier one of either kind, so the two requests are limited together. No slot is taken for an address no mail would go to.
 --
 -- It creates no account, changes no invitation row and binds no address: the slots are all it writes. It takes a project and an address and nothing else, and it returns no user id, grant, name or reason. Which of the three outcomes an address got is known only to whoever can execute it, which is the service role alone.
 --
@@ -1069,7 +1130,6 @@ SET
 DECLARE
   v_email text := NULLIF(lower(btrim(p_email)), '');
   v_mail text;
-  v_hash text;
 BEGIN
   IF p_project_id IS NULL OR v_email IS NULL THEN
     RETURN NULL;
@@ -1077,27 +1137,13 @@ BEGIN
 
   IF private.email_holds_grant_in_project(p_project_id, v_email) THEN
     v_mail := 'recovery';
-  ELSIF EXISTS (
-    SELECT 1
-    FROM public.invitations i
-    WHERE i.project_id = p_project_id
-      AND i.email = v_email
-      AND i.claimed_at IS NULL
-      AND (i.expires_at IS NULL OR i.expires_at > now())
-      AND private.invitation_mode_allowed(i)
-  ) THEN
+  ELSIF private.email_holds_allowed_invitation(p_project_id, v_email) THEN
     v_mail := 'sign-in';
   ELSE
     RETURN NULL;
   END IF;
 
-  v_hash := encode(sha256(convert_to(v_email, 'UTF8')), 'hex');
-
-  IF NOT private.invitation_throttle_take('link:' || p_project_id::text || ':' || v_hash, 1, interval '60 seconds') THEN
-    RETURN NULL;
-  END IF;
-
-  IF NOT private.invitation_throttle_take('link-address:' || v_hash, 20, interval '1 day') THEN
+  IF NOT private.email_link_slots_take(p_project_id, v_email) THEN
     RETURN NULL;
   END IF;
 
@@ -1106,23 +1152,23 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- address_confirmation_request: may one confirmation mail go to an address for a signed-in account
+-- email_confirmation_request: may one confirmation mail go to an address for a signed-in account
 --
 -- Answers true when both of two slots were taken, and false otherwise; a false answer means no mail.
 -- - The caller's slot, `confirm:<user id>`: ten requests per user per fifteen minutes, whatever project a request names. The operation that sends this mail also tells its caller whether the address belongs to another account, so the caller's own count bounds how many addresses one account can ask about. It is taken first, and a refused take is counted, so a caller at its limit learns nothing more whatever addresses it sends.
--- - The address's slot, `confirm-address:<sha256 hex of the address>`: one per address per 60 seconds, whatever project a request names. address_confirmation_release gives it back when no mail was handed over. The address is trimmed and lower-cased before it is hashed.
+-- - The address's slot, `confirm-address:<email_hash of the address>`: one per address per 60 seconds, whatever project a request names. email_confirmation_release gives it back when no mail was handed over.
 --
 -- NEITHER SLOT NAMES THE PROJECT. The mail is the same whatever the project, and the change of address it starts is the account's, not a project's; a slot keyed on the project a request names would give a caller a fresh budget for every project id it sends.
 --
 -- So the address's slot is not the `link:<project id>:...` slot the sign-in and recovery mails take, and a confirmation mail and a sign-in or recovery mail to one address are limited each on its own, at one a minute. They need no shared slot: a confirmation link is a change-of-address link, which neither stops an unopened sign-in or recovery link nor is stopped by one.
 --
--- p_project_id is the project the request names. The answer is false, and nothing is written, unless the user's registered-entities record, `registered_entities` of auth.users.raw_app_meta_data, holds an entry for that project. Only the service role writes that record, when an identity provider registers the user in a project, so a request can name no project its account did not register in. The `account-access` function refuses such a request before it calls this function; the check here keeps the bound when a caller does not.
+-- p_project_id is the project the request names. The answer is false, and nothing is written, unless private.identity_registrations holds a row of the user in that project. Only identity_entity_find_or_create writes that table, when an identity provider registers the user in a project, so a request can name no project its account did not register in. This function is the only check of that bound: `account-access` passes the project through.
 --
 -- A null project, user or address, and a blank address, answer false and write nothing. The user id is the one the service role read from the caller's own token.
 --
--- It writes nothing but the two throttle rows. It sends nothing and returns nothing about anyone. SECURITY DEFINER because only definer functions write the throttle table and because it reads auth.users; it trusts its arguments, so the service role alone may execute it.
+-- It writes nothing but the two throttle rows. It sends nothing and returns nothing about anyone. SECURITY DEFINER because only definer functions read the registrations and write the throttle table; it trusts its arguments, so the service role alone may execute it.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.address_confirmation_request (p_project_id uuid, p_user_id uuid, p_email text) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER
+CREATE OR REPLACE FUNCTION public.email_confirmation_request (p_project_id uuid, p_user_id uuid, p_email text) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER
 SET
   search_path = '' AS $$
 DECLARE
@@ -1134,14 +1180,14 @@ BEGIN
 
   IF NOT EXISTS (
     SELECT 1
-    FROM auth.users u
-    WHERE u.id = p_user_id
-      AND jsonb_typeof(u.raw_app_meta_data -> 'registered_entities' -> p_project_id::text) = 'object'
+    FROM private.identity_registrations r
+    WHERE r.user_id = p_user_id
+      AND r.project_id = p_project_id
   ) THEN
     RETURN false;
   END IF;
 
-  IF NOT private.invitation_throttle_take(
+  IF NOT private.access_throttle_take(
     'confirm:' || p_user_id::text,
     10,
     interval '15 minutes'
@@ -1149,8 +1195,8 @@ BEGIN
     RETURN false;
   END IF;
 
-  IF NOT private.invitation_throttle_take(
-    'confirm-address:' || encode(sha256(convert_to(v_email, 'UTF8')), 'hex'),
+  IF NOT private.access_throttle_take(
+    'confirm-address:' || private.email_hash(v_email),
     1,
     interval '60 seconds'
   ) THEN
@@ -1162,13 +1208,13 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- address_confirmation_release: give back the address's slot of a confirmation that mailed nothing
+-- email_confirmation_release: give back the address's slot of a confirmation that mailed nothing
 --
--- For an address_confirmation_request that answered true and after which no mail was handed over: the address belonged to another account, or the link could not be issued or mailed. It deletes the address's `confirm-address:` slot, so the address can be asked for again at once. The caller's `confirm:` slot is never given back.
+-- For an email_confirmation_request that answered true and after which no mail was handed over: the address belonged to another account, or the link could not be issued or mailed. It deletes the address's `confirm-address:` slot, so the address can be asked for again at once. The caller's `confirm:` slot is never given back.
 --
 -- It does nothing for a null or blank address or for an address that holds no slot, and it writes nothing else. SECURITY DEFINER because only the definer functions write the throttle table; the service role alone may execute it.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.address_confirmation_release (p_email text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+CREATE OR REPLACE FUNCTION public.email_confirmation_release (p_email text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER
 SET
   search_path = '' AS $$
 DECLARE
@@ -1178,8 +1224,8 @@ BEGIN
     RETURN;
   END IF;
 
-  DELETE FROM private.invitation_throttle t
-  WHERE t.key = 'confirm-address:' || encode(sha256(convert_to(v_email, 'UTF8')), 'hex');
+  DELETE FROM private.access_throttle t
+  WHERE t.key = 'confirm-address:' || private.email_hash(v_email);
 END;
 $$;
 
@@ -1211,7 +1257,7 @@ BEGIN
     RETURN NULL;
   END IF;
 
-  IF NOT private.invitation_throttle_take('code:' || p_project_id::text || ':' || v_hash, 10, interval '15 minutes') THEN
+  IF NOT private.access_throttle_take('code:' || p_project_id::text || ':' || v_hash, 10, interval '15 minutes') THEN
     RETURN NULL;
   END IF;
 
@@ -1220,95 +1266,82 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- invitation_link_witness: has the background work of one link request ended
+-- identity_registrations: the entity an identity provider's user registered in a project, per entity type
 --
--- A link request is answered before its work is done, and the answer is the same whether or not a mail goes out. The witness is how the service role learns, for one request it chose to watch, that the work has ended and whether a mail was handed over: it opens a record, passes the id along with the request, and reads the record afterwards.
+-- One row per user, project and entity type: the candidate or the organization the user's identity registered there. identity_entity_find_or_create writes a row in the transaction that creates the entity and its editor grant, and reads it on every later sign-in; email_confirmation_request reads it to learn whether the user registered in a project. A row is never rewritten. It goes with its user and with its project; it does not go with its entity, which has no foreign key here, so a row whose entity or grant is gone is how identity_entity_find_or_create knows that an administrator removed what the identity registered.
 --
--- An anonymous caller can neither create nor read a record. Opening is the service role's, and completing is an UPDATE of a record that exists and is still open, never an insert, so an id that was not opened writes nothing.
---
--- Row-level security is enabled with no policy and every API role's privileges are revoked: only the two SECURITY DEFINER functions below read or write the table.
+-- Only SECURITY DEFINER functions read or write it: row-level security is enabled with no policy and every API role's privileges are revoked.
 --------------------------------------------------------------------------------
-CREATE TABLE private.invitation_link_witness (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  opened_at timestamptz NOT NULL DEFAULT now(),
-  -- Null while the work the record watches has not ended.
-  completed_at timestamptz,
-  -- `sent` when a mail was handed over, `not-sent` when the work ended without one.
-  outcome text,
-  CONSTRAINT invitation_link_witness_outcome_check CHECK (
-    outcome IS NULL
-    OR outcome IN ('sent', 'not-sent')
-  )
+CREATE TABLE private.identity_registrations (
+  user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+  project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
+  entity_type public.entity_type NOT NULL CONSTRAINT identity_registrations_entity_type_check CHECK (entity_type IN ('candidate', 'organization')),
+  entity_id uuid NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, project_id, entity_type)
 );
 
-ALTER TABLE private.invitation_link_witness ENABLE ROW LEVEL SECURITY;
+-- The primary key leads with user_id; the project's foreign key gets its own index for the cascade.
+CREATE INDEX idx_identity_registrations_project_id ON private.identity_registrations (project_id);
 
-REVOKE ALL ON TABLE private.invitation_link_witness
+ALTER TABLE private.identity_registrations ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE private.identity_registrations
 FROM
   PUBLIC,
   anon,
   authenticated,
   service_role;
 
--- Opens a record and returns its id. Records opened more than a day ago are deleted first, so the table does not grow without bound.
-CREATE OR REPLACE FUNCTION public.invitation_link_witness_open () RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER
+--------------------------------------------------------------------------------
+-- identity_account_find: the account an identity provider's identity resolves to
+--
+-- Answers `{"id", "email", "raw_app_meta_data"}` of one row of auth.users, or SQL null when none matches:
+-- - the row whose app metadata `identity_match_value` equals p_match_value exactly, when there is one;
+-- - otherwise the row whose address, lower-cased, equals p_placeholder_email lower-cased: the placeholder account an earlier sign-in of the identity created, whose metadata the auth service may not have written yet.
+-- A null argument matches nothing on its side. Where several rows match one side, the oldest is answered.
+--
+-- The identity-callback Edge Function asks it before it creates an account and again after a failed invite, so a request that lost the race to create the account goes on with the one another request made. A placeholder account answered by its address may be bound to another identity; identity_entity_find_or_create refuses that account for any other match value.
+--
+-- It writes nothing. SECURITY DEFINER because it reads auth.users; it trusts its arguments and returns an account's address and metadata, so the service role alone may execute it.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.identity_account_find (p_match_value text, p_placeholder_email text) RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER
 SET
   search_path = '' AS $$
-DECLARE
-  v_id uuid;
-BEGIN
-  DELETE FROM private.invitation_link_witness w
-  WHERE w.opened_at < now() - interval '1 day';
-
-  INSERT INTO private.invitation_link_witness DEFAULT VALUES
-  RETURNING id INTO v_id;
-
-  RETURN v_id;
-END;
-$$;
-
--- With an outcome, which must be `sent` or `not-sent` (anything else raises 22023), completes the record of that id if it exists and is still open; a completed record keeps its first outcome. In every case returns the record's outcome: null when no such record exists or it is still open.
-CREATE OR REPLACE FUNCTION public.invitation_link_witness (p_id uuid, p_outcome text DEFAULT NULL) RETURNS text LANGUAGE plpgsql SECURITY DEFINER
-SET
-  search_path = '' AS $$
-BEGIN
-  IF p_outcome IS NOT NULL THEN
-    IF p_outcome NOT IN ('sent', 'not-sent') THEN
-      RAISE EXCEPTION 'invitation_link_witness: p_outcome must be sent or not-sent'
-        USING ERRCODE = '22023';
-    END IF;
-
-    UPDATE private.invitation_link_witness w
-    SET completed_at = now(), outcome = p_outcome
-    WHERE w.id = p_id
-      AND w.completed_at IS NULL;
-  END IF;
-
-  RETURN (SELECT w.outcome FROM private.invitation_link_witness w WHERE w.id = p_id);
-END;
+  SELECT jsonb_build_object('id', u.id, 'email', u.email, 'raw_app_meta_data', u.raw_app_meta_data)
+  FROM auth.users u
+  WHERE (p_match_value IS NOT NULL AND u.raw_app_meta_data ->> 'identity_match_value' = p_match_value)
+     OR (p_placeholder_email IS NOT NULL AND lower(u.email) = lower(p_placeholder_email))
+  ORDER BY
+    (p_match_value IS NOT NULL AND u.raw_app_meta_data ->> 'identity_match_value' = p_match_value) DESC NULLS LAST,
+    u.created_at,
+    u.id
+  LIMIT 1;
 $$;
 
 --------------------------------------------------------------------------------
 -- identity_entity_find_or_create: the entity an identity provider's user registered in a project, found or created
 --
--- WHAT IT TRUSTS. Its arguments, as the identity-callback Edge Function sends them: p_user_id is the account the verified identity resolved to, p_project_id and p_entity_type are the project and the type that function checked against the project's registration-mode matrix, the two names are the ones the provider's assertion carries, and p_identity_metadata is the identity metadata that function builds: the provider, the name of the claim the account is matched on and that claim's value, with a null for each claim key the account's metadata must not keep. It takes no address, and it reads and writes nothing about any account but p_user_id's.
+-- WHAT IT TRUSTS. Its arguments, as the identity-callback Edge Function sends them: p_user_id is the account the verified identity resolved to, p_project_id and p_entity_type are the project and the type that function chose among public.identity_provider_entity_types, the two names are the ones the provider's assertion carries, and p_identity_metadata is the identity metadata that function builds: the provider, the name of the claim the account is matched on and that claim's value, with a null for each claim key the account's metadata must not keep. Every argument is required and none has a default. It takes no address, and it reads and writes nothing about any account but p_user_id's.
 --
--- WHAT IT READS. The user's registered-entities record, `registered_entities` of auth.users.raw_app_meta_data, which only the service role writes: `{"<project id>": {"<entity type>": "<entity id>"}}`. The entry for the project and the type names the entity this identity registered there.
+-- WHAT IT READS. The user's row of private.identity_registrations for the project and the type, which names the entity this identity registered there.
 --
--- WHAT IT ANSWERS. `{"result", "entity_id", "registered_entities"}`, the last being the user's whole record as stored when the call returns:
--- - `found`, with the recorded id, when the user still holds the `(entity, <type>, <id>, editor)` grant on the recorded entity and the entity is still a row of the project;
--- - `gone`, with a null id, when the record names an entity and its grant or its row is gone. Nothing is created: an administrator who removed either has decided that the identity no longer edits that entity, and identifying again does not undo that;
--- - `created`, with the new entity's id, when the record names no entity for the project and the type.
+-- WHAT IT ANSWERS. `{"result", "entity_id"}`:
+-- - `found`, with the registered id, when the user still holds the `(entity, <type>, <id>, editor)` grant on the registered entity and the entity is still a row of the project;
+-- - `gone`, with a null id, when the registration names an entity and its grant or its row is gone. Nothing is created: an administrator who removed either has decided that the identity no longer edits that entity, and identifying again does not undo that;
+-- - `created`, with the new entity's id, when the user holds no registration for the project and the type.
 --
--- WHAT IT WRITES, on every answer: the identity metadata, into auth.users.raw_app_meta_data, each key given a string set and each key given a null removed, every other member kept; a call that omits it writes none. For `created` only: one entity, either a candidate with the given names, written confirmed because the strong identity check behind the call vouches for those names, or an organization without a name, written unconfirmed because an identity provider never proves that a person speaks for a party; the user's editor grant on that entity; and the entity's entry in the record, set with jsonb_set, every other entry kept. Nothing else of auth.users is changed.
+-- WHAT IT WRITES, on every answer: the identity metadata, into auth.users.raw_app_meta_data, each key given a string set and each key given a null removed, every other member kept; an empty object writes nothing. For `created` only: the registration, one entity, either a candidate with the given names, written confirmed because the strong identity check behind the call vouches for those names, or an organization without a name, written unconfirmed because an identity provider never proves that a person speaks for a party, and the user's editor grant on that entity. Nothing else of auth.users is changed.
 --
--- WHY THE IDENTITY METADATA IS WRITTEN HERE. The auth service's admin update writes the whole of raw_app_meta_data from the copy it read when the update began. Sent after this call, such an update could put back a record that lacks an entry another sign-in of the same user wrote in the meantime for another project or type, and the next sign-in for that pair would then create a second entity. Written here, under the lock and by a merge of the named keys, the identity metadata never carries the record and never replaces it.
+-- ONE IDENTITY PER ACCOUNT. The account's stored `identity_match_value` is compared with the one p_identity_metadata carries, under the account's row lock and before anything is written or resolved. An account that already holds another value, a value that differs only by case included, is refused: two identities whose match values meet in one placeholder address never share an account, its session or its entity. An account that holds no value yet is bound to the given one by the metadata write. A call whose metadata names no `identity_match_value` binds and compares nothing.
 --
--- WHY THE LOCK. Two first sign-ins of one identity can arrive at once. pg_advisory_xact_lock on a key of the user id holds the second call until the first one's transaction has ended, and the record is read after the lock is taken and written before the transaction ends, so the second call reads the first one's record and answers `found` instead of creating a second entity.
+-- WHY THE IDENTITY METADATA IS WRITTEN HERE. The auth service's admin update writes the whole of raw_app_meta_data from the copy it read when the update began. Written here, under the row lock and by a merge of the named keys, the identity metadata never replaces a key another sign-in of the same user wrote in the meantime.
 --
--- REFUSALS, each with nothing written: SQLSTATE 22023 for a null argument, an entity type other than candidate and organization, a user id that names no user, and identity metadata that is not an object of strings and nulls or that names `registered_entities`; 22000 for metadata whose record is present and malformed (not an object of objects of uuid strings), which is neither read as no record nor overwritten.
+-- WHY THE ROW LOCK. Two first sign-ins of one identity can arrive at once. SELECT ... FOR UPDATE on the user's row of auth.users holds the second call until the first one's transaction has ended, and the registration is read after the lock is taken and written before the transaction ends, so the second call reads the first one's registration and answers `found` instead of creating a second entity. The registration is inserted before its entity, with ON CONFLICT DO NOTHING on its key, so a registration the lock did not serialise is found and not duplicated.
 --
--- SECURITY DEFINER because it reads and writes auth.users and writes the entity tables and public.grants, in one transaction. It trusts its arguments, so the service role alone may execute it.
+-- REFUSALS, each with nothing written: SQLSTATE 22023 for a null argument, an entity type other than candidate and organization, a user id that names no user, and identity metadata that is not an object of strings and nulls; 22000 for an account whose stored app metadata is not an object; 42501 for an account bound to another identity's match value.
+--
+-- SECURITY DEFINER because it reads and writes auth.users and private.identity_registrations and writes the entity tables and public.grants, in one transaction. It trusts its arguments, so the service role alone may execute it.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.identity_entity_find_or_create (
   p_user_id uuid,
@@ -1316,15 +1349,16 @@ CREATE OR REPLACE FUNCTION public.identity_entity_find_or_create (
   p_entity_type public.entity_type,
   p_first_name text,
   p_last_name text,
-  p_identity_metadata jsonb DEFAULT '{}'::jsonb
+  p_identity_metadata jsonb
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET
   search_path = '' AS $$
 DECLARE
   v_metadata jsonb;
-  v_record jsonb;
-  v_recorded jsonb;
+  v_stored_match text;
+  v_result text;
   v_entity_id uuid;
+  v_registered uuid;
 BEGIN
   IF p_user_id IS NULL
      OR p_project_id IS NULL
@@ -1342,21 +1376,19 @@ BEGIN
   END IF;
 
   IF jsonb_typeof(p_identity_metadata) <> 'object'
-     OR p_identity_metadata ? 'registered_entities'
      OR EXISTS (
        SELECT 1
        FROM jsonb_each(p_identity_metadata) AS m (key, value)
        WHERE jsonb_typeof(m.value) NOT IN ('string', 'null')
      ) THEN
-    RAISE EXCEPTION 'identity_entity_find_or_create: p_identity_metadata must be an object of strings and nulls that does not name registered_entities'
+    RAISE EXCEPTION 'identity_entity_find_or_create: p_identity_metadata must be an object of strings and nulls'
       USING ERRCODE = '22023';
   END IF;
 
-  PERFORM pg_advisory_xact_lock(hashtext('identity-entity:' || p_user_id::text));
-
   SELECT u.raw_app_meta_data INTO v_metadata
   FROM auth.users u
-  WHERE u.id = p_user_id;
+  WHERE u.id = p_user_id
+  FOR UPDATE;
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'identity_entity_find_or_create: p_user_id names no user'
@@ -1364,27 +1396,17 @@ BEGIN
   END IF;
 
   IF v_metadata IS NOT NULL AND jsonb_typeof(v_metadata) <> 'object' THEN
-    RAISE EXCEPTION 'identity_entity_find_or_create: the registered-entities record is malformed'
+    RAISE EXCEPTION 'identity_entity_find_or_create: the account''s app metadata is malformed'
       USING ERRCODE = '22000';
   END IF;
 
-  v_record := COALESCE(v_metadata -> 'registered_entities', '{}'::jsonb);
-
-  IF jsonb_typeof(v_record) <> 'object' OR EXISTS (
-    SELECT 1
-    FROM jsonb_each(v_record) AS p (project_id, entries)
-    WHERE CASE
-      WHEN jsonb_typeof(p.entries) <> 'object' THEN true
-      ELSE EXISTS (
-        SELECT 1
-        FROM jsonb_each(p.entries) AS e (entity_type, entity_id)
-        WHERE jsonb_typeof(e.entity_id) <> 'string'
-          OR (e.entity_id #>> '{}') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      )
-    END
-  ) THEN
-    RAISE EXCEPTION 'identity_entity_find_or_create: the registered-entities record is malformed'
-      USING ERRCODE = '22000';
+  -- Compare and bind: the stored match value, when there is one, must be the given one.
+  v_stored_match := v_metadata ->> 'identity_match_value';
+  IF p_identity_metadata ? 'identity_match_value'
+     AND v_stored_match IS NOT NULL
+     AND (p_identity_metadata ->> 'identity_match_value') IS DISTINCT FROM v_stored_match THEN
+    RAISE EXCEPTION 'identity_entity_find_or_create: the account is bound to another identity'
+      USING ERRCODE = '42501';
   END IF;
 
   IF p_identity_metadata <> '{}'::jsonb THEN
@@ -1397,104 +1419,120 @@ BEGIN
     WHERE u.id = p_user_id;
   END IF;
 
-  v_recorded := v_record -> p_project_id::text -> p_entity_type::text;
+  SELECT r.entity_id INTO v_registered
+  FROM private.identity_registrations r
+  WHERE r.user_id = p_user_id
+    AND r.project_id = p_project_id
+    AND r.entity_type = p_entity_type;
 
-  IF v_recorded IS NOT NULL THEN
-    v_entity_id := (v_recorded #>> '{}')::uuid;
+  IF NOT FOUND THEN
+    v_entity_id := gen_random_uuid();
 
+    INSERT INTO private.identity_registrations (user_id, project_id, entity_type, entity_id)
+    VALUES (p_user_id, p_project_id, p_entity_type, v_entity_id)
+    ON CONFLICT (user_id, project_id, entity_type) DO NOTHING
+    RETURNING entity_id INTO v_registered;
+
+    IF v_registered IS NOT NULL THEN
+      IF p_entity_type = 'candidate' THEN
+        INSERT INTO public.candidates (id, project_id, first_name, last_name, confirmed)
+        VALUES (v_entity_id, p_project_id, p_first_name, p_last_name, true);
+      ELSE
+        INSERT INTO public.organizations (id, project_id, confirmed)
+        VALUES (v_entity_id, p_project_id, false);
+      END IF;
+
+      INSERT INTO public.grants (user_id, scope, target_type, target_id, role)
+      VALUES (p_user_id, 'entity', p_entity_type, v_entity_id, 'editor');
+
+      v_result := 'created';
+    ELSE
+      SELECT r.entity_id INTO v_registered
+      FROM private.identity_registrations r
+      WHERE r.user_id = p_user_id
+        AND r.project_id = p_project_id
+        AND r.entity_type = p_entity_type;
+    END IF;
+  END IF;
+
+  IF v_result IS NULL THEN
     IF EXISTS (
       SELECT 1
       FROM public.grants g
       WHERE g.user_id = p_user_id
         AND g.scope = 'entity'
         AND g.target_type = p_entity_type
-        AND g.target_id = v_entity_id
+        AND g.target_id = v_registered
         AND g.role = 'editor'
     ) AND (
       CASE p_entity_type
         WHEN 'candidate' THEN EXISTS (
-          SELECT 1 FROM public.candidates c WHERE c.id = v_entity_id AND c.project_id = p_project_id
+          SELECT 1 FROM public.candidates c WHERE c.id = v_registered AND c.project_id = p_project_id
         )
         ELSE EXISTS (
-          SELECT 1 FROM public.organizations o WHERE o.id = v_entity_id AND o.project_id = p_project_id
+          SELECT 1 FROM public.organizations o WHERE o.id = v_registered AND o.project_id = p_project_id
         )
       END
     ) THEN
-      RETURN jsonb_build_object('result', 'found', 'entity_id', v_entity_id, 'registered_entities', v_record);
+      v_result := 'found';
+      v_entity_id := v_registered;
+    ELSE
+      v_result := 'gone';
+      v_entity_id := NULL;
     END IF;
-
-    RETURN jsonb_build_object('result', 'gone', 'entity_id', NULL::uuid, 'registered_entities', v_record);
   END IF;
 
-  IF p_entity_type = 'candidate' THEN
-    INSERT INTO public.candidates (project_id, first_name, last_name, confirmed)
-    VALUES (p_project_id, p_first_name, p_last_name, true)
-    RETURNING id INTO v_entity_id;
-  ELSE
-    INSERT INTO public.organizations (project_id, confirmed)
-    VALUES (p_project_id, false)
-    RETURNING id INTO v_entity_id;
-  END IF;
-
-  INSERT INTO public.grants (user_id, scope, target_type, target_id, role)
-  VALUES (p_user_id, 'entity', p_entity_type, v_entity_id, 'editor');
-
-  v_record := jsonb_set(
-    v_record,
-    ARRAY[p_project_id::text],
-    COALESCE(v_record -> p_project_id::text, '{}'::jsonb) || jsonb_build_object(p_entity_type::text, v_entity_id::text)
-  );
-
-  UPDATE auth.users u
-  SET raw_app_meta_data = jsonb_set(COALESCE(u.raw_app_meta_data, '{}'::jsonb), '{registered_entities}', v_record)
-  WHERE u.id = p_user_id;
-
-  RETURN jsonb_build_object('result', 'created', 'entity_id', v_entity_id, 'registered_entities', v_record);
+  RETURN jsonb_build_object('result', v_result, 'entity_id', v_entity_id);
 END;
 $$;
 
 --------------------------------------------------------------------------------
--- address_holds_open_invitation: does an open invitation of a project hold an address
+-- email_invitation_hold: which hold does an open invitation of a project have on an address?
 --
--- True when an invitation of p_project_id that is open holds the address, trimmed and lower-cased, as its `email` or as its `pending_email`, and false otherwise. Open is `claimed_at IS NULL` and not expired: no `expires_at`, or one still in the future. The registration-mode matrix is not asked: a promise waiting for its address is the address's whatever modes the project allows at the moment.
+-- An invitation of p_project_id holds the address when it is open (private.invitation_is_open) and has the address, trimmed and lower-cased, as its `email` or as its `pending_email`. The answer is:
+-- - `allowed` when such an invitation holds the address and the project honours at least one of them (private.invitation_mode_allowed);
+-- - `held` when such invitations hold the address and the project honours none of them, because the registration mode of each is off or the Contestant App is closed. The address stays reserved: a promise waiting for its address is the address's whatever modes the project allows at the moment;
+-- - `none` when no open invitation of the project holds the address.
+--
+-- It differs from private.email_holds_allowed_invitation, which answers only the first case and reads `email` alone: a code's pending address reserves the address here, but no mail goes to it without the code.
 --
 -- The stored `email` and `pending_email` are held trimmed and lower-cased by the table's CHECKs, so the argument is put in that form and compared with them as stored.
 --
--- A null project, a null address and a blank address answer false.
+-- A null project, a null address and a blank address answer `none`.
 --
--- WHO ASKS. The `confirm-address` operation of the `account-access` Edge Function, for an address a signed-in account an identity provider made has typed, after it has taken that account's and that address's slots through address_confirmation_request; a true answer is reported to the caller as the address being in use. The answer is therefore an invitation-existence answer, bounded by those two slots and given only to the holder of such an account's own token.
+-- WHO ASKS. The `confirm-address` operation of the `account-access` Edge Function, for an address a signed-in account an identity provider made has typed, after it has taken that account's and that address's slots through email_confirmation_request. `allowed` is reported to the caller as `invited`: the address is held by an invitation, which the person should sign in with instead. `held` is reported as the address being in use, because the invitation that reserves it would not be honoured. The answer is therefore an invitation-existence answer, bounded by those two slots and given only to the holder of such an account's own token.
 --
 -- It writes nothing. SECURITY DEFINER because no API role can read `pending_email`, nor the invitations of a project it does not administer; it trusts its arguments, so the service role alone may execute it.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.address_holds_open_invitation (p_project_id uuid, p_email text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+CREATE OR REPLACE FUNCTION public.email_invitation_hold (p_project_id uuid, p_email text) RETURNS text LANGUAGE sql STABLE SECURITY DEFINER
 SET
   search_path = '' AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.invitations i
-    WHERE i.project_id = p_project_id
-      AND i.claimed_at IS NULL
-      AND (i.expires_at IS NULL OR i.expires_at > now())
-      AND (
-        i.email = NULLIF(lower(btrim(p_email)), '')
-        OR i.pending_email = NULLIF(lower(btrim(p_email)), '')
-      )
-  );
+  SELECT CASE
+    WHEN bool_or(private.invitation_mode_allowed(i)) THEN 'allowed'
+    WHEN count(*) > 0 THEN 'held'
+    ELSE 'none'
+  END
+  FROM public.invitations i
+  WHERE i.project_id = p_project_id
+    AND private.invitation_is_open(i)
+    AND (
+      i.email = NULLIF(lower(btrim(p_email)), '')
+      OR i.pending_email = NULLIF(lower(btrim(p_email)), '')
+    );
 $$;
 
--- service_role only. Each of the eleven is SECURITY DEFINER and checks nothing about its caller: published to an API role, the code check would be a code oracle, the link request and the recovery request account and invitation oracles that also write, the claimant look-up would hand out a user's address, the confirmation request and its release would take or give back any account's and any address's slot, the find-or-create would make any user the editor of a new entity, and the open-invitation check would answer, for any address and without a limit, whether it is invited. Supabase's default privileges grant EXECUTE on every new public function to anon and authenticated, so the REVOKE names them as well as PUBLIC.
+-- service_role only. Each of the ten is SECURITY DEFINER and checks nothing about its caller: published to an API role, the code check would be a code oracle, the link request and the recovery request account and invitation oracles that also write, the claimant look-up would hand out a user's address, the confirmation request and its release would take or give back any account's and any address's slot, the account look-up would hand out any identity's account and its address, the find-or-create would make any user the editor of a new entity, and the invitation-hold check would answer, for any address and without a limit, whether it is invited. Supabase's default privileges grant EXECUTE on every new public function to anon and authenticated, so the REVOKE names them as well as PUBLIC.
 REVOKE
 EXECUTE ON FUNCTION public.invitation_code_status (uuid, text),
 public.invitation_link_request (uuid, text, text),
 public.invitation_link_release (uuid, text, text),
 public.invitation_code_claimant_email (uuid, text),
-public.invitation_link_witness_open (),
-public.invitation_link_witness (uuid, text),
 public.recovery_link_request (uuid, text),
-public.address_confirmation_request (uuid, uuid, text),
-public.address_confirmation_release (text),
+public.email_confirmation_request (uuid, uuid, text),
+public.email_confirmation_release (text),
+public.identity_account_find (text, text),
 public.identity_entity_find_or_create (uuid, uuid, public.entity_type, text, text, jsonb),
-public.address_holds_open_invitation (uuid, text)
+public.email_invitation_hold (uuid, text)
 FROM
   PUBLIC,
   anon,
@@ -1505,13 +1543,12 @@ EXECUTE ON FUNCTION public.invitation_code_status (uuid, text),
 public.invitation_link_request (uuid, text, text),
 public.invitation_link_release (uuid, text, text),
 public.invitation_code_claimant_email (uuid, text),
-public.invitation_link_witness_open (),
-public.invitation_link_witness (uuid, text),
 public.recovery_link_request (uuid, text),
-public.address_confirmation_request (uuid, uuid, text),
-public.address_confirmation_release (text),
+public.email_confirmation_request (uuid, uuid, text),
+public.email_confirmation_release (text),
+public.identity_account_find (text, text),
 public.identity_entity_find_or_create (uuid, uuid, public.entity_type, text, text, jsonb),
-public.address_holds_open_invitation (uuid, text) TO service_role;
+public.email_invitation_hold (uuid, text) TO service_role;
 
 --------------------------------------------------------------------------------
 -- claim_invitations RPC: turn the caller's open invitations into grants
@@ -1522,7 +1559,7 @@ public.address_holds_open_invitation (uuid, text) TO service_role;
 --
 -- WHAT IT CANNOT KNOW. The database sees that an address is confirmed and not how it came to be. This function therefore depends on the auth service refusing public sign-up and requiring confirmation by mail: where a visitor can create an account for an address without opening a mail sent to it, that visitor can claim the address's invitations. Nothing here guards against that configuration.
 --
--- WHAT IT MATCHES. The rows of p_project_id that are unclaimed and unexpired and whose `email` is the caller's address, plus the code rows whose pending address is. A code row with no pending address, or with another one, is claimed by nobody. A row whose registration mode is switched off (private.invitation_mode_allowed) is not matched either: it is neither claimed nor skipped, and it stays open.
+-- WHAT IT MATCHES. The rows of p_project_id that are open (private.invitation_is_open) and whose `email` is the caller's address, plus the code rows whose pending address is. A code row with no pending address, or with another one, is claimed by nobody. A row whose registration mode is switched off (private.invitation_mode_allowed) is not matched either: it is neither claimed nor skipped, and it stays open.
 --
 -- WHAT IT WRITES. One row of public.grants per claimed invitation, copying the invitation's four columns, and on the invitation `claimed_by`, `claimed_at` and a cleared pending address. It confirms no entity and creates nothing else. Whether the invitation's creator still holds the authority to promise the grant is not asked: a row that exists is honoured, and a promise is withdrawn by deleting its row.
 --
@@ -1533,7 +1570,7 @@ public.address_holds_open_invitation (uuid, text) TO service_role;
 -- - any other violation is raised and undoes the call.
 -- The grant's own key is the conflict target, rather than being told apart by the constraint a violation names, because PostgreSQL probes a table's unique indexes in the order of their OIDs: an exact duplicate of a candidate's editor grant violates both indexes, and which one it names would change when one of them is rebuilt.
 --
--- Returns `{"claimed": [...], "skipped": [...], "password_set": <boolean>}`. Each element holds `scope`, `target_type`, `target_id` and `role`, and a skipped one also `reason`. `password_set` is private.user_password_set for the caller and is present whatever was claimed. No address, code or invitation id is returned. A second call claims nothing.
+-- Returns `{"claimed": [...], "skipped": [...]}`. Each element holds `scope`, `target_type`, `target_id` and `role`, and a skipped one also `reason`. No address, code or invitation id is returned; whether the caller's account holds a password is get_caller_account_state's answer (503-entity-rpcs.sql). A second call claims nothing.
 --
 -- A grant reaches a token only when one is issued, so a caller refreshes its session after a claim that returned a non-empty `claimed` and before it reads anything the grant opens.
 --
@@ -1544,7 +1581,6 @@ SET
   search_path = '' AS $$
 DECLARE
   v_uid uuid := (SELECT auth.uid());
-  v_password_set boolean := false;
   v_email text;
   v_row public.invitations%ROWTYPE;
   v_spec jsonb;
@@ -1554,8 +1590,6 @@ DECLARE
   v_skipped jsonb := '[]'::jsonb;
 BEGIN
   IF v_uid IS NOT NULL THEN
-    v_password_set := private.user_password_set(v_uid);
-
     SELECT lower(btrim(u.email)) INTO v_email
     FROM auth.users u
     WHERE u.id = v_uid
@@ -1565,15 +1599,14 @@ BEGIN
   END IF;
 
   IF v_email IS NULL OR p_project_id IS NULL THEN
-    RETURN jsonb_build_object('claimed', v_claimed, 'skipped', v_skipped, 'password_set', v_password_set);
+    RETURN jsonb_build_object('claimed', v_claimed, 'skipped', v_skipped);
   END IF;
 
   FOR v_row IN
     SELECT i.*
     FROM public.invitations i
     WHERE i.project_id = p_project_id
-      AND i.claimed_at IS NULL
-      AND (i.expires_at IS NULL OR i.expires_at > now())
+      AND private.invitation_is_open(i)
       AND (i.email = v_email OR (i.code_hash IS NOT NULL AND i.pending_email = v_email))
       AND private.invitation_mode_allowed(i)
     ORDER BY i.created_at, i.id
@@ -1616,7 +1649,7 @@ BEGIN
     END IF;
   END LOOP;
 
-  RETURN jsonb_build_object('claimed', v_claimed, 'skipped', v_skipped, 'password_set', v_password_set);
+  RETURN jsonb_build_object('claimed', v_claimed, 'skipped', v_skipped);
 END;
 $$;
 

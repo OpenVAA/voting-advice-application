@@ -1,12 +1,12 @@
 -- 45-registration-mode-matrix.test.sql: the truth table of the registration-mode rule
 --
--- WHAT IS PINNED. One rule decides whether entities of a type may register with a mode, and it is written twice: in SQL as private.registration_mode_allowed_in, which the database asks before it honours an invitation, and in TypeScript as `isRegistrationModeAllowed` of @openvaa/app-shared, which the screens ask before they offer a mode. Each assertion below is one row of the rule's truth table: the stored settings, an entity type, a mode and the answer. packages/dev-seed/tests/registrationModeMatrixParity.test.ts reads the same rows from this file as text and asserts the TypeScript accessor against them, so the two readings cannot drift apart without one of the two suites failing.
+-- WHAT IS PINNED. One rule decides whether entities of a type may register with a mode, and it is written twice: in SQL as private.registration_mode_allowed_in, which the database asks before it honours an invitation and when it answers public.identity_provider_entity_types for the identity-callback Edge Function; and in TypeScript as `isRegistrationModeAllowed` of @openvaa/app-shared, which the screens ask, over the settings the stored-settings schema has parsed, before they offer a mode. Each assertion below is one row of the rule's truth table: the stored settings, an entity type, a mode and the answer. packages/app-shared/src/settings/contestantAppSettings.matrix.test.ts reads the same rows from this file as text and asserts the TypeScript reading against them, so the two cannot drift apart without a suite failing.
 --
--- WHY EVERY ASSERTION BELOW IS NON-VACUOUS. The rule has two halves, which types are served and which modes a served type's row lists, and every stored shape is asked for both entity types so that a half read wrongly changes at least one answer. A shape whose list of entity types is unusable still stores a row for each type, so only the default of that list decides between the two answers. A shape whose matrix is unusable serves both types, so only the matrix decides. The rows that are a string and an object each hold the text `email`, which a containment test without a check of the row's type would find. The unknown mode is stored in the row it is asked of.
+-- WHY EVERY ASSERTION BELOW IS NON-VACUOUS. A type is served when it is a key of `contestantApp.servedEntityTypes`, and the four valid shapes that differ in their keys or their modes are each asked for both entity types, so that reading a type that is no key, or another type's modes, changes at least one answer. Every refused shape holds an entry for candidates whose modes contain `email`, which a reader that skipped the validity test would find; where the refused part is another type's entry, candidates are the type asked. The two rows with a refused sibling of the member answer true, so a reader that refused the whole root fails them, and the two rows with a `contestantApp` member the schema does not know answer false beside served types that allow candidates `email`, so a reader that read `servedEntityTypes` alone fails them. The two rows with contestant editing `locked` ask a type and a mode its served entry allows, so a reader that skipped the lock fails them, and the three rows with another value answer true, so a reader that locked on any stored value fails them.
 --
--- THE FORM IS FIXED. Every assertion is one call with three literals, a literal boolean and a title beginning `MATRIX`, because the unit test finds the rows by that form. This file holds nothing else: its plan is the number of rows.
+-- THE FORM IS FIXED. Every assertion is one call with three literals, a literal boolean and a title beginning `MATRIX`, because the unit tests find the rows by that form. This file holds nothing else: its plan is the number of rows.
 --
--- Depends on: schema/301-auth-functions.sql (the function). It reads no table and needs no fixture.
+-- Depends on: schema/106-app-settings.sql and schema/301-auth-functions.sql (the functions). It reads no table and needs no fixture.
 BEGIN;
 
 SET
@@ -17,10 +17,10 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (32);
+  plan (39);
 
 -- =====================================================================
--- Nothing usable is stored
+-- Nothing usable is stored: the shipped default serves candidates and allows no mode
 -- =====================================================================
 SELECT
   is (
@@ -58,126 +58,35 @@ SELECT
     'MATRIX a null root: an organization may not register with email'
   );
 
--- =====================================================================
--- The list of entity types: unusable lists read as candidates alone
--- =====================================================================
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": "organization", "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
+      '{"contestantApp": {"questions": {"hideHero": true}}}'::jsonb,
       'candidate',
       'email'
     ),
-    true,
-    'MATRIX entity types stored as a string: candidates are served, and a candidate may register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": "organization", "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
-      'organization',
-      'email'
-    ),
     false,
-    'MATRIX entity types stored as a string: the string is not read, and an organization may not register with email'
+    'MATRIX no servedEntityTypes member: a candidate may not register with email'
   );
 
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": [], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": null}}'::jsonb,
       'candidate',
       'email'
     ),
-    true,
-    'MATRIX an empty list of entity types: candidates are served, and a candidate may register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": [], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
-      'organization',
-      'email'
-    ),
     false,
-    'MATRIX an empty list of entity types: an organization may not register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["faction"], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
-      'candidate',
-      'email'
-    ),
-    true,
-    'MATRIX a list holding only a type no Contestant App serves: candidates are served, and a candidate may register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["faction"], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
-      'organization',
-      'email'
-    ),
-    false,
-    'MATRIX a list holding only a type no Contestant App serves: an organization may not register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "candidate"], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
-      'candidate',
-      'email'
-    ),
-    true,
-    'MATRIX a list naming candidates twice: a candidate may register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "candidate"], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
-      'organization',
-      'email'
-    ),
-    false,
-    'MATRIX a list naming candidates twice: an organization may not register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
-      'candidate',
-      'email'
-    ),
-    true,
-    'MATRIX no list of entity types: candidates are served, and a candidate may register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
-      'organization',
-      'email'
-    ),
-    false,
-    'MATRIX no list of entity types: an organization may not register with email'
+    'MATRIX a null servedEntityTypes: a candidate may not register with email'
   );
 
 -- =====================================================================
--- A row for a type the project does not serve is not honoured
+-- A type is served when it is a key, and only its own modes are read
 -- =====================================================================
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate"], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email"]}}}}'::jsonb,
       'candidate',
       'email'
     ),
@@ -188,29 +97,29 @@ SELECT
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate"], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email"]}}}}'::jsonb,
       'organization',
       'email'
     ),
     false,
-    'MATRIX candidates alone served: the row of the unserved organizations is not honoured'
+    'MATRIX candidates alone served: organizations are no key, and an organization may not register with email'
   );
 
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["organization"], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"organization": {"registrationModes": ["email"]}}}}'::jsonb,
       'candidate',
       'email'
     ),
     false,
-    'MATRIX organizations alone served: the row of the unserved candidates is not honoured'
+    'MATRIX organizations alone served: candidates are no key, and a candidate may not register with email'
   );
 
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["organization"], "registrationModes": {"candidate": ["email"], "organization": ["email"]}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"organization": {"registrationModes": ["email"]}}}}'::jsonb,
       'organization',
       'email'
     ),
@@ -218,82 +127,10 @@ SELECT
     'MATRIX organizations alone served: an organization may register with email'
   );
 
--- =====================================================================
--- The matrix: an unusable matrix or row allows nothing
--- =====================================================================
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": "email"}}'::jsonb,
-      'candidate',
-      'email'
-    ),
-    false,
-    'MATRIX a matrix stored as a string: a candidate may not register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": "email"}}'::jsonb,
-      'organization',
-      'email'
-    ),
-    false,
-    'MATRIX a matrix stored as a string: an organization may not register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"]}}'::jsonb,
-      'candidate',
-      'email'
-    ),
-    false,
-    'MATRIX no matrix: a candidate may not register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"]}}'::jsonb,
-      'organization',
-      'email'
-    ),
-    false,
-    'MATRIX no matrix: an organization may not register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": "email", "organization": {"email": true}}}}'::jsonb,
-      'candidate',
-      'email'
-    ),
-    false,
-    'MATRIX a row stored as a string: a candidate may not register with email'
-  );
-
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": "email", "organization": {"email": true}}}}'::jsonb,
-      'organization',
-      'email'
-    ),
-    false,
-    'MATRIX a row stored as an object: an organization may not register with email'
-  );
-
--- =====================================================================
--- Both types served, each with a row of its own
--- =====================================================================
-SELECT
-  is (
-    private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": ["email", "code"], "organization": []}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": []}}}}'::jsonb,
       'candidate',
       'email'
     ),
@@ -304,7 +141,7 @@ SELECT
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": ["email", "code"], "organization": []}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": []}}}}'::jsonb,
       'organization',
       'email'
     ),
@@ -315,7 +152,7 @@ SELECT
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": [], "organization": ["email", "code"]}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": []}, "organization": {"registrationModes": ["email", "code"]}}}}'::jsonb,
       'candidate',
       'email'
     ),
@@ -326,12 +163,23 @@ SELECT
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": [], "organization": ["email", "code"]}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": []}, "organization": {"registrationModes": ["email", "code"]}}}}'::jsonb,
       'organization',
       'email'
     ),
     true,
     'MATRIX nothing for candidates, email and code for organizations: an organization may register with email'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "email"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    true,
+    'MATRIX a list of modes naming email twice: a candidate may register with email'
   );
 
 -- =====================================================================
@@ -340,7 +188,7 @@ SELECT
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": ["email", "code"], "organization": []}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": []}}}}'::jsonb,
       'candidate',
       'code'
     ),
@@ -351,7 +199,7 @@ SELECT
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": ["email", "code"], "organization": []}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": []}}}}'::jsonb,
       'candidate',
       'identity_provider'
     ),
@@ -362,7 +210,65 @@ SELECT
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": ["email", "code", "sms"], "organization": []}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": []}, "organization": {"registrationModes": ["email", "code"]}}}}'::jsonb,
+      'organization',
+      'code'
+    ),
+    true,
+    'MATRIX nothing for candidates, email and code for organizations: an organization may register with a code'
+  );
+
+-- =====================================================================
+-- A servedEntityTypes the screens refuse allows nothing, for any type
+-- =====================================================================
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": ["candidate"]}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX servedEntityTypes stored as a list: a candidate may not register with email'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX servedEntityTypes with no key: a candidate may not register with email'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email"]}, "alliance": {"registrationModes": ["email"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX a key that is no served type: a candidate whose own entry holds email may not register with it'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "sms"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX a stored mode that is no registration mode: a candidate may not register with email'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "sms"]}}}}'::jsonb,
       'candidate',
       'sms'
     ),
@@ -373,12 +279,186 @@ SELECT
 SELECT
   is (
     private.registration_mode_allowed_in (
-      '{"contestantApp": {"entityTypes": ["candidate", "organization"], "registrationModes": {"candidate": [], "organization": ["email", "code"]}}}'::jsonb,
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email"]}, "organization": ["email"]}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX an entry stored as a list: a candidate whose own entry holds email may not register with it'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email"]}, "organization": ["email"]}}}'::jsonb,
       'organization',
+      'email'
+    ),
+    false,
+    'MATRIX an entry stored as a list: an organization may not register with email'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email"]}, "organization": null}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX an entry stored as a null: a candidate whose own entry holds email may not register with it'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email"], "hideHero": true}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX an entry with a key beside registrationModes: a candidate may not register with email'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email"]}, "organization": {}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX an entry with no registrationModes: a candidate whose own entry holds email may not register with it'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": "email"}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX modes stored as a string: a candidate may not register with email'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", 1]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX modes holding a number: a candidate may not register with email'
+  );
+
+-- =====================================================================
+-- A contestantApp member the screens do not know allows nothing, for any type
+-- =====================================================================
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"entityTypes": ["candidate"], "servedEntityTypes": {"candidate": {"registrationModes": ["email"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX a leftover contestantApp.entityTypes beside valid served types: a candidate may not register with email'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"hideHero": true, "servedEntityTypes": {"candidate": {"registrationModes": ["email"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX an unknown contestantApp member beside valid served types: a candidate may not register with email'
+  );
+
+-- =====================================================================
+-- A refused questions member, and a refused root beside contestantApp, change nothing
+-- =====================================================================
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"contestantApp": {"questions": {"hideHero": "yes"}, "servedEntityTypes": {"candidate": {"registrationModes": ["email"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    true,
+    'MATRIX a refused contestantApp.questions beside valid served types: a candidate may register with email'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantApp": "yes"}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    true,
+    'MATRIX a refused root beside a valid contestantApp: a candidate may register with email'
+  );
+
+-- =====================================================================
+-- Contestant editing: `locked` closes every registration, and no other value does
+-- =====================================================================
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": "locked"}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX contestant editing locked: a candidate may not register with email, which its served type allows'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": "locked"}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'organization',
+      'identity_provider'
+    ),
+    false,
+    'MATRIX contestant editing locked: an organization may not register with identity_provider, which its served type allows'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": "nominationsLocked"}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'candidate',
       'code'
     ),
     true,
-    'MATRIX nothing for candidates, email and code for organizations: an organization may register with a code'
+    'MATRIX only nominations locked: a candidate may register with code'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": "open"}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'organization',
+      'identity_provider'
+    ),
+    true,
+    'MATRIX contestant editing open: an organization may register with identity_provider'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": true}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    true,
+    'MATRIX a contestantEditing that is no word of the setting locks nothing: a candidate may register with email'
   );
 
 SELECT

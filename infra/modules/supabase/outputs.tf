@@ -14,6 +14,6 @@ output "managed_api_keys" {
 }
 
 output "managed_function_secret_names" {
-  description = "Names of the Edge Function secrets this module sets, sorted; empty while public_project_id is null. Names only, no values."
-  value       = var.public_project_id == null ? [] : sort(local.function_secret_names)
+  description = "Names of the Edge Function secrets this module sets, sorted. Names only, no values."
+  value       = sort(local.function_secret_names)
 }

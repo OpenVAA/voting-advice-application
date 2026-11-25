@@ -163,12 +163,11 @@ beforeEach(() => {
     openFeedbackModal: { set: () => undefined },
     popupQueue: { current: undefined, shift: () => undefined },
     startPageview: service.startPageview,
-    startEvent: service.startEvent,
     track: service.track,
     submitAllEvents: service.submitAllEvents,
     resetAllEvents: service.resetAllEvents,
     setPageVisible: service.setPageVisible,
-    analyticsGate: service.gate
+    analyticsPolicy: service.analyticsPolicy
   };
 
   const target = document.createElement('div');

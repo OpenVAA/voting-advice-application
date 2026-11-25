@@ -13,7 +13,7 @@
  * 8. **The list's width**: at least that of the small container, or the whole width where that is narrower.
  * 9. **Switching profile**: a user who edits several entities has Switch profile at the top of the page, with the sync icon, leading to the app root; a user who edits one has none.
  *
- * The fake context's members are reactive behind getters over one raw state box, as the real accessors are, and its store holds no entity: the page needs nothing from it. A message is its key, followed by its parameters where it has any. The task state is built by the application's own `taskStateOf`, so a case mounts the page against a state the context can hold.
+ * The fake context is the shared `fakeContestantContext`, whose members are reactive behind getters over one raw state box, as the real accessors are, and its store holds no entity: the page needs nothing from it. A message is its key, followed by its parameters where it has any. The task state is built by the application's own `taskStateOf`, so a case mounts the page against a state the context can hold.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
@@ -25,6 +25,7 @@ import nominationDrawing from '$lib/components/icon/svg/material/how_to_vote';
 import lockDrawing from '$lib/components/icon/svg/material/lock';
 import previewDrawing from '$lib/components/icon/svg/material/switch_account';
 import { taskStateOf } from '$lib/contestant/tasks';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import type { BasicUserData, UserEntity } from '$lib/api/base/dataWriter.type';
 import type { TaskState, TaskStateInput } from '$lib/contestant/tasks';
 
@@ -39,6 +40,8 @@ type Box = {
   nominationsLocked: boolean;
   /** The state of the entity's tasks, as the context derives it. */
   taskState: TaskState;
+  questionsReady: boolean;
+  opinionQuestions: Array<{ id: string }>;
   unansweredOpinionQuestions: Array<{ id: string }>;
   unansweredRequiredInfoQuestions: Array<{ id: string }>;
   hideIfMissingAnswers: { candidate: boolean; organization: boolean };
@@ -67,12 +70,13 @@ const EMPTY_BOX: Box = {
   answersLocked: false,
   nominationsLocked: false,
   taskState: taskStateOf(NOMINATED_FACTS),
+  // The question lists themselves are never loaded here. Every case's expectation follows from the task state, so a page that read a list in its place would find nothing in it.
+  questionsReady: false,
+  opinionQuestions: [],
   unansweredOpinionQuestions: [],
   unansweredRequiredInfoQuestions: [],
   hideIfMissingAnswers: { candidate: false, organization: false }
 };
-
-let box = $state.raw<Box>(EMPTY_BOX);
 
 /** A message as the fake translation function renders it: its key, and its parameters where it has any. */
 function message(key: string, params?: Record<string, unknown>): string {
@@ -83,50 +87,14 @@ function message(key: string, params?: Record<string, unknown>): string {
   return `${key}(${rendered})`;
 }
 
-const context = {
+const { context, box } = fakeContestantContext(EMPTY_BOX, (held) => ({
   t: message,
-  getRoute: {
-    current: (route: string | { route: string }) => `/route/${typeof route === 'string' ? route : route.route}`
-  },
   logout: async () => undefined,
   userData: { current: undefined, savedEntityData: undefined },
-  // The question lists themselves are never loaded here. Every case's expectation follows from the task state, so a page that read a list in its place would find nothing in it.
-  questionsReady: false,
-  opinionQuestions: [],
   get appSettings() {
-    return { entities: { hideIfMissingAnswers: box.hideIfMissingAnswers } };
-  },
-  get user() {
-    return box.user;
-  },
-  get entities() {
-    return box.entities;
-  },
-  get selectedEntity() {
-    return box.selectedEntity;
-  },
-  get answersLocked() {
-    return box.answersLocked;
-  },
-  get nominationsLocked() {
-    return box.nominationsLocked;
-  },
-  get taskState() {
-    return box.taskState;
-  },
-  get previewOpen() {
-    return box.taskState.previewOpen;
-  },
-  get profileComplete() {
-    return box.taskState.allComplete;
-  },
-  get unansweredOpinionQuestions() {
-    return box.unansweredOpinionQuestions;
-  },
-  get unansweredRequiredInfoQuestions() {
-    return box.unansweredRequiredInfoQuestions;
+    return { entities: { hideIfMissingAnswers: held.current.hideIfMissingAnswers } };
   }
-};
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -250,12 +218,12 @@ let teardown: Array<() => void> = [];
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  box = EMPTY_BOX;
+  box.current = EMPTY_BOX;
 });
 
 /** Mount the page for a state of the context. */
 function render(state: Partial<Box>): HTMLElement {
-  box = { ...EMPTY_BOX, ...state };
+  box.current = { ...EMPTY_BOX, ...state };
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(Page, { target });
@@ -1019,7 +987,7 @@ describe('the contestant home page — a task state that changes under the mount
     expect(target.querySelector(STATUS)).toBeNull();
     expect(shown(target, MAIN_ACTION).hasAttribute('data-next-step')).toBe(false);
 
-    box = { ...box, ...NOTHING_FILLED };
+    box.set({ ...NOTHING_FILLED });
     flushSync();
 
     expect(shown(target, TASK_LIST).getAttribute('data-task-state')).toBe('ready');
@@ -1029,7 +997,7 @@ describe('the contestant home page — a task state that changes under the mount
     expect(shown(target, MAIN_ACTION).getAttribute('data-next-step')).toBe('profile');
     expect(shown(target, 'h1').textContent).toBe('contestantApp.common.greeting(username=Ada)');
 
-    box = { ...box, ...ALL_COMPLETE };
+    box.set({ ...ALL_COMPLETE });
     flushSync();
 
     expect(shown(target, 'h1').textContent).toBe('contestantApp.home.ready');
@@ -1043,7 +1011,7 @@ describe('the contestant home page — a task state that changes under the mount
     const target = render({ ...CANDIDATE, ...NOTHING_FILLED });
     expect(target.querySelectorAll(TASK_BADGE)).toHaveLength(2);
 
-    box = { ...box, ...PARTY, ...NO_NOMINATION };
+    box.set({ ...PARTY, ...NO_NOMINATION });
     flushSync();
 
     expect(statusesOf(target)).toEqual([
@@ -1072,16 +1040,19 @@ describe('the contestant home page — the email task of an address awaiting its
       username: '',
       termsOfUseAccepted: '2026-01-01T00:00:00Z',
       passwordSet: false,
-      addressState: 'none',
-      pendingEmail: null,
+      address: { state: 'none', pendingTaken: false },
+      ownOrganizationId: null,
       ownOrganizationUnnamed: false,
-      pendingEmailTaken: false,
       ...overrides
     };
   }
 
-  const PENDING_USER = userWith({ addressState: 'pending', pendingEmail: PENDING_ADDRESS });
-  const PROVED_USER = userWith({ addressState: 'proved', email: 'proved@example.org', username: 'proved@example.org' });
+  const PENDING_USER = userWith({ address: { state: 'pending', email: PENDING_ADDRESS } });
+  const PROVED_USER = userWith({
+    address: { state: 'proved' },
+    email: 'proved@example.org',
+    username: 'proved@example.org'
+  });
 
   /** The email task's label, as the fake translation function renders it for an address. */
   function emailTaskLabel(address: string): string {
@@ -1166,15 +1137,14 @@ describe('the contestant home page — the email task of an address awaiting its
     expect(follows(shown(target, EMAIL_TASK), heading)).toBe(true);
     expect(shown(target, LOCKED_WARNING).textContent).not.toContain(PENDING_ADDRESS);
     expect(target.textContent).not.toContain('contestantApp.home.emailPending');
-    expect(target.textContent).not.toContain('contestantApp.emailSent.resend');
+    expect(target.textContent).not.toContain('common.account.emailSent.resend');
     expect(target.querySelector('[role="status"]')).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it.each([
     ['a proved address', PROVED_USER],
-    ['no address', userWith({ addressState: 'none' })],
-    ['a pending state with no address', userWith({ addressState: 'pending' })],
+    ['no address', userWith({ address: { state: 'none', pendingTaken: false } })],
     ['no user data', undefined]
   ] as const)('lists no email task for %s, and the nomination row first', (_, user) => {
     const target = render({ ...CANDIDATE, ...NOTHING_FILLED, user });
@@ -1187,19 +1157,23 @@ describe('the contestant home page — the email task of an address awaiting its
   });
 
   it('appears, follows the address and goes as the user-level data changes under the mounted page', () => {
-    const target = render({ ...CANDIDATE, ...NOTHING_FILLED, user: userWith({ addressState: 'none' }) });
+    const target = render({
+      ...CANDIDATE,
+      ...NOTHING_FILLED,
+      user: userWith({ address: { state: 'none', pendingTaken: false } })
+    });
     expect(target.querySelector(EMAIL_TASK)).toBeNull();
 
-    box = { ...box, user: PENDING_USER };
+    box.set({ user: PENDING_USER });
     flushSync();
     expect(rowsOf(target)[0]).toBe(shown(target, EMAIL_TASK));
     expect(shown(target, EMAIL_TASK).textContent?.trim()).toBe(emailTaskLabel(PENDING_ADDRESS));
 
-    box = { ...box, user: userWith({ addressState: 'pending', pendingEmail: 'another@example.org' }) };
+    box.set({ user: userWith({ address: { state: 'pending', email: 'another@example.org' } }) });
     flushSync();
     expect(shown(target, EMAIL_TASK).textContent?.trim()).toBe(emailTaskLabel('another@example.org'));
 
-    box = { ...box, user: PROVED_USER };
+    box.set({ user: PROVED_USER });
     flushSync();
     expect(target.querySelector(EMAIL_TASK)).toBeNull();
   });
@@ -1250,11 +1224,11 @@ describe('the contestant home page — switching profile', () => {
     const target = render({ ...CANDIDATE, ...NOTHING_FILLED, entities: [CANDIDATE.selectedEntity!] });
     expect(target.querySelector(SWITCH)).toBeNull();
 
-    box = { ...box, entities: [CANDIDATE.selectedEntity!, OTHER] };
+    box.set({ entities: [CANDIDATE.selectedEntity!, OTHER] });
     flushSync();
     expect(target.querySelectorAll(SWITCH)).toHaveLength(1);
 
-    box = { ...box, entities: [OTHER] };
+    box.set({ entities: [OTHER] });
     flushSync();
     expect(target.querySelector(SWITCH)).toBeNull();
   });

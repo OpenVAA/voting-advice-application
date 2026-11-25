@@ -1,13 +1,12 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import nodemailer from 'npm:nodemailer@10.0.11';
+import { BASE_CORS_HEADERS } from '../_shared/cors.ts';
+import { isDeploymentProject } from '../_shared/deploymentProject.ts';
 import { requireEnv } from '../_shared/envConfig.ts';
+import { configuredSender, smtpTransportConfig } from '../_shared/mailTransport.ts';
 import { callerMayOnProject } from './callerAuthority.ts';
 import { renderTemplate, renderTemplateHtml } from './templateVars.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
+import type { SmtpEnv } from '../_shared/mailTransport.ts';
 
 interface SendEmailRequest {
   templates: Record<string, { subject: string; body: string }>;
@@ -27,16 +26,17 @@ interface RecipientResult {
   body?: string;
 }
 
-Deno.serve(async (req) => {
+/** The handler of every request: the body validated, the caller's authority, the recipients' variables, and the mails rendered and sent or, on a dry run, returned. */
+async function handleRequest(req: Request): Promise<Response> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { status: 200, headers: corsHeaders });
+    return new Response('ok', { status: 200, headers: BASE_CORS_HEADERS });
   }
 
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   }
 
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     } catch {
       return new Response(JSON.stringify({ error: 'Invalid or missing request body' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
     if (!templates || typeof templates !== 'object' || Object.keys(templates).length === 0) {
       return new Response(JSON.stringify({ error: 'templates must be a non-empty object with locale keys' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
           JSON.stringify({
             error: `Template for locale "${locale}" must have "subject" and "body" strings`
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
         );
       }
     }
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
     if (!Array.isArray(recipient_user_ids) || recipient_user_ids.length === 0) {
       return new Response(JSON.stringify({ error: 'recipient_user_ids must be a non-empty array' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
     if (userError || !callerUser) {
       return new Response(JSON.stringify({ error: 'Invalid or expired authentication token' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
     if (!mayBulkSend) {
       return new Response(JSON.stringify({ error: 'Forbidden: caller may not send bulk email for this project' }), {
         status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -134,25 +134,21 @@ Deno.serve(async (req) => {
     // The check sits AFTER the admin verification above rather than beside the body validation at the top, so that the difference between "wrong project" and "right project" is not an answer an unauthenticated caller can read off this endpoint. The refusal is a fixed string echoing neither the submitted nor the configured value, for the same reason the catch arm at the bottom of this file returns one.
     const configuredProjectId = requireEnv('PUBLIC_PROJECT_ID', Deno.env.get('PUBLIC_PROJECT_ID')?.trim());
 
-    // Compared case-insensitively after trimming, so a caller echoing back the configured id in a different case is not refused for a difference that does not exist.
-    if (
-      typeof project_id !== 'string' ||
-      project_id.trim() === '' ||
-      project_id.trim().toLowerCase() !== configuredProjectId.toLowerCase()
-    ) {
+    // Compared case-insensitively after trimming (isDeploymentProject, shared with account-access), so a caller echoing back the configured id in a different case is not refused for a difference that does not exist.
+    if (!isDeploymentProject(project_id, configuredProjectId)) {
       return new Response(JSON.stringify({ error: 'Invalid project_id' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
     // A caller-supplied sender is refused unless it IS the configured sender (162-REVIEW WR-02): the deployment's SMTP identity is not the caller's to spoof. Checked after the authority gate so an unauthenticated caller cannot probe the configured address, and answered with a fixed string that echoes neither value.
     if (from !== undefined && from !== null) {
-      const configuredSender = requireEnv('SMTP_FROM', Deno.env.get('SMTP_FROM'));
-      if (typeof from !== 'string' || from.trim().toLowerCase() !== configuredSender.trim().toLowerCase()) {
+      const sender = configuredSender(smtpEnv());
+      if (typeof from !== 'string' || from.trim().toLowerCase() !== sender.trim().toLowerCase()) {
         return new Response(JSON.stringify({ error: 'Invalid from' }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
         });
       }
     }
@@ -168,14 +164,14 @@ Deno.serve(async (req) => {
     if (rpcError) {
       return new Response(
         JSON.stringify({ error: 'Failed to resolve template variables', details: rpcError.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
       );
     }
 
     if (!recipients || recipients.length === 0) {
       return new Response(JSON.stringify({ error: 'No valid recipients found for the provided user IDs' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -228,39 +224,18 @@ Deno.serve(async (req) => {
           dry_run: true,
           results: dryResults
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
       );
     }
 
     // -------------------------------------------------------------------------
     // 6. Send emails via SMTP
     // -------------------------------------------------------------------------
-    // An unset host used to fall back to the local development mail catcher, which is the worst possible failure shape: every send reported success, so the deployment looked healthy while no recipient ever received anything (REVIEW-EDGE-02).
-    const smtpHost = requireEnv('SMTP_HOST', Deno.env.get('SMTP_HOST'));
-    // The radix is explicit because the previous call omitted it, leaving the parse of a zero-padded port up to the runtime rather than to this line.
-    const smtpPort = parseInt(requireEnv('SMTP_PORT', Deno.env.get('SMTP_PORT')), 10);
-    // These two are genuinely optional and carry no default: the credentialed and uncredentialed branches below are both deliberate, so they are NOT converted to throws.
-    const smtpUser = Deno.env.get('SMTP_USER');
-    const smtpPass = Deno.env.get('SMTP_PASS');
+    const smtp = smtpEnv();
+    const transport = nodemailer.createTransport(smtpTransportConfig(smtp));
 
-    const transportConfig: Record<string, unknown> = {
-      host: smtpHost,
-      port: smtpPort,
-      secure: false
-    };
-
-    // Add auth if credentials are provided (production SMTP)
-    if (smtpUser && smtpPass) {
-      transportConfig.auth = { user: smtpUser, pass: smtpPass };
-    } else {
-      // Local development only (Inbucket/Mailpit serve a self-signed certificate and take no credentials). Certificate verification is NOT relaxed on the credentialed path: doing so would send SMTP_USER/SMTP_PASS over a channel whose peer is unauthenticated.
-      transportConfig.tls = { rejectUnauthorized: false };
-    }
-
-    const transport = nodemailer.createTransport(transportConfig);
-
-    // The sender is ALWAYS the configured one (162-REVIEW WR-02). A caller-chosen `from` let any caller who passed the gate send as an arbitrary address through the deployment's SMTP identity; the request's `from` is now accepted only when it names the configured sender, and refused above otherwise. Required rather than guessed, as before (REVIEW-EDGE-02).
-    const senderAddress = requireEnv('SMTP_FROM', Deno.env.get('SMTP_FROM'));
+    // The sender is always the configured one: a request's `from` is accepted only when it names it, and refused above otherwise.
+    const senderAddress = configuredSender(smtp);
     const results: RecipientResult[] = [];
     let sentCount = 0;
     let failedCount = 0;
@@ -305,7 +280,7 @@ Deno.serve(async (req) => {
           dry_run: false,
           results
         }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -317,14 +292,28 @@ Deno.serve(async (req) => {
         dry_run: false,
         results
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
     // The real error goes to the log and a FIXED LITERAL goes to the caller, with nothing interpolated. This arm now receives the three `requireEnv` throws above, whose messages name environment variables; echoing `err.message` here -- which is what this arm did until Phase 155 -- would have turned an unconfigured deployment into a configuration-disclosure primitive for anyone who can reach this endpoint. The property that matters is the absence of a template, so the same guarantee holds for throws added later.
     console.error('send-email error:', err);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   }
-});
+}
+
+/** The five `SMTP_*` values of the environment. */
+function smtpEnv(): SmtpEnv {
+  return {
+    host: Deno.env.get('SMTP_HOST'),
+    port: Deno.env.get('SMTP_PORT'),
+    // These two are optional and carry no default: the credentialed and the uncredentialed transport are both deliberate.
+    user: Deno.env.get('SMTP_USER'),
+    pass: Deno.env.get('SMTP_PASS'),
+    sender: Deno.env.get('SMTP_FROM')
+  };
+}
+
+Deno.serve(handleRequest);

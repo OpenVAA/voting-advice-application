@@ -16,23 +16,23 @@
         "template": "{candidates} yhteensä {parties}",
         "candidates": [
           {
-            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
-            "selectors": ["numCandidates", "numCandidatesPlural"],
+            "declarations": ["input numCandidates"],
+            "selectors": ["numCandidates"],
             "match": {
-              "numCandidates=0, numCandidatesPlural=*": "Ei ehdokkaita",
-              "numCandidates=*, numCandidatesPlural=one": "1 ehdokas",
-              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} ehdokasta"
+              "numCandidates=0": "Ei ehdokkaita",
+              "numCandidates=1": "1 ehdokas",
+              "numCandidates=*": "{numCandidates} ehdokasta"
             }
           }
         ],
         "parties": [
           {
-            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
-            "selectors": ["numParties", "numPartiesPlural"],
+            "declarations": ["input numParties"],
+            "selectors": ["numParties"],
             "match": {
-              "numParties=0, numPartiesPlural=*": "ei puoluetta",
-              "numParties=*, numPartiesPlural=one": "1 puolueesta",
-              "numParties=*, numPartiesPlural=*": "{numParties} puolueesta"
+              "numParties=0": "ei puoluetta",
+              "numParties=1": "1 puolueesta",
+              "numParties=*": "{numParties} puolueesta"
             }
           }
         ]

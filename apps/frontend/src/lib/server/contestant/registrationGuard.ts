@@ -18,9 +18,9 @@ import type { DPDataType } from '$lib/api/base/dataTypes';
  */
 
 /**
- * What a registration address needs of the project: `any` for the registration page, which needs at least one listed registration mode, and `code` for the screens a registration code leads to, which need the code mode to be listed.
+ * What a registration address needs of the project: `any` for the registration page, which needs at least one listed registration mode, `code` for the screens a registration code leads to, which need the code mode to be listed, and `identityProvider` for the identity provider's error screen, whose Try again needs the provider's mode to be listed.
  */
-export type RegistrationNeed = 'any' | 'code';
+export type RegistrationNeed = 'any' | 'code' | 'identityProvider';
 
 /** What the guard reads of a request: its fetch, and for the refusal its locale. */
 type RegistrationGuardEvent = {
@@ -34,7 +34,7 @@ type RegistrationGuardEvent = {
  * Reads the application settings once on every call, so a setting that was changed is honoured at the next request. Never rejects: a failed read is logged and answered with `false`.
  * @param event - The request, of which the fetch alone is read.
  * @param need - What the address needs.
- * @returns `true` when at least one registration mode is listed, for the need `any`, or when the code mode is listed, for the need `code`.
+ * @returns `true` when at least one registration mode is listed, for the need `any`, when the code mode is listed, for the need `code`, or when the provider's mode is listed, for the need `identityProvider`.
  */
 export async function isRegistrationOffered(
   { fetch }: Pick<RegistrationGuardEvent, 'fetch'>,
@@ -50,7 +50,9 @@ export async function isRegistrationOffered(
       return {};
     });
   const listed = listedRegistrationModes(appSettings);
-  return need === 'code' ? listed.includes(REGISTRATION_MODE.Code) : listed.length > 0;
+  if (need === 'code') return listed.includes(REGISTRATION_MODE.Code);
+  if (need === 'identityProvider') return listed.includes(REGISTRATION_MODE.IdentityProvider);
+  return listed.length > 0;
 }
 
 /**

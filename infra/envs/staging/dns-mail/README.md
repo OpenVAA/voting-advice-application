@@ -20,7 +20,7 @@ Step 1  first apply of the zone, the identity and the SMTP user
    |
 Step 2  read four outputs by name and the identity, with its DKIM signing zone
    |
-Step 3  plan again, which must show no change; the account's two assert modes; the state object
+Step 3  plan again, which must show no change; the account's two inline-policy checks; the state object
    |
 Step 4  only if the signing zone differed: plan and apply the three corrected DKIM records
    |
@@ -82,7 +82,7 @@ new terminal. Each step lists the ones it needs.
 cd infra/envs/staging/dns-mail
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-dns-mail.XXXXXX")
 ```
 
 `LC_ALL=C` keeps every number and sort order independent of your workstation's locale. Give a time in
@@ -106,7 +106,7 @@ identity.
    cd infra/envs/staging/dns-mail
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-dns-mail.XXXXXX")
    ```
 
 2. It must print `s2_account=471112560111`. Any other account means stop: the shell is signed in
@@ -187,24 +187,24 @@ Step 3.
    terraform plan -input=false -no-color -detailed-exitcode > "$L/s8.log" 2>&1; echo "s8_second_plan_exit=$?"
    ```
 
-9. The account, now that the SMTP user exists. Each assert mode of the inventory script reads the
+9. The account, now that the SMTP user exists. Each mode of the inline-policy check reads the
    caller first and exits 1 without judging anything when the caller is not in `471112560111`. Both
    must print 0: no IAM user in the account carries an inline policy, and no role or user under the
    path `/openvaa/` carries one. Neither mode judges attached policies. The last two lines read the
    SMTP user's own policies: no inline policy, and the send policy attached.
 
    ```bash
-   ../../../scripts/account-inventory.sh --assert-no-inline-user-policies > "$L/s9a.log" 2>&1; echo "s9_assert_users_exit=$?"
-   ../../../scripts/account-inventory.sh --assert-no-inline-under /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_no_inline_exit=$?"
+   ../../../scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s9a.log" 2>&1; echo "s9_assert_users_exit=$?"
+   ../../../scripts/check-inline-policies.sh --assert-no-inline-under /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_no_inline_exit=$?"
    echo "s9_smtp_inline_count=$(aws iam list-user-policies --user-name openvaa-staging-ses-smtp --query 'length(PolicyNames)' --output text)"
    echo "s9_smtp_attached=$(aws iam list-attached-user-policies --user-name openvaa-staging-ses-smtp --query 'AttachedPolicies[].PolicyName' --output text)"
    ```
 
-   If an assert mode printed 1, add its lines; the script prints names and counts only:
+   If a mode of the check printed 1, add its lines; the check prints names and counts only:
 
    ```bash
-   sed 's/^/s9_inv=/' "$L/s9a.log"
-   sed 's/^/s9_inv=/' "$L/s9b.log"
+   sed 's/^/s9_check=/' "$L/s9a.log"
+   sed 's/^/s9_check=/' "$L/s9b.log"
    ```
 
 10. The encryption of this root's state object in the bucket:
@@ -236,7 +236,7 @@ The lines that begin the sitting, from the repository root, signed in:
 cd infra/envs/staging/dns-mail
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-dns-mail.XXXXXX")
 ```
 
 Plan, and print the summary line and the resource headings:
@@ -335,7 +335,7 @@ The lines that begin the sitting, signed in:
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-dns-mail.XXXXXX")
 ```
 
 0. It must print `s0_account=471112560111`. Any other account means stop: the shell is signed in
@@ -455,5 +455,5 @@ address.
 | 2026-10-22 | Step 8, item 2: before anything was filed, the account read showed production access already enabled in `eu-north-1`, with sending enabled and a 24-hour quota of 50000. No production-access request was filed and no mailbox was verified for the sandbox.                                    |
 | 2026-11-11 | SES accepted an SMTP send under the scoped send policy: a sign-in mail the hosted `account-access` sent from `noreply@staging.openvaa.org` through SES on port `2587` arrived. It is recorded in the 2026-11-11 [Observations](../supabase/README.md#observations) of the Supabase runbook.     |
 | 2026-11-11 | It passed DKIM, SPF and DMARC, aligned with the From domain: `dkim=pass` for `staging.openvaa.org`, `spf=pass` for `mail.staging.openvaa.org` and `dmarc=pass` under `p=QUARANTINE`, as the 2026-11-11 [Observations](../supabase/README.md#observations) of the Supabase runbook record.       |
-| 2026-11-20 | At a read-only sitting, `dig +short TXT` reduced to the `p=` tag read `p=none` for `_dmarc.openvaa.org` and `p=quarantine` for `_dmarc.staging.openvaa.org`: the parent domain's DMARC policy differed from this zone's. Only the two tags were recorded, in `189-05-staging-reads.md`.         |
+| 2026-11-20 | At a read-only sitting, `dig +short TXT` reduced to the `p=` tag read `p=none` for `_dmarc.openvaa.org` and `p=quarantine` for `_dmarc.staging.openvaa.org`: the parent domain's DMARC policy differed from this zone's. Only the two tags were recorded.                                       |
 | 2026-11-20 | The staging name's DMARC record takes the place of the parent domain's policy for mail from that name: the mail of 2026-11-11 passed DMARC under `p=QUARANTINE`, this zone's own policy, while the parent domain's record reads `p=none`; both are in the rows above.                           |

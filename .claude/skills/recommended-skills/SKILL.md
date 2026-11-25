@@ -74,7 +74,7 @@ The four conflicts:
    version, an underscore and a name) and its line in `migrations.manifest.json`, and a file
    `supabase migration new` names with a timestamp is renamed to the next number. Both upstream
    commands conflict with it: each writes a timestamp-named file with no manifest line, which
-   `yarn assert:schema-migration-parity` rejects, and `supabase db pull` derives the migration from
+   `yarn assert:migrations-frozen` rejects, and `supabase db pull` derives the migration from
    a database's state rather than from the `apps/supabase/supabase/schema/` edit it must match. The database skill wins.
 2. **EXECUTE on the private helpers.** Upstream revokes EXECUTE on its `private` helper functions
    from PUBLIC, anon, authenticated and service_role and then calls them from policies. Here "private

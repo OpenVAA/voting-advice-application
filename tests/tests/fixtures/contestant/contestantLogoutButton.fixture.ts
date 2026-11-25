@@ -11,6 +11,8 @@
  *  - clickWithDialog()    — click logout, wait for the role="dialog" modal, click the in-modal confirm button.
  *  - clickWithoutDialog() — click logout and assert direct logout (no modal, and the login screen follows).
  *  - clickAndStay()       — click logout, wait for the modal, and dismiss it with its "continue" button: the user stays signed in on the page.
+ *  - holdClockStill()     — make the page's clock show one moment, so an open modal's count never ends.
+ *  - openDialog()         — click logout and wait for the modal, leaving it open.
  *
  * SEPARATE methods (NOT a single method with a boolean param) — keeps the rigidity contract clean and the spec call-sites self-documenting.
  *
@@ -63,6 +65,26 @@ export function createContestantLogoutButton(page: Page) {
       await expect(dialog).toBeHidden();
       expect(page.url(), 'dismissing the dialog leaves the user on the page').toBe(url);
       await expect(page.getByTestId(testIds.contestant.home.logout)).toBeVisible();
+    },
+
+    /**
+     * Make the page's clock show one moment for as long as the page lives, while its timers keep running. The modal's count ends when the clock reaches the count's deadline, so a modal opened after this never logs out by itself, and a test can leave it open without signing out the session it runs in.
+     *
+     * Call it before {@link openDialog}.
+     */
+    async holdClockStill(): Promise<void> {
+      await page.clock.setFixedTime(new Date());
+    },
+
+    /**
+     * Click the logout button and wait for the TimedModal `role="dialog"` confirmation modal, leaving it open.
+     *
+     * Used to read the modal itself, after {@link holdClockStill}.
+     */
+    async openDialog(): Promise<void> {
+      await page.getByTestId(testIds.contestant.home.logout).click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible();
     }
   };
 }

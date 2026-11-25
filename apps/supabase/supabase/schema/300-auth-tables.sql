@@ -3,6 +3,8 @@
 -- Depends on:
 -- - 100-tenancy.sql (accounts, projects)
 -- - 000-enums.sql (grant_scope_type, grant_role_type, entity_type)
+-- - 102-entities.sql (the four entity tables the cleanup triggers sit on)
+-- - 305-invitations.sql (public.invitations, which cleanup_grants_on_delete also clears; read when the trigger fires, so it may be created later)
 --------------------------------------------------------------------------------
 -- grants table
 --------------------------------------------------------------------------------
@@ -67,13 +69,13 @@ FROM
   public;
 
 --------------------------------------------------------------------------------
--- cleanup_grants_on_delete: a grant does not outlive its target
+-- cleanup_grants_on_delete: neither a grant nor a promised grant outlives its target
 --
--- `target_id` has no foreign key: it points into one of six tables depending on `scope` and `target_type`. Without these triggers a deleted target's grants would stay: they would still be projected into the holder's tokens, would be invisible to administration by target, and would attach to a recreated row that reused the id through an import. These AFTER DELETE triggers delete the grants naming the deleted row, on the six tables a grant can target.
+-- `target_id` has no foreign key, on public.grants and on public.invitations (305-invitations.sql) alike: it points into one of six tables depending on `scope` and `target_type`. Without these triggers a deleted target's grants would stay: they would still be projected into the holder's tokens, would be invisible to administration by target, and would attach to a recreated row that reused the id through an import; and an invitation would survive its entity and attach to such a row in the same way. These AFTER DELETE triggers delete the grants naming the deleted row, on the six tables a grant can target, and on the four entity tables also the invitations naming it, claimed ones included.
 --
 -- The trigger arguments carry the scope and, for the entity scope, the target type, so one function serves all six tables and names none of them.
 --
--- SECURITY DEFINER because the deleting caller -- a project admin removing a candidate through row-level security -- holds no privilege on public.grants at all (it is REVOKEd from every API role). search_path is pinned as on every definer function here. A project delete cascades to its entities first, so their grants go with them; the project's own grants go with the project row.
+-- SECURITY DEFINER because the deleting caller -- a project admin removing a candidate through row-level security -- holds no privilege on public.grants at all (it is REVOKEd from every API role), and may not hold the authority the invitations' DELETE policy asks, which keeps claimed rows. search_path is pinned as on every definer function here. A project delete cascades to its entities first, so their grants and invitations go with them; the project's own grants go with the project row, and its invitations through the foreign key on `project_id`.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.cleanup_grants_on_delete () RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET
@@ -84,6 +86,10 @@ BEGIN
     WHERE g.scope = 'entity'
       AND g.target_type = TG_ARGV[1]::public.entity_type
       AND g.target_id = OLD.id;
+    DELETE FROM public.invitations i
+    WHERE i.scope = 'entity'
+      AND i.target_type = TG_ARGV[1]::public.entity_type
+      AND i.target_id = OLD.id;
   ELSE
     DELETE FROM public.grants g
     WHERE g.scope = TG_ARGV[0]::public.grant_scope_type

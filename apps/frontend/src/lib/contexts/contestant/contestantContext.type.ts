@@ -7,18 +7,16 @@ import type {
   EntityNomination,
   NominationContest,
   NominationParentOption,
-  RequestPasswordRecoveryOptions,
-  RequestSignInLinkOptions,
   SetEntityNominationsResult,
   UserEntity
 } from '$lib/api/base/dataWriter.type';
 import type { EntryFlow, EntryHeldCode, EntryLinkRequest } from '$lib/auth/entryFlow';
-import type { NextStep, Task, TaskState } from '$lib/contestant/tasks';
+import type { TaskState } from '$lib/contestant/tasks';
 import type { ContestantLoginError } from '$lib/contestant/utils/loginError';
 import type { AppContext } from '../app';
 import type { AuthContext } from '../auth';
 import type { QuestionBlocks } from '../utils/questionBlockState.type';
-import type { ContestantUserDataState } from './contestantUserDataState.type';
+import type { EntityUserDataState } from './entityUserDataState.type';
 
 export type ContestantContext = AppContext &
   AuthContext & {
@@ -35,11 +33,11 @@ export type ContestantContext = AppContext &
      */
     constituenciesSelectable: boolean | undefined;
     /**
-     * The `Election`s the `Candidate` is nominated in.
+     * The `Election`s the entity is nominated in.
      */
     selectedElections: Array<Election>;
     /**
-     * The `Constituency`s the `Candidate` is nominated in.
+     * The `Constituency`s the entity is nominated in.
      */
     selectedConstituencies: Array<Constituency>;
     /**
@@ -80,19 +78,11 @@ export type ContestantContext = AppContext &
      */
     checkInvitationCode: (opts: { code: string }) => ReturnType<DataWriter['checkInvitationCode']>;
     /**
-     * Ask for a sign-in link to be mailed. A stable function, safe to destructure. A screen does not call it: it calls `sendEntryLink`, which keeps the request's outcome from the screen.
-     * @param opts - The locale of the mail, and an address, a registration code or both.
-     * @returns A `Promise` resolving when the request was received, which says nothing of whether a mail is sent, and rejecting when the request fails.
+     * Post one intent of the signed-in identity-provider account to the endpoint it saves its details through: `save` its party's names and the address it gives, `resend` the link of the address awaiting proof, or `acknowledge` the notice shown after the identity provider found the account. A stable function, safe to destructure.
+     * @param opts - The intent and what it carries.
+     * @returns A `Promise` resolving to the endpoint's result, or to `undefined` when it gave none. It never rejects.
      */
-    requestSignInLink: (opts: RequestSignInLinkOptions) => ReturnType<DataWriter['requestSignInLink']>;
-    /**
-     * Ask for a password-recovery link to be mailed. A stable function, safe to destructure. A screen does not call it: it calls `sendEntryLink`, which keeps the request's outcome from the screen.
-     * @param opts - The address to mail and the locale of the mail.
-     * @returns A `Promise` resolving when the request was received, which says nothing of whether the address has an account nor of whether a mail is sent, and rejecting when the request fails.
-     */
-    requestPasswordRecovery: (
-      opts: RequestPasswordRecoveryOptions
-    ) => ReturnType<DataWriter['requestPasswordRecovery']>;
+    registerIdentityProviderAccount: DataWriter['registerIdentityProviderAccount'];
     /**
      * Logout the user and redirect to the login page. It asks nothing: the caller holds what the user answered. After a successful sign-out, a page that guards unsaved edits discards them.
      * @param options - `reason`: why the session ends, which the login page receives as its `errorMessage` and the login screen states, for a logout the user did not press for, such as `loggedOutAutomatically` at the end of a logout count. A logout the user pressed for carries none. Overlapping calls are one logout, which carries the first call's reason.
@@ -140,9 +130,9 @@ export type ContestantContext = AppContext &
     /**
      * An extended reactive object that holds all data owned by the user.
      *
-     * NB. Before using the object, its `init` method must be called with the initial `ContestantUserData`.
+     * NB. Before using the object, its `init` method must be called with the initial `EntityUserData`.
      */
-    userData: ContestantUserDataState;
+    userData: EntityUserDataState;
     /**
      * The signed-in user, as the load of the protected tree read it, or `undefined` on a page outside that tree.
      *
@@ -202,11 +192,11 @@ export type ContestantContext = AppContext &
     clearEntryFlow: () => void;
 
     /**
-     * Whether the answers can be edited.
+     * Whether an entity's own users are barred from changing anything of it: the app setting `access.contestantEditing` is `locked`, which the database enforces. A reactive accessor: read `ctx.answersLocked`, never destructure.
      */
     answersLocked: boolean;
     /**
-     * Whether an entity's own users are barred from adding or changing its nominations. A reactive accessor over the app setting `access.nominationsLocked`, which the database enforces: read `ctx.nominationsLocked`, never destructure.
+     * Whether an entity's own users are barred from adding or changing its nominations: the app setting `access.contestantEditing` is `nominationsLocked` or `locked`, which the database enforces. A reactive accessor: read `ctx.nominationsLocked`, never destructure.
      */
     nominationsLocked: boolean;
     /**
@@ -233,28 +223,4 @@ export type ContestantContext = AppContext &
      * A reactive accessor replaced wholesale on every change: read it as `contestantCtx.taskState` inside the tracking scope and never destructure it.
      */
     taskState: TaskState;
-    /**
-     * The tasks of the entity the route names, in order: `taskState.tasks`. Empty on a page that names no entity the user edits. A task has no status while the facts it rests on are not loaded.
-     *
-     * A reactive accessor: read it as `contestantCtx.tasks` inside the tracking scope and never destructure it.
-     */
-    tasks: ReadonlyArray<Task>;
-    /**
-     * The first incomplete task and where it leads: `taskState.nextStep`. `undefined` when no task is incomplete and while the state is not known.
-     *
-     * A reactive accessor: read it as `contestantCtx.nextStep` inside the tracking scope and never destructure it.
-     */
-    nextStep: NextStep | undefined;
-    /**
-     * Whether the entity's preview can be opened: `taskState.previewOpen`. The entity has a nomination, and no required info question and no opinion question is unanswered. False while the state is not known.
-     *
-     * A reactive accessor: read it as `contestantCtx.previewOpen` inside the tracking scope and never destructure it.
-     */
-    previewOpen: boolean;
-    /**
-     * Whether every task the entity has is complete: `taskState.allComplete`. It has a nomination, no required info question and no opinion question is unanswered and, while the entity's name can still be edited, every name field its type requires is saved. False for an entity with no nomination, and false while the state is not known: with no entity loaded, and before the entity's question lists are.
-     *
-     * A reactive accessor: read it as `contestantCtx.profileComplete` inside the tracking scope and never destructure it.
-     */
-    profileComplete: boolean;
   };

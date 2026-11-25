@@ -4,7 +4,7 @@
     "constituencies": {
       "ingress": {
         "candidate": "Välj den valkrets du ställer upp i.",
-        "organization": "Välj den valkrets ditt parti ställer upp i. En valkrets kan väljas för varje val; kontakta supporten om ditt parti ställer upp i flera."
+        "organization": "Välj de valkretsar ditt parti ställer upp i. Du kan välja flera i varje val."
       },
       "noElection": {
         "candidate": "Inget val som du kan nomineras i hålls i den här valkretsen.",
@@ -13,7 +13,7 @@
       "severalKept": "Du har flera nomineringar i det här valet. De behålls som de är; du kan ändra deras uppgifter i nästa steg.",
       "title": {
         "candidate": "Vilken är din valkrets?",
-        "organization": "Vilken är ditt partis valkrets?"
+        "organization": "I vilka valkretsar ställer ditt parti upp?"
       }
     },
     "delete": "Ta bort",

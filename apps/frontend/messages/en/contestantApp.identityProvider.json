@@ -8,12 +8,17 @@
     "awaitingConfirmation": "Awaiting confirmation",
     "emailIntro": "Enter the email address you want to sign in with next time. We’ll send a confirmation link to it. You can continue right away. Until you open the link, sign in with Bank ID.",
     "emailInUse": "This email address is already used by another account. Enter a different address, or sign in with that address instead.",
+    "emailInvited": "An invitation has been sent to this email address. Log out and sign in by email with that invitation instead, and contact support to have the registration you have just made removed.",
     "emailTakenNotice": "The address you entered earlier is now used by another account, so it could not be added to yours. Enter a different address.",
     "error": {
       "cancelled": {
         "content": "You cancelled the identification, and nothing was saved. You can identify yourself again whenever you are ready.",
         "support": "If you need help, {contactSupportLink}.",
         "title": "Identification cancelled"
+      },
+      "noAccount": {
+        "content": "No account has been registered with the identity you used. If you registered with an email address, sign in with it instead.",
+        "title": "No account found"
       },
       "noRetry": {
         "content": "We’re sorry, this is a problem on our side, and trying again will not help. Please contact support.",

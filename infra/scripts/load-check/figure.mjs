@@ -7,30 +7,29 @@
  *
  * It prints one line per step:
  *
+ *   ```text
  *   step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> dropped=<n> met=yes|no
+ *   ```
  *
- * and then the figure, in journeys per minute: the arrival rate of the highest step that met every threshold with every
- * step below it, so the first step that did not meet them ends the figure:
+ * and then the figure, in journeys per minute: the arrival rate of the highest step that met every threshold with every step below it, so the first step that did not meet them ends the figure:
  *
+ *   ```text
  *   figure_journeys_per_minute=<r, or 0 when no step met>
  *   figure_step=<i, or none>
+ *   ```
  *
- * A step meets the thresholds when its page p95 is under 1000 ms, its relay p95 under 300 ms, its error rate under 1 %
- * and it dropped no iteration. A dropped iteration is a journey the arrival rate called for that k6 did not start,
- * because every virtual user was busy: it fails no request, so without this count a step short of users would pass at
- * a lower real rate than its label. A p95 or error rate the summary does not hold, as for a step the run was aborted
- * before, prints as `none` and the step is not met; an absent dropped count counts as none dropped. The values are read
- * from the per-step sub-metrics the script defines thresholds on:
+ * A step meets the thresholds when its page p95 is under 1000 ms, its relay p95 under 300 ms, its error rate under 1 % and it dropped no iteration. A dropped iteration is a journey the arrival rate called for that k6 did not start, because every virtual user was busy: it fails no request, so without this count a step short of users would pass at a lower real rate than its label. A p95 or error rate the summary does not hold, as for a step the run was aborted before, prints as `none` and the step is not met; an absent dropped count counts as none dropped. The values are read from the per-step sub-metrics the script defines thresholds on:
  *
+ *   ```js
  *   metrics["http_req_duration{kind:page,step:<i>}"].values["p(95)"]
  *   metrics["http_req_duration{kind:relay,step:<i>}"].values["p(95)"]
  *   metrics["http_req_failed{step:<i>}"].values.rate
  *   metrics["dropped_iterations{scenario:step_<i>}"].values.count
+ *   ```
  *
  * and the step rates from `load_check.steps`, which must rise strictly.
  *
- * Exit codes: 0 when the lines were printed; 1 when the summary is unreadable, holds no step or holds steps that do not
- * rise strictly; 2 on a usage error.
+ * Exit codes: 0 when the lines were printed; 1 when the summary is unreadable, holds no step or holds steps that do not rise strictly; 2 on a usage error.
  */
 
 import { readFileSync } from 'node:fs';

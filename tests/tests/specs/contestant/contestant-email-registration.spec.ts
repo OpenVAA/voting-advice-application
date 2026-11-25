@@ -13,7 +13,7 @@ import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
  * - The sign-in screen offers the link for a user without a password, which leads to the forgot-password page with the typed address in its field. That page's one request hands one mail over: an address with an open invitation and no account is sent the sign-in mail. The screen that follows shows the typed address and keeps it nowhere outside the page's memory.
  * - The mailed link signs the user in and claims the invitation. A user whose account has no password is shown the set-password view in place of the page: where the link lands, and at the address of a protected page of their own entity entered directly.
  * - Saving a password replaces that view with the terms of use without the user going anywhere, and accepting them leads to the candidate's home, where the user is still signed in after a reload.
- * - The registration screen lists the email and the code mode, which the dataset's `contestantApp.registrationModes` allows candidates and organizations, with none chosen. The email mode is chosen with the keyboard, and Continue makes the one link request.
+ * - The registration screen lists the email and the code mode, which the dataset's `contestantApp.servedEntityTypes` allows candidates and organizations, with none chosen. The email mode is chosen with the keyboard, and Continue makes the one link request.
  * - A signed-in user who opens the login screen, the sign-in screen, the registration screen or the "email sent" screen by its address ends on their home.
  * - On the registration screen, Continue with no mode chosen, with an empty address and with an unusable address makes no request, says what is missing where it is missing, and puts focus there.
  * - The screen that says an email was sent is the same for an invited address, for an address nobody invited and for an address asked again inside the minute from another tab: the same states, text, count and controls. Only the first is mailed and has an account, which is read once each request's work is over.
@@ -80,7 +80,7 @@ test.describe('registering through a mailed link', () => {
 
   test(
     "tracer: an invited candidate follows the sign-in screen's link for a user without a password, asks for a link on the forgot-password page, opens the mailed link, sets a password and reaches the candidate's home",
-    { tag: '@reg-email' },
+    { tag: '@registration-email' },
     async ({
       page,
       invitationFlow,
@@ -144,7 +144,7 @@ test.describe('registering through a mailed link', () => {
 
   test(
     'register: an invited candidate registers by email through the mode selector',
-    { tag: '@reg-email' },
+    { tag: '@registration-email' },
     async ({
       page,
       invitationFlow,
@@ -308,7 +308,7 @@ test.describe('registering through a mailed link', () => {
     await contestantEmailSentPage.expectShown({ wording: 'signIn', address });
     expect(first, 'the first request handed a mail over').toBe('sent');
 
-    // While the count runs the control is unavailable, still takes focus, and is described by the count in its label.
+    // While the count runs the control is unavailable, still takes focus, and carries the count in its label and its accessible name.
     await contestantEmailSentPage.expectResendWaiting();
 
     // Past the wait the control is available, its count is gone, and the status region says so.

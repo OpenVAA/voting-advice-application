@@ -7,37 +7,41 @@
  *
  * 1. **A proved address** — the account's address in the locked field with its description, nothing of a pending address, and the address given to the change-password form as its user name.
  * 2. **An address awaiting its link** — the pending address in the locked field with the sentence that it has not been confirmed, Send again with its count and status, and no user name for the change-password form.
- * 3. **Another address** — "Use another email address" shows the address fields and the save button; an incomplete pair sends nothing; a valid pair is saved and the loads rerun; an address another account holds is told at the address field; any other failure is told under the fields.
+ * 3. **Another address** — "Use another email address" shows the address fields and the save button; an incomplete pair sends nothing; a valid pair is saved and the loads rerun; an address another account holds is told at the address field; any other failure is told under the fields; the count of Send again runs on while the fields are shown and after a new address is saved.
  * 4. **No address** — no address anywhere.
  * 5. **The way back** — Return leads to the app's root, which names no entity: the page is the user's own and is reached from every state, with no entity, one or several.
+ * 6. **A password change** — its failure is put into an alert region, and its success into a status region, each rendered before the press, so that the message is announced.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RESEND_WAIT_SECONDS } from '$lib/auth/entryFlow';
-import type { BasicUserData } from '$lib/api/base/dataWriter.type';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
+import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
 
-const { box, context, fetchMock, invalidateAll } = vi.hoisted(() => {
-  /** Reads the user-level data; pointed at a reactive value once the module's runes are available. */
-  const box = { readUser: (): BasicUserData | undefined => undefined };
-  const invalidateAll = vi.fn();
-  const fetchMock = vi.fn();
-  /** A message with a payload renders as its key followed by the payload. */
-  function t(key: string, payload?: Record<string, unknown>): string {
-    return payload ? `${key} ${JSON.stringify(payload)}` : key;
-  }
-  const context = {
-    t,
-    getRoute: { current: (route: string) => `/route/${route}` },
-    setPassword: vi.fn(),
-    get user() {
-      return box.readUser();
-    }
-  };
-  return { box, context, fetchMock, invalidateAll };
-});
+const { invalidateAll, register } = vi.hoisted(() => ({
+  invalidateAll: vi.fn(),
+  register: vi.fn<DataWriter['registerIdentityProviderAccount']>()
+}));
+
+/** A message with a payload renders as its key followed by the payload. */
+function t(key: string, payload?: Record<string, unknown>): string {
+  return payload ? `${key} ${JSON.stringify(payload)}` : key;
+}
+
+// The box's `user` is the user-level data the fake context answers with, reactive as the real accessor is.
+const { context, box } = fakeContestantContext({ user: undefined as BasicUserData | undefined }, () => ({
+  t,
+  setPassword: vi.fn(),
+  registerIdentityProviderAccount: register
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
+
+vi.mock('$lib/contexts/app', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getAppContext: () => ({ track: () => undefined })
+}));
 
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({
@@ -82,11 +86,6 @@ if (typeof window.matchMedia !== 'function') {
 
 const Page = (await import('./+page.svelte')).default;
 
-/** The user-level data the fake context answers with, reactive as the real accessor is. */
-let currentUser = $state.raw<BasicUserData | undefined>(undefined);
-box.readUser = () => currentUser;
-
-const ENDPOINT = '/api/contestant/identity-provider';
 const PENDING = 'waiting@example.org';
 const PROVED = 'proved@example.org';
 const TYPED = 'typed@example.org';
@@ -110,11 +109,12 @@ const KEY = {
   emailDescription: 'contestantApp.settings.emailDescription',
   emailPendingInfo: 'contestantApp.settings.emailPendingInfo',
   saveEmail: 'contestantApp.settings.saveEmail',
-  changeAddress: 'contestantApp.emailSent.changeAddress',
-  resend: 'contestantApp.emailSent.resend',
-  resendRequested: 'contestantApp.emailSent.resendRequested',
-  resendReady: 'contestantApp.emailSent.resendReady',
+  changeAddress: 'common.account.emailSent.changeAddress',
+  resend: 'common.account.emailSent.resend',
+  resendRequested: 'common.account.emailSent.resendRequested',
+  resendReady: 'common.account.emailSent.resendReady',
   emailInUse: 'contestantApp.identityProvider.emailInUse',
+  emailInvited: 'contestantApp.identityProvider.emailInvited',
   saveFailed: 'contestantApp.identityProvider.saveFailed'
 };
 
@@ -127,41 +127,33 @@ function userWith(overrides: Partial<Omit<BasicUserData, 'settings'>> = {}): Bas
     username: '',
     termsOfUseAccepted: '2026-01-01T00:00:00Z',
     passwordSet: false,
-    addressState: 'none',
-    pendingEmail: null,
+    address: { state: 'none', pendingTaken: false },
+    ownOrganizationId: null,
     ownOrganizationUnnamed: false,
-    pendingEmailTaken: false,
     ...overrides
   };
 }
 
-const PENDING_USER = userWith({ addressState: 'pending', pendingEmail: PENDING });
-const PROVED_USER = userWith({ addressState: 'proved', email: PROVED, username: PROVED, passwordSet: true });
-
-/** The endpoint answering `result`. */
-function answer(result: string): Response {
-  return new Response(JSON.stringify({ result }), { status: 200, headers: { 'content-type': 'application/json' } });
-}
+const PENDING_USER = userWith({ address: { state: 'pending', email: PENDING } });
+const PROVED_USER = userWith({ address: { state: 'proved' }, email: PROVED, username: PROVED, passwordSet: true });
 
 let teardown: Array<() => void> = [];
 
 beforeEach(() => {
   invalidateAll.mockResolvedValue(undefined);
-  fetchMock.mockResolvedValue(answer('saved'));
-  vi.stubGlobal('fetch', fetchMock);
+  register.mockResolvedValue('saved');
 });
 
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
   vi.useRealTimers();
-  vi.unstubAllGlobals();
   vi.resetAllMocks();
 });
 
 /** Mount the page for a user. */
 function render(user: BasicUserData | undefined): HTMLElement {
-  currentUser = user;
+  box.set({ user });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(Page, { target, props: {} });
@@ -210,13 +202,9 @@ function type(input: HTMLInputElement, value: string): void {
   flushSync();
 }
 
-/** The bodies of the requests made to the endpoint. */
-function requests(): Array<unknown> {
-  return fetchMock.mock.calls.map((call) => {
-    const [url, init] = call as [string, RequestInit];
-    expect(url).toBe(ENDPOINT);
-    return JSON.parse(String(init.body));
-  });
+/** The intents the page posted, in order. */
+function requests(): Array<Parameters<DataWriter['registerIdentityProviderAccount']>[0]> {
+  return register.mock.calls.map(([opts]) => opts);
 }
 
 describe('the settings page — a proved address', () => {
@@ -265,9 +253,9 @@ describe('the settings page — an address awaiting its link', () => {
     expect(target.innerHTML).not.toContain('autocomplete="username"');
   });
 
-  it('asks for the link again, announces it, and is unavailable but focused and described by its count until the count ends', async () => {
+  it('asks for the link again, announces it, and is unavailable but focused, with its count in its name, until the count ends', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
-    fetchMock.mockResolvedValue(answer('sent'));
+    register.mockResolvedValue('sent');
     const target = render(PENDING_USER);
 
     await press(target, SEL.resend);
@@ -277,14 +265,14 @@ describe('the settings page — an address awaiting its link', () => {
     expect(document.activeElement).toBe(resend);
     expect(resend.getAttribute('aria-disabled')).toBe('true');
     const countdown = one(target, SEL.countdown);
-    expect(resend.getAttribute('aria-describedby')).toBe(countdown.id);
+    expect(resend.hasAttribute('aria-describedby'), 'the count is in the name alone').toBe(false);
     expect(resend.contains(countdown), 'the count is inside Send again').toBe(true);
-    expect(countdown.textContent).toContain('contestantApp.emailSent.resendIn');
+    expect(countdown.textContent).toContain('common.account.emailSent.resendIn');
     expect(countdown.textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS}`);
     expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendRequested);
 
     await press(target, SEL.resend);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(register).toHaveBeenCalledTimes(1);
 
     vi.advanceTimersByTime(RESEND_WAIT_SECONDS * 1000);
     flushSync();
@@ -305,7 +293,7 @@ describe('the settings page — another address', () => {
     expect(one<HTMLButtonElement>(target, SEL.save).getAttribute('type')).toBe('submit');
     expect(target.querySelector(SEL.change)).toBeNull();
     expect(addressControl(target).value).toBe(PENDING);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
   });
 
   it('sends nothing for a pair of fields in error', async () => {
@@ -316,7 +304,7 @@ describe('the settings page — another address', () => {
     type(one<HTMLInputElement>(target, SEL.entryConfirmation), 'other@example.org');
     await press(target, SEL.save);
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
     expect(invalidateAll).not.toHaveBeenCalled();
   });
 
@@ -331,15 +319,46 @@ describe('the settings page — another address', () => {
     expect(requests()).toEqual([{ intent: 'save', email: TYPED }]);
     expect(invalidateAll).toHaveBeenCalledTimes(1);
 
-    currentUser = userWith({ addressState: 'pending', pendingEmail: TYPED });
+    box.set({ user: userWith({ address: { state: 'pending', email: TYPED } }) });
     flushSync();
     expect(addressControl(target).value).toBe(TYPED);
     expect(target.querySelector(SEL.entryEmail)).toBeNull();
     one(target, SEL.change);
   });
 
+  it('keeps the count of Send again running while the address fields are shown and after a new address is saved', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
+    register.mockResolvedValue('sent');
+    const target = render(PENDING_USER);
+    await press(target, SEL.resend);
+
+    vi.advanceTimersByTime(1000);
+    flushSync();
+    await press(target, SEL.change);
+
+    expect(one(target, SEL.resend).getAttribute('aria-disabled')).toBe('true');
+    expect(one(target, SEL.countdown).textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS - 1}`);
+    expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendRequested);
+
+    register.mockResolvedValue('saved');
+    type(one<HTMLInputElement>(target, SEL.entryEmail), TYPED);
+    type(one<HTMLInputElement>(target, SEL.entryConfirmation), TYPED);
+    await press(target, SEL.save);
+    box.set({ user: userWith({ address: { state: 'pending', email: TYPED } }) });
+    flushSync();
+
+    expect(target.querySelector(SEL.entryEmail)).toBeNull();
+    expect(one(target, SEL.resend).getAttribute('aria-disabled')).toBe('true');
+    expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendRequested);
+
+    vi.advanceTimersByTime((RESEND_WAIT_SECONDS - 1) * 1000);
+    flushSync();
+    expect(one(target, SEL.resend).hasAttribute('aria-disabled')).toBe(false);
+    expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendReady);
+  });
+
   it('tells an address another account holds at the address field, with focus there, and reruns nothing', async () => {
-    fetchMock.mockResolvedValue(answer('in-use'));
+    register.mockResolvedValue('in-use');
     const target = render(PENDING_USER);
     await press(target, SEL.change);
 
@@ -356,8 +375,26 @@ describe('the settings page — another address', () => {
     expect(target.querySelector(SEL.error)).toBeNull();
   });
 
+  it('tells an address an open invitation is addressed to at the address field, with focus there, and reruns nothing', async () => {
+    register.mockResolvedValue('invited');
+    const target = render(PENDING_USER);
+    await press(target, SEL.change);
+
+    type(one<HTMLInputElement>(target, SEL.entryEmail), TYPED);
+    type(one<HTMLInputElement>(target, SEL.entryConfirmation), TYPED);
+    await press(target, SEL.save);
+    await settle();
+
+    const error = one(target, SEL.entryEmailError);
+    expect(error.textContent).toContain(KEY.emailInvited);
+    expect(error.getAttribute('data-reason')).toBe('invited');
+    expect(document.activeElement).toBe(one(target, SEL.entryEmail));
+    expect(invalidateAll).not.toHaveBeenCalled();
+    expect(target.querySelector(SEL.error)).toBeNull();
+  });
+
   it('tells any other failure under the fields, keeps what was typed and reruns nothing', async () => {
-    fetchMock.mockResolvedValue(answer('failed'));
+    register.mockResolvedValue('failed');
     const target = render(PENDING_USER);
     await press(target, SEL.change);
 
@@ -375,7 +412,7 @@ describe('the settings page — another address', () => {
 
 describe('the settings page — no address', () => {
   it('shows no address, nothing of a pending address and no user name', () => {
-    const target = render(userWith({ addressState: 'none' }));
+    const target = render(userWith({ address: { state: 'none', pendingTaken: false } }));
 
     expect(addressControl(target).value).toBe('');
     for (const selector of [SEL.resend, SEL.status, SEL.change, SEL.username])
@@ -387,10 +424,80 @@ describe('the settings page — the way back', () => {
   it.each([
     ['a proved address', PROVED_USER],
     ['an address awaiting its link', PENDING_USER],
-    ['no address', userWith({ addressState: 'none' })]
+    ['no address', userWith({ address: { state: 'none', pendingTaken: false } })]
   ] as const)('leads Return to the app root, for %s', (_, user) => {
     const target = render(user);
 
     expect(one<HTMLAnchorElement>(target, SEL.return).getAttribute('href')).toBe('/route/ContestantAppHome');
+  });
+});
+
+describe('the settings page — a password change', () => {
+  /** A password that satisfies every enforced rule. */
+  const NEW_PASSWORD = 'Abcdef1!';
+  /** The password rule list validates on a 200 ms debounce. */
+  const DEBOUNCE_MS = 200;
+  const PASSWORD = {
+    field: '[data-testid="password-setter-password"] input',
+    confirmation: '[data-testid="password-setter-confirmation"] input',
+    submit: '[data-testid="settings-update-password"]',
+    error: '[data-testid="settings-password-error"]',
+    updated: '[data-testid="settings-password-updated"]'
+  };
+  const CHANGE_FAILED = 'contestantApp.settings.error.changePassword';
+  const UPDATED = 'contestantApp.settings.password.updated';
+
+  /** Type a valid new password into both fields and let the rule list judge it. */
+  function typeNewPassword(target: HTMLElement): void {
+    for (const selector of [PASSWORD.field, PASSWORD.confirmation]) {
+      const input = one<HTMLInputElement>(target, selector);
+      input.value = NEW_PASSWORD;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      flushSync();
+    }
+    vi.advanceTimersByTime(DEBOUNCE_MS);
+    flushSync();
+  }
+
+  /** The two regions, which are rendered and empty before any press. */
+  function regionsOf(target: HTMLElement): { error: HTMLElement; updated: HTMLElement } {
+    const error = one(target, PASSWORD.error);
+    const updated = one(target, PASSWORD.updated);
+    expect(error.getAttribute('role')).toBe('alert');
+    expect(updated.getAttribute('role')).toBe('status');
+    expect(error.textContent?.trim()).toBe('');
+    expect(updated.textContent?.trim()).toBe('');
+    return { error, updated };
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  });
+
+  it('puts a failed change into the alert region rendered before the press', async () => {
+    context.setPassword.mockResolvedValue({ type: 'failure' });
+    const target = render(PROVED_USER);
+    const { error, updated } = regionsOf(target);
+    typeNewPassword(target);
+
+    await press(target, PASSWORD.submit);
+
+    expect(context.setPassword).toHaveBeenCalledWith({ password: NEW_PASSWORD });
+    expect(one(target, PASSWORD.error)).toBe(error);
+    expect(error.textContent).toContain(CHANGE_FAILED);
+    expect(updated.textContent?.trim()).toBe('');
+  });
+
+  it('puts a stored change into the status region rendered before the press', async () => {
+    context.setPassword.mockResolvedValue({ type: 'success' });
+    const target = render(PROVED_USER);
+    const { error, updated } = regionsOf(target);
+    typeNewPassword(target);
+
+    await press(target, PASSWORD.submit);
+
+    expect(one(target, PASSWORD.updated)).toBe(updated);
+    expect(updated.textContent).toContain(UPDATED);
+    expect(error.textContent?.trim()).toBe('');
   });
 });

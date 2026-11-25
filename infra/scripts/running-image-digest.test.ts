@@ -1,10 +1,7 @@
 /**
  * The running-digest script, run against a stub of the AWS CLI.
  *
- * Each case writes an executable `aws` into a throwaway directory placed first on the child's `PATH`. The stub records
- * its arguments and answers each call from the `STUB_*` variables of the case, so no account is read and no network is
- * reached. The child gets a minimal environment, so no credential of the shell that runs the suite reaches it. The
- * cases cover both forms of image a task definition can name, a digest and a tag, and every failure the script reports.
+ * Each case writes an executable `aws` into a throwaway directory placed first on the child's `PATH`. The stub records its arguments and answers each call from the `STUB_*` variables of the case, so no account is read and no network is reached. The child gets a minimal environment, so no credential of the shell that runs the suite reaches it. The cases cover both forms of image a task definition can name, a digest and a tag, and every failure the script reports.
  */
 
 import { spawnSync } from 'node:child_process';

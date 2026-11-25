@@ -16,7 +16,10 @@ database is built from, and its files are never edited. Read this before changin
 | `supabase/migrations/` | **Yes**             | **What a database is built from.** The frozen baseline `00001_initial_schema.sql`, then one appended migration per schema change, named by the next five-digit version, an underscore and a name, for example `00002_add_example.sql`. `supabase db reset` and `supabase db push` apply these files in version order. |
 
 `supabase/migrations.manifest.json` lists every migration in version order with the sha256 of its
-bytes; the baseline's entry is the first. A listed migration is never edited: `supabase db push`
+bytes; the baseline's entry is the first. Its `baseline.commit` names the commit whose `schema/` the
+baseline was generated from, and that commit carries the tag `schema-baseline-00001`, so the source
+of the baseline stays reachable whatever branch it was made on. The baseline is the only migration:
+the next schema change is `00002`. A listed migration is never edited: `supabase db push`
 skips every version a database has already recorded, so an edit made after a migration was applied
 never reaches that database, and nothing says so.
 
@@ -26,18 +29,19 @@ never reaches that database, and nothing says so.
 2. Write the same change as a new migration, `supabase/migrations/<version>_<name>.sql`. The version
    is the next five-digit number after the highest in the manifest; the name is lower-case letters,
    digits and underscores. A file that `supabase migration new` names with a timestamp is renamed to
-   the next number.
+   the next number. The migration opens with a `WHAT IT ADDS.` or `WHAT IT CHANGES.` paragraph and a
+   `WHAT IT LEAVES.` paragraph, which state its delta against the previous migration; the full
+   description of a function it re-issues stays in `schema/`.
 3. Add the migration's line, with its sha256 from `shasum -a 256 <file>`, to the end of
    `supabase/migrations.manifest.json`.
 
 Then run `yarn check:schema-equivalence`. It builds one database from `schema/` and one from
-`migrations/`, each in an isolated instance, and fails when the two differ. It needs Docker and is
-not part of `yarn lint:check`.
+`migrations/`, each in an isolated instance, and fails when the two differ. It needs Docker, and
+runs in CI in the `sql-lint` job.
 
-**A gate keeps the migrations frozen.** `yarn assert:schema-migration-parity`, a link of
+**A gate keeps the migrations frozen.** `yarn assert:migrations-frozen`, a link of
 `yarn lint:check`, fails when a listed migration's bytes change, when a migration has no manifest
-line, and when versions repeat, go down or leave a gap. `yarn schema:regenerate` writes nothing: it
-refuses and prints the three steps above with the next file name.
+line, and when versions repeat, go down or leave a gap.
 
 **Two obligations that no tool can enforce for you.**
 
@@ -50,7 +54,7 @@ refuses and prints the three steps above with the next file name.
 The gate proves that the listed migrations are unchanged and that the sequence is whole. It does not
 compare `schema/` with the migrations, it does not prove either is **correct**, and it does not prove
 that a database has **applied** them — a database not reset since the change still carries the old
-schema. See the script header, `scripts/assert-schema-migration-parity.mjs`, for the full limits.
+schema. See the script header, `scripts/assert-migrations-frozen.mjs`, for the full limits.
 
 The two storage buckets, `public-assets` and `private-assets`, are created by the migration. A
 deployment's own rows — its account, its project and that project's settings, the storage
@@ -90,20 +94,24 @@ column grant nor a policy can state them:
   followed by three or six hexadecimal digits, for every writer. The frontend writes the stored value
   into a `style` attribute. Held by `41-entity-color.test.sql`.
 
-A fourth rule is a stored setting. Nomination editing by an entity's own users is locked by the app
-setting `access.nominationsLocked` in the project's row of `app_settings`:
-`private.project_nominations_locked(project_id)` in `schema/301-auth-functions.sql` reads it, and
-the four `entity_*` nomination policies ask it: the two inserts, the update and the delete. Only the
-JSON boolean `true` locks; a project without a settings row or without the key is unlocked, and an
-id that names no project is locked. Whoever holds `project.edit_app_settings` sets it, project
+A fourth rule is a stored setting. What an entity's own users may still edit is the app setting
+`access.contestantEditing` in the project's row of `app_settings`: `'open'` (the default),
+`'nominationsLocked'` or `'locked'`. `private.project_contestant_editing(project_id)` in
+`schema/301-auth-functions.sql` reads it, answering `'open'` for a project without a settings row,
+without the key or with any other value, and `'locked'` for an id that names no project. The four
+`entity_*` nomination policies (the two inserts, the update and the delete) admit a write only
+while it answers `'open'`; the four entity self-update policies, `upsert_answers` and the
+entity-scope storage write refuse under `'locked'`; and `set_entity_nominations` refuses an
+entity's editor without `project.edit_nominations` under anything but `'open'`. A project editor and
+a project admin are not bound by it. Whoever holds `project.edit_app_settings` sets it, project
 editors included.
 
-A nomination is also held to the type of its election, by two more trigger functions of that file.
-`elections.election_type` is one of four values of the enum `nomination_shape`, and
+A nomination is also held to the nomination shape of its election, by two more trigger functions of that file.
+`elections.nomination_shape` is one of four values of the enum `nomination_shape`, and
 `nomination_shape_rule(shape, entity_type)` is the one statement in SQL of which entity types each
-admits. `validate_nomination()` refuses, for every writer, a row its election's type does not admit.
-`validate_nomination_parent_required()`, the function of the constraint trigger
-`nominations_parent_required`, refuses at the end of the transaction a candidate's nomination in a
+admits. `validate_nomination()` refuses, for every writer, a row its election's nomination shape does not admit.
+`validate_nomination_parent_required()`, the function of the constraint trigger of the same name,
+refuses at the end of the transaction a candidate's nomination in a
 closed-list election (`organization_list`) that has neither a parent nomination nor a requested
 party name. Held by `08-triggers.test.sql`. An entity's editor writes its nominations through
 `set_entity_nominations` and reads the entities it may stand under through
@@ -179,7 +187,6 @@ yarn db:reset                 # drop and recreate from migrations/, then seed.sq
 yarn db:reset-with-data       # the above, then the default dev-seed template
 yarn db:types                 # regenerate packages/supabase-types from the live schema
 yarn check:schema-equivalence # build a database from schema/ and one from migrations/, and compare them (Docker)
-yarn schema:regenerate        # writes nothing: prints the three steps of a schema change
 yarn db:lint:sql              # supabase db lint + scripts/lint-schema.mjs (see below)
 yarn db:status                # service status and local URLs
 ```
@@ -256,13 +263,10 @@ The functions' environment file is `supabase/functions/.env`, created from the t
 it: the origin of the links the functions mail and redirect to.
 
 **Judge a change to a function's source after a restart.** Under `policy = "per_worker"` the Edge
-runtime keeps serving the code a worker loaded, and whether it reloads an edited file is not
-settled: one measurement saw a call straight after an edit and a call ten seconds later both
-answered from the old code, and another saw an edited source served before any restart. Do not
-rely on either. After editing anything under `supabase/functions/`, or
-`config.toml`, or the functions' environment file, run `yarn db:stop` and then `yarn db:start`
-before judging the change. A function directory that is added or deleted is served, or stops being
-served, at the same restart.
+runtime keeps serving the code a worker loaded, and does not reliably reload an edited file. After
+editing anything under `supabase/functions/`, or `config.toml`, or the functions' environment file,
+run `yarn db:stop` and then `yarn db:start` before judging the change. A function directory that is
+added or deleted is served, or stops being served, at the same restart.
 
 ## Tests
 
@@ -272,8 +276,14 @@ yarn workspace @openvaa/supabase test:unit   # vitest, Edge Function pure helper
 yarn workspace @openvaa/supabase typecheck   # deno check over every non-test Edge Function module; part of `yarn typecheck`
 ```
 
-The invitation model is held by `39-invitations.test.sql`: the table and its policies, the code,
-seeding, the claim, who may be mailed, the limits and what each function exposes. Its schema is in
+The invitation model is held by five files: `39a-invitations-seeding.test.sql` (the table, its
+policies, the code and seeding), `39b-invitations-claim.test.sql` (the claim),
+`39c-invitations-service-helpers.test.sql` (the service-role helpers, the limits and what each
+function exposes), `39d-invitations-registration-mode.test.sql` (the registration-mode condition)
+and `39e-invitations-recovery-identity-provider.test.sql` (recovery and identity-provider accounts).
+The link-request witness the E2E suite reads is no part of the schema: the test-only file
+`supabase/tests/fixtures/invitation-link-witness.psql` installs it, applied by
+`00z-invitation-link-witness.test.sql` for pgTAP and by the E2E setup after the stack is up. Its schema is in
 `supabase/schema/305-invitations.sql` (the table, its policies and the code functions) and
 `supabase/schema/506-invitation-rpcs.sql` (seeding, the claim and the service-role functions behind
 `account-access`).
@@ -320,13 +330,14 @@ Three functions under `supabase/functions/`:
   claimed a code (`code-sign-in`). The two mail requests answer before any work and share one mail
   slot per address. `confirm-address`, with the caller's own access token, proves an address for
   an account an identity provider created: it takes the account's and the address's slot, answers
-  `sent`, `in-use` or `refused`, and mails a `type=email_change` link. It takes its project from
-  the request body and refuses a project the account registered no entity in; neither slot is per
-  project. Reads `SITE_URL`, `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM`.
+  `sent`, `in-use` or `refused`, and mails a `type=email_change` link. It serves the
+  project `PUBLIC_PROJECT_ID` names and refuses a request for another; `email_confirmation_request`
+  refuses a project the account registered no entity in, and neither slot is per project. Reads
+  `PUBLIC_PROJECT_ID`, `SITE_URL`, `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM`.
 - **`identity-callback`** — **server-only**. Refuses every caller without the frontend server's
   `x-identity-callback-secret`; accepts a bank-authentication `id_token` with the request's
-  `project_id` and entity type, verifies it against the provider's JWKS, decides the type by the
-  project's registration matrix, and finds or creates the matching auth user (by invite, no
+  `project_id` and entity type, verifies it against the provider's JWKS, chooses the type among those
+  `identity_provider_entity_types` answers for the project, and finds or creates the matching auth user (by invite, no
   password), its candidate or party and the editor grant between them. Reads the
   `IDENTITY_PROVIDER_*` variables and `IDENTITY_CALLBACK_SERVER_SECRET`.
 - **`send-email`** — admin-gated. Resolves per-recipient template variables via the
@@ -354,19 +365,27 @@ asks `account-access` for a link and signs in, and `claim_invitations` then writ
 grants for the caller's own confirmed address. An open invitation for a candidate or an
 organization is honoured only under a registration mode the project's settings allow for that
 type: `private.invitation_mode_allowed` asks `private.registration_mode_allowed`
-(`301-auth-functions.sql`), and the functions that read an open invitation treat a refused row as
-absent.
+(`301-auth-functions.sql`), which allows no mode while the project's contestant editing is
+`'locked'`, and the functions that read an open invitation treat a refused row as absent.
 
 The functions this schema adds for the sign-in flow, by file:
 
 - `301-auth-functions.sql`: `public.send_email_hook`, the no-op mail hook, executable by
   `supabase_auth_admin` alone; `private.caller_password_set`, whether the caller's account holds a
-  password, read by `get_user_entities` as its `password_set`; `private.user_password_set`, the same
-  for any account, executable by no API role; `private.registration_mode_allowed_in` and
-  `private.registration_mode_allowed`, the registration-mode rule.
-- `506-invitation-rpcs.sql`: `public.recovery_link_request`, the service role's; and
-  `private.invitation_mode_allowed` and `private.email_holds_grant_in_project`, which no API role
-  can execute.
+  password, read by `get_caller_account_state` as its `password_set`; `private.user_password_set`,
+  the same for any account, executable by no API role; `private.registration_mode_allowed_in` and
+  `private.registration_mode_allowed`, the registration-mode rule, which refuses every mode while
+  `access.contestantEditing` is `'locked'`; `private.project_contestant_app_closed`, which closes
+  every entry path while `access.contestantApp` is off; and `public.identity_provider_entity_types`,
+  the service role's, the entity types an identity provider may register in a project.
+- `503-entity-rpcs.sql`: `public.get_caller_account_state`, the caller's `password_set` and
+  `pending_email_taken`; and `private.caller_registered_organization`, the organization the caller
+  registered through an identity provider, answered as `get_user_entities`' `organization`.
+- `506-invitation-rpcs.sql`: `public.recovery_link_request`, `public.email_confirmation_request`,
+  `public.email_confirmation_release`, `public.email_invitation_hold` and
+  `public.identity_account_find`, the service role's; and `private.invitation_mode_allowed`,
+  `private.email_holds_grant_in_project` and the table `private.identity_registrations` (which
+  entity each identity registered in each project), which no API role can reach.
 
 When calling an RPC from a function, the argument names must match the SQL parameter names
 exactly, `p_` prefixes included. PostgREST resolves overloads by argument name and returns
@@ -389,8 +408,10 @@ under `.vscode/` is committed.
 - `deno.enablePaths` turns the Deno extension on for the functions tree alone. Every other file of
   the repository stays with the TypeScript language server.
 - `deno.path` is optional. It points the extension at the repository's pinned Deno, which
-  `yarn install` links at `node_modules/.bin/deno`. That the extension accepts this relative path
-  has not been verified.
+  `yarn install` links at `node_modules/.bin/deno`. The extension resolves a relative path against
+  the root of the workspace folder, so this one works when the repository root is the folder you
+  open. Because the setting is a workspace setting, the extension asks once whether to allow that
+  executable.
 - Never set `deno.enable`, and never add a `deno.json` at the repository root. Either one turns Deno
   on for the rest of the repository's TypeScript, and Deno then flags those files.
 - Prettier formats this tree, as it formats the rest of the repository. Keep Prettier the default

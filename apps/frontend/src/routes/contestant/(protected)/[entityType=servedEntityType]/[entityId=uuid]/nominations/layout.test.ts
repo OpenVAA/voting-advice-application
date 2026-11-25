@@ -44,7 +44,7 @@ const CONSTITUENCY_DATA = {
 };
 
 /** A nomination as far as the facts read one. */
-type FakeNomination = { id: string; electionId: string; electionRound: number };
+type FakeNomination = { id: string; electionId: string; electionRound: number; writable: boolean };
 
 /** The data of the parent loads of an ungated user whose entity was read, with the parts a case replaces. */
 function parentDataOf({
@@ -55,7 +55,7 @@ function parentDataOf({
 }: {
   entityType?: 'candidate' | 'organization';
   nominations?: Array<FakeNomination>;
-  access?: { nominationsLocked?: boolean; answersLocked?: boolean };
+  access?: { contestantEditing?: 'open' | 'nominationsLocked' | 'locked' };
   overrides?: Record<string, unknown>;
 } = {}): Record<string, unknown> {
   return {
@@ -91,7 +91,7 @@ function eventOf(parentData: Record<string, unknown>) {
 
 /** The facts the load states for the parent data given. */
 async function factsOf(parentData: Record<string, unknown>) {
-  return (await load(eventOf(parentData).event)).nominationFacts;
+  return (await load(eventOf(parentData).event)).nominationScope;
 }
 
 describe('contestant/(protected)/[entityType]/[entityId]/nominations/+layout.ts', () => {
@@ -133,32 +133,26 @@ describe('contestant/(protected)/[entityType]/[entityId]/nominations/+layout.ts'
     ]);
   });
 
-  it("holds in the editor's reach the nominations at their election's current round in an election that admits the entity", async () => {
+  it('holds as writable the nominations the database marks writable', async () => {
     const nominations: Array<FakeNomination> = [
-      { id: 'in-closed', electionId: 'closed', electionRound: 1 },
-      { id: 'in-parties', electionId: 'parties', electionRound: 1 },
-      { id: 'in-an-earlier-round', electionId: 'second-round', electionRound: 1 },
-      { id: 'in-the-current-round', electionId: 'second-round', electionRound: 2 },
-      { id: 'in-no-election', electionId: 'unknown', electionRound: 1 }
+      { id: 'in-closed', electionId: 'closed', electionRound: 1, writable: true },
+      { id: 'in-an-earlier-round', electionId: 'second-round', electionRound: 1, writable: false },
+      { id: 'in-the-current-round', electionId: 'second-round', electionRound: 2, writable: true },
+      { id: 'in-no-election', electionId: 'unknown', electionRound: 1, writable: false }
     ];
 
-    expect((await factsOf(parentDataOf({ entityType: 'candidate', nominations })))?.inReachNominationIds).toEqual([
+    expect((await factsOf(parentDataOf({ entityType: 'candidate', nominations })))?.writableNominationIds).toEqual([
       'in-closed',
       'in-the-current-round'
     ]);
-    expect((await factsOf(parentDataOf({ entityType: 'organization', nominations })))?.inReachNominationIds).toEqual([
-      'in-closed',
-      'in-parties'
-    ]);
-    expect((await factsOf(parentDataOf()))?.inReachNominationIds).toEqual([]);
+    expect((await factsOf(parentDataOf()))?.writableNominationIds).toEqual([]);
   });
 
   it.each([
-    { title: 'neither lock is on', access: {}, editable: true },
-    { title: 'both locks are stated off', access: { nominationsLocked: false, answersLocked: false }, editable: true },
-    { title: 'nominations are locked', access: { nominationsLocked: true }, editable: false },
-    { title: 'answers are locked', access: { answersLocked: true }, editable: false },
-    { title: 'both locks are on', access: { nominationsLocked: true, answersLocked: true }, editable: false }
+    { title: 'contestant editing is not stated', access: {}, editable: true },
+    { title: 'contestant editing is open', access: { contestantEditing: 'open' as const }, editable: true },
+    { title: 'nominations are locked', access: { contestantEditing: 'nominationsLocked' as const }, editable: false },
+    { title: 'everything is locked', access: { contestantEditing: 'locked' as const }, editable: false }
   ])('says the nominations are editable: $editable when $title', async ({ access, editable }) => {
     expect((await factsOf(parentDataOf({ access })))?.editable).toBe(editable);
   });
@@ -166,7 +160,7 @@ describe('contestant/(protected)/[entityType]/[entityId]/nominations/+layout.ts'
   it('takes parent from the event and nothing else', async () => {
     const { event, eventReads } = eventOf(parentDataOf());
 
-    expect((await load(event)).nominationFacts).toBeDefined();
+    expect((await load(event)).nominationScope).toBeDefined();
     expect(eventReads).toEqual(['parent']);
   });
 });

@@ -2,34 +2,30 @@
 #
 # request-loop.sh -- Request one URL repeatedly and count the answers that were not 2xx.
 #
-# Run it beside a rollout to see the rollout from a viewer's side: the result is a count of failed requests, not an
-# impression.
+# Run it beside a rollout to see the rollout from a viewer's side: the result is a count of failed requests, not an impression.
 #
-# What it does. It requests the URL once, then once every interval, until the stop file appears, the duration ends or it
-# is sent SIGTERM, SIGINT or SIGHUP. Each request is one `curl` with a 10-second limit. For each request it appends one
-# line `<utc>,<status>` to the output file, the status being the three-digit HTTP status, or 000 when no answer came.
-# At the end it prints one line:
-#   requests=<n> non_2xx=<m> first_utc=<utc> last_utc=<utc>
-# with the times of the first and the last request, or `none` for both when no request was made.
+# What it does. It requests the URL once, then once every interval, until the stop file appears, the duration ends or it is sent SIGTERM, SIGINT or SIGHUP. Each request is one `curl` with a 10-second limit. For each request it appends one line `<utc>,<status>` to the output file, the status being the three-digit HTTP status, or 000 when no answer came. At the end it prints one line, with the times of the first and the last request, or `none` for both when no request was made:
 #
-# What it does not record: no response body and no header is written anywhere. A redirect is not followed, so a 3xx
-# counts as not 2xx. The requests are sequential: a request that takes longer than the interval delays the next one.
+# ```text
+# requests=<n> non_2xx=<m> first_utc=<utc> last_utc=<utc>
+# ```
+#
+# What it does not record: no response body and no header is written anywhere. A redirect is not followed, so a 3xx counts as not 2xx. The requests are sequential: a request that takes longer than the interval delays the next one.
 #
 # Usage:
+#
+#   ```sh
 #   infra/scripts/request-loop.sh --url https://staging.example.org/api/health --out tmp/rollout.csv --until tmp/stop
 #   infra/scripts/request-loop.sh --url https://staging.example.org/ --out tmp/rollout.csv --duration 600 --interval 2
 #   infra/scripts/request-loop.sh --self-test
+#   ```
 #
 #   --url <url>             REQUIRED. The URL to request, http:// or https://.
-#   --out <file>            REQUIRED. The file the `<utc>,<status>` lines are written to. It is emptied first; its
-#                           directory must exist.
-#   --until <stop file>     REQUIRED unless --duration is given. The run ends at the first check after this file
-#                           appears. A stop file that already exists is a usage error, so a stale one cannot end a run.
-#   --duration <seconds>    REQUIRED unless --until is given. The run ends at the first check after this many seconds.
-#                           Both may be given; the first that ends the run wins.
+#   --out <file>            REQUIRED. The file the `<utc>,<status>` lines are written to. It is emptied first; its directory must exist.
+#   --until <stop file>     REQUIRED unless --duration is given. The run ends at the first check after this file appears. A stop file that already exists is a usage error, so a stale one cannot end a run.
+#   --duration <seconds>    REQUIRED unless --until is given. The run ends at the first check after this many seconds. Both may be given; the first that ends the run wins.
 #   --interval <seconds>    OPTIONAL. The pause between requests, a positive number. Default: 1.
-#   --self-test             Run the loop against loopback servers started with node. Needs no credential and no
-#                           network beyond 127.0.0.1. Each case prints `self_test <name> PASS|FAIL`.
+#   --self-test             Run the loop against loopback servers started with node. Needs no credential and no network beyond 127.0.0.1. Each case prints `self_test <name> PASS|FAIL`.
 #   -h, --help              Print this header and exit 0.
 #
 # Exit codes:
@@ -43,6 +39,12 @@ set -f
 export LC_ALL=C
 
 SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_NAME="request-loop.sh"
+USAGE_LINE="--url <url> --out <file> (--until <stop file> | --duration <seconds>) [--interval <seconds>] | --self-test | -h | --help"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$(dirname "$SCRIPT_PATH")/../../scripts/lib/cli.sh"
+# shellcheck source=../../scripts/lib/self-test.sh
+. "$(dirname "$SCRIPT_PATH")/../../scripts/lib/self-test.sh"
 
 URL=""
 OUT=""
@@ -51,20 +53,6 @@ DURATION=""
 INTERVAL="1"
 STOP_REQUESTED=0
 SLEEP_PID=""
-
-usage_line() {
-  echo "usage: request-loop.sh --url <url> --out <file> (--until <stop file> | --duration <seconds>) [--interval <seconds>] | --self-test | -h | --help" >&2
-}
-
-print_header() {
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$SCRIPT_PATH"
-}
-
-usage_error() {
-  echo "request-loop.sh: $1" >&2
-  usage_line
-  exit 2
-}
 
 utc_now() {
   date -u +%Y-%m-%dT%H:%M:%SZ
@@ -141,25 +129,6 @@ const server = http.createServer((request, response) => {
 server.listen(0, "127.0.0.1", () => fs.writeFileSync(portFile, String(server.address().port)));
 '
 
-st_result() {
-  ST_CASES=$((ST_CASES + 1))
-  if [ "$2" = "pass" ]; then
-    echo "self_test $1 PASS"
-  else
-    echo "self_test $1 FAIL"
-    ST_FAILED=$((ST_FAILED + 1))
-  fi
-}
-
-st_expect() {
-  local name="$1"
-  shift
-  if "$@"; then st_result "$name" pass; else st_result "$name" fail; fi
-}
-
-has() { case "$1" in *"$2"*) return 0 ;; *) return 1 ;; esac; }
-lacks() { case "$1" in *"$2"*) return 1 ;; *) return 0 ;; esac; }
-equals() { [ "$1" = "$2" ]; }
 greater() { [ "$1" -gt "$2" ]; }
 
 # The m of a summary line's non_2xx=<m>, or -1 when the line holds none.
@@ -178,19 +147,6 @@ st_requests() {
 # Every line of the file is <utc>,<three digits>.
 st_lines_well_formed() {
   [ -s "$1" ] && ! grep -qvE '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z,[0-9]{3}$' "$1"
-}
-
-# Starts a server of the given mode and sets ST_PORT.
-st_start_server() {
-  local port_file="$ST/port.$1" waited=0
-  node -e "$ST_SERVER_JS" "$1" "$port_file" &
-  ST_SERVER_PIDS="$ST_SERVER_PIDS $!"
-  while [ ! -s "$port_file" ] && [ "$waited" -lt 50 ]; do
-    sleep 0.1
-    waited=$((waited + 1))
-  done
-  ST_PORT="$(cat "$port_file" 2> /dev/null || true)"
-  [ -n "$ST_PORT" ]
 }
 
 st_cleanup() {

@@ -54,7 +54,7 @@ output "container_stop_timeout_seconds" {
 }
 
 output "task_environment_names" {
-  description = "Names of the variables the task receives, as values and from the parameter store, after omit_environment."
+  description = "Names of the variables the task receives, as values and from the parameter store, after identity_provider_type and omit_environment."
   value       = [for v in local.kept : v.name]
 }
 

@@ -12,8 +12,8 @@
         },
         "name": {
           "locked": {
-            "candidate": "Ären Numm gouf vum Administrateur festgeluecht oder aus Ärer Identifikatioun iwwerholl, an Dir kënnt en hei net änneren. Wann e falsch ass, kontaktéiert wgl. de Support.",
-            "organization": "Den Numm an d’Ofkierzung vun Ärer Partei goufe vum Administrateur confirméiert, an Dir kënnt se hei net änneren. Wa se falsch sinn, kontaktéiert wgl. de Support."
+            "candidate": "Ären Numm gouf vum Administrateur festgeluecht oder aus Ärer Identifikatioun iwwerholl, an Dir kënnt en hei net änneren. Wann e falsch ass, {contactSupportLink}.",
+            "organization": "Den Numm an d’Ofkierzung vun Ärer Partei goufe vum Administrateur confirméiert, an Dir kënnt se hei net änneren. Wa se falsch sinn, {contactSupportLink}."
           },
           "editable": {
             "candidate": "Dir kënnt Ären Numm änneren, bis en Administrateur Äre Profil confirméiert huet.",

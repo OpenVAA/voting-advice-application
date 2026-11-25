@@ -19,6 +19,7 @@ import type { CheckCodeTarget, ProbeAnswer } from './callerLimitProbe';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const SCHEMA_FILE = path.join(REPO_ROOT, 'apps/supabase/supabase/schema/506-invitation-rpcs.sql');
+const SETTINGS_SCHEMA_FILE = path.join(REPO_ROOT, 'apps/supabase/supabase/schema/107-feedback.sql');
 const CONTRACT_FILE = path.join(REPO_ROOT, 'apps/supabase/supabase/functions/account-access/contract.ts');
 
 const UNKNOWN: ProbeAnswer = { status: 200, bodyText: '{"status":"unknown"}', retryAfter: null };
@@ -45,13 +46,29 @@ function admittedThen(count: number, last: ProbeAnswer): Array<ProbeAnswer> {
 }
 
 describe('probeCallerLimit', () => {
-  it('fails by name after 31 admitted calls, and makes no 32nd', async () => {
-    const { post, codes } = standIn(Array.from({ length: 40 }, () => UNKNOWN));
+  it('fails after 61 admitted calls naming the possible causes, and makes no 62nd', async () => {
+    const { post, codes } = standIn(Array.from({ length: 70 }, () => UNKNOWN));
     const result = await probeCallerLimit(post, freshCheckCode);
     expect(result.ok).toBe(false);
-    expect(!result.ok && result.reason.startsWith('no 429 within 31 calls')).toBe(true);
-    expect(!result.ok && result.reason).toContain('behind_cloudflare');
-    expect(codes).toHaveLength(31);
+    expect(!result.ok && result.reason.startsWith('no 429 within 61 calls')).toBe(true);
+    for (const cause of [
+      'behind_cloudflare',
+      'access_caller_max is set above 30',
+      'cf-connecting-ip',
+      'access_caller_take',
+      'address changed'
+    ]) {
+      expect(!result.ok && result.reason).toContain(cause);
+    }
+    expect(codes).toHaveLength(61);
+  });
+
+  it('passes on a refusal at call 61, after a window that was partly used when it started has reset', async () => {
+    const { post, codes } = standIn(admittedThen(60, { status: 429, bodyText: REFUSED_BODY, retryAfter: '600' }));
+    const result = await probeCallerLimit(post, freshCheckCode);
+    expect(result).toEqual({ ok: true, admitted: 60, retryAfterSeconds: 600 });
+    expect(codes).toHaveLength(61);
+    expect(new Set(codes).size).toBe(61);
   });
 
   it('passes on a refusal at call 31 with the fixed body and a Retry-After within the window, with a fresh code each call', async () => {
@@ -133,8 +150,8 @@ describe('probeCallerLimit', () => {
   it('counts its calls from the limit it is given', async () => {
     const { post, codes } = standIn(Array.from({ length: 10 }, () => UNKNOWN));
     const result = await probeCallerLimit(post, freshCheckCode, 3, 60);
-    expect(!result.ok && result.reason.startsWith('no 429 within 4 calls')).toBe(true);
-    expect(codes).toHaveLength(4);
+    expect(!result.ok && result.reason.startsWith('no 429 within 7 calls')).toBe(true);
+    expect(codes).toHaveLength(7);
   });
 });
 
@@ -217,9 +234,11 @@ describe('checkCodeTargetFrom', () => {
 });
 
 describe('the pins to the function', () => {
-  it('holds the limit and the window of invitation_caller_take, which the two constants equal', () => {
+  it('holds the default limit and the window of access_caller_take, which the two constants equal', () => {
+    expect(fs.readFileSync(SETTINGS_SCHEMA_FILE, 'utf8')).toContain(
+      'access_caller_max integer NOT NULL DEFAULT 30 CHECK (access_caller_max > 0)'
+    );
     const schema = fs.readFileSync(SCHEMA_FILE, 'utf8');
-    expect(schema).toContain('v_max constant integer := 30;');
     expect(schema).toContain("v_window constant interval := interval '10 minutes';");
     expect(CALLER_LIMIT).toBe(30);
     expect(CALLER_WINDOW_SECONDS).toBe(600);

@@ -1,26 +1,40 @@
 /**
  * The voter app's privacy page, mounted for real against a fake app context.
  *
- * The fake context's `t` returns its key. Its analytics gate has an active relay, and the visitor sends Global Privacy Control, so the page renders its analytics text and no consent control. Assertions are on the DOM rather than on component state.
+ * The fake context's `t` returns its key. Its analytics send-policy input has an active relay, and the visitor sends Global Privacy Control, so the page renders its analytics text and no consent control. Each test can change `trackEvents`, the visit-id mode and the survey link template before mounting; `afterEach` restores them. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
  * 1. **The heading** — the page's one heading can take focus, and the root layout's post-navigation focus reset lands on it.
+ * 2. **The analytics section** — the description of the usage events is shown only with `trackEvents` on, while the page-view count and the Global Privacy Control rule are shown either way. The survey notice is shown only when the survey link template holds the `{sessionId}` placeholder, the visit-id mode is `memory` and `trackEvents` is on. Each case has its control.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { focusNavigationTarget } from '$lib/utils/focusNavigationTarget';
 
+const DEFAULT_LINK_TEMPLATE = 'https://survey.example/?visit={sessionId}';
+
+const box = {
+  trackEvents: true,
+  visitIdMode: 'memory' as 'memory' | 'none',
+  linkTemplate: DEFAULT_LINK_TEMPLATE as string | undefined
+};
+
 const context = {
   t: (key: string) => key,
   getRoute: { current: () => '/' },
-  analyticsGate: {
-    current: {
-      projection: { active: true, consentMode: 'gated' },
-      globalPrivacyControl: true,
-      trackEvents: true,
-      consent: undefined
+  get appSettings() {
+    return { survey: box.linkTemplate === undefined ? undefined : { linkTemplate: box.linkTemplate } };
+  },
+  analyticsPolicy: {
+    get current() {
+      return {
+        projection: { active: true, consentMode: 'gated', visitIdMode: box.visitIdMode },
+        globalPrivacyControl: true,
+        trackEvents: box.trackEvents,
+        consent: undefined
+      };
     }
   }
 };
@@ -64,6 +78,9 @@ let teardown: Array<() => void> = [];
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
+  box.trackEvents = true;
+  box.visitIdMode = 'memory';
+  box.linkTemplate = DEFAULT_LINK_TEMPLATE;
 });
 
 /** Mount the page and run its effects. */
@@ -97,4 +114,43 @@ describe('the heading', () => {
     teardown.push(cancel);
     expect(document.activeElement).toBe(target.querySelector('h1'));
   });
+});
+
+describe('the analytics section', () => {
+  it.each([
+    { trackEvents: true, described: true },
+    { trackEvents: false, described: false }
+  ])(
+    'trackEvents $trackEvents: usage events described $described, page views and Global Privacy Control always',
+    ({ trackEvents, described }) => {
+      box.trackEvents = trackEvents;
+
+      const text = render().textContent ?? '';
+
+      expect(text.includes('privacy.analytics.content.gated'), 'privacy.analytics.content.gated').toBe(described);
+      expect(text).not.toContain('privacy.analytics.content.free');
+      expect(text).toContain('privacy.analytics.pageviews');
+      expect(text).toContain('privacy.analytics.gpc');
+    }
+  );
+
+  it.each([
+    { linkTemplate: DEFAULT_LINK_TEMPLATE, visitIdMode: 'memory' as const, shown: true },
+    { linkTemplate: DEFAULT_LINK_TEMPLATE, visitIdMode: 'memory' as const, trackEvents: false, shown: false },
+    { linkTemplate: 'https://survey.example/?visit={ sessionId }', visitIdMode: 'memory' as const, shown: true },
+    { linkTemplate: 'https://survey.example/', visitIdMode: 'memory' as const, shown: false },
+    { linkTemplate: undefined, visitIdMode: 'memory' as const, shown: false },
+    { linkTemplate: DEFAULT_LINK_TEMPLATE, visitIdMode: 'none' as const, shown: false }
+  ])(
+    'survey link template $linkTemplate, visit-id mode $visitIdMode, trackEvents $trackEvents: survey notice shown $shown',
+    ({ linkTemplate, visitIdMode, trackEvents = true, shown }) => {
+      box.linkTemplate = linkTemplate;
+      box.visitIdMode = visitIdMode;
+      box.trackEvents = trackEvents;
+
+      const text = render().textContent ?? '';
+
+      expect(text.includes('privacy.analytics.survey'), 'privacy.analytics.survey').toBe(shown);
+    }
+  );
 });

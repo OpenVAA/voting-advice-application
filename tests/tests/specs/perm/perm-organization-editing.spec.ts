@@ -19,28 +19,25 @@ import {
   completeAnswers,
   groupTitleNaming,
   organizationEditingPagesOf,
-  setAnswersLocked,
   setCandidateState,
+  setContestantEditing,
   setOrganizationState,
   test
 } from '../../fixtures/contestant/perm-organization-editing';
 import { declareScans } from '../../utils/contestantAxeScan';
 import {
+  CONFIRMED_ORGANIZATION_EDITOR,
   CONFIRMED_ORGANIZATION_EXTERNAL_ID,
-  CONFIRMED_ORGANIZATION_GRANT,
   CONFIRMED_ORGANIZATION_NAME,
   CONFIRMED_ORGANIZATION_SHORT_NAME,
-  CONFIRMED_ORGANIZATION_STORAGE_STATE,
   OPINION_QUESTION_EXTERNAL_IDS,
   ORGANIZATION_INFO_QUESTION_EXTERNAL_ID,
+  UNCONFIRMED_CANDIDATE_EDITOR,
   UNCONFIRMED_CANDIDATE_EXTERNAL_ID,
-  UNCONFIRMED_CANDIDATE_GRANT,
   UNCONFIRMED_CANDIDATE_NAME,
-  UNCONFIRMED_CANDIDATE_STORAGE_STATE,
+  UNCONFIRMED_ORGANIZATION_EDITOR,
   UNCONFIRMED_ORGANIZATION_EXTERNAL_ID,
-  UNCONFIRMED_ORGANIZATION_GRANT,
-  UNCONFIRMED_ORGANIZATION_NAME,
-  UNCONFIRMED_ORGANIZATION_STORAGE_STATE
+  UNCONFIRMED_ORGANIZATION_NAME
 } from '../../utils/permOrganizationEditingData';
 import { PHONE_VIEWPORTS, phoneUse } from '../../utils/phoneViewports';
 import { testIds } from '../../utils/testIds';
@@ -107,34 +104,34 @@ const UNANSWERED_OPINION_QUESTION_EXTERNAL_ID = OPINION_QUESTION_EXTERNAL_IDS[OP
 
 test.describe('perm-organization-editing: the dataset and its identities', () => {
   test.describe("as the confirmed organization's editor", () => {
-    test.use({ storageState: CONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: CONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     test("dataset: the confirmed organization's editor lands on that organization's home", async ({
       contestantEntityHomePage
     }) => {
       await contestantEntityHomePage.open();
-      await contestantEntityHomePage.expectLanded(CONFIRMED_ORGANIZATION_GRANT);
+      await contestantEntityHomePage.expectLanded(CONFIRMED_ORGANIZATION_EDITOR.grant);
     });
   });
 
   test.describe("as the unconfirmed organization's editor", () => {
-    test.use({ storageState: UNCONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNCONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     test("dataset: the unconfirmed organization's editor lands on that organization's home", async ({
       contestantEntityHomePage
     }) => {
       await contestantEntityHomePage.open();
-      await contestantEntityHomePage.expectLanded(UNCONFIRMED_ORGANIZATION_GRANT);
+      await contestantEntityHomePage.expectLanded(UNCONFIRMED_ORGANIZATION_EDITOR.grant);
     });
   });
 
   // The candidate's session holds this one test of the describe.
   test.describe("as the unconfirmed candidate's editor", () => {
-    test.use({ storageState: UNCONFIRMED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNCONFIRMED_CANDIDATE_EDITOR.storageStatePath });
 
     test("dataset: the candidate's editor lands on the candidate's home", async ({ contestantEntityHomePage }) => {
       await contestantEntityHomePage.open();
-      await contestantEntityHomePage.expectLanded(UNCONFIRMED_CANDIDATE_GRANT);
+      await contestantEntityHomePage.expectLanded(UNCONFIRMED_CANDIDATE_EDITOR.grant);
     });
   });
 
@@ -152,7 +149,7 @@ test.describe('perm-organization-editing: the dataset and its identities', () =>
 
 test.describe('perm-organization-editing: the profile', () => {
   test.describe("as the confirmed organization's editor", () => {
-    test.use({ storageState: CONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: CONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     test('profile: a confirmed organization reads its name and short name in every seeded locale, locked', async ({
       contestantProfilePage
@@ -231,7 +228,7 @@ test.describe('perm-organization-editing: the profile', () => {
   });
 
   test.describe("as the unconfirmed organization's editor", () => {
-    test.use({ storageState: UNCONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNCONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     test('profile: an unconfirmed organization fills in its required name, a short name and a logo, and the menu names it by the saved name', async ({
       contestantProfilePage,
@@ -304,7 +301,7 @@ test.describe('perm-organization-editing: the profile', () => {
 
   // The candidate's session holds this one test of the describe.
   test.describe("as the unconfirmed candidate's editor", () => {
-    test.use({ storageState: UNCONFIRMED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNCONFIRMED_CANDIDATE_EDITOR.storageStatePath });
 
     test('profile: an unconfirmed candidate changes its first and last name and saves them, and has no colour field', async ({
       contestantProfilePage
@@ -334,7 +331,7 @@ test.describe('perm-organization-editing: the profile', () => {
 
 test.describe('perm-organization-editing: the questions', () => {
   test.describe("as the confirmed organization's editor", () => {
-    test.use({ storageState: CONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: CONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     test("holds: a confirmed organization answers the opinion question it has left and an info question, and is not asked a candidate's question", async ({
       contestantEntityHomePage,
@@ -352,7 +349,7 @@ test.describe('perm-organization-editing: the questions', () => {
       });
 
       await contestantEntityHomePage.open();
-      await contestantEntityHomePage.expectLanded(CONFIRMED_ORGANIZATION_GRANT);
+      await contestantEntityHomePage.expectLanded(CONFIRMED_ORGANIZATION_EDITOR.grant);
       await contestantEntityHomePage.expectQuestionsButton(true);
       await navMenu.openMobileNav();
       await navMenu.expectQuestionsItem(true);
@@ -394,7 +391,7 @@ test.describe('perm-organization-editing: the questions', () => {
 
   // The candidate's session holds this one test of the describe.
   test.describe("as the unconfirmed candidate's editor", () => {
-    test.use({ storageState: UNCONFIRMED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNCONFIRMED_CANDIDATE_EDITOR.storageStatePath });
 
     test('questions: a candidate with no opinion question to answer is offered no questions entry, and the questions URL says so', async ({
       contestantEntityHomePage,
@@ -404,13 +401,13 @@ test.describe('perm-organization-editing: the questions', () => {
       await setCandidateState(UNCONFIRMED_CANDIDATE_EXTERNAL_ID, { confirmed: false });
 
       await contestantEntityHomePage.open();
-      await contestantEntityHomePage.expectLanded(UNCONFIRMED_CANDIDATE_GRANT);
+      await contestantEntityHomePage.expectLanded(UNCONFIRMED_CANDIDATE_EDITOR.grant);
       await navMenu.openMobileNav();
       await navMenu.expectQuestionsItem(false);
       await navMenu.closeNav();
       await contestantEntityHomePage.expectQuestionsButton(false);
 
-      await contestantNoQuestionsPage.open(UNCONFIRMED_CANDIDATE_GRANT);
+      await contestantNoQuestionsPage.open(UNCONFIRMED_CANDIDATE_EDITOR.grant);
       await contestantNoQuestionsPage.expectNeutralPage();
       await contestantNoQuestionsPage.pressReturn();
       await contestantNoQuestionsPage.expectOnHome();
@@ -420,7 +417,7 @@ test.describe('perm-organization-editing: the questions', () => {
 
 test.describe('perm-organization-editing: the preview', () => {
   test.describe("as the confirmed organization's editor", () => {
-    test.use({ storageState: CONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: CONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     test('preview: a confirmed organization previews its own name, how it is marked beside its candidates, and its info and opinions tabs alone', async ({
       contestantPreviewPage
@@ -431,7 +428,7 @@ test.describe('perm-organization-editing: the preview', () => {
         shortName: CONFIRMED_ORGANIZATION_SHORT_NAME,
         image: null
       });
-      await completeAnswers(CONFIRMED_ORGANIZATION_GRANT);
+      await completeAnswers(CONFIRMED_ORGANIZATION_EDITOR.grant);
 
       await contestantPreviewPage.open();
       await contestantPreviewPage.expectCardName(CONFIRMED_ORGANIZATION_NAME.en);
@@ -443,7 +440,7 @@ test.describe('perm-organization-editing: the preview', () => {
 
   // The candidate's session holds this one test of the describe.
   test.describe("as the unconfirmed candidate's editor", () => {
-    test.use({ storageState: UNCONFIRMED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNCONFIRMED_CANDIDATE_EDITOR.storageStatePath });
 
     test("holds: the candidate's preview shows its card and no tag line", async ({ contestantPreviewPage }) => {
       await setCandidateState(UNCONFIRMED_CANDIDATE_EXTERNAL_ID, { confirmed: false, ...UNCONFIRMED_CANDIDATE_NAME });
@@ -459,7 +456,7 @@ test.describe('perm-organization-editing: the preview', () => {
 
 test.describe('perm-organization-editing: what was saved, where it is shown', () => {
   test.describe("as the confirmed organization's editor", () => {
-    test.use({ storageState: CONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: CONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     test('voter: the saved colour and answers of organization A are what a voter sees', async ({
       contestantProfilePage,
@@ -506,7 +503,7 @@ test.describe('perm-organization-editing: what was saved, where it is shown', ()
   });
 
   test.describe("as the unconfirmed organization's editor", () => {
-    test.use({ storageState: UNCONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNCONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     // The organization is confirmed in the course of a test of this describe, or by its state step.
     test.afterEach(async () => {
@@ -526,7 +523,7 @@ test.describe('perm-organization-editing: what was saved, where it is shown', ()
         image: null,
         color: null
       });
-      await completeAnswers(UNCONFIRMED_ORGANIZATION_GRANT);
+      await completeAnswers(UNCONFIRMED_ORGANIZATION_EDITOR.grant);
 
       await contestantProfilePage.open();
       await contestantProfilePage.expectIdentity({ entityType: 'organization', nameState: 'editable' });
@@ -581,7 +578,7 @@ test.describe('perm-organization-editing: what was saved, where it is shown', ()
         image: null,
         color: null
       });
-      await completeAnswers(UNCONFIRMED_ORGANIZATION_GRANT);
+      await completeAnswers(UNCONFIRMED_ORGANIZATION_EDITOR.grant);
 
       await contestantProfilePage.open();
       await contestantProfilePage.expectIdentity({ entityType: 'organization', nameState: 'locked-confirmed' });
@@ -708,7 +705,7 @@ const ANSWERS_LOCKED_SCAN: ContestantAxeRoute = {
       image: null,
       color: null
     });
-    await setAnswersLocked(true);
+    await setContestantEditing('locked');
     await contestantProfilePage.open();
     await contestantProfilePage.expectIdentity({ entityType: 'organization', nameState: 'locked-answers' });
     await contestantProfilePage.expectNameNote(false);
@@ -813,7 +810,7 @@ const CONFIRMED_ORGANIZATION_SCANS: ReadonlyArray<ContestantAxeRoute> = [
         image: null,
         color: { normal: LOW_CONTRAST_COLOR.stored }
       });
-      await completeAnswers(CONFIRMED_ORGANIZATION_GRANT);
+      await completeAnswers(CONFIRMED_ORGANIZATION_EDITOR.grant);
       await contestantPreviewPage.open();
       await contestantPreviewPage.expectCardName(CONFIRMED_ORGANIZATION_NAME.en);
       await contestantPreviewPage.expectTagLine(CONFIRMED_ORGANIZATION_SHORT_NAME.en);
@@ -836,7 +833,7 @@ const UNCONFIRMED_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantNoQuestionsPage } = organizationEditingPagesOf(page);
       await setCandidateState(UNCONFIRMED_CANDIDATE_EXTERNAL_ID, { confirmed: false });
-      await contestantNoQuestionsPage.open(UNCONFIRMED_CANDIDATE_GRANT);
+      await contestantNoQuestionsPage.open(UNCONFIRMED_CANDIDATE_EDITOR.grant);
       await contestantNoQuestionsPage.expectNeutralPage();
     }
   },
@@ -860,7 +857,7 @@ const UNCONFIRMED_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
 
 test.describe('perm-organization-editing: the accessibility scans', () => {
   test.describe("as the unconfirmed organization's editor", () => {
-    test.use({ storageState: UNCONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNCONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     for (const entry of UNCONFIRMED_ORGANIZATION_SCANS) {
       declareScans(entry);
@@ -869,7 +866,7 @@ test.describe('perm-organization-editing: the accessibility scans', () => {
     // The lock is the one settings row of the suite's project: it is taken off again whether or not the scan passed.
     test.describe(() => {
       test.afterEach(async () => {
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
       });
 
       declareScans(ANSWERS_LOCKED_SCAN);
@@ -886,7 +883,7 @@ test.describe('perm-organization-editing: the accessibility scans', () => {
   });
 
   test.describe("as the confirmed organization's editor", () => {
-    test.use({ storageState: CONFIRMED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: CONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
     for (const entry of CONFIRMED_ORGANIZATION_SCANS) {
       declareScans(entry);
@@ -895,7 +892,7 @@ test.describe('perm-organization-editing: the accessibility scans', () => {
 
   // The candidate's session holds these scans of the describe.
   test.describe("as the unconfirmed candidate's editor", () => {
-    test.use({ storageState: UNCONFIRMED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNCONFIRMED_CANDIDATE_EDITOR.storageStatePath });
 
     for (const entry of UNCONFIRMED_CANDIDATE_SCANS) {
       declareScans(entry);
@@ -908,7 +905,7 @@ for (const viewport of PHONE_VIEWPORTS) {
     test.use(phoneUse(viewport));
 
     test.describe("as the unconfirmed organization's editor", () => {
-      test.use({ storageState: UNCONFIRMED_ORGANIZATION_STORAGE_STATE });
+      test.use({ storageState: UNCONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
       test('phone: an editable profile with every translation shown fits the viewport, and its empty colour field and its locked info question fit their rows', async ({
         contestantProfilePage
@@ -933,7 +930,7 @@ for (const viewport of PHONE_VIEWPORTS) {
     });
 
     test.describe("as the confirmed organization's editor", () => {
-      test.use({ storageState: CONFIRMED_ORGANIZATION_STORAGE_STATE });
+      test.use({ storageState: CONFIRMED_ORGANIZATION_EDITOR.storageStatePath });
 
       // Both tests store a long name on the organization: its seeded name is put back whether or not they passed.
       test.afterEach(async () => {
@@ -970,7 +967,7 @@ for (const viewport of PHONE_VIEWPORTS) {
           image: null,
           color: { normal: LOW_CONTRAST_COLOR.stored }
         });
-        await completeAnswers(CONFIRMED_ORGANIZATION_GRANT);
+        await completeAnswers(CONFIRMED_ORGANIZATION_EDITOR.grant);
 
         await contestantPreviewPage.open();
         await contestantPreviewPage.expectCardName(LONG_ORGANIZATION_NAME);
@@ -981,7 +978,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
     // The candidate's session holds these two tests of the describe.
     test.describe("as the unconfirmed candidate's editor", () => {
-      test.use({ storageState: UNCONFIRMED_CANDIDATE_STORAGE_STATE });
+      test.use({ storageState: UNCONFIRMED_CANDIDATE_EDITOR.storageStatePath });
 
       test("phone: a candidate's profile fits the viewport, and its name fields fit their rows", async ({
         contestantProfilePage
@@ -1003,7 +1000,7 @@ for (const viewport of PHONE_VIEWPORTS) {
       }) => {
         await setCandidateState(UNCONFIRMED_CANDIDATE_EXTERNAL_ID, { confirmed: false });
 
-        await contestantNoQuestionsPage.open(UNCONFIRMED_CANDIDATE_GRANT);
+        await contestantNoQuestionsPage.open(UNCONFIRMED_CANDIDATE_EDITOR.grant);
         await contestantNoQuestionsPage.expectNeutralPage();
         await contestantNoQuestionsPage.expectFitsViewport();
       });

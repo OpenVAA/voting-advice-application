@@ -3,7 +3,7 @@
  *
  * ## ⚠ ONE FILE, TWO HOMES
  *
- * This is one copy of a BYTE-IDENTICAL PAIR under `routes/admin/(protected)/`, one per feature subtree. It names neither feature on purpose — the directory it sits in already does — so a plain `diff` between the two copies is empty and an edit to one is mechanically an edit to both. Two idioms for one problem is the outcome obligation `OB-1` exists to prevent, and `routes/admin/(protected)/layout.server.test.ts` drives BOTH copies from one spec so a behavioural divergence fails alongside a textual one.
+ * This is one copy of a BYTE-IDENTICAL PAIR under `routes/admin/(protected)/`, one per feature subtree. It names neither feature on purpose — the directory it sits in already does — so a plain `diff` between the two copies is empty and an edit to one is mechanically an edit to both. Two idioms for one problem is the outcome obligation `OB-1` exists to prevent, and `routes/admin/(protected)/subtreeCookieFilter.server.test.ts` drives BOTH copies from one spec so a behavioural divergence fails alongside a textual one.
  *
  * ## Why this exists rather than taking the client from `await parent()`
  *

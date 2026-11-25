@@ -19,7 +19,7 @@
  *
  * It runs inside every entry's `settle`, i.e. BEFORE the scan — a silently-redirected scan therefore fails by name instead of reporting a confident zero about a login page. `toScanEntry` composes it onto every entry at the runner, so an entry physically cannot be added without it.
  *
- * The reach proof, `toScanEntry` and `declareScans`, which declares an entry's light scan and its dark twin, are in `tests/tests/utils/contestantAxeScan.ts`. They are the same functions for every spec that scans a surface of the Contestant App; this file holds its entry tables and the sessions they run under.
+ * The reach proof and `declareScans`, which declares an entry's light scan and its dark twin, are in `tests/tests/utils/contestantAxeScan.ts`, and `toScanEntry` and the declaration of the twin, which every family of scans shares, in `tests/tests/utils/themedAxeScans.ts`. They are the same functions for every spec that scans a surface of the Contestant App; this file holds its entry tables and the sessions they run under.
  *
  * ============================================================================
  * PARITY WITH THE VOTER HALF
@@ -65,18 +65,17 @@
  * | state | why not reached with these identities/this dataset | the lever that would reach it |
  * |---|---|---|
  * | `/contestant/questions` empty-state intro (`contestant-questions-intro`) | every `e2e/base` candidate carries answers (0 hits for `answersByExternalId: {}` across 31 declarations) | a template change, or a runtime answer wipe |
- * | logout confirmation modal | the modal appears while a counted task is incomplete, and CA-AA-1 is complete, and over an unsaved edit; no entry opens it | an entry that makes an edit and presses Log out, holding the page's clock, because a real count ending would sign out the session the project shares |
- * | the "not editable" note with its answers-locked sentence (`contestant-answers-locked-warning`) on the home, the questions list and a question page | an `app_settings` scenario owned by the `perm-answers-locked` chain | none for the component: the same note in the same slot is scanned with this sentence on a profile by `org-profile-answers-locked` in `specs/perm/perm-organization-editing.spec.ts`, and with its nominations-locked sentence on the nominations view by `no-nomination-nominations-locked` and `nominated-nominations-pending-locked` in `specs/perm/perm-no-nomination.spec.ts`; these three pages add no markup to it |
+ * | the "not editable" note with its answers-locked sentence (`contestant-answers-locked-warning`) on the home, the questions list and a question page | an `app_settings` scenario owned by the `perm-answers-locked` chain | none for the component: the same note in the same slot is scanned with this sentence on a profile by `org-profile-answers-locked` in `specs/perm/perm-organization-editing.spec.ts`, and with its nominations-locked sentence on the nominations view by `no-nomination-nominations-locked` and `nominated-nominations-pending-locked` in `specs/perm/perm-unnominated-entities.spec.ts`; these three pages add no markup to it |
  * | `PreventNavigation` unsaved-changes modal (profile, question) | requires a dirty form plus a navigation attempt | one extra step in the entry's `reach` |
  * | error paths — portrait-upload error (the shared `input-error` node inside `profile-image-upload`), preview `notFound`, the message of a failed sign-out (`common.logoutFailed`) | failure paths, not states of a successful load | out of scope for a route-family scan; would need fault injection |
  * | the selection screen listing one entity type (no group headings) | the multi-entity user edits both types, so both groups and their headings render | a second identity with several entities of one type |
  * | the open menu over an organization's pages | every entity page scanned here is a candidate's: the project's user edits one candidate, and `contestant-nav-menu-switch` picks the first card, a candidate | an entry that picks the organization's card |
  *
- * An organization's profile and preview are scanned by `specs/perm/perm-organization-editing.spec.ts`, on that spec's own dataset and under its own sessions, through the same helpers and the same gate. The home, the nominations view and the open menu of a candidate with no nomination, the home of one with a nomination and something left to do, and the nominations view while nominations are locked are scanned in the same way by `specs/perm/perm-no-nomination.spec.ts`: no identity of `e2e/base` lacks a nomination, and this project runs before any setting is changed.
+ * An organization's profile and preview are scanned by `specs/perm/perm-organization-editing.spec.ts`, on that spec's own dataset and under its own sessions, through the same helpers and the same gate. The home, the nominations view and the open menu of a candidate with no nomination, the home of one with a nomination and something left to do, the logout dialog that home opens, and the nominations view while nominations are locked are scanned in the same way by `specs/perm/perm-unnominated-entities.spec.ts`: no identity of `e2e/base` lacks a nomination, and this project runs before any setting is changed.
  *
  * ### Candidate routes OUTSIDE the `(protected)` family — not scanned by this file
  *
- * The password-reset page is outside the family and is scanned here, because it needs a session. The others need none: `login`, `login/email`, `email-sent`, `help`, `privacy`, `forgot-password`, `register`, `register/email`, `register/sign-in` and `register/identity-provider/error`. This file runs under a stored session and scans none of them. `specs/contestant/contestant-entry-scan.spec.ts` scans the login, sign-in, registration, code, "email sent", forgot-password and identity-provider error screens with no session, and `specs/perm/perm-closed-project.spec.ts` scans the login page and the registration page of a closed project; `help` and `privacy` are the same coverage hole as the states above, and their a11y state is unknown for the same reason: nothing scans them.
+ * The password-reset page is outside the family and is scanned here, because it needs a session. The others need none: `login`, `login/email`, `email-sent`, `help`, `privacy`, `forgot-password`, `register`, `register/code/email`, `register/code/sign-in` and `register/identity-provider/error`. This file runs under a stored session and scans none of them. `specs/contestant/contestant-entry-scan.spec.ts` scans the login, sign-in, registration, code, "email sent", forgot-password, help, privacy and identity-provider error screens with no session, and `specs/perm/perm-closed-project.spec.ts` scans the login page and the registration page of a closed project. The privacy page is scanned in the base dataset's state, which configures no analytics, so its usage-data section and its consent control (`DataConsent`) are not rendered there and are not covered; neither page is scanned under a session.
  *
  * ### The four stated limits of the zero itself
  *
@@ -96,6 +95,7 @@ import { createContestantPasswordResetPage } from '../../fixtures/contestant/con
 import { createContestantPasswordSetter } from '../../fixtures/contestant/contestantPasswordSetter.fixture';
 import { createContestantQuestionsOverviewPage } from '../../fixtures/contestant/contestantQuestionsOverviewPage.fixture';
 import { createContestantSetPasswordGate } from '../../fixtures/contestant/contestantSetPasswordGate.fixture';
+import { createContestantTermsOfUsePage } from '../../fixtures/contestant/contestantTermsOfUsePage.fixture';
 import { createInvitationFlow } from '../../fixtures/shared/invitationFlow.fixture';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { TIMEOUTS } from '../../helpers';
@@ -103,6 +103,7 @@ import { declareScans } from '../../utils/contestantAxeScan';
 import { contestantHomeUrlRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { declareEntryScans } from '../../utils/entryAxeScan';
 import { CONTESTANT_A11Y_SCAN_ADDRESS_PREFIX } from '../../utils/invitationConstants';
+import { measureBorderContrastInSchemes, NON_TEXT_CONTRAST_MINIMUM } from '../../utils/nonTextContrast';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import {
   MULTI_ENTITY_STORAGE_STATE,
@@ -160,11 +161,21 @@ const CONTESTANT_AXE_ROUTES: ReadonlyArray<ContestantAxeRoute> = [
   {
     // Anchor on a profile info item — one per editable info question, several in the base dataset — rather than on the profile heading, which renders from a static i18n title before any of the candidate's own data mounts.
     // Marker: the identity section, which the protected profile alone renders.
+    // State: the base candidate is confirmed, so its name is locked and the sentence saying so carries the link to the support email the scan reads.
     name: 'cand-profile',
     fixture: 'raw',
     routeId: 'ContestantAppProfile',
     contentTestId: testIds.contestant.profile.infoItem,
-    postLoginTestId: testIds.contestant.profile.identity
+    postLoginTestId: testIds.contestant.profile.identity,
+    reach: async (page) => {
+      const identity = page.getByTestId(testIds.contestant.profile.identity);
+      await expect(identity).toHaveAttribute('data-name-state', 'locked-confirmed', { timeout: TIMEOUTS.slowPage });
+      const supportLink = identity
+        .getByTestId(testIds.contestant.profile.nameNote)
+        .getByRole('link', { name: 'contact support', exact: true });
+      await expect(supportLink).toHaveCount(1);
+      await expect(supportLink).toHaveAttribute('href', /^mailto:/);
+    }
   },
   {
     // Anchor on a question CARD, and expand every category expander first.
@@ -242,7 +253,7 @@ const CONTESTANT_AXE_ROUTES: ReadonlyArray<ContestantAxeRoute> = [
     name: 'contestant-password-reset',
     fixture: 'raw',
     routeId: 'ContestantAppResetPassword',
-    contentTestId: testIds.contestant.passwordReset.email,
+    contentTestId: testIds.shared.account.passwordReset.email,
     postLoginTestId: testIds.contestant.passwordReset.page,
     reach: async (page) => {
       const passwordResetPage = createContestantPasswordResetPage(page);
@@ -388,7 +399,7 @@ const PASSWORDLESS_AXE_ROUTES: ReadonlyArray<ContestantAxeRoute> = [
     fixture: 'raw',
     routeId: 'ContestantAppHome',
     contentTestId: testIds.contestant.setPasswordGate.container,
-    postLoginTestId: testIds.contestant.passwordSetter.confirmationError,
+    postLoginTestId: testIds.shared.account.passwordSetter.confirmationError,
     reach: async (page) => {
       const setPasswordGate = createContestantSetPasswordGate(page);
       await setPasswordGate.expectShown();
@@ -429,7 +440,7 @@ const CONFIRM_PAGE_SIGNED_IN_ROUTES: ReadonlyArray<EntryAxeRoute> = [
     },
     marker: { testId: testIds.auth.confirm.signedIn },
     alsoShown: [
-      { testId: testIds.auth.confirm.page, attribute: 'data-type', value: 'magiclink' },
+      { testId: testIds.auth.confirm.page, state: { attribute: 'data-type', value: 'magiclink' } },
       { testId: testIds.auth.confirm.cancel }
     ]
   }
@@ -461,6 +472,25 @@ test.describe(() => {
   for (const entry of TERMS_PENDING_AXE_ROUTES) {
     declareScans(entry);
   }
+
+  // axe has no rule for non-text contrast (SC 1.4.11), so a box whose border cannot be seen passes the scans above; its border is measured instead.
+  test('the unchecked terms checkbox has a border of at least 3:1 contrast in the light and the dark theme', async ({
+    page
+  }, testInfo) => {
+    const termsPage = createContestantTermsOfUsePage(page);
+    const ratios = await measureBorderContrastInSchemes(page, async () => {
+      await termsPage.open();
+      await expect(termsPage.getCheckbox()).not.toBeChecked();
+      return termsPage.getCheckbox();
+    });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      testInfo.annotations.push({ type: 'border-contrast', description: `${scheme}=${ratio.toFixed(2)}` });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      expect(
+        ratio,
+        `the border contrast of the unchecked terms checkbox in the ${scheme} theme`
+      ).toBeGreaterThanOrEqual(NON_TEXT_CONTRAST_MINIMUM);
+  });
 });
 
 // The session is scoped here for the same reason: the selection screen and the switch item exist only for a user who edits several entities, and the project's user edits one. The scans read this session and leave it as it is: every reader of the run loads the same file.

@@ -9,7 +9,7 @@ export interface RunScopedIdentityRemover {
   /** Removes every auth user whose address begins with the prefix, with the user's grants and invitations. */
   removeUsersByEmailPrefix(prefix: string): Promise<number>;
   /** Removes the user holding the address, if any, with the user's grants, and every invitation addressed to it. */
-  unregisterCandidate(email: string): Promise<void>;
+  unregisterUser(email: string): Promise<void>;
 }
 
 /** A fixed identity with a run-scoped address: the address's stable beginning and this run's address. */
@@ -37,5 +37,5 @@ export async function removeRunScopedIdentity(
     throw new Error(`removeRunScopedIdentity: the address does not begin with the prefix '${identity.addressPrefix}'`);
   }
   await client.removeUsersByEmailPrefix(identity.addressPrefix);
-  await client.unregisterCandidate(identity.address);
+  await client.unregisterUser(identity.address);
 }

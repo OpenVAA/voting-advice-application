@@ -6,14 +6,14 @@
       "file": "specs/contestant/fixture-identity-provider.spec.ts",
       "specs": [
         {
-          "title": "a candidate registers with the identity provider @reg-idp",
-          "tags": ["reg-idp"],
+          "title": "a candidate registers with the identity provider @registration-identity-provider",
+          "tags": ["registration-identity-provider"],
           "tests": [{ "projectName": "contestant-identity-provider", "status": "skipped", "results": [] }],
           "file": "specs/contestant/fixture-identity-provider.spec.ts"
         },
         {
           "title": "a party registers with the identity provider",
-          "tags": ["reg-idp", "org-registration"],
+          "tags": ["registration-identity-provider", "organization-registration"],
           "tests": [{ "projectName": "contestant-identity-provider", "status": "skipped", "results": [] }],
           "file": "specs/contestant/fixture-identity-provider.spec.ts"
         }
@@ -29,7 +29,7 @@
           "specs": [
             {
               "title": "the email registration follows the mailed link",
-              "tags": ["reg-email"],
+              "tags": ["registration-email"],
               "tests": [
                 { "projectName": "contestant-app-mutation", "status": "skipped", "results": [] },
                 { "projectName": "contestant-app-mutation-webkit", "status": "skipped", "results": [] }
@@ -45,20 +45,20 @@
       "file": "specs/contestant/fixture-code-registration.spec.ts",
       "specs": [
         {
-          "title": "a title that names reg-code and @reg-code in its words without carrying the tag",
+          "title": "a title that names registration-code and @registration-code in its words without carrying the tag",
           "tags": [],
           "tests": [{ "projectName": "contestant-app-mutation", "status": "skipped", "results": [] }],
           "file": "specs/contestant/fixture-code-registration.spec.ts"
         },
         {
           "title": "a test whose tag only begins with the name",
-          "tags": ["reg-codes"],
+          "tags": ["registration-codes"],
           "tests": [{ "projectName": "contestant-app-mutation", "status": "skipped", "results": [] }],
           "file": "specs/contestant/fixture-code-registration.spec.ts"
         },
         {
           "title": "a probe carrying the tag, which the default run leaves out",
-          "tags": ["probe", "reg-code"],
+          "tags": ["probe", "registration-code"],
           "tests": [{ "projectName": "_probes", "status": "skipped", "results": [] }],
           "file": "specs/contestant/fixture-code-registration.spec.ts"
         }

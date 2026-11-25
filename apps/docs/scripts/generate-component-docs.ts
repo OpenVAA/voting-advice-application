@@ -5,14 +5,38 @@
 import * as fs from 'fs/promises';
 import { glob } from 'glob';
 import * as path from 'path';
-import { COMPONENT_DIRS, COPY_TARGETS, GENERATED_OUTPUT, GITHUB_BASE, REPO_ROOT } from './docs-scripts.config';
+import {
+  COMPONENT_DIRS,
+  COPY_TARGETS,
+  FRONTEND_ROOT,
+  GENERATED_OUTPUT,
+  GITHUB_BASE,
+  REPO_ROOT
+} from './docs-scripts.config';
 import { isMainModule } from './utils/cli';
+import { mapOutsideFences } from './utils/markdown';
 
+/**
+ * A directory of Svelte components to document, as `COMPONENT_DIRS` lists it.
+ */
 export interface ComponentDir {
   dir: string;
   name: string;
   importPrefix: string;
-  categorySubdir: string;
+}
+
+const FRONTEND_LIB = path.join(FRONTEND_ROOT, 'src', 'lib');
+
+/**
+ * Where a component directory's pages are written under the generated components route, and so where the table of contents links them: its path relative to the library root.
+ * @param componentDir - The component directory.
+ * @param libRoot - The directory its path is taken relative to.
+ */
+function categorySubdir(componentDir: ComponentDir, libRoot: string): string {
+  const subdir = path.relative(libRoot, componentDir.dir).replace(/\\/g, '/');
+  if (subdir === '' || subdir.startsWith('..') || path.isAbsolute(subdir))
+    throw new Error(`Component directory ${componentDir.dir} is not inside ${libRoot}`);
+  return subdir;
 }
 
 interface ComponentDoc {
@@ -30,11 +54,13 @@ interface ComponentDoc {
  * Write a page for every component with a `@component` docstring, and a table of contents, into the output directory.
  * @param options.outputDir - Where the pages are written.
  * @param options.componentDirs - The component directories to read.
+ * @param options.libRoot - The directory each component directory's path is taken relative to, which places its pages under the output directory.
  */
 export async function generateComponentDocs({
   outputDir = GENERATED_OUTPUT.components,
-  componentDirs = COMPONENT_DIRS
-}: { outputDir?: string; componentDirs?: ReadonlyArray<ComponentDir> } = {}): Promise<void> {
+  componentDirs = COMPONENT_DIRS,
+  libRoot = FRONTEND_LIB
+}: { outputDir?: string; componentDirs?: ReadonlyArray<ComponentDir>; libRoot?: string } = {}): Promise<void> {
   console.info('Extracting component documentation...\n');
 
   const tocFile = path.join(outputDir, 'README.md');
@@ -90,7 +116,12 @@ export async function generateComponentDocs({
       const markdown = await generateComponentMarkdown(doc);
 
       // Create componentName/+page.md structure for SvelteKit routing
-      const componentDirPath = path.join(outputDir, componentDir.categorySubdir, path.dirname(relativePath), name);
+      const componentDirPath = path.join(
+        outputDir,
+        categorySubdir(componentDir, libRoot),
+        path.dirname(relativePath),
+        name
+      );
       const outputPath = path.join(componentDirPath, '+page.md');
 
       await fs.mkdir(componentDirPath, { recursive: true });
@@ -104,7 +135,7 @@ export async function generateComponentDocs({
 
   // Generate table of contents
   console.info('\nGenerating table of contents...');
-  const toc = await generateTableOfContents(allDocs, componentDirs);
+  const toc = await generateTableOfContents(allDocs, componentDirs, libRoot);
   await fs.mkdir(outputDir, { recursive: true });
   await fs.writeFile(tocFile, toc, 'utf-8');
 
@@ -205,18 +236,7 @@ function repoRelative(filePath: string): string {
  * Add one `#` to every ATX heading outside fenced code blocks, so an embedded README's H1 becomes an H2
  */
 function demoteHeadings(markdown: string): string {
-  let inFence = false;
-  return markdown
-    .split('\n')
-    .map((line) => {
-      if (/^\s*(```|~~~)/.test(line)) {
-        inFence = !inFence;
-        return line;
-      }
-      if (!inFence && /^#{1,5}\s/.test(line)) return `#${line}`;
-      return line;
-    })
-    .join('\n');
+  return mapOutsideFences(markdown, (line) => (/^#{1,5}\s/.test(line) ? `#${line}` : line));
 }
 
 /**
@@ -224,7 +244,8 @@ function demoteHeadings(markdown: string): string {
  */
 async function generateTableOfContents(
   docs: Array<ComponentDoc>,
-  componentDirs: ReadonlyArray<ComponentDir>
+  componentDirs: ReadonlyArray<ComponentDir>,
+  libRoot: string
 ): Promise<string> {
   const lines: Array<string> = [];
 
@@ -264,7 +285,7 @@ async function generateTableOfContents(
     for (const component of components) {
       // Generate absolute URL for the component page
       const componentPath = path
-        .join(component.componentDir.categorySubdir, path.dirname(component.relativePath), component.name)
+        .join(categorySubdir(component.componentDir, libRoot), path.dirname(component.relativePath), component.name)
         .replace(/\\/g, '/'); // Normalize path separators for URLs
       const absoluteUrl = `${routeRoot}/${componentPath}`;
 

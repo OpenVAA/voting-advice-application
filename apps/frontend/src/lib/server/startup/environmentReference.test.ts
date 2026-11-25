@@ -9,7 +9,8 @@ import { describe, expect, it } from 'vitest';
 import { ANALYTICS_ENV } from '$lib/server/analytics/config';
 import { constants as privateConstants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
-import { REQUIRED_ENV } from './requiredEnv';
+import { missingRequiredEnv, REQUIRED_ENV } from './requiredEnv';
+import { backtickedTokens } from '../../../../../../scripts/lib/docTokens.mjs';
 
 /** The repository root, six directories above this file. */
 const REPOSITORY_ROOT = fileURLToPath(new URL('../../../../../../', import.meta.url));
@@ -86,16 +87,6 @@ function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 }
 
 /**
- * The texts the page writes in backticks, each whole, on one line.
- *
- * @param page - The page's text.
- * @returns The texts between a pair of backticks.
- */
-function backtickedTokens(page: string): Set<string> {
-  return new Set(Array.from(page.matchAll(/`([^`\n]+)`/g), (match) => match[1]));
-}
-
-/**
  * The variable-shaped tokens the page writes in backticks in a table row or a list item, where the page lists its variables.
  *
  * @param page - The page's text.
@@ -103,7 +94,7 @@ function backtickedTokens(page: string): Set<string> {
  */
 function listedVariableTokens(page: string): Set<string> {
   const rows = page.split('\n').filter((line) => /^\s*(?:\||[-*] )/.test(line));
-  return new Set([...backtickedTokens(rows.join('\n'))].filter((token) => VARIABLE_TOKEN.test(token)));
+  return new Set(backtickedTokens(rows.join('\n')).filter((token) => VARIABLE_TOKEN.test(token)));
 }
 
 /**
@@ -189,7 +180,7 @@ function environmentReferenceProblems({
   const sourcesReadable = problems.length === 0;
   if (page === undefined) return [`${PAGE_PATH}: is missing`, ...problems];
 
-  const listed = backtickedTokens(page);
+  const listed = new Set(backtickedTokens(page));
   const names = new Set([
     ...requiredNames,
     ...(taskNames ?? []),
@@ -300,7 +291,13 @@ function fixtureProblems(overrides: Partial<EnvironmentReferenceInput> = {}): Ar
 
 describe('the local contract', () => {
   it('agrees with REQUIRED_ENV and ANALYTICS_ENV', () => {
-    expect([...REQUIRED_ENV]).toEqual([...REQUIRED_NAMES]);
+    // PUBLIC_PROJECT_ID has a start-up rule of its own, which also refuses a value that is not a canonical uuid.
+    expect([...REQUIRED_ENV]).toEqual(REQUIRED_NAMES.filter((name) => name !== 'PUBLIC_PROJECT_ID'));
+    expect(
+      missingRequiredEnv({})
+        .filter((name) => REQUIRED_NAMES.includes(name))
+        .sort()
+    ).toEqual([...REQUIRED_NAMES].sort());
     expect(Object.values(ANALYTICS_ENV)).toEqual([...ANALYTICS_NAMES]);
   });
 });

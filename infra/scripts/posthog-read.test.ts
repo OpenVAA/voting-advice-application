@@ -1,7 +1,5 @@
 /**
- * The PostHog read, run through its own self-test: a loopback stand-in for the EU project and query endpoints, which
- * the script reaches as a HogQLQuery POST with a Bearer personal key. Then the usage refusals: a missing key, a project
- * that is not digits, an unknown mode, a host other than the EU app host and a missing window.
+ * The PostHog read, run through its own self-test: a loopback stand-in for the EU project and query endpoints, which the script reaches as a HogQLQuery POST with a Bearer personal key. Then the usage refusals: a missing key, a project that is not digits, an unknown mode, a host other than the EU app host and a missing window.
  */
 
 import { spawnSync } from 'node:child_process';

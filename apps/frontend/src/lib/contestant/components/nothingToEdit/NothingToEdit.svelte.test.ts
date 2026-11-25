@@ -24,7 +24,10 @@ vi.mock('$lib/contexts/contestant', () => ({
     t: (key: string) => key,
     getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
     logout: async () => undefined,
-    appSettings: { admin: { email: 'support@example.org' }, contestantApp: { entityTypes: ['candidate'] } },
+    appSettings: {
+      admin: { email: 'support@example.org' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    },
     answersLocked: false,
     userData: { savedEntityData: undefined },
     unansweredRequiredInfoQuestions: [],
@@ -116,13 +119,13 @@ describe('NothingToEdit — a user with an email', () => {
     expect(value!.children).toHaveLength(0);
     expect(value!.getAttribute('translate')).toBe('no');
     expect(value!.classList).toContain('hyphens-none');
-    expect(value!.classList).toContain('[overflow-wrap:anywhere]');
+    expect(value!.classList).toContain('wrap-anywhere');
     expect(value!.classList).not.toContain('truncate');
 
     const list = value!.closest('dl');
     expect(list).not.toBeNull();
     const label = list!.querySelector('dt');
-    expect(label?.textContent?.trim()).toBe('contestantApp.nothingToEdit.signedInAs');
+    expect(label?.textContent?.trim()).toBe('common.account.signedInAs');
     expect(label!.classList).toContain('small-label');
   });
 
@@ -186,7 +189,7 @@ describe('NothingToEdit — a user without an email', () => {
     expect(target.querySelector(CONTAINER)).not.toBeNull();
     expect(target.querySelector('dl')).toBeNull();
     expect(target.querySelector(EMAIL_VALUE)).toBeNull();
-    expect(target.textContent).not.toContain('contestantApp.nothingToEdit.signedInAs');
+    expect(target.textContent).not.toContain('common.account.signedInAs');
   });
 
   it.each([

@@ -1,8 +1,6 @@
-# The CDN in front of the whole site: <domain> resolves to the distribution, and the distribution's
-# only origin is the load balancer at origin.<domain>, reached over HTTPS with the origin secret.
+# The CDN in front of the whole site: <domain> resolves to the distribution, and the distribution's only origin is the load balancer at origin.<domain>, reached over HTTPS with the origin secret.
 
-# CloudFront reads its viewer certificate from us-east-1 only, so this certificate and its validation
-# are made through the us-east-1 provider. Everything else in the module is in the root's region.
+# CloudFront reads its viewer certificate from us-east-1 only, so this certificate and its validation are made through the us-east-1 provider. Everything else in the module is in the root's region.
 resource "aws_acm_certificate" "viewer" {
   provider = aws.us_east_1
 
@@ -38,9 +36,7 @@ resource "aws_acm_certificate_validation" "viewer" {
   validation_record_fqdns = [for r in aws_route53_record.viewer_validation : r.fqdn]
 }
 
-# The managed policies, read by name. Their documented ids are the fallback should a name not match:
-# CachingOptimized 658327ea-f89d-4fab-a63d-7e88639e58f6, CachingDisabled
-# 4135ea2d-6df8-44a3-9df3-4b5a84be39ad, AllViewerExceptHostHeader b689b0a8-53d0-40ab-baf2-68738e2966ac.
+# The managed policies, read by name. Their documented ids are the fallback should a name not match: CachingOptimized 658327ea-f89d-4fab-a63d-7e88639e58f6, CachingDisabled 4135ea2d-6df8-44a3-9df3-4b5a84be39ad, AllViewerExceptHostHeader b689b0a8-53d0-40ab-baf2-68738e2966ac.
 data "aws_cloudfront_cache_policy" "optimized" {
   name = "Managed-CachingOptimized"
 }
@@ -56,8 +52,7 @@ data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
 locals {
   cdn_origin_id = "load-balancer"
 
-  # Every status CloudFront lets a custom error response name. CloudFront holds an error response
-  # for ten seconds unless told otherwise; with a minimum of 0 no rendered error page is held.
+  # Every status CloudFront lets a custom error response name. CloudFront holds an error response for ten seconds unless told otherwise; with a minimum of 0 no rendered error page is held.
   uncached_error_codes = [400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504]
 }
 
@@ -70,8 +65,7 @@ resource "aws_cloudfront_distribution" "this" {
   wait_for_deployment = true
   web_acl_id          = one(aws_wafv2_web_acl.relay[*].arn)
 
-  # CloudFront replaces a header of the same name sent by the viewer with this value, so a viewer
-  # cannot supply the secret itself.
+  # CloudFront replaces a header of the same name sent by the viewer with this value, so a viewer cannot supply the secret itself.
   origin {
     origin_id   = local.cdn_origin_id
     domain_name = local.origin_domain
@@ -89,8 +83,7 @@ resource "aws_cloudfront_distribution" "this" {
     }
   }
 
-  # The build's hashed assets never change under a name, and the server marks them immutable for a
-  # year, so they are the only responses the edge keeps.
+  # The build's hashed assets never change under a name, and the server marks them immutable for a year, so they are the only responses the edge keeps.
   ordered_cache_behavior {
     path_pattern           = "/_app/immutable/*"
     target_origin_id       = local.cdn_origin_id
@@ -101,9 +94,7 @@ resource "aws_cloudfront_distribution" "this" {
     cache_policy_id        = data.aws_cloudfront_cache_policy.optimized.id
   }
 
-  # Pages, form posts, /api/* and /_app/version.json: nothing is cached, and the viewer's headers,
-  # cookies and query strings reach the origin. The viewer's Host is not forwarded, because the origin
-  # certificate names the origin host; the application's public origin is fixed by ORIGIN instead.
+  # Pages, form posts, /api/* and /_app/version.json: nothing is cached, and the viewer's headers, cookies and query strings reach the origin. The viewer's Host is not forwarded, because the origin certificate names the origin host; the application's public origin is fixed by ORIGIN instead.
   default_cache_behavior {
     target_origin_id         = local.cdn_origin_id
     viewer_protocol_policy   = "redirect-to-https"

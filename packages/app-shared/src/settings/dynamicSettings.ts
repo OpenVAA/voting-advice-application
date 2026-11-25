@@ -78,8 +78,7 @@ export const dynamicSettings: DynamicSettings = {
     voterApp: true,
     adminApp: true,
     underMaintenance: false,
-    answersLocked: false,
-    nominationsLocked: false
+    contestantEditing: 'open'
   },
   notifications: {
     contestantApp: null,
@@ -90,10 +89,8 @@ export const dynamicSettings: DynamicSettings = {
       hideHero: false,
       hideVideo: false
     },
-    entityTypes: ['candidate'],
-    registrationModes: {
-      candidate: [],
-      organization: []
+    servedEntityTypes: {
+      candidate: { registrationModes: [] }
     }
   },
   analytics: { trackEvents: false }

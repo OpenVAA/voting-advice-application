@@ -60,6 +60,12 @@ variable "omit_environment" {
   default     = []
 }
 
+variable "identity_provider_type" {
+  description = "The identity provider of bank authentication, signicat-ftn or idura-ftn, or null, the default, for none. Set, the task receives the entries of the module's task-environment.json that name it: their values in environment_values, and their parameters created under parameter_path before the apply. The Supabase root of the same deployment then sets identity_provider with the same values."
+  type        = string
+  default     = null
+}
+
 variable "task_cpu" {
   description = "CPU units of one task."
   type        = number
@@ -102,9 +108,9 @@ variable "relay_rate_limit" {
 }
 
 variable "stop_timeout_seconds" {
-  description = "Seconds between the stop signal and the kill of the container. The bound it must meet, relative to SHUTDOWN_TIMEOUT, is stated on the frontend-service module's variable of the same name."
+  description = "Seconds between the stop signal and the kill of the container. The frontend-service module refuses a value below SHUTDOWN_TIMEOUT plus 15 seconds."
   type        = number
-  default     = 30
+  default     = 45
 }
 
 variable "scheduled_floor_changes" {

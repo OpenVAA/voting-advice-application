@@ -2,18 +2,18 @@
 
 # Contestant app identity provider error page
 
-Shown when identification through the identity provider fails. It says which of three things happened, and only that: the user cancelled, a failure trying again may cure, or one it will not.
+Shown when identification through the identity provider fails. It says which of four things happened, and only that: the user cancelled, a failure trying again may cure, one it will not, or a sign-in found no account for the identity.
 
 - The class comes from the page's server load, which maps the address's `error` parameter through a closed table. The page never sees the parameter, and renders nothing derived from it but the class.
 - Each class has its own title, so the route announcement names it, and its own sentence. A cancel is told calmly and without apology.
-- In `cancelled` and `retry` the main action is Try again, followed by the class's sentence about support, whose own words are the link to support. In `noRetry` the main action is the support button, with no icon, and Try again is a text link.
+- In `cancelled` and `retry` the main action is Try again, followed by the class's sentence about support, whose own words are the link to support. In `noRetry` the main action is the support button, with no icon, and Try again is a text link. In `noAccount` the main action is Register, which leads where Try again does.
 - Try again is a link to the registration page with the provider's option open. It is rendered only while the provider's mode is listed; Return to the login screen always is.
 - The page is public and is not refused when registration is not offered; a signed-in visitor is sent to the app root by the entry routes' gate.
 
 ## Settings
 
-- `contestantApp.registrationModes`, `contestantApp.entityTypes` and `access.answersLocked`: Together they decide, on the server, whether Try again is offered.
-- `contestantApp.entityTypes`: The entity types the project serves also decide the app's name above the heading.
+- `contestantApp.servedEntityTypes` and `access.contestantEditing`: Together they decide, on the server, whether Try again is offered.
+- `contestantApp.servedEntityTypes`: The entity types the project serves also decide the app's name above the heading.
 
 -->
 
@@ -60,6 +60,10 @@ Shown when identification through the identity provider fails. It says which of 
     noRetry: {
       title: 'contestantApp.identityProvider.error.noRetry.title',
       content: 'contestantApp.identityProvider.error.noRetry.content'
+    },
+    noAccount: {
+      title: 'contestantApp.identityProvider.error.noAccount.title',
+      content: 'contestantApp.identityProvider.error.noAccount.content'
     }
   };
 
@@ -98,7 +102,11 @@ Shown when identification through the identity provider fails. It says which of 
         <Button
           variant="main"
           href={tryAgainHref}
-          text={t('contestantApp.identityProvider.error.tryAgain')}
+          text={t(
+            data.errorClass === 'noAccount'
+              ? 'contestantApp.register.register'
+              : 'contestantApp.identityProvider.error.tryAgain'
+          )}
           data-testid="identity-provider-error-try-again" />
       {/if}
       {#if words.support}

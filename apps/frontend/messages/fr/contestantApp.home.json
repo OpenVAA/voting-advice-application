@@ -40,11 +40,11 @@
       "incomplete": "Pas encore terminé.",
       "incompleteCount": [
         {
-          "declarations": ["input count", "local countPlural = count: plural"],
-          "selectors": ["countPlural"],
+          "declarations": ["input count"],
+          "selectors": ["count"],
           "match": {
-            "countPlural=one": "Pas encore terminé : il reste un élément.",
-            "countPlural=*": "Pas encore terminé : il reste {count} éléments."
+            "count=1": "Pas encore terminé : il reste un élément.",
+            "count=*": "Pas encore terminé : il reste {count} éléments."
           }
         }
       ]

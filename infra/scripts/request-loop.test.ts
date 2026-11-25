@@ -1,6 +1,5 @@
 /**
- * The request loop, run through its own self-test: loopback servers started with node, one answering 200 and one
- * answering 503 to every third request, a stop file, SIGTERM and a port nothing listens on.
+ * The request loop, run through its own self-test: loopback servers started with node, one answering 200 and one answering 503 to every third request, a stop file, SIGTERM and a port nothing listens on.
  */
 
 import { spawnSync } from 'node:child_process';

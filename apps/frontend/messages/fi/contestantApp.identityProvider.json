@@ -8,12 +8,17 @@
     "awaitingConfirmation": "Odottaa vahvistusta",
     "emailIntro": "Kirjoita sähköpostiosoite, jolla haluat kirjautua seuraavalla kerralla. Lähetämme siihen vahvistuslinkin. Voit jatkaa heti. Kunnes avaat linkin, kirjaudu pankkitunnuksilla.",
     "emailInUse": "Tämä sähköpostiosoite on jo toisen tilin käytössä. Kirjoita toinen osoite tai kirjaudu sen sijaan sillä osoitteella.",
+    "emailInvited": "Tähän sähköpostiosoitteeseen on lähetetty kutsu. Kirjaudu ulos ja kirjaudu sen sijaan sähköpostilla tuon kutsun avulla, ja ota yhteyttä tukeen, jotta juuri tekemäsi rekisteröityminen poistetaan.",
     "emailTakenNotice": "Aiemmin antamasi osoite on nyt toisen tilin käytössä, joten sitä ei voitu lisätä tiliisi. Kirjoita toinen osoite.",
     "error": {
       "cancelled": {
         "content": "Peruit tunnistautumisen, eikä mitään tallennettu. Voit tunnistautua uudelleen, kun olet valmis.",
         "support": "Jos tarvitset apua, {contactSupportLink}.",
         "title": "Tunnistautuminen peruttiin"
+      },
+      "noAccount": {
+        "content": "Käyttämälläsi tunnistautumisella ei ole rekisteröity tiliä. Jos rekisteröidyit sähköpostiosoitteella, kirjaudu sen sijaan sillä.",
+        "title": "Tiliä ei löytynyt"
       },
       "noRetry": {
         "content": "Pahoittelemme, kyseessä on ongelma meidän päässämme, eikä uudelleen yrittäminen auta. Ota yhteyttä tukeen.",

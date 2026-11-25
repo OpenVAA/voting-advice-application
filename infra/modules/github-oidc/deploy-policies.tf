@@ -1,7 +1,4 @@
-# The deploy role's permissions for the one root the pipeline applies: one customer-managed policy per
-# concern, under var.iam_path, each attached to the deploy role by its own role attachment. The
-# resource names are derived from name_prefix and environment exactly as the frontend-service module
-# derives them, so every scope below names that module's resources and nothing else.
+# The deploy role's permissions for the one root the pipeline applies: one customer-managed policy per concern, under var.iam_path, each attached to the deploy role by its own role attachment. The resource names are derived from name_prefix and environment exactly as the frontend-service module derives them, so every scope below names that module's resources and nothing else.
 
 locals {
   frontend_name     = "${var.name_prefix}-${var.environment}"
@@ -40,8 +37,7 @@ locals {
   service_arn         = "arn:aws:ecs:${local.regional}:service/${local.frontend_name}/${local.frontend_name}-frontend"
   task_definition_arn = "arn:aws:ecs:${local.regional}:task-definition/${local.frontend_name}-frontend:*"
 
-  # The viewer certificate lives in us-east-1, where CloudFront reads it; the origin certificate in
-  # the root's region.
+  # The viewer certificate lives in us-east-1, where CloudFront reads it; the origin certificate in the root's region.
   certificate_arns = distinct([
     "arn:aws:acm:${local.regional}:certificate/*",
     "arn:aws:acm:us-east-1:${var.aws_account_id}:certificate/*",
@@ -50,8 +46,7 @@ locals {
   log_group_arn = "arn:aws:logs:${local.regional}:log-group:/openvaa/${var.environment}/frontend"
 }
 
-# The pipeline's own failure alert goes to the topic the rollout alert uses, so both reach the one
-# confirmed subscription.
+# The pipeline's own failure alert goes to the topic the rollout alert uses, so both reach the one confirmed subscription.
 data "aws_iam_policy_document" "deploy_alert" {
   statement {
     sid       = "PublishPipelineAlert"
@@ -73,18 +68,9 @@ resource "aws_iam_role_policy_attachment" "deploy_alert" {
   policy_arn = aws_iam_policy.deploy_alert.arn
 }
 
-# The eight policies below hold the actions that a refresh, a create, an update and a destroy of the
-# pipeline root make. Every scope is a name the root gives its resources, the tags its providers set
-# on them, the one hosted zone it writes to, or the names its certificates are requested for. Reads
-# and creates that the services do not scope to a resource are granted on every resource, a create
-# held by its request's tags. No statement grants an S3, SSM, Secrets Manager or KMS action or a
-# read of log events, so the deploy role reaches no state but the pipeline key and no secret value.
+# The eight policies below hold the actions that a refresh, a create, an update and a destroy of the pipeline root make. Every scope is a name the root gives its resources, the tags its providers set on them, the one hosted zone it writes to, or the names its certificates are requested for. Reads and creates that the services do not scope to a resource are granted on every resource, a create held by its request's tags. No statement grants an S3, SSM, Secrets Manager or KMS action or a read of log events, so the deploy role reaches no state but the pipeline key and no secret value.
 
-# Network: a create must carry the root's tags, and a change or delete must find them on the
-# resource it touches. A create that names a parent, a subnet, route table or security group in a VPC
-# or a rule in a security group, is allowed only when the parent carries them as well. EC2 evaluates
-# that parent with its own tags as aws:ResourceTag and without the request's tags, so the parent
-# statement tests resource tags alone and the created resource's statement tests request tags.
+# Network: a create must carry the root's tags, and a change or delete must find them on the resource it touches. A create that names a parent, a subnet, route table or security group in a VPC or a rule in a security group, is allowed only when the parent carries them as well. EC2 evaluates that parent with its own tags as aws:ResourceTag and without the request's tags, so the parent statement tests resource tags alone and the created resource's statement tests request tags.
 data "aws_iam_policy_document" "deploy_network" {
   statement {
     sid       = "ReadNetwork"
@@ -240,8 +226,7 @@ resource "aws_iam_role_policy_attachment" "deploy_network" {
   policy_arn = aws_iam_policy.deploy_network.arn
 }
 
-# Load balancing: the load balancer and target group are created with the root's tags; they, their
-# listeners and the listener rules are changed by name.
+# Load balancing: the load balancer and target group are created with the root's tags; they, their listeners and the listener rules are changed by name.
 data "aws_iam_policy_document" "deploy_load_balancing" {
   statement {
     sid       = "ReadLoadBalancing"
@@ -313,8 +298,7 @@ resource "aws_iam_role_policy_attachment" "deploy_load_balancing" {
   policy_arn = aws_iam_policy.deploy_load_balancing.arn
 }
 
-# ECS: the cluster and the service by name. Task definitions are registered and deregistered on
-# every resource, because ECS scopes neither action to one; their tags are scoped to the family.
+# ECS: the cluster and the service by name. Task definitions are registered and deregistered on every resource, because ECS scopes neither action to one; their tags are scoped to the family.
 data "aws_iam_policy_document" "deploy_ecs" {
   statement {
     sid       = "ReadEcs"
@@ -364,8 +348,7 @@ resource "aws_iam_role_policy_attachment" "deploy_ecs" {
   policy_arn = aws_iam_policy.deploy_ecs.arn
 }
 
-# The one IAM action of the deploy role: a task definition names the execution role, and only ECS
-# tasks may receive it.
+# The one IAM action of the deploy role: a task definition names the execution role, and only ECS tasks may receive it.
 data "aws_iam_policy_document" "deploy_pass_role" {
   statement {
     sid       = "PassExecutionRole"
@@ -393,14 +376,7 @@ resource "aws_iam_role_policy_attachment" "deploy_pass_role" {
   policy_arn = aws_iam_policy.deploy_pass_role.arn
 }
 
-# Edge: the distribution and both certificates are created with the root's tags and changed, tagged
-# or deleted only while they carry them. CloudFront and ACM have no condition key that limits a tag
-# call to a create, so no tag call is allowed on the request's tags alone: such a grant could put the
-# root's tags on a distribution or certificate of another owner and so bring it within reach of the
-# change statements. A tag call made as part of a create with tags passes on aws:ResourceTag, which
-# IAM fills from the tags such a request attaches. A distribution's ARN does not exist before it is
-# created, so the create is granted on "*" as CloudFront documents, and a certificate request is
-# held to the frontend's two names and to the regions of the two certificates.
+# Edge: the distribution and both certificates are created with the root's tags and changed, tagged or deleted only while they carry them. CloudFront and ACM have no condition key that limits a tag call to a create, so no tag call is allowed on the request's tags alone: such a grant could put the root's tags on a distribution or certificate of another owner and so bring it within reach of the change statements. A tag call made as part of a create with tags passes on aws:ResourceTag, which IAM fills from the tags such a request attaches. A distribution's ARN does not exist before it is created, so the create is granted on "*" as CloudFront documents, and a certificate request is held to the frontend's two names and to the regions of the two certificates.
 data "aws_iam_policy_document" "deploy_edge" {
   statement {
     sid    = "ReadEdge"
@@ -530,10 +506,7 @@ resource "aws_iam_role_policy_attachment" "deploy_edge" {
   policy_arn = aws_iam_policy.deploy_edge.arn
 }
 
-# DNS: record changes in the one zone, of the types A, AAAA and CNAME, at the domain, at its origin
-# name and at the certificate validation names, which begin with an underscore. The zone also holds
-# the mail records of another root: its MX and TXT records are refused by type, and its DKIM records,
-# CNAMEs named <token>._domainkey.<domain>, by name.
+# DNS: record changes in the one zone, of the types A, AAAA and CNAME, at the domain, at its origin name and at the certificate validation names, which begin with an underscore. The zone also holds the mail records of another root: its MX and TXT records are refused by type, and its DKIM records, CNAMEs named <token>._domainkey.<domain>, by name.
 data "aws_iam_policy_document" "deploy_dns" {
   statement {
     sid    = "ReadDns"
@@ -581,9 +554,7 @@ resource "aws_iam_role_policy_attachment" "deploy_dns" {
   policy_arn = aws_iam_policy.deploy_dns.arn
 }
 
-# Observability: the frontend's log group, the deployment topic and its subscriptions, and the rule
-# that reports a failed rollout, each by name. The log group's settings are reachable; its events are
-# not.
+# Observability: the frontend's log group, the deployment topic and its subscriptions, and the rule that reports a failed rollout, each by name. The log group's settings are reachable; its events are not.
 data "aws_iam_policy_document" "deploy_observability" {
   statement {
     sid       = "ReadLogGroups"
@@ -657,10 +628,7 @@ resource "aws_iam_role_policy_attachment" "deploy_observability" {
   policy_arn = aws_iam_policy.deploy_observability.arn
 }
 
-# Scaling: the service's scalable target, its policies and scheduled actions, and the alarms target
-# tracking creates and deletes in the caller's name. A scalable target's ARN carries an id rather than
-# the service, so the writes are held to the desired count of an ECS service by the two condition keys
-# the service authorization reference lists for them; tagging supports neither key.
+# Scaling: the service's scalable target, its policies and scheduled actions, and the alarms target tracking creates and deletes in the caller's name. A scalable target's ARN carries an id rather than the service, so the writes are held to the desired count of an ECS service by the two condition keys the service authorization reference lists for them; tagging supports neither key.
 data "aws_iam_policy_document" "deploy_scaling" {
   statement {
     sid    = "ReadScaling"

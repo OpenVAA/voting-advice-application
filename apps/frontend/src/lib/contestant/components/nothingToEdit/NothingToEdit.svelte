@@ -29,6 +29,7 @@ Accesses `ContestantContext`. The signed-in email is read from the context's `us
 <script lang="ts">
   import { contestantLogoutWarning } from '$contestant/utils/logoutWarning';
   import { MainContent } from '$layouts/main';
+  import { AccountAddress } from '$lib/components/accountAddress';
   import { Button } from '$lib/components/button';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { ContactSupport } from '$lib/dynamic-components/contactSupport';
@@ -56,15 +57,10 @@ Accesses `ContestantContext`. The signed-in email is read from the context's `us
   {/if}
 
   {#if contestantCtx.user?.email}
-    <dl class="my-lg text-center">
-      <dt class="small-label">{t('contestantApp.nothingToEdit.signedInAs')}</dt>
-      <dd
-        class="font-bold [overflow-wrap:anywhere] hyphens-none"
-        translate="no"
-        data-testid="contestant-nothing-to-edit-email">
-        {contestantCtx.user.email}
-      </dd>
-    </dl>
+    <AccountAddress
+      label={t('common.account.signedInAs')}
+      address={contestantCtx.user.email}
+      data-testid="contestant-nothing-to-edit-email" />
   {/if}
 
   <p class="text-center">

@@ -1,21 +1,24 @@
 /**
  * The standing census of nomination shapes over the built-in templates.
  *
- * Every registered template is run through the pipeline, and every nomination row it emits is classified against the type of the election it names. The expected number of rows an election's type refuses is zero, so a template that seeds such a row fails here by name rather than at its own import.
+ * Every registered template is run through the pipeline, and every nomination row it emits is classified against the nomination shape of the election it names. The expected number of rows an election's nomination shape refuses is zero, so a template that seeds such a row fails here by name rather than at its own import.
  *
  * ## It iterates the registry, never a list of names
  *
  * `BUILT_IN_TEMPLATES` is walked with `Object.keys`, so a template registered later is covered without this file being touched. A floor on the number of templates and a floor on the number of nominations keep an empty registry, or a pipeline that stopped emitting, from passing.
  *
- * ## The classifier is a statement of its own
+ * ## The matrix is read from the pgTAP file
  *
- * `EXPECTED` writes out what each election type does with a nomination of each entity type. It imports nothing from the application or from the schema files; only the two enums come from the generated database types, so that a member added to either is a compile error here until the matrix names it.
+ * `EXPECTED` is parsed from the cells of `public.nomination_shape_rule` that `08-triggers.test.sql` asserts, so a rule changed in the schema and its pgTAP cells is the rule this census applies.
  *
  * ## What a failure reports
  *
  * Template name, collection, the row's `external_id` and the offence.
  */
 
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Constants } from '@openvaa/supabase-types';
 import { describe, expect, it } from 'vitest';
 import { runPipeline } from '../src/pipeline';
@@ -28,7 +31,7 @@ type EntityType = Enums<'entity_type'>;
 type Shape = Enums<'nomination_shape'>;
 
 /**
- * What an election's type does with a nomination: `admitted` with or without a parent, `parentRequired` when the row is admitted only with a parent nomination or a requested parent organization, `refused` whatever the row holds.
+ * What an election's nomination shape does with a nomination: `admitted` with or without a parent, `parentRequired` when the row is admitted only with a parent nomination or a requested parent organization, `refused` whatever the row holds.
  */
 type Outcome = 'admitted' | 'parentRequired' | 'refused';
 
@@ -38,33 +41,39 @@ const SHAPES: ReadonlyArray<string> = Constants.public.Enums.nomination_shape;
 /** The key of `custom_data` under which a nomination names a parent organization that has no row yet. */
 const REQUESTED_PARENT_KEY = 'requestedParentOrganization';
 
-/** The expected outcome for each of the four entity types, in each of the four election types. */
-const EXPECTED: Record<Shape, Record<EntityType, Outcome>> = {
-  organization_list: {
-    candidate: 'parentRequired',
-    organization: 'admitted',
-    faction: 'admitted',
-    alliance: 'admitted'
-  },
-  organization_list_and_independents: {
-    candidate: 'admitted',
-    organization: 'admitted',
-    faction: 'admitted',
-    alliance: 'admitted'
-  },
-  candidate_only: {
-    candidate: 'admitted',
-    organization: 'refused',
-    faction: 'refused',
-    alliance: 'refused'
-  },
-  organization_only: {
-    candidate: 'refused',
-    organization: 'admitted',
-    faction: 'refused',
-    alliance: 'admitted'
-  }
+const HERE = dirname(fileURLToPath(import.meta.url));
+/** `packages/dev-seed/tests` → repo root. */
+const REPO_ROOT = resolve(HERE, '../../..');
+const TRIGGERS_TEST_FILE = resolve(REPO_ROOT, 'apps/supabase/supabase/tests/database/08-triggers.test.sql');
+
+/** The number of cells the matrix has: every nomination shape against every entity type. */
+const MATRIX_CELL_COUNT = 16;
+
+/**
+ * One cell of the matrix as the pgTAP file asserts it: a call of the rule with a quoted shape and a quoted entity type, then the stated answer. A cell with a `NULL` argument does not match.
+ */
+const CELL_RE = /nomination_shape_rule\s*\(\s*'([^']*)'\s*,\s*'([^']*)'\s*\)\s*\$\$\s*\)\s*,\s*'([a-z_]+)'/g;
+
+/** The pgTAP answers, by the name the census gives them. */
+const OUTCOME_BY_ANSWER: Record<string, Outcome> = {
+  admitted: 'admitted',
+  parent_required: 'parentRequired',
+  refused: 'refused'
 };
+
+type Cell = { shape: string; entityType: string; outcome: Outcome | undefined };
+
+const CELLS: Array<Cell> = [...readFileSync(TRIGGERS_TEST_FILE, 'utf8').matchAll(CELL_RE)].map(
+  ([, shape, entityType, answer]) => ({ shape, entityType, outcome: OUTCOME_BY_ANSWER[answer] })
+);
+
+/** The outcome for each entity type in each nomination shape, as the pgTAP cells state it. */
+const EXPECTED = {} as Record<Shape, Record<EntityType, Outcome>>;
+for (const { shape, entityType, outcome } of CELLS) {
+  if (outcome === undefined) continue;
+  const row = (EXPECTED[shape as Shape] ??= {} as Record<EntityType, Outcome>);
+  row[entityType as EntityType] = outcome;
+}
 
 /** The `external_id` a row gives under a reference key such as `election`, when it gives one. */
 function refOf(row: Row, key: string): string | undefined {
@@ -97,18 +106,18 @@ function describeOffence(templateName: string, collection: string, row: Row, ind
   return `template='${templateName}' collection='${collection}' external_id='${externalId}' :: ${offence}`;
 }
 
-/** Every election row of a dataset that states no type the generated enum knows. */
-function untypedElections(templateName: string, data: Data): Array<string> {
+/** Every election row of a dataset that states no nomination shape the generated enum knows. */
+function shapelessElections(templateName: string, data: Data): Array<string> {
   const offences: Array<string> = [];
   for (const [index, election] of (data.elections ?? []).entries()) {
-    if (!isShape(election.election_type)) {
+    if (!isShape(election.nomination_shape)) {
       offences.push(
         describeOffence(
           templateName,
           'elections',
           election,
           index,
-          `election_type ${JSON.stringify(election.election_type)} is not one of ${SHAPES.join(', ')}`
+          `nomination_shape ${JSON.stringify(election.nomination_shape)} is not one of ${SHAPES.join(', ')}`
         )
       );
     }
@@ -116,11 +125,11 @@ function untypedElections(templateName: string, data: Data): Array<string> {
   return offences;
 }
 
-/** Every nomination row of a dataset that the type of its election refuses, or that cannot be classified. */
+/** Every nomination row of a dataset that the nomination shape of its election refuses, or that cannot be classified. */
 function refusedNominations(templateName: string, data: Data): Array<string> {
   const shapeByElection = new Map<string, unknown>();
   for (const election of data.elections ?? []) {
-    if (typeof election.external_id === 'string') shapeByElection.set(election.external_id, election.election_type);
+    if (typeof election.external_id === 'string') shapeByElection.set(election.external_id, election.nomination_shape);
   }
 
   const offences: Array<string> = [];
@@ -143,7 +152,7 @@ function refusedNominations(templateName: string, data: Data): Array<string> {
     }
     const shape = shapeByElection.get(electionRef);
     if (!isShape(shape)) {
-      report(`its election '${electionRef}' states no known type`);
+      report(`its election '${electionRef}' states no known nomination shape`);
       continue;
     }
 
@@ -168,6 +177,15 @@ const EMITTED: Array<{ name: string; data: Data }> = TEMPLATE_NAMES.map((name) =
 }));
 
 describe('nomination-shape census — every nomination every built-in template emits', () => {
+  it('reads every cell of the nomination-shape matrix from the pgTAP file', () => {
+    expect(CELLS).toHaveLength(MATRIX_CELL_COUNT);
+    expect(CELLS.filter((cell) => cell.outcome === undefined)).toEqual([]);
+    for (const shape of SHAPES) {
+      for (const entityType of ENTITY_TYPES)
+        expect(EXPECTED[shape as Shape]?.[entityType], `${shape} x ${entityType}`).toBeDefined();
+    }
+  });
+
   it('iterates the registry and covers at least 30 built-ins', () => {
     // A floor, not an equality: registering another template must not turn this red, and a registry that shrank to nothing must not let the zero-offence cases pass.
     expect(TEMPLATE_NAMES.length).toBeGreaterThanOrEqual(30);
@@ -182,13 +200,13 @@ describe('nomination-shape census — every nomination every built-in template e
     expect(count('nominations')).toBeGreaterThanOrEqual(500);
   });
 
-  it('every election row states a type the generated enum knows', () => {
+  it('every election row states a nomination shape the generated enum knows', () => {
     const offences: Array<string> = [];
-    for (const { name, data } of EMITTED) offences.push(...untypedElections(name, data));
+    for (const { name, data } of EMITTED) offences.push(...shapelessElections(name, data));
     expect(offences).toEqual([]);
   });
 
-  it('no built-in template emits a nomination that the type of its election refuses', () => {
+  it('no built-in template emits a nomination that the nomination shape of its election refuses', () => {
     const offences: Array<string> = [];
     for (const { name, data } of EMITTED) offences.push(...refusedNominations(name, data));
     // Compared as an array of lines so a failure prints the template, the collection, the external_id and the offence rather than a count.
@@ -197,7 +215,7 @@ describe('nomination-shape census — every nomination every built-in template e
 
   it('the classifier refuses planted rows, one for each way a row can be refused', () => {
     function election(shape: string): Row {
-      return { external_id: `el-${shape}`, election_type: shape };
+      return { external_id: `el-${shape}`, nomination_shape: shape };
     }
     function nomination(externalId: string, entityType: EntityType, shape: string, extra: Row = {}): Row {
       return {
@@ -226,10 +244,10 @@ describe('nomination-shape census — every nomination every built-in template e
         nomination('candidates-only-alliance', 'alliance', 'candidate_only'),
         nomination('candidates-only-faction', 'faction', 'candidate_only'),
         { external_id: 'names-nobody', election: { external_id: 'el-organization_list' } },
-        nomination('unknown-election', 'candidate', 'no-such-type')
+        nomination('unknown-election', 'candidate', 'no-such-shape')
       ]
     };
-    planted.elections.push({ external_id: 'el-untyped' });
+    planted.elections.push({ external_id: 'el-shapeless' });
 
     const refused = refusedNominations('planted', planted).map((line) => /external_id='([^']+)'/.exec(line)?.[1]);
     expect(refused).toEqual([
@@ -242,6 +260,6 @@ describe('nomination-shape census — every nomination every built-in template e
       'names-nobody',
       'unknown-election'
     ]);
-    expect(untypedElections('planted', planted)).toHaveLength(1);
+    expect(shapelessElections('planted', planted)).toHaveLength(1);
   });
 });

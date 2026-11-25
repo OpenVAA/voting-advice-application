@@ -154,7 +154,7 @@ describe('GET /api/auth/callback', () => {
     expect(writerMocks.createDataWriter).not.toHaveBeenCalled();
   });
 
-  it.each([['invite'], ['signup'], ['email']])(
+  it.each([['invite'], ['signup'], ['email'], ['foo']])(
     'refuses a link of the type %s whatever next it names: the login page with the auth error, and nothing spent',
     async (type) => {
       const { event, calls } = eventWith(`?token_hash=hash-1&type=${type}&next=contestant%2Fhelp`);

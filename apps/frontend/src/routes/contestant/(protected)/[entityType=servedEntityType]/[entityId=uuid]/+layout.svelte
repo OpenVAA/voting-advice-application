@@ -14,7 +14,6 @@
   import { untrack } from 'svelte';
   import { ReadFailure } from '$contestant/components/readFailure';
   import { isValidResult } from '$lib/api/utils/isValidResult';
-  import { Loading } from '$lib/components/loading';
   import { getContestantContext } from '$lib/contexts/contestant/contestantContext.svelte';
   import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
@@ -56,7 +55,7 @@
     };
   });
 
-  const layoutState = $derived<'loading' | 'error' | 'ready'>(validity.state === 'resolved' ? 'ready' : 'error');
+  const ready = $derived(validity.state === 'resolved');
 
   // Applies the resolved data to the data root and initialises `userData`. Both are synchronous, so there is nothing to await.
   //
@@ -88,10 +87,8 @@
   });
 </script>
 
-{#if layoutState === 'error'}
-  <ReadFailure class="bg-base-300" />
-{:else if layoutState === 'loading'}
-  <Loading />
-{:else}
+{#if ready}
   {@render children?.()}
+{:else}
+  <ReadFailure class="bg-base-300" />
 {/if}

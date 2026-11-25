@@ -11,8 +11,8 @@
           "selectors": ["partyMatchingMethod"],
           "match": {
             "partyMatchingMethod=answersOnly": "<p>D’Parteiresultater goufe berechent op Basis vun de Reaktioune vun de Parteien.</p> ",
-            "partyMatchingMethod=impute": "<p>D’Parteiresultater goufe berechent op Basis vun hiren Äntwerten oder, wann eng Partei d’Froe net beäntwert huet, aus dem Modus oder der Median vun den Äntwerte vun hire Kandidat*inne am Walbezierk.</p> ",
-            "partyMatchingMethod=*": "<p>D’Parteiresultater goufe berechent op Basis vun hiren Äntwerten oder, wann eng Partei d’Froe net beäntwert huet, op Basis vun den Äntwerte vu senge Kandidat*inne am Walbezierk.</p> <p>Gitt weg, datt d’Kandidat*inne vun enger Partei bei bestëmmte Froen net mat hirer Partei averstanen sinn; dës berechent Positioun spigelt dofir eventuell net komplett déi offiziell Haltung vun der Partei erëm.</p>"
+            "partyMatchingMethod=impute": "<p>D’Parteiresultater goufe berechent op Basis vun hiren Äntwerten oder, wann eng Partei d’Froe net beäntwert huet, aus dem Modus oder der Median vun den Äntwerte vun hire Kandidat*inne am Walbezierk.</p> <p>Gitt weg, datt d’Kandidat*inne vun enger Partei bei bestëmmte Froen net mat hirer Partei averstanen sinn; dës berechent Positioun spigelt dofir eventuell net komplett déi offiziell Haltung vun der Partei erëm.</p>",
+            "partyMatchingMethod=*": "<p>D’Parteiresultater goufe berechent op Basis vun hiren Äntwerten oder, wann eng Partei d’Froe net beäntwert huet, op Basis vun den Äntwerte vu senge Kandidat*inne am Walbezierk.</p>"
           }
         }
       ],

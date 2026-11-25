@@ -4,7 +4,7 @@
 
 Shows the user what is left to do for the entity they edit, a candidate or an organization, to be included in the VAA. The page is the entity's task list, and everything it shows of the tasks is read from the context's task state: each row's status, whether the preview is open, why an entry is closed and where the main action leads. The page holds no completeness rule of its own.
 
-Everything that differs by entity type is read from the descriptor of the selected entity's type.
+Everything that differs by entity type is read from the descriptor of the selected entity's type, or is a text whose key the page builds from that type.
 
 ### What the page shows
 
@@ -27,7 +27,7 @@ An entity with no nomination is known on the server, so its page waits for nothi
 ### Settings
 
 - `entities.hideIfMissingAnswers`: Whether the note says the entity is hidden from voters while an opinion question is unanswered. The key read is that of the selected entity's type.
-- `access.answersLocked`: Whether the note is shown, and whether the profile's and the questions' labels read "view". Read as the context's `answersLocked`.
+- `access.contestantEditing`: Whether it is `locked` decides whether the note is shown, and whether the profile's and the questions' labels read "view". Read as the context's `answersLocked`.
 
 ### Accessibility
 
@@ -44,7 +44,7 @@ An entity with no nomination is known on the server, so its page waits for nothi
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { InfoBadge } from '$lib/components/infoBadge';
   import { homeAction, taskLabelKey } from '$lib/contestant/tasks';
-  import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
+  import { entityDescriptorOf, servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
   import { isHiddenIfMissingAnswers } from '$lib/contestant/utils/hideIfMissingAnswers';
   import { contestantLogoutWarning } from '$lib/contestant/utils/logoutWarning';
   import { getContestantContext } from '$lib/contexts/contestant';
@@ -83,8 +83,10 @@ An entity with no nomination is known on the server, so its page waits for nothi
 
   const answersLocked = $derived(contestantCtx.answersLocked);
 
-  /** Everything that differs by entity type. Read from the selected entity, which is known on the server. */
+  /** What differs by entity type beyond a text's key. Read from the selected entity, which is known on the server. */
   const descriptor = $derived(entityDescriptorOf(contestantCtx.selectedEntity?.type));
+  /** The type whose texts the page shows: each text that differs by type alone has a key ending in it. */
+  const textType = $derived(servedEntityTypeOf(contestantCtx.selectedEntity?.type));
 
   /** The state of the entity's tasks. The context replaces it whole, so it is read as one value and never destructured. */
   const taskState = $derived(contestantCtx.taskState);
@@ -93,7 +95,7 @@ An entity with no nomination is known on the server, so its page waits for nothi
   const pending = $derived(!taskState.known);
 
   /** Whether every task the entity has is complete. */
-  const allComplete = $derived(contestantCtx.profileComplete);
+  const allComplete = $derived(taskState.allComplete);
 
   /** Whether the entity is asked opinion questions, as far as the task state lists them. */
   const hasQuestionsTask = $derived(taskState.tasks.some((task) => task.id === 'questions'));
@@ -103,7 +105,10 @@ An entity with no nomination is known on the server, so its page waits for nothi
    */
   const closedReason = $derived.by(() => {
     if (taskState.tasks.some((task) => task.id === 'nomination' && task.status === 'incomplete')) {
-      return { reason: 'noNomination', sentence: t(descriptor.closedReasonNoNomination) } as const;
+      return {
+        reason: 'noNomination',
+        sentence: t(`contestantApp.common.closedReason.noNomination.${textType}`)
+      } as const;
     }
     if (taskState.known && !taskState.previewOpen) {
       return {
@@ -134,8 +139,12 @@ An entity with no nomination is known on the server, so its page waits for nothi
   /** The explanation under the title, for a task state that is known. */
   const explanation = $derived.by(() => {
     if (allComplete) return t('contestantApp.home.ingress.ready');
-    if (closedReason?.reason === 'noNomination') return t(descriptor.homeNoNomination);
-    return t(hasQuestionsTask ? descriptor.homeNotDone : descriptor.homeNotDoneNoQuestions);
+    if (closedReason?.reason === 'noNomination') return t(`contestantApp.home.ingress.noNomination.${textType}`);
+    return t(
+      hasQuestionsTask
+        ? `contestantApp.home.ingress.notDone.${textType}`
+        : `contestantApp.home.ingress.notDoneNoQuestions.${textType}`
+    );
   });
 
   /**
@@ -164,7 +173,7 @@ An entity with no nomination is known on the server, so its page waits for nothi
    * The address that awaits the link mailed to it, which the email task names, or `undefined` while there is none: the account's address is proved, or the account did not register with an identity provider.
    */
   const pendingEmail = $derived(
-    contestantCtx.user?.addressState === 'pending' ? contestantCtx.user.pendingEmail || undefined : undefined
+    contestantCtx.user?.address.state === 'pending' ? contestantCtx.user.address.email : undefined
   );
 
   /**
@@ -229,7 +238,7 @@ An entity with no nomination is known on the server, so its page waits for nothi
 
   {#if pending}
     <p class="invisible text-center" aria-hidden="true">
-      {t(descriptor.homeNotDone)}
+      {t(`contestantApp.home.ingress.notDone.${textType}`)}
     </p>
   {:else}
     <p class="text-center" data-testid="contestant-home-status">
