@@ -4,13 +4,13 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
-current_plan: 15
+current_plan: 16
 status: executing
 stopped_at: Completed 189.1.1-15-PLAN.md
-last_updated: "2026-11-25T16:16:50.793Z"
-last_activity: 2026-11-24
+last_updated: "2026-11-25T16:47:51.389Z"
+last_activity: 2026-11-25
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 6f75f7173ff36a6edd9f5dab168e783b22722962
+state_head: a3215153da39d7dfef1e6de969dac9a34320c8cc
 progress:
   total_phases: 13
   completed_phases: 10
@@ -27,23 +27,23 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 189.1.1 — Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items
+**Current focus:** Phase 189.1.1 — Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit
 
 ## Current Position
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — READY TO EXECUTE
-Plan: 15 of 15
-Status: Ready to execute
-Last activity: 2026-11-24 — Phase 189.1.1 execution started
+Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — EXECUTING
+Plan: 16 of 20
+Status: Executing Phase 189.1.1
+Last activity: 2026-11-25 — Phase 189.1.1 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 77%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 15
+**Current Plan:** 16
 
 From 184 on, the numeric order is the dependency order.
 
