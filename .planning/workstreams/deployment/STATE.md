@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
-current_plan: 17
+current_plan: 18
 status: executing
-stopped_at: Completed 189.1.1-16-PLAN.md
-last_updated: "2026-11-25T17:13:05.615Z"
+stopped_at: Completed 189.1.1-17-PLAN.md
+last_updated: "2026-11-25T18:17:27.536Z"
 last_activity: 2026-11-25
 last_activity_desc: Phase 189.1.1 execution started
-state_head: d8e4c85faada4e513813081af852c7756fa47076
+state_head: 6bafbf1aff68958f9e09577e1295ddddef3b62f5
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 257
-  completed_plans: 234
+  completed_plans: 235
   percent: 77
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — EXECUTING
-Plan: 17 of 20
+Plan: 18 of 20
 Status: Ready to execute
 Last activity: 2026-11-25 — Phase 189.1.1 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 17
+**Current Plan:** 18
 
 From 184 on, the numeric order is the dependency order.
 
@@ -245,6 +245,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P14 | 10min | 2 tasks | 3 files |
 | Phase 189.1.1 P15 | 36min | 3 tasks | 6 files |
 | Phase 189.1.1 P16 | 22 min | 3 tasks | 7 files |
+| Phase 189.1.1 P17 | 45 min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -548,6 +549,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-14: the served build was compared with DEPLOYED_COMMIT of evidence 13, not DEPLOY_COMMIT, as the orchestrator recorded; RELAY-22 is left for plan 189.1.1-15 to mark
 - [Phase 189.1.1]: 189.1.1-16: ModalContainer.handleEscape cancels the default action of an Escape it takes (e.preventDefault()), so an Escape in the consent prompt's information dialog closes that dialog alone and records no consent choice
 - [Phase 189.1.1]: 189.1.1-16: modal unit tests press Escape through dialogPlatform.testUtils.ts pressEscape(), which sends cancel and close to the topmost open dialog when the keydown's default is not cancelled; a new modal test uses it instead of its own polyfill
+- [Phase 189.1.1]: Plan 17: on a cold drawer entry the results drawer is the topmost modal dialog (three measured readings agree); DrawerHost.handleEscape now cancels the Escape default as ModalContainer does, and a browser test pins that one Escape closes the drawer alone with no consent choice stored — The tree already behaved correctly only through listener order (both modals listen on document and Svelte 5 skips a later same-node handler once propagation is stopped), so the browser test was shown red under the named mutation; no topmost check was needed (DRAWER_GUARD=not-needed)
 
 ### Pending Todos
 
@@ -623,6 +625,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-25T17:13:04.147Z
-**Stopped At:** Completed 189.1.1-16-PLAN.md
+Last session: 2026-11-25T18:17:26.131Z
+**Stopped At:** Completed 189.1.1-17-PLAN.md
 **Resume File:** None
