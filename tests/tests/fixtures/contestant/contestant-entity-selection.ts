@@ -260,6 +260,13 @@ export function createContestantEntityPages(page: Page) {
   const questionPath = (entity: SelectionEntity, questionId: string) =>
     buildRoute({ route: 'ContestantAppQuestion', locale: 'en', params: { ...entityParams(entity), questionId } });
 
+  /**
+   * Assert that the page's path is exactly `pathname`. After a navigation inside the application the address changes only once the server has answered the request for the next page's data, so the wait has the budget of a server round trip.
+   */
+  async function expectPath(pathname: string): Promise<void> {
+    await expect(page).toHaveURL(exactPathRe(pathname), { timeout: TIMEOUTS.slowPage });
+  }
+
   return {
     /** The path of an entity's home. */
     homePath,
@@ -283,7 +290,7 @@ export function createContestantEntityPages(page: Page) {
      * Assert the page is that entity's home, and that the home has rendered.
      */
     async expectOnHome(entity: SelectionEntity): Promise<void> {
-      await expect(page).toHaveURL(exactPathRe(homePath(entity)));
+      await expectPath(homePath(entity));
       await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -319,9 +326,7 @@ export function createContestantEntityPages(page: Page) {
      * Assert the page is that entity's profile, and that its identity section has rendered.
      */
     async expectOnProfile(entity: SelectionEntity): Promise<void> {
-      await expect(page).toHaveURL(
-        exactPathRe(buildRoute({ route: 'ContestantAppProfile', locale: 'en', params: entityParams(entity) }))
-      );
+      await expectPath(buildRoute({ route: 'ContestantAppProfile', locale: 'en', params: entityParams(entity) }));
       await expect(page.getByTestId(testIds.contestant.profile.identity)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
 
@@ -337,7 +342,7 @@ export function createContestantEntityPages(page: Page) {
      * Assert the page is that entity's editor of that question, and that the answer input has rendered.
      */
     async expectOnQuestion(entity: SelectionEntity, questionId: string): Promise<void> {
-      await expect(page).toHaveURL(exactPathRe(questionPath(entity, questionId)));
+      await expectPath(questionPath(entity, questionId));
       await expect(page.getByTestId(testIds.contestant.questions.answerInput)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -347,9 +352,7 @@ export function createContestantEntityPages(page: Page) {
      * Assert the page is that entity's questions overview, and that its list of questions has rendered.
      */
     async expectOnQuestionsOverview(entity: SelectionEntity): Promise<void> {
-      await expect(page).toHaveURL(
-        exactPathRe(buildRoute({ route: 'ContestantAppQuestions', locale: 'en', params: entityParams(entity) }))
-      );
+      await expectPath(buildRoute({ route: 'ContestantAppQuestions', locale: 'en', params: entityParams(entity) }));
       await expect(page.getByTestId(testIds.contestant.questions.list)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
 
