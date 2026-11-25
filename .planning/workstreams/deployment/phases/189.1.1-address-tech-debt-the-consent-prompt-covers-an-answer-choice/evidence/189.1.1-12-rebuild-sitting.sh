@@ -7,7 +7,13 @@
 # clean-up (Step 14) then runs by itself and prints the reply with
 # answer_stopped_at=. Nothing is retried.
 #
-# Run it from a terminal:  bash <path to this file>
+# Run it from a terminal:  bash <path to this file> [--from N]
+#
+# --from N resumes a stopped sitting at step N (1 to 13). Steps 0 to 3
+# (tools, ref, secrets, connection) always run; steps 4 to 6 run only when
+# N is at most their number, so a resume after the reset never resets
+# again; steps 7 and 8, both read-only, also run on any resume past the
+# reset, so the history must already be the rebuild's four versions.
 #
 # Secrets are read with read -rs from the terminal, live only in this
 # script's process, and are never printed. The reply holds no secret; it is
@@ -15,6 +21,24 @@
 # tmp/supabase-rebuild/reply-189.1.1-12-3.txt (Git ignores tmp/).
 
 ATTEMPT=20261124T212021Z.3c506322d
+FROM=1
+case ${1:-} in
+  '') ;;
+  --from)
+    FROM=${2:-}
+    case $FROM in
+      [1-9] | 1[0-3]) ;;
+      *) echo "--from takes a step number from 1 to 13" >&2; exit 2 ;;
+    esac
+    ;;
+  *) echo "usage: bash $0 [--from N]" >&2; exit 2 ;;
+esac
+
+# want K: whether step K runs on this invocation.
+want() {
+  [ "$1" -le 3 ] || [ "$1" -ge "$FROM" ] \
+    || { [ "$FROM" -gt 6 ] && { [ "$1" -eq 7 ] || [ "$1" -eq 8 ]; }; }
+}
 REBUILD_COMMIT=c84b1e373fde7e6e6ac30d502945535518006989
 NL=$'\n'
 
@@ -42,6 +66,14 @@ scrub() {
 }
 
 say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
+
+# errline NAME LOG: the first ERROR (or else last) line of LOG, scrubbed.
+errline() {
+  local x
+  x=$(scrub "$2" | grep -m 1 -E 'ERROR|FATAL|error:')
+  [ -n "$x" ] || x=$(scrub "$2" | tail -n 1)
+  rl "$1=$x"
+}
 
 # ---- the check between steps ---------------------------------------------
 
@@ -82,12 +114,12 @@ gate() {
     fi
   done
   if [ "$bad" -eq 0 ]; then
-    echo "  Every line is what the step must print."
-  else
-    printf '  \033[31m%s line(s) differ: answer n.\033[0m\n' "$bad"
+    echo "  Every line is what the step must print; going on to $next."
+    return 0
   fi
+  printf '  \033[31m%s line(s) differ: answer n.\033[0m\n' "$bad"
   local ans
-  printf '\nGo on to %s? [y/n] ' "$next"
+  printf '\nGo on to %s anyway? [y/n] ' "$next"
   read -r ans < /dev/tty
   case $ans in
     y | Y | yes) ;;
@@ -139,6 +171,7 @@ trap 'echo; echo "Interrupted."; exit 130' INT TERM
 CUR=0
 say "Step 0: the tools"
 PSQL_MAJOR=$(psql --version 2> /dev/null | sed -E 's/[^0-9]*([0-9]+).*/\1/')
+[ "$FROM" -gt 1 ] && rl "s0_resumed_from=$FROM"
 rl "s0_psql_major=${PSQL_MAJOR:-none}"
 rl "s0_node=$(node --version 2> /dev/null | cut -d. -f1)"
 for t in jq shasum curl security yarn; do
@@ -161,6 +194,12 @@ R=staging
 REF=$(sed -n 's/^project_ref *= *"\([a-z]*\)".*/\1/p' \
   "infra/envs/$R/supabase/terraform.tfvars")
 W=tmp/supabase-rebuild/$REF
+Q="select version from supabase_migrations.schema_migrations"
+Q="$Q order by version"
+PUBLIC_PROJECT_ID=$(sed -n \
+  's/^public_project_id *= *"\([0-9a-f-]*\)".*/\1/p' \
+  "infra/envs/$R/supabase/terraform.tfvars")
+export PUBLIC_PROJECT_ID
 rl "s1_ref=$REF"
 test "$REF" = cofbsatfrdysyphajsky && rl "s1_ref_ok=yes"
 gate 1 "Step 2 (typing the four secrets)" \
@@ -224,11 +263,10 @@ gate 3 "Step 4 (reading the migration history, read-only)" \
   's3_pooler_host_read=yes' 's3_root_present=yes' 's3_conn_exit=0'
 
 # ---- Step 4: the history before the reset, read-only ------------------------
+if want 4; then
 
 CUR=4
 say "Step 4: the history before the reset, read-only"
-Q="select version from supabase_migrations.schema_migrations"
-Q="$Q order by version"
 psql -X -w -At -c "$Q" > "$L/s4-history.log" 2>&1
 S=$?
 rl "s4_history_exit=$S"
@@ -241,7 +279,10 @@ V24=$(seq -f '%05g' 1 24 | paste -sd' ' -)
 gate 4 "Step 5 (the rebuild work directory and its link)" \
   's4_history_exit=0' "s4_versions_before=$V24"
 
+fi
+
 # ---- Step 5: the rebuild work directory and its link ------------------------
+if want 5; then
 
 CUR=5
 say "Step 5: the rebuild work directory and its link"
@@ -277,15 +318,20 @@ test ! -e apps/supabase/supabase/.temp/project-ref \
   && rl "s5_shared_dir_linked=no"
 F4=00001_initial_schema.sql,00002_refusal_codes.sql
 F4=$F4,00003_invitation_caller_limit.sql,00004_access_caller_limit.sql
-echo
-printf '\033[1;31m%s\033[0m\n' \
-  "The next step, Step 6, DELETES every row and auth user of staging."
 gate 5 "Step 6 (THE RESET: deletes staging's data)" \
   's5_links=2' 's5_rebuild_migrations=4' "s5_files=$F4" \
   's5_manifest_match=yes' 's5_rebuild_link_exit=0' \
   's5_linked_ref=cofbsatfrdysyphajsky' 's5_shared_dir_linked=no'
 
+fi
+
 # ---- Step 6: the reset, without the seed ------------------------------------
+if want 6; then
+printf '\n\033[1;31m%s\033[0m\n' \
+  "Step 6 DELETES every row and auth user of staging."
+printf 'Type y to run the reset: '
+read -r ANS < /dev/tty
+[ "$ANS" = y ] || { STOPPED=6; exit 1; }
 
 CUR=6
 say "Step 6: the reset, without the seed (about a minute)"
@@ -302,7 +348,10 @@ fi
 gate 6 "Step 7 (the history after the reset)" \
   's6_reset_exit=0' 's6_reset_applied=4'
 
+fi
+
 # ---- Step 7: the history after the reset ------------------------------------
+if want 7; then
 
 CUR=7
 say "Step 7: the history after the reset"
@@ -317,7 +366,10 @@ fi
 gate 7 "Step 8 (the server's logging settings)" \
   's7_history_exit=0' 's7_versions_after=00001 00002 00003 00004'
 
+fi
+
 # ---- Step 8: Step 19, the server's logging settings -------------------------
+if want 8; then
 
 CUR=8
 say "Step 8: the server's logging settings (runbook Step 19)"
@@ -331,7 +383,9 @@ FROM (VALUES ('log_statement'),
   ('auto_explain.log_min_duration'),
   ('auto_explain.log_parameter_max_length')) AS s(name);
 SQL
-rl "s19_psql_exit=$?"
+S=$?
+rl "s19_psql_exit=$S"
+[ "$S" -ne 0 ] && errline s19_line "$L/s19.out"
 grep '^s19_setting\.' "$L/s19.out" | tee -a "$L/reply.txt"
 gate 8 "Step 9 (the bootstrap, twice, and the seed check)" \
   's19_psql_exit=0' \
@@ -343,14 +397,13 @@ gate 8 "Step 9 (the bootstrap, twice, and the seed check)" \
   's19_setting.auto_explain.log_min_duration=10s' \
   's19_setting.auto_explain.log_parameter_max_length=-1'
 
+fi
+
 # ---- Step 9: Step 20, the bootstrap, twice, and the seed check --------------
+if want 9; then
 
 CUR=9
 say "Step 9: the bootstrap, twice, and the seed check (runbook Step 20)"
-PUBLIC_PROJECT_ID=$(sed -n \
-  's/^public_project_id *= *"\([0-9a-f-]*\)".*/\1/p' \
-  "infra/envs/$R/supabase/terraform.tfvars")
-export PUBLIC_PROJECT_ID
 export BOOTSTRAP_STORAGE_URL="https://$REF.supabase.co"
 export BOOTSTRAP_BEHIND_CLOUDFLARE=true
 export BOOTSTRAP_OPEN_FOR_VOTERS=true
@@ -382,18 +435,24 @@ FROM private.deployment_settings;
 SQL
 }
 psql -X -w -At -f "$B" > "$L/s20-boot1.log" 2>&1
-rl "s20_boot1_exit=$?"
+S=$?
+rl "s20_boot1_exit=$S"
+[ "$S" -ne 0 ] && errline s20_boot1_line "$L/s20-boot1.log"
 sed -n 's/^s20_session_timeout=/s20_boot1_session_timeout=/p' \
   "$L/s20-boot1.log" | tee -a "$L/reply.txt"
 s20_rows 1 | tee -a "$L/reply.txt"
 psql -X -w -At -f "$B" > "$L/s20-boot2.log" 2>&1
-rl "s20_boot2_exit=$?"
+S=$?
+rl "s20_boot2_exit=$S"
+[ "$S" -ne 0 ] && errline s20_boot2_line "$L/s20-boot2.log"
 sed -n 's/^s20_session_timeout=/s20_boot2_session_timeout=/p' \
   "$L/s20-boot2.log" | tee -a "$L/reply.txt"
 s20_rows 2 | tee -a "$L/reply.txt"
 psql -X -w -f infra/scripts/check-seed.sql \
   > "$L/s20-check-seed.log" 2>&1
-rl "s20_check_seed_exit=$?"
+S=$?
+rl "s20_check_seed_exit=$S"
+[ "$S" -ne 0 ] && errline s20_check_seed_line "$L/s20-check-seed.log"
 gate 9 "Step 10 (the smoke dataset: 5 to 15 minutes)" \
   's20_project_id=00000000-0000-0000-0000-000000000001' \
   's20_boot1_exit=0' 's20_boot1_session_timeout=5s' \
@@ -404,7 +463,10 @@ gate 9 "Step 10 (the smoke dataset: 5 to 15 minutes)" \
   's20_behind_cloudflare2=true' \
   's20_check_seed_exit=0'
 
+fi
+
 # ---- Step 10: Step 22, the smoke dataset ------------------------------------
+if want 10; then
 
 CUR=10
 say "Step 10: the smoke dataset (5 to 15 minutes, mostly portraits)"
@@ -432,7 +494,10 @@ tr -d '\r' < "$L/s22-headers.txt" \
 gate 10 "Step 11 (the smoke contestant again)" \
   's22_seed_exit=0' 's22_read_http=206' 's22_rows_range=0-0/1001'
 
+fi
+
 # ---- Step 11: Step 22, the smoke contestant again ---------------------------
+if want 11; then
 
 CUR=11
 say "Step 11: the smoke contestant again (keychain may ask for access)"
@@ -461,7 +526,9 @@ SELECT 's22c_users_before=' || count(*)
 FROM auth.users WHERE lower(email) = lower($1)
 \bind :a \g
 SQL
-rl "s22c_users_exit=$?"
+S=$?
+rl "s22c_users_exit=$S"
+[ "$S" -ne 0 ] && errline s22c_users_line "$L/s22c-users.err"
 tee -a "$L/reply.txt" < "$L/s22c-users.out"
 SMOKE_CONTESTANT_PASSWORD=$(security find-generic-password \
   -s openvaa-staging-smoke-contestant -w)
@@ -523,7 +590,9 @@ rm -f "$L/s22c-token.json" "$L/s22c-user.h"
 unset SUPABASE_SERVICE_ROLE_KEY
 psql -X -w -f infra/scripts/check-seed.sql \
   > "$L/s22c-check-seed.log" 2>&1
-rl "s22c_check_seed_exit=$?"
+S=$?
+rl "s22c_check_seed_exit=$S"
+[ "$S" -ne 0 ] && errline s22c_check_seed_line "$L/s22c-check-seed.log"
 unset SMOKE_CONTESTANT_EMAIL SMOKE_CONTESTANT_PASSWORD
 gate 11 "Step 12 (trackEvents true again)" \
   's22c_create_http=200' 's22c_grant_exit=0' \
@@ -534,7 +603,10 @@ gate 11 "Step 12 (trackEvents true again)" \
   's22c_claim_grants=*"role":"editor"*' \
   's22c_logout_http=204' 's22c_check_seed_exit=0'
 
+fi
+
 # ---- Step 12: trackEvents true again ----------------------------------------
+if want 12; then
 
 # The statement of 189.1-07, run over the sitting's verify-full connection
 # instead of the dashboard's SQL editor; it returns the same row.
@@ -562,14 +634,19 @@ SELECT 's12_rows=' || count(*),
   's12_updated_at=' || coalesce(string_agg(updated_at::text, ','), '')
 FROM u;
 SQL
-rl "s12_exit=$?"
+S=$?
+rl "s12_exit=$S"
+[ "$S" -ne 0 ] && errline s12_line "$L/s12.err"
 grep '^s12_' "$L/s12.out" | tee -a "$L/reply.txt"
 TE_AT=$(value_of s12_updated_at)
 [ "$TE_AT" = $'\001' ] && TE_AT=
 gate 12 "Step 13 (the settings check and the history, read back)" \
   's12_exit=0' 's12_rows=1' 's12_track_events=true' 's12_updated_at=?*'
 
+fi
+
 # ---- Step 13: the settings check and the history, read back -----------------
+if want 13; then
 
 CUR=13
 say "Step 13: the settings check and the history, read back"
@@ -590,6 +667,8 @@ fi
 gate 13 "Step 14 (the clean-up and the reply)" \
   's13_settings_exit=0' 's13_history_exit=0' \
   's13_versions_final=00001 00002 00003 00004'
+
+fi
 
 CUR=14
 exit 0
