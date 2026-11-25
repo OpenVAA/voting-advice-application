@@ -214,7 +214,7 @@ Each is run on a real project, recorded with its date, and acted on.
 - [x] **RELAY-20**: Every event is expressible as an OpenTelemetry log record and in the application's current
       logging format, with one mapping tested for each. [B6 note]
 - [x] **RELAY-21**: A `log` provider writes events as structured lines to the container's output. [A2]
-- [x] **RELAY-22**: The voter app's consent prompt is a modal dialog: the page under it is inert, Escape, its
+- [ ] **RELAY-22**: The voter app's consent prompt is a modal dialog: the page under it is inert, Escape, its
       close button, a backdrop click and a platform close each decline it as its decline control does, nothing
       beyond the pageview is sent after it, it does not reappear after a decline, and a navigation started
       while it is open runs no named View Transition; staging is re-measured with no obscured focus
@@ -378,7 +378,7 @@ closes; those are not listed against the earlier phase here.
 | RELAY-19 | Phase 182 | Complete |
 | RELAY-20 | Phase 182 | Complete |
 | RELAY-21 | Phase 182 | Complete |
-| RELAY-22 | Phase 189.1.1 | Complete |
+| RELAY-22 | Phase 189.1.1 | Pending |
 | RELAY-23 | Phase 189.1.1 | Complete |
 | DOCS-01 | Phase 189 | Complete |
 | DOCS-02 | Phase 189 | Complete |
