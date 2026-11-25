@@ -44,6 +44,7 @@ import {
   PREFS_KEY,
   visitIdOf
 } from '../../fixtures/shared/relayCapture.fixture';
+import { createResultsPage } from '../../fixtures/voter/resultsPage.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
@@ -213,6 +214,49 @@ async function patchPersistedPrefs(page: Page, patch: PersistedPrefs): Promise<v
     },
     { key: PREFS_KEY, patch }
   );
+}
+
+/** What the open modal dialogs are, each classified as `prompt`, `drawer` or `other:` and its label: all of them sorted, and the one under the viewport's centre (`none` when no dialog is there). */
+async function readModalDialogs(page: Page): Promise<{ open: Array<string>; topmost: string }> {
+  return page.evaluate(
+    ({ promptSource, promptFlags, detailsTestId }) => {
+      const promptLabel = new RegExp(promptSource, promptFlags);
+      const kindOf = (dialog: HTMLDialogElement | null | undefined): string => {
+        if (!dialog) return 'none';
+        const label = dialog.getAttribute('aria-label') ?? '';
+        if (promptLabel.test(label)) return 'prompt';
+        if (dialog.querySelector(`[data-testid="${detailsTestId}"]`)) return 'drawer';
+        return `other:${label}`;
+      };
+      const open = [...document.querySelectorAll('dialog')].filter((dialog) => dialog.matches(':modal'));
+      const centre = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2)?.closest('dialog');
+      return { open: open.map(kindOf).sort(), topmost: kindOf(centre) };
+    },
+    {
+      promptSource: CONSENT_PROMPT.source,
+      promptFlags: CONSENT_PROMPT.flags,
+      detailsTestId: testIds.voter.results.entityDetails
+    }
+  );
+}
+
+/** The sorted kinds of the open modal dialogs: `prompt` for the consent prompt, `drawer` for the dialog holding the entity details, otherwise `other:` and the dialog's label. */
+async function openModalKinds(page: Page): Promise<Array<string>> {
+  return (await readModalDialogs(page)).open;
+}
+
+/** The kind of the modal dialog under the viewport's centre, which a modal dialog in the top layer covers whole. Throws when it is neither the consent prompt nor the drawer. */
+async function topmostModalKind(page: Page): Promise<'prompt' | 'drawer'> {
+  const { topmost } = await readModalDialogs(page);
+  if (topmost !== 'prompt' && topmost !== 'drawer')
+    throw new Error(`the dialog under the viewport's centre is neither the consent prompt nor the drawer: ${topmost}`);
+  return topmost;
+}
+
+/** The stored consent choice of the voter app, `none` when no choice is stored (absent or `indetermined`). */
+async function consentChoice(page: Page): Promise<string> {
+  const consent = (await readPersistedPrefs(page))?.dataCollection?.consent;
+  return consent === undefined || consent === 'indetermined' ? 'none' : consent;
 }
 
 test.describe('voter-prefs-tracking (EFLOW-08)', () => {
@@ -465,6 +509,60 @@ test.describe('the information dialog inside the consent prompt', () => {
 
     await page.keyboard.press('Escape');
     await expect(modalDialogs).toHaveCount(0);
+    await expectStoredConsent(page, 'denied');
+  });
+});
+
+test.describe('the consent prompt over a results drawer', () => {
+  test('on a cold entry to a results drawer, one Escape closes only the topmost of the prompt and the drawer', async ({
+    page
+  }) => {
+    // The drawer is opened once under a stored decline, for its URL. Entering that URL with no choice stored opens the prompt and the drawer together.
+    await openVoterHome(page);
+    await dismissConsentPrompt(page);
+    await startToFirstQuestion(page);
+    await answerAndAdvanceToResults(page, 'max');
+    const resultsPage = createResultsPage(page);
+    // A party card's action is its header, inside the card; a candidate card without subcards is wrapped whole by its action.
+    await resultsPage.selectEntityTab('orgs');
+    await expect(resultsPage.getEntityCards().first()).toBeVisible({ timeout: TIMEOUTS.page });
+    await resultsPage.openEntityDetailsForCard(() => 0);
+    const drawerUrl = page.url();
+    await page.evaluate((key) => window.localStorage.removeItem(key), PREFS_KEY);
+    await page.goto(drawerUrl);
+    await expect(page.getByTestId(testIds.voter.results.entityDetails)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await expect
+      .poll(() => openModalKinds(page), {
+        message: 'the consent prompt and the drawer did not both open',
+        timeout: TIMEOUTS.slowPage
+      })
+      .toStrictEqual(['drawer', 'prompt']);
+
+    // The voter layout queues the prompt as it mounts, and the drawer opens over it once the results have loaded.
+    const topmost = await topmostModalKind(page);
+    test.info().annotations.push({ type: 'drawer-stack-topmost', description: topmost });
+    expect(topmost, 'the topmost dialog on a cold drawer entry is not the one measured in phase 189.1.1').toBe(
+      'drawer'
+    );
+
+    // One Escape closes the drawer alone and records nothing. A prompt that the same Escape closed would stay closed, so the poll cannot pass on a moment of a wrong outcome.
+    await page.keyboard.press('Escape');
+    await expect
+      .poll(() => openModalKinds(page), {
+        message: 'the dialogs left open after one Escape',
+        timeout: TIMEOUTS.slowPage
+      })
+      .toStrictEqual(['prompt']);
+    expect(await consentChoice(page), 'the Escape that closed the drawer stored a consent choice').toBe('none');
+
+    // The next Escape declines the prompt.
+    await page.keyboard.press('Escape');
+    await expect
+      .poll(() => openModalKinds(page), {
+        message: 'the dialogs left open after the second Escape',
+        timeout: TIMEOUTS.slowPage
+      })
+      .toStrictEqual([]);
     await expectStoredConsent(page, 'denied');
   });
 });
