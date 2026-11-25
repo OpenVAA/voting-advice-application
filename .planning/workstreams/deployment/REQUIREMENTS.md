@@ -63,7 +63,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       change at the current DNS host are documented. [F1]
 - [x] **INFRA-19**: An `example` environment that a forker copies is validated and planned in CI and is never
       applied. It carries the production-shaped settings as variables. [A1]
-- [ ] **INFRA-20**: Terraform refuses a frontend task whose stop timeout is shorter than its `SHUTDOWN_TIMEOUT`
+- [x] **INFRA-20**: Terraform refuses a frontend task whose stop timeout is shorter than its `SHUTDOWN_TIMEOUT`
       plus 15 seconds, and a check run in CI shows that the built server exits by itself after its drain once
       signalled, while a server held alive by a timer is seen not to (D-14e, D-14f). [189.1.1]
 
@@ -100,7 +100,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       keys if they work; the migration to publishable keys is filed to run right after both streams merge. [C5]
 - [x] **SUPA-14**: Mail is sent through SES from a verified domain identity with DKIM, SPF and DMARC. The port
       that works from a hosted Edge Function is measured and used. [C6]
-- [ ] **SUPA-15**: The former name `invitation_caller_take` is dropped by an appended migration that reaches
+- [x] **SUPA-15**: The former name `invitation_caller_take` is dropped by an appended migration that reaches
       staging in the same deploy as the functions that call `access_caller_take`, after staging's database is
       rebuilt from the restacked migrations; the observed run applies it with no drift, and the per-caller
       limit is seen in force afterwards (D-14c, D-16, D-17). [189.1.1]
@@ -129,7 +129,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [x] **PIPE-11**: The deployed voter smoke, and so the pipeline's smoke stage, passes with
       `analytics.trackEvents` on and with it off; when the consent prompt is shown it is declined through its own
       control. [189.1]
-- [ ] **PIPE-12**: The deploy pipeline's database connections, those of its `migrations` and `settings` steps,
+- [x] **PIPE-12**: The deploy pipeline's database connections, those of its `migrations` and `settings` steps,
       verify the server: `PGSSLMODE=verify-full` against the Supabase root CA committed to the repository and
       pinned by its fingerprint; a wrong CA or host name is seen refused, the guard test fails on a fallback to
       `require` or a dropped root path, SCRAM channel binding is required when the pooler is measured to offer
@@ -214,12 +214,12 @@ Each is run on a real project, recorded with its date, and acted on.
 - [x] **RELAY-20**: Every event is expressible as an OpenTelemetry log record and in the application's current
       logging format, with one mapping tested for each. [B6 note]
 - [x] **RELAY-21**: A `log` provider writes events as structured lines to the container's output. [A2]
-- [ ] **RELAY-22**: The voter app's consent prompt is a modal dialog: the page under it is inert, Escape, its
+- [x] **RELAY-22**: The voter app's consent prompt is a modal dialog: the page under it is inert, Escape, its
       close button, a backdrop click and a platform close each decline it as its decline control does, nothing
       beyond the pageview is sent after it, it does not reappear after a decline, and a navigation started
       while it is open runs no named View Transition; staging is re-measured with no obscured focus
       (D-01..D-07, D-18). [189.1.1]
-- [ ] **RELAY-23**: In the Contestant App's terms-of-use view the terms checkbox and the analytics opt-out box
+- [x] **RELAY-23**: In the Contestant App's terms-of-use view the terms checkbox and the analytics opt-out box
       are visible while unchecked in both themes: each unchecked border meets 3:1 non-text contrast against its
       background, asserted in light and dark (D-14a). [189.1.1]
 
@@ -242,7 +242,7 @@ Each is run on a real project, recorded with its date, and acted on.
       is retired if nothing references it (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01;
       supersedes ruling A5).
 - [x] **DOCS-08**: Each of the seven absorbed todos has a closure record.
-- [ ] **DOCS-09**: A standalone brief for a qualified reviewer states what the analytics relay collects, where
+- [x] **DOCS-09**: A standalone brief for a qualified reviewer states what the analytics relay collects, where
       it goes, how it is anonymised, the consent flow and retention, and asks the six readings of the operator's
       notes as questions; the review stays an external blocker on the production launch (D-13). [189.1.1]
 
@@ -316,7 +316,7 @@ closes; those are not listed against the earlier phase here.
 | INFRA-17 | Phase 183 | Complete |
 | INFRA-18 | Phase 183 | Complete |
 | INFRA-19 | Phase 187 | Complete |
-| INFRA-20 | Phase 189.1.1 | Pending |
+| INFRA-20 | Phase 189.1.1 | Complete |
 | SUPA-01 | Phase 184 | Complete |
 | SUPA-02 | Phase 184 | Complete |
 | SUPA-03 | Phase 184 | Complete |
@@ -331,7 +331,7 @@ closes; those are not listed against the earlier phase here.
 | SUPA-12 | Phase 185 | Complete |
 | SUPA-13 | Phase 184 | Complete |
 | SUPA-14 | Phase 184 | Complete |
-| SUPA-15 | Phase 189.1.1 | Pending |
+| SUPA-15 | Phase 189.1.1 | Complete |
 | PIPE-01 | Phase 187 | Complete |
 | PIPE-02 | Phase 187 | Complete |
 | PIPE-03 | Phase 187 | Complete |
@@ -343,7 +343,7 @@ closes; those are not listed against the earlier phase here.
 | PIPE-09 | Phase 187 | Complete |
 | PIPE-10 | Phase 187 | Complete |
 | PIPE-11 | Phase 189.1 | Complete |
-| PIPE-12 | Phase 189.1.1 | Pending |
+| PIPE-12 | Phase 189.1.1 | Complete |
 | OBS-01 | Phase 184 | Complete |
 | OBS-02 | Phase 184 | Complete |
 | OBS-03 | Phase 184 | Complete |
@@ -378,8 +378,8 @@ closes; those are not listed against the earlier phase here.
 | RELAY-19 | Phase 182 | Complete |
 | RELAY-20 | Phase 182 | Complete |
 | RELAY-21 | Phase 182 | Complete |
-| RELAY-22 | Phase 189.1.1 | Pending |
-| RELAY-23 | Phase 189.1.1 | Pending |
+| RELAY-22 | Phase 189.1.1 | Complete |
+| RELAY-23 | Phase 189.1.1 | Complete |
 | DOCS-01 | Phase 189 | Complete |
 | DOCS-02 | Phase 189 | Complete |
 | DOCS-03 | Phase 189 | Complete |
@@ -388,7 +388,7 @@ closes; those are not listed against the earlier phase here.
 | DOCS-06 | Phase 189 | Complete |
 | DOCS-07 | Phase 189 | Complete |
 | DOCS-08 | Phase 189 | Complete |
-| DOCS-09 | Phase 189.1.1 | Pending |
+| DOCS-09 | Phase 189.1.1 | Complete |
 
 **Coverage:**
 - v1 requirements: 92 total (INFRA 20, SUPA 15, PIPE 12, OBS 13, RELAY 23, DOCS 9)
