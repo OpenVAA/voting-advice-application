@@ -904,7 +904,7 @@ Plans:
   2. The `migrations` and `settings` steps connect with `PGSSLMODE=verify-full` and the Supabase root CA, a wrong CA or host is refused, the guard test fails on a fallback to `require`, and an observed staging deploy is green.
   3. A standalone reviewer brief describes what the relay collects, where it goes, anonymisation, consent and retention, and poses the six readings as questions; the legal review stays an external blocker.
   4. The three UAT todos and the D-14 audit items are fixed and their todos closed, one observed full `main.yaml` CI run is green, and the full local E2E suite is green at the phase's end with summed deltas against the last full run (729 passed).
-**Plans:** 15/20 plans executed (5 gap-closure plans)
+**Plans:** 16/20 plans executed (5 gap-closure plans)
 
 Plans:
 **Wave 1**
@@ -947,7 +947,7 @@ Plans:
 **Gap closure** *(from 189.1.1-VERIFICATION.md, gaps_found 4/5, and 189.1.1-REVIEW.md CR-01, WR-01, IN-01..IN-07)*
 
 **Wave 12** *(blocked on Wave 11 completion)*
-- [ ] 189.1.1-16-PLAN.md — nested Escape: red-first browser test, `preventDefault` in ModalContainer, jsdom cases model the browser (wave 12)
+- [x] 189.1.1-16-PLAN.md — nested Escape: red-first browser test, `preventDefault` in ModalContainer, jsdom cases model the browser (wave 12)
 
 **Wave 13** *(blocked on Wave 12 completion)*
 - [ ] 189.1.1-17-PLAN.md — drawer and prompt stacking measured; `preventDefault` in DrawerHost; the measured order pinned (wave 13)
