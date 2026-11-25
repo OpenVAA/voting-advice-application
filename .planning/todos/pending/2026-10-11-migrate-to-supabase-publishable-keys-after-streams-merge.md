@@ -87,3 +87,5 @@ stores), the Terraform outputs and secrets, and the environment-variable referen
 
 Unchanged by phase 184: the deployment stays on the legacy keys (C5, D-12), and this todo stays
 queued as the first work after v2.16 and v2.17 are merged. No other todo was created for it.
+
+**2026-11-25:** pulled forward by the operator ("I want the move done as soon as possible"): phase 189.1.2 of workstream `deployment`, run right after 189.1.1, no longer waiting for the merge.

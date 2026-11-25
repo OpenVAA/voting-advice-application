@@ -83,6 +83,7 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 - [x] **Phase 189: Documentation and Closure** - The documentation follows the Terraform path, every statement about a hosted project is a dated observation, and the absorbed todos are closed on the record (DOCS-01 to DOCS-08) (completed 2026-11-21)
 - [x] **Phase 189.1: Address tech debt: invitation-limit guard and trackEvents smoke** (completed 2026-11-22)
 - [ ] **Phase 189.1.1: Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit**
+- [ ] **Phase 189.1.2: Move the deployment to Supabase publishable and secret keys before the legacy anon and service_role keys retire (FUT-02)**
 
 ## Phase Details
 
@@ -942,3 +943,13 @@ Plans:
 
 **Wave 11** *(blocked on Wave 10 completion)*
 - [ ] 189.1.1-15-PLAN.md — requirement trace, closing gates, the phase's full E2E run (wave 11)
+
+### Phase 189.1.2: Move the deployment to Supabase publishable and secret keys before the legacy anon and service_role keys retire (FUT-02) (INSERTED)
+
+**Goal:** The deployment runs on Supabase's publishable and secret keys, and staging works with its legacy `anon` and `service_role` keys disabled, before Supabase retires them (the staging dashboard read "early 2027" on 2026-11-11; Supabase's migration guide says "by the end of 2026"). Covers the frontend clients, the three Edge Functions, the storage cleanup trigger and its `storage_config` row (a new migration), the bootstrap, the Terraform outputs, GitHub secrets and task environment, the environment-variable registries and reference, the probe and the operator tooling. Pulled forward from FUT-02 by the operator on 2026-11-25, no longer waiting for the v2.16/v2.17 merge.
+**Requirements**: FUT-02 (to be promoted into this milestone's requirements)
+**Depends on:** Phase 189.1.1 (staging is shared; runs after it closes)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 189.1.2 to break down)

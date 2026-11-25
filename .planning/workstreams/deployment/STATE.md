@@ -7,16 +7,16 @@ current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief
 current_plan: 12
 status: executing
 stopped_at: Completed 189.1.1-11-PLAN.md
-last_updated: "2026-11-24T21:06:03.996Z"
+last_updated: "2026-11-25T08:33:07.453Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 803180d8f2968f1a486fbf496c7d31c05fd271c9
+state_head: 018b144d2aa9eebcad518f13a46135d04988f640
 progress:
-  total_phases: 12
+  total_phases: 13
   completed_phases: 10
   total_plans: 233
   completed_plans: 229
-  percent: 83
+  percent: 77
 ---
 
 # Project State
@@ -38,7 +38,7 @@ Plan: 12 of 15
 Status: Ready to execute
 Last activity: 2026-11-24 — Phase 189.1.1 execution started
 
-Progress: [██████████████████░░] 168/188 plans ([████████░░] 83%); 7 of 9 roadmap phases complete, 181.1 inserted besides
+Progress: [██████████████████░░] 168/188 plans ([████████░░] 77%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
@@ -598,6 +598,7 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 - Phase 181.1 decided 2026-10-18: nothing from Supabase Select 2026 is adopted in v2.17, and pg-delta, the native per-worktree stack and config as code go to todos; the Supabase agent skills are installed per user and are not vendored, an operator ruling (181.1 D-09) that supersedes the "vendor … into .claude/skills/" wording of the scope-added line above; see 181.1-CONTEXT.md
 - Phase 189.1 inserted after Phase 189: Address tech debt: invitation-limit guard and trackEvents smoke (URGENT)
 - Phase 189.1.1 inserted after Phase 189.1: Address tech debt: the consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; UAT todos (3); 20 items from the 2026-11-21 audit (URGENT)
+- Phase 189.1.2 inserted after Phase 189.1.1: Move the deployment to Supabase publishable and secret keys before the legacy keys retire (FUT-02), pulled forward by the operator 2026-11-25 (URGENT)
 
 ## Deferred Items
 
