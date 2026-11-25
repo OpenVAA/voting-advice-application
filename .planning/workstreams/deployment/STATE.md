@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
-current_plan: 16
+current_plan: 17
 status: executing
-stopped_at: Completed 189.1.1-15-PLAN.md
-last_updated: "2026-11-25T16:47:51.389Z"
+stopped_at: Completed 189.1.1-16-PLAN.md
+last_updated: "2026-11-25T17:13:05.615Z"
 last_activity: 2026-11-25
 last_activity_desc: Phase 189.1.1 execution started
-state_head: a3215153da39d7dfef1e6de969dac9a34320c8cc
+state_head: d8e4c85faada4e513813081af852c7756fa47076
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 257
-  completed_plans: 233
+  completed_plans: 234
   percent: 77
 ---
 
@@ -34,8 +34,8 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — EXECUTING
-Plan: 16 of 20
-Status: Executing Phase 189.1.1
+Plan: 17 of 20
+Status: Ready to execute
 Last activity: 2026-11-25 — Phase 189.1.1 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 77%); 7 of 9 roadmap phases complete, 181.1 inserted besides
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 16
+**Current Plan:** 17
 
 From 184 on, the numeric order is the dependency order.
 
@@ -244,6 +244,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P13 | 4h 40min | 3 tasks | 10 files |
 | Phase 189.1.1 P14 | 10min | 2 tasks | 3 files |
 | Phase 189.1.1 P15 | 36min | 3 tasks | 6 files |
+| Phase 189.1.1 P16 | 22 min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -545,6 +546,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-13: the deployed smoke must reach no @openvaa/* package by value, because the deploy job builds no workspace package; deployedSmokeGuards.test.ts refuses one (c2dfaebf8)
 - [Phase 189.1.1]: 189.1.1-14: on staging build 30316b108 with trackEvents true the voter consent prompt reads A11Y_FINDING=none at 1280x720, at 390x844 and in the dark scheme (one dialog:modal, no control under it takes focus, Escape closes it with denied stored); the todo 2026-11-21-voter-consent-prompt-covers-an-answer-control is closed
 - [Phase 189.1.1]: 189.1.1-14: the served build was compared with DEPLOYED_COMMIT of evidence 13, not DEPLOY_COMMIT, as the orchestrator recorded; RELAY-22 is left for plan 189.1.1-15 to mark
+- [Phase 189.1.1]: 189.1.1-16: ModalContainer.handleEscape cancels the default action of an Escape it takes (e.preventDefault()), so an Escape in the consent prompt's information dialog closes that dialog alone and records no consent choice
+- [Phase 189.1.1]: 189.1.1-16: modal unit tests press Escape through dialogPlatform.testUtils.ts pressEscape(), which sends cancel and close to the topmost open dialog when the keydown's default is not cancelled; a new modal test uses it instead of its own polyfill
 
 ### Pending Todos
 
@@ -620,6 +623,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-25T15:04:01.334Z
-**Stopped At:** Completed 189.1.1-15-PLAN.md
+Last session: 2026-11-25T17:13:04.147Z
+**Stopped At:** Completed 189.1.1-16-PLAN.md
 **Resume File:** None
