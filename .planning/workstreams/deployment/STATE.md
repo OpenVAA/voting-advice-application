@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
-current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
+current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
 current_plan: 15
-status: verifying
+status: executing
 stopped_at: Completed 189.1.1-15-PLAN.md
-last_updated: "2026-11-25T15:04:02.507Z"
+last_updated: "2026-11-25T16:16:50.793Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 82147afbcd68dca3bc4c4b47ccc187b9f665149b
+state_head: 6f75f7173ff36a6edd9f5dab168e783b22722962
 progress:
   total_phases: 13
   completed_phases: 10
-  total_plans: 252
+  total_plans: 257
   completed_plans: 233
   percent: 77
 ---
@@ -33,9 +33,9 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — EXECUTING
+Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — READY TO EXECUTE
 Plan: 15 of 15
-Status: Phase complete — ready for verification
+Status: Ready to execute
 Last activity: 2026-11-24 — Phase 189.1.1 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 77%); 7 of 9 roadmap phases complete, 181.1 inserted besides
