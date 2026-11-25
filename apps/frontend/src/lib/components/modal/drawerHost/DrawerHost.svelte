@@ -106,11 +106,12 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
     else drawerHost.close(shown.key);
   }
 
-  /** Escape via a document-level handler rather than the dialog's native close, for `ModalContainer`'s stated reason: the native behaviour closes the dialog before any cleanup can run. The dialog's own `cancel` is suppressed below so the two cannot both fire. */
+  /** Escape via a document-level handler rather than the dialog's native close, for `ModalContainer`'s stated reason: the native behaviour closes the dialog before any cleanup can run. The dialog's own `cancel` is suppressed below so the two cannot both fire. The key's propagation is stopped and its default action cancelled too, so the browser's own Escape handling sends no `cancel` to another modal dialog, such as a consent prompt open under the drawer. */
   function handleEscape(e: KeyboardEvent): void {
     if (shown && e.key === 'Escape') {
       dismiss();
       e.stopPropagation();
+      e.preventDefault();
     }
   }
 

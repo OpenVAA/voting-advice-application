@@ -1,6 +1,6 @@
 -- 59-access-caller-limit.test.sql: the per-caller limit on the anonymous account-access operations
 --
--- `access_caller_take (p_project_id, p_address)` takes one slot of a caller in a project through `private.access_throttle_take` and answers 0 when the take is admitted, or the whole seconds until the caller's window ends when it is refused: `private.deployment_settings.access_caller_max` takes per caller per project per ten minutes, thirty by default. The caller is the address the Edge Function read from `cf-connecting-ip`, bucketed by `private.client_address_bucket`: an IPv4 address keyed by its host, an IPv4-mapped IPv6 address (`::ffff:a.b.c.d`) by its IPv4 host and any other IPv6 address by its /64, under the key `caller:<project id>:<caller>`. The feedback limit keys a trusted `cf-connecting-ip` by the same bucket. No function holds its former name, `invitation_caller_take`.
+-- `access_caller_take (p_project_id, p_address)` takes one slot of a caller in a project through `private.access_throttle_take` and answers 0 when the take is admitted, or the whole seconds until the caller's window ends when it is refused: `private.deployment_settings.access_caller_max` takes per caller per project per ten minutes, thirty by default. The caller is the address the Edge Function read from `cf-connecting-ip`, bucketed by `private.client_address_bucket`: an IPv4 address keyed by its host, an IPv4-mapped IPv6 address (`::ffff:a.b.c.d`) by its IPv4 host and any other IPv6 address by its /64, under the key `caller:<project id>:<caller>`. The feedback limit keys a trusted `cf-connecting-ip` by the same bucket. `public.invitation_caller_take (uuid, text)` does not exist: `access_caller_take` is the only function that takes a caller's slot.
 --
 -- The address is trusted only when `private.deployment_settings.behind_cloudflare` is true and the address is present and parses. Otherwise, and for an id that names no project, the function answers 0 and writes no row, so an absent or unparseable address never shares one bucket. Each take takes its own slot first and then deletes the other `caller:` rows whose window has ended, and no other row; the cleanup skips a row another transaction has locked, so it waits for nothing while the take holds its key's advisory lock.
 --
@@ -768,7 +768,7 @@ SELECT
   );
 
 -- =====================================================================
--- 12. invitation_caller_take, the former name, does not exist
+-- 12. public.invitation_caller_take(uuid, text) does not exist
 -- =====================================================================
 SELECT
   hasnt_function (
