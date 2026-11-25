@@ -5,11 +5,14 @@
  *
  * And what `holdOpen` refuses: while it is up, neither Escape, nor the dialog's `cancel` event, nor a close the platform forces closes the modal, while `closeModal()` still does, and the backdrop's close button is `aria-disabled`.
  *
- * And which modal an Escape closes when one is open inside another: only the inner one, while the outer stays open and runs no `onClose` until the next Escape.
+ * And which modal an Escape closes when one is open inside another: only the inner one, while the outer stays open and runs no `onClose` until the next Escape; and that a modal which takes an Escape cancels its default action.
+ *
+ * Escape is pressed through `pressEscape` of `dialogPlatform.testUtils.ts`, which models the browser's own Escape handling. The browser itself is exercised by `tests/tests/specs/voter/voter-prefs-tracking.spec.ts`, in `the information dialog inside the consent prompt`.
  */
 
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { polyfillDialogs, pressEscape } from './dialogPlatform.testUtils';
 import type { Snippet } from 'svelte';
 
 vi.mock('$lib/contexts/component', () => ({
@@ -18,23 +21,13 @@ vi.mock('$lib/contexts/component', () => ({
 
 const ModalContainer = (await import('./ModalContainer.svelte')).default;
 
-const proto = HTMLDialogElement.prototype as HTMLDialogElement & Record<string, unknown>;
-const original = { showModal: proto.showModal, close: proto.close };
+let restoreDialogs: () => void;
 
 beforeAll(() => {
-  // jsdom implements neither method.
-  proto.showModal = function (this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  proto.close = function (this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
+  restoreDialogs = polyfillDialogs();
 });
 
-afterAll(() => {
-  proto.showModal = original.showModal;
-  proto.close = original.close;
-});
+afterAll(() => restoreDialogs());
 
 let teardown: Array<() => void> = [];
 
@@ -66,12 +59,6 @@ function mountOpen(holdOpen?: boolean, children?: Snippet) {
   expect(dialog, 'the dialog should be rendered').not.toBeNull();
   expect(dialog!.hasAttribute('open'), 'the dialog should be open').toBe(true);
   return { modal, dialog: dialog!, onClose, props };
-}
-
-/** Press Escape on the document, where the modal listens for it. */
-function pressEscape(): void {
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  flushSync();
 }
 
 /** Fire the dialog's `close` event, as the platform does once a close has happened. */
@@ -109,8 +96,7 @@ describe('ModalContainer — a close event of the dialog', () => {
   it('a close event that follows Escape adds nothing', () => {
     const { dialog, onClose } = mountOpen();
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    flushSync();
+    pressEscape();
     fireClose(dialog);
 
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -223,6 +209,16 @@ describe('ModalContainer — a modal open inside another', () => {
 
     pressEscape();
 
+    expect(dialog.hasAttribute('open')).toBe(false);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels the default action of an Escape it takes, so the browser closes no other dialog', () => {
+    const { dialog, onClose } = mountOpen();
+
+    const keydown = pressEscape();
+
+    expect(keydown.defaultPrevented, 'the Escape should have its default action cancelled').toBe(true);
     expect(dialog.hasAttribute('open')).toBe(false);
     expect(onClose).toHaveBeenCalledTimes(1);
   });

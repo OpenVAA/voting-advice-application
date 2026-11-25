@@ -2,10 +2,13 @@
  * `DataConsentPopup`, mounted against a fake app context, with its dialogs' `showModal` and `close` polyfilled.
  *
  * What this file holds: the prompt opens as a modal dialog on mount; every close without a choice (Escape, the close button, the backdrop, a close the platform makes) records `denied` once and then runs the caller's `onClose`; a choice made with the consent control records that choice alone; an Escape meant for the information dialog opened inside the prompt closes only that dialog; and a View Transition started while the prompt is open runs without names, while one started after it closed runs with them.
+ *
+ * Escape is pressed through `pressEscape` of `dialogPlatform.testUtils.ts`, which models the browser's own Escape handling. The browser itself is exercised by `tests/tests/specs/voter/voter-prefs-tracking.spec.ts`, in `the information dialog inside the consent prompt`.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { polyfillDialogs, pressEscape } from '$lib/components/modal/dialogPlatform.testUtils';
 import { startViewTransition, VT_NO_NAMES_CLASS } from '$lib/utils/viewTransition';
 
 const { context, route, setDataConsent } = vi.hoisted(() => {
@@ -36,23 +39,13 @@ const GRANTED = 'privacy.dataConsentLabel.granted';
 const DENIED = 'privacy.dataConsentLabel.denied';
 const INFO = 'privacy.dataConsentInfoButton';
 
-const proto = HTMLDialogElement.prototype as HTMLDialogElement & Record<string, unknown>;
-const original = { showModal: proto.showModal, close: proto.close };
+let restoreDialogs: () => void;
 
 beforeAll(() => {
-  // jsdom implements neither method.
-  proto.showModal = function (this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  proto.close = function (this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
+  restoreDialogs = polyfillDialogs();
 });
 
-afterAll(() => {
-  proto.showModal = original.showModal;
-  proto.close = original.close;
-});
+afterAll(() => restoreDialogs());
 
 let teardown: Array<() => void> = [];
 
@@ -85,12 +78,6 @@ function mountPrompt() {
     return found;
   }
   return { prompt, target, onClose, button };
-}
-
-/** Press Escape on the document, where the modals listen for it. */
-function pressEscape(): void {
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  flushSync();
 }
 
 /** Assert that one `denied` was recorded, before the caller's `onClose` ran once. */
