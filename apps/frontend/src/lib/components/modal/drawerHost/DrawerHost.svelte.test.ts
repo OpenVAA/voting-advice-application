@@ -1,5 +1,5 @@
 /**
- * `DrawerHost.svelte` timing: focus enters the dialog only while it still shows the payload it opened with, the close waits out the CSS animation unless the user prefers reduced motion — regardless of View Transitions support — and a drawer closed within its first two frames keeps its closed-state styles, so its next open slides up again. User dismissal calls the payload's `onDismiss` once per open: Escape, the backdrop and the close button do nothing while the drawer is closing.
+ * `DrawerHost.svelte` timing: focus enters the dialog only while it still shows the payload it opened with, the close waits out the CSS animation unless the user prefers reduced motion — regardless of View Transitions support — and a drawer closed within its first two frames keeps its closed-state styles, so its next open slides up again. User dismissal calls the payload's `onDismiss` once per open: Escape, the backdrop and the close button do nothing while the drawer is closing. An Escape the drawer takes has its default action cancelled, so the browser's own Escape handling closes no other dialog; tests/tests/specs/voter/voter-prefs-tracking.spec.ts drives the consent prompt open under a drawer in a browser.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
@@ -159,6 +159,16 @@ describe('DrawerHost', () => {
     openRoutedPayload(onDismiss);
     pressEscape();
     expect(onDismiss).toHaveBeenCalledTimes(2);
+  });
+
+  it('cancels the default action of an Escape it takes, so the browser closes no other dialog', () => {
+    mountHost();
+    const onDismiss = openRoutedPayload();
+    const keydown = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.dispatchEvent(keydown);
+    flushSync();
+    expect(keydown.defaultPrevented, 'the Escape should have its default action cancelled').toBe(true);
+    expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 });
 
