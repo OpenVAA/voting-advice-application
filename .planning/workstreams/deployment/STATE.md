@@ -605,6 +605,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 Last session: 2026-11-24T21:10:00.000Z
 **Stopped At:** Completed 190-11-PLAN.md; 190-14 waits at Task 2 (operator push of EVIDENCE_COMMIT and the staging deploy), then 190-12 Task 3, then 190-14 Task 3
-**Resume File:** None
+**Resume File:** .planning/workstreams/deployment/phases/190-multi-deployment-bootstrap/HANDOFF.md
 
 - [Phase 190]: 190-14 evidence deploy attempt 1 (run 45564561423) failed at the migration push: staging's database holds migrations 00005-00024 of the pre-restack history, which the restacked stack dropped (bba309b72). Outside Phase 190; operator ruling 2026-11-25: wait for the session rewriting the staging database, then re-run the run.
