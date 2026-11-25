@@ -216,7 +216,7 @@ VALUES (true, :'behind_cloudflare'::boolean)
 ON CONFLICT (singleton) DO UPDATE SET behind_cloudflare = EXCLUDED.behind_cloudflare;
 
 UPDATE private.deployment_settings
-SET access_caller_max = btrim(:'access_caller_max')::integer
+SET access_caller_max = NULLIF(btrim(:'access_caller_max'), '')::integer
 WHERE btrim(:'access_caller_max') <> '';
 
 COMMIT;
