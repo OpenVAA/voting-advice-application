@@ -4,8 +4,8 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
 current_plan: 14
-status: executing
-stopped_at: 190-14 Task 2 checkpoint (operator pushes EVIDENCE_COMMIT fd57d4339 to deploy-evidence/190-final, approves the staging deploy; then 190-12 Task 3 smoke runs, then 190-14 Task 3 destroy path)
+status: blocked
+stopped_at: 190-14 Task 2 blocked — the evidence deploy stopped at the migration push (staging DB carries the pre-restack 24-migration history); waiting for another session that is rewriting the staging database
 last_updated: "2026-11-24T21:10:00.000Z"
 last_activity: 2026-11-24
 last_activity_desc: 190-11 complete (both bootstrap applies through the guard, staging deploy green; INFRA-21 to INFRA-24 complete); 190-14 Task 1 committed (EVIDENCE_COMMIT fd57d43396b4f3da85897d9196102f6aa2eb2561, tree d93523b909cd); 190-14 waits at Task 2, 190-12 at Task 3 (smoke runs right after 190-14's evidence deploy)
@@ -606,3 +606,5 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 Last session: 2026-11-24T21:10:00.000Z
 **Stopped At:** Completed 190-11-PLAN.md; 190-14 waits at Task 2 (operator push of EVIDENCE_COMMIT and the staging deploy), then 190-12 Task 3, then 190-14 Task 3
 **Resume File:** None
+
+- [Phase 190]: 190-14 evidence deploy attempt 1 (run 45564561423) failed at the migration push: staging's database holds migrations 00005-00024 of the pre-restack history, which the restacked stack dropped (bba309b72). Outside Phase 190; operator ruling 2026-11-25: wait for the session rewriting the staging database, then re-run the run.

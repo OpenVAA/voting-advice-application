@@ -128,3 +128,14 @@ The second push is made only after the deploy of the first one is green and the 
 ## Destroy
 
 (Task 3, operator: pending)
+
+## Evidence deploy, attempt 1 (2026-11-25)
+
+Pushed by the operator: `deploy-evidence/190-final` = fd57d43396b4f3da85897d9196102f6aa2eb2561.
+
+- INFRA_PLAN_RUN=https://github.com/OpenVAA/voting-advice-application/actions/runs/45564561462 success (resolve success, checks success, wrong-subject (staging) success, plan skipped on push)
+- DEPLOY_RUN=https://github.com/OpenVAA/voting-advice-application/actions/runs/45564561423 failure, at "Push the migrations" (alert_stage=migrations). Every earlier step green: resolve, checks, "Check the settings name the resolved deployment", role assumption, build and push, init, plan, show, link. Apply, rollout and smoke did not run; staging still serves 2ddc331d1.
+
+Cause (outside Phase 190): `supabase db push --dry-run` refused with "Remote migration versions not found in local migrations directory" for 00005 to 00024. The staging database was migrated from the pre-restack history (24 migrations, as at deploy/staging 2ddc331d1); the restacked stack (46554181e and every tree after it) regenerated the baseline and dropped 00002 to 00024 (bba309b72), and its `apps/supabase/supabase/schema/` differs from the deployed one in 13 files.
+
+Operator ruling: another session is rewriting the staging database; this plan waits for it. When it is done, re-run the failed Deploy run (same commit, so no new push is needed), approve the `staging` gate, and continue with 190-12's smoke runs and Task 3.
