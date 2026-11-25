@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
-current_plan: 13
+current_plan: 14
 status: executing
-stopped_at: Completed 189.1.1-12-PLAN.md
-last_updated: "2026-11-25T09:09:23.287Z"
+stopped_at: Completed 189.1.1-13-PLAN.md
+last_updated: "2026-11-25T13:51:45.280Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 441fbfb23bd7b702f0582f7e0c33a61d7f5d7941
+state_head: 1882acdaf456602d3afd14631665fda21c71f2d7
 progress:
   total_phases: 13
   completed_phases: 10
-  total_plans: 233
-  completed_plans: 230
+  total_plans: 252
+  completed_plans: 231
   percent: 77
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — EXECUTING
-Plan: 13 of 15
+Plan: 14 of 15
 Status: Ready to execute
 Last activity: 2026-11-24 — Phase 189.1.1 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 13
+**Current Plan:** 14
 
 From 184 on, the numeric order is the dependency order.
 
@@ -241,6 +241,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P07 | 5min | 2 tasks | 3 files |
 | Phase 189.1.1 P11 | 52min | 3 tasks | 1 files |
 | Phase 189.1.1 P12 | 50min | 3 tasks | 5 files |
+| Phase 189.1.1 P13 | 4h 40min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -537,6 +538,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: Plan 12: the staging rebuild restored analytics.trackEvents and no other hand-set app setting (D-16); the candidate registration mode identity_provider, set by hand before the reset, is left for the operator to restore
 - [Phase 189.1.1]: Plan 12: a failed sitting step was fixed at top level (bootstrap.sql, ed35c98ec) and the sitting resumed with --from 9 instead of being returned as a blocker; the reset ran once
 - [Phase 189.1.1]: Plan 12: SUPA-15 and PIPE-12 are not marked complete; plans 189.1.1-13 and 189.1.1-15 still declare them
+- [Phase 189.1.1]: 189.1.1-13: staging serves 30316b108 (the second deploy commit, recorded as RUN2_DEPLOY_COMMIT and DEPLOYED_COMMIT in evidence 13), not the evidence's DEPLOY_COMMIT be6fc2dd6; migration 00005 was applied by run 45586463676, red at the smoke, and the green run is attempt 2 of run 45601966922, so the plan's third truth is met across two runs
+- [Phase 189.1.1]: 189.1.1-13: three deviations stand on operator rulings relayed by the orchestrator on 2026-11-25: the re-run of the failed checks job of run 45601966922 (a runner network fault in the ungated job), push_connection=unknown in place of pooler (detection deferred, research assumption A5 unsettled), and a deployed tree that differs from the CI-observed one in eight paths
+- [Phase 189.1.1]: 189.1.1-13: the deployed smoke must reach no @openvaa/* package by value, because the deploy job builds no workspace package; deployedSmokeGuards.test.ts refuses one (c2dfaebf8)
 
 ### Pending Todos
 
@@ -612,6 +616,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-25T09:09:21.868Z
-**Stopped At:** Completed 189.1.1-12-PLAN.md
+Last session: 2026-11-25T13:51:44.158Z
+**Stopped At:** Completed 189.1.1-13-PLAN.md
 **Resume File:** None
