@@ -55,6 +55,9 @@ import type { CapturedRelayEvent, RelayCaptureFixture } from '../../fixtures/sha
 /** The message of the first assertion, which fails when the relay forwards nothing. */
 const RELAY_INACTIVE_MESSAGE = `no request to the relay path ${RELAY_PATH} was captured: the server must run with ANALYTICS_PROVIDER=log, as .env.example sets it`;
 
+/** The accessible name of the consent prompt's information button (DataConsentInfoButton.svelte). */
+const CONSENT_INFO_BUTTON = /further information collecting usage data/i;
+
 /** True when a pageview was captured for a route whose id `matches` accepts. */
 function hasPageview(capture: RelayCaptureFixture, matches: (routeId: string) => boolean): boolean {
   return capture.getEvents().some((event) => event.name === 'pageview' && matches(event.routeId));
@@ -432,5 +435,36 @@ test.describe('the consent prompt over a question', () => {
     await expectStoredConsent(page, 'denied');
     await choice.focus();
     await expect(choice, 'the answer choice cannot take focus after the prompt closed').toBeFocused();
+  });
+});
+
+test.describe('the information dialog inside the consent prompt', () => {
+  test('an Escape in the information dialog closes that dialog alone, and the next Escape declines the prompt', async ({
+    page
+  }) => {
+    const prompt = page.getByRole('dialog', { name: CONSENT_PROMPT });
+    // reason: `:modal` is the one selector that tells a dialog opened with showModal(), whose page is inert, from any other dialog; no role or test id carries that, and it reads no translated string.
+    // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
+    const modalDialogs = page.locator('dialog:modal');
+
+    await openVoterHome(page);
+    await expect(prompt).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await expect(modalDialogs).toHaveCount(1);
+
+    // The information dialog carries the prompt's accessible name, so while both are open they are told apart by counting `dialog:modal`, not through the role locator.
+    await prompt.getByRole('button', { name: CONSENT_INFO_BUTTON }).click();
+    await expect(modalDialogs, 'the information dialog did not open inside the prompt').toHaveCount(2);
+
+    await page.keyboard.press('Escape');
+    await expect(modalDialogs, 'one Escape in the information dialog closed the consent prompt too').toHaveCount(1);
+    await expect(
+      prompt.getByRole('button', { name: GRANTED_BUTTON }),
+      'the dialog left open is not the consent prompt'
+    ).toBeVisible();
+    await expectNoConsentChoiceStored(page);
+
+    await page.keyboard.press('Escape');
+    await expect(modalDialogs).toHaveCount(0);
+    await expectStoredConsent(page, 'denied');
   });
 });
