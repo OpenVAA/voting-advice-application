@@ -35,8 +35,10 @@ const FORBIDDEN_FILE_NAMES = new Set([
 ]);
 /** Root-relative paths of modules that re-export a service-role client. */
 const FORBIDDEN_FILES = new Set(['packages/dev-seed/src/index.ts']);
-/** Packages that create a Supabase client or load an environment file. */
-const FORBIDDEN_PACKAGES = /^(@openvaa\/dev-seed|@supabase\/supabase-js|@supabase\/ssr|dotenv)(\/.*)?$/;
+/**
+ * Packages that create a Supabase client or load an environment file, and every workspace package: the deploy job runs the smoke without building the workspace, so a value import of one resolves to a `dist` that is not there.
+ */
+const FORBIDDEN_PACKAGES = /^(@openvaa\/[^/]+|@supabase\/supabase-js|@supabase\/ssr|dotenv)(\/.*)?$/;
 
 type TokenFinding = {
   /** One-based line number. */
@@ -385,6 +387,13 @@ describe('the value-import walk', () => {
     const span = braceSpan(text, 'async function walk(');
     expect(span && text.slice(span.open, span.close + 1)).toBe('{\n  if (page) {\n    run();\n  }\n}');
     expect(braceSpan(text, 'async function missing(')).toBeUndefined();
+  });
+
+  it('reports a value import of any workspace package', () => {
+    const dir = writeTree({
+      'a.ts': "import { mergeSettings } from '@openvaa/app-shared';\n\nexport const merged = mergeSettings({}, {});\n"
+    });
+    expect(forbiddenReach(walkValueImports([path.join(dir, 'a.ts')], dir))).toEqual(['a.ts → @openvaa/app-shared']);
   });
 
   it('fails closed on a relative specifier it cannot resolve', () => {
