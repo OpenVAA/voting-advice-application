@@ -1,7 +1,7 @@
 /**
  * @file voter.smoke.ts.
  *
- * A voter on the deployed application, reading the hosted `smoke` dataset anonymously: from the home page to the first question, whose heading holds the dataset's first statement, then through every question to the candidate results.
+ * A voter on the deployed application, reading the hosted `smoke` dataset anonymously: from the home page to the first question, whose heading holds the dataset's first statement, then through every question to the results list and its first card.
  *
  * It runs only behind the deployed smoke gate, which has already proved the served build and the Supabase project. It answers in the browser and writes nothing to the hosted project.
  *
@@ -17,7 +17,7 @@ import { answerAndAdvanceToResults } from '../fixtures/voter/voter-journey.fixtu
 import { testIds } from '../utils/testIds';
 import { navigateToFirstQuestion } from '../utils/voterNavigation';
 
-test('a voter answers the hosted questions and reaches candidate results', async ({ page }) => {
+test('a voter answers the hosted questions and reaches the results', async ({ page }) => {
   const decline = page
     .getByRole('dialog', { name: /collecting usage data/i })
     .getByRole('button', { name: /don.t want to share my data/i });
