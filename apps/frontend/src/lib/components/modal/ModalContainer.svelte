@@ -22,7 +22,7 @@
 ### Accessibility
 
 - The modal can be closed by pressing the `Escape` key.
-- Escape closes only the topmost open modal: a modal opened inside another takes the Escape first, and the outer one closes on the next.
+- Escape closes only the topmost open modal: a modal opened inside another takes the Escape first, and the outer one closes on the next. The modal that takes an Escape cancels the key's default action, so the browser does not close the dialog under it as well.
 - A close the platform makes, such as a phone's back gesture, counts as a close, and `onClose` runs.
 - While `holdOpen` is up, Escape, a click on the backdrop and the dialog's `cancel` event close nothing, the close controls are `aria-disabled` so they read as unavailable, and a close the platform forces anyway opens the dialog again at once, with no callback. `closeModal` still closes it. Hold a modal only while something the user asked for in it runs, such as a sign-out, and lift the hold when that settles.
 - When opened, either the element defined by `autofocusId` or the first focusable descendant will be focused on. Note that if the contents of the moadl are long, it's recommended to use the `autofocusId` property and select an element that appears at the start of the dialog to focus. If this is not an interactive element, set `tabindex="-1"` for it.
@@ -90,7 +90,7 @@
   let modalContainer: HTMLDialogElement | undefined = $state(undefined);
 
   /**
-   * Close the dialog by pressing the escape key. NB. Some browsers implement a default behaviour for the escape key, which closes the dialog, but this prevents us from performing cleanup, so we need a custom event handler.
+   * Close the modal on the Escape key through `handleClose`, so `onClose` runs. The key's propagation is stopped and its default action cancelled: the browser's own Escape handling runs after this listener, and would otherwise send `cancel` to whichever dialog is topmost once this one has closed.
    * @param e - The keyboard event.
    */
   function handleEscape(e: KeyboardEvent) {
@@ -99,6 +99,7 @@
     if (isOpen && !holdOpen && e.key == 'Escape') {
       handleClose();
       e.stopPropagation();
+      e.preventDefault();
     }
   }
 
