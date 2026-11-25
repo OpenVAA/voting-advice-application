@@ -949,7 +949,7 @@ Plans:
 **Goal:** The deployment runs on Supabase's publishable and secret keys, and staging works with its legacy `anon` and `service_role` keys disabled, before Supabase retires them (the staging dashboard read "early 2027" on 2026-11-11; Supabase's migration guide says "by the end of 2026"). Covers the frontend clients, the three Edge Functions, the storage cleanup trigger and its `storage_config` row (a new migration), the bootstrap, the Terraform outputs, GitHub secrets and task environment, the environment-variable registries and reference, the probe and the operator tooling. Pulled forward from FUT-02 by the operator on 2026-11-25, no longer waiting for the v2.16/v2.17 merge.
 **Requirements**: FUT-02 (to be promoted into this milestone's requirements)
 **Depends on:** Phase 189.1.1 (staging is shared; runs after it closes)
-**Plans:** 16 plans
+**Plans:** 19 plans
 
 Plans:
 **Wave 1**
@@ -957,35 +957,46 @@ Plans:
 - [ ] 189.1.2-03-PLAN.md — Terraform's `legacy_api_keys_enabled`, unmanaged by default; FUT-02 promoted; the phase-start E2E baseline (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 189.1.2-01-PLAN.md — the functions' shared key helper, the witness admitted with either key shape; function-driving E2E projects; B4 measured (wave 2)
-- [ ] 189.1.2-04-PLAN.md — bootstrap and seed check on `secret_key` and `SUPABASE_SECRET_KEY`; probe and load check on `SUPABASE_PUBLISHABLE_KEY` (wave 2)
+- [ ] 189.1.2-01-PLAN.md — the functions' shared key helper, which logs its source's name; the witness admitted with either key shape; function-driving E2E projects; B4 measured (wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 189.1.2-05-PLAN.md — the frontend on `PUBLIC_SUPABASE_PUBLISHABLE_KEY`: resolver, start-up contract, task list, `.env.example`, reference rows (wave 3)
-- [ ] 189.1.2-08-PLAN.md — the sitting self-test library; the local `.env` sitting and script A0, written and rehearsed (wave 3)
+- [ ] 189.1.2-04-PLAN.md — bootstrap and seed check on `secret_key` and `SUPABASE_SECRET_KEY`; probe and load check on `SUPABASE_PUBLISHABLE_KEY` (wave 3)
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 189.1.2-06-PLAN.md — the E2E harness, the deployed smoke's helpers, CI and the local build tooling on the new names (wave 4)
-- [ ] 189.1.2-09-PLAN.md — script A (switch the keys), written and rehearsed (wave 4)
-- [ ] 189.1.2-10-PLAN.md — script B (disable the legacy keys), written and rehearsed (wave 4)
+- [ ] 189.1.2-05-PLAN.md — the frontend's code on `PUBLIC_SUPABASE_PUBLISHABLE_KEY`: resolver, factories, `REQUIRED_ENV`, unit fixtures (wave 4)
+- [ ] 189.1.2-08-PLAN.md — the sitting self-test library; the local `.env` sitting and script A0 with its read-only probe of the secret key, written and rehearsed (wave 4)
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 189.1.2-07-PLAN.md — the retired-name guard and its wirings; dev-seed and the E2E wrapper on `SUPABASE_SECRET_KEY` (wave 5)
+- [ ] 189.1.2-17-PLAN.md — the contract bound to the frontend's name: task list and module test, `.env.example`, the reference and its specifications; B1 checked (wave 5)
+- [ ] 189.1.2-09-PLAN.md — script A (switch the keys, read the functions' key source), written and rehearsed (wave 5)
+- [ ] 189.1.2-10-PLAN.md — script B (disable the legacy keys) with its `--rollback` mode, written and rehearsed (wave 5)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 189.1.2-11-PLAN.md — docs, READMEs and runbooks on the new names; key rotation rewritten; the rename made impossible to miss (wave 6)
+- [ ] 189.1.2-06-PLAN.md — the E2E harness and the deployed smoke's helpers on the new names; the smoke's import closure kept free of workspace packages (wave 6)
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 189.1.2-12-PLAN.md — whole-tree gates, the workstation's `.env` renamed, the phase's one full E2E run (wave 7, operator sitting)
+- [ ] 189.1.2-18-PLAN.md — CI's key writer and `main.yaml`, and the local production-build tooling, on the new names (wave 7)
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 189.1.2-13-PLAN.md — script A0: the new SSM parameter; the observed deploy of 00006, the functions and the frontend (wave 8, operator sitting and approval)
+- [ ] 189.1.2-07-PLAN.md — the retired-name guard and its wirings; dev-seed and the E2E wrapper on `SUPABASE_SECRET_KEY` (wave 8)
 
 **Wave 9** *(blocked on Wave 8 completion)*
-- [ ] 189.1.2-14-PLAN.md — script A: the secret key stored, the trigger proven on staging, the probe, the smoke run (wave 9, operator sitting)
+- [ ] 189.1.2-11-PLAN.md — docs, READMEs and runbooks on the new names; key rotation rewritten; the rename made impossible to miss (wave 9)
 
 **Wave 10** *(blocked on Wave 9 completion)*
-- [ ] 189.1.2-15-PLAN.md — script B: the legacy keys disabled by Terraform, falsified; the former parameter deleted (wave 10, operator sitting)
+- [ ] 189.1.2-12-PLAN.md — whole-tree gates, the workstation's `.env` renamed, the full E2E run that gates the pushes (wave 10, operator sitting)
 
 **Wave 11** *(blocked on Wave 10 completion)*
-- [ ] 189.1.2-16-PLAN.md — requirement trace, residue, closing gates, the phase-end E2E judgement; the todo closed (wave 11)
+- [ ] 189.1.2-19-PLAN.md — one observed full `main.yaml` run through `ci-evidence/189.1.2-final` (wave 11, operator approval)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 189.1.2-13-PLAN.md — script A0: the new SSM parameter and the A2 probe; the observed deploy of 00006, the functions and the frontend (wave 12, operator sitting and approval)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 189.1.2-14-PLAN.md — script A: the secret key stored, the trigger proven on staging, the functions' key source, the probe, the smoke run (wave 13, operator sitting)
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [ ] 189.1.2-15-PLAN.md — script B: the legacy keys disabled by Terraform, falsified; the former parameter deleted; the rehearsed rollback at hand (wave 14, operator sitting)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [ ] 189.1.2-16-PLAN.md — requirement trace, residue, closing gates, the todo closed, and the phase's own full E2E run (wave 15)
