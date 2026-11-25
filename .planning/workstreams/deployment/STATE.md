@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
-current_plan: 19
+current_plan: 20
 status: executing
-stopped_at: Completed 189.1.1-18-PLAN.md
-last_updated: "2026-11-25T18:24:28.684Z"
+stopped_at: Completed 189.1.1-19-PLAN.md
+last_updated: "2026-11-25T19:07:12.655Z"
 last_activity: 2026-11-25
 last_activity_desc: Phase 189.1.1 execution started
-state_head: d11339242d089123fc7570f17522ecdabd8a5d58
+state_head: 807241571a511d247ccada95e345b1c6c2fb8db7
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 257
-  completed_plans: 236
+  completed_plans: 237
   percent: 77
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — EXECUTING
-Plan: 19 of 20
+Plan: 20 of 20
 Status: Ready to execute
 Last activity: 2026-11-25 — Phase 189.1.1 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 19
+**Current Plan:** 20
 
 From 184 on, the numeric order is the dependency order.
 
@@ -247,6 +247,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P16 | 22 min | 3 tasks | 7 files |
 | Phase 189.1.1 P17 | 45 min | 3 tasks | 4 files |
 | Phase 189.1.1 P18 | 5min | 3 tasks | 8 files |
+| Phase 189.1.1 P19 | 40min | 4 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -554,6 +555,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-18: IN-03 closed by retitling the deployed voter smoke to 'reaches the results', not by a raw candidate-section read (D-14h)
 - [Phase 189.1.1]: 189.1.1-18: IN-06 (no job timeouts in main.yaml) deferred to todo 2026-11-25-ci-job-timeouts.md for all thirteen jobs; editing main.yaml now would undo D-14i
 - [Phase 189.1.1]: 189.1.1-18: IN-07 (no [db] tag on the 00005 migration commit) deferred to the review restack; rewriting history now would change the SHAs the phase's evidence records
+- [Phase 189.1.1]: 189.1.1-19: the nested-Escape fix counts as observed on staging — the committed script read OPEN_AFTER_ONE_ESCAPE 0 to 1 and CONSENT_AFTER_ONE_ESCAPE denied to none across run 45676071401 (81b80140f), trackEvents true
 
 ### Pending Todos
 
@@ -629,6 +631,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-25T18:24:27.186Z
-**Stopped At:** Completed 189.1.1-18-PLAN.md
+Last session: 2026-11-25T19:07:10.956Z
+**Stopped At:** Completed 189.1.1-19-PLAN.md
 **Resume File:** None
