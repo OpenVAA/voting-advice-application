@@ -904,7 +904,7 @@ Plans:
   2. The `migrations` and `settings` steps connect with `PGSSLMODE=verify-full` and the Supabase root CA, a wrong CA or host is refused, the guard test fails on a fallback to `require`, and an observed staging deploy is green.
   3. A standalone reviewer brief describes what the relay collects, where it goes, anonymisation, consent and retention, and poses the six readings as questions; the legal review stays an external blocker.
   4. The three UAT todos and the D-14 audit items are fixed and their todos closed, one observed full `main.yaml` CI run is green, and the full local E2E suite is green at the phase's end with summed deltas against the last full run (729 passed).
-**Plans:** 21/22 plans executed (7 gap-closure plans)
+**Plans:** 22/22 plans executed (7 gap-closure plans)
 
 Plans:
 **Wave 1**
@@ -965,7 +965,7 @@ Plans:
 - [x] 189.1.1-21-PLAN.md — the entity pages' URL waits get a server round trip's budget, red first under a scratch data delay (wave 17; Task 1 done, its targeted run red on the shared sign-in setup; a continuation closes Task 2 from plan 22's run)
 
 **Wave 18** *(blocked on Wave 17 completion)*
-- [ ] 189.1.1-20-PLAN.md — gap-closure map, review dispositions, closing gates, the phase's full E2E run (wave 18; Tasks 1–2 done, its first full run red, amended after plans 21 and 22)
+- [x] 189.1.1-20-PLAN.md — gap-closure map, review dispositions, closing gates, the phase's full E2E run (wave 18; Tasks 1–2 done, its first full run red, amended after plans 21 and 22)
 
 ### Phase 189.1.2: Move the deployment to Supabase publishable and secret keys before the legacy anon and service_role keys retire (FUT-02) (INSERTED)
 

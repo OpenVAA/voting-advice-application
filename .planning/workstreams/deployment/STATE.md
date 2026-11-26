@@ -5,17 +5,17 @@ milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytic
 current_phase: 189.1.1
 current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
 current_plan: 22
-status: executing
-stopped_at: Completed 189.1.1-21-PLAN.md
-last_updated: "2026-11-26T17:46:19.067Z"
+status: verifying
+stopped_at: Completed 189.1.1-20-PLAN.md
+last_updated: "2026-11-26T18:18:38.064Z"
 last_activity: 2026-11-26
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 186e0f4abd59dc199c2508603113079d7eecf49a
+state_head: 6233f62295999476d0c7d29231d1f325fa0d9138
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 259
-  completed_plans: 239
+  completed_plans: 240
   percent: 77
 ---
 
@@ -35,7 +35,7 @@ Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is 
 
 Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — EXECUTING
 Plan: 22 of 22
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-11-26 — Phase 189.1.1 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 77%); 7 of 9 roadmap phases complete, 181.1 inserted besides
@@ -250,6 +250,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P19 | 40min | 4 tasks | 3 files |
 | Phase 189.1.1 P22 | 2h20m | 3 tasks | 13 files |
 | Phase 189.1.1 P21 | 35min | 2 tasks | 2 files |
+| Phase 189.1.1 P20 | 29min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -563,6 +564,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-22: the identity provider entries are client-nav (fetch then a full load), N=5; voter (located) navigations are no-server
 - [Phase 189.1.1]: 189.1.1-21: the entity pages' four URL waits wait through one expectPath with TIMEOUTS.slowPage; the switching test's red reproduced by a 7000 ms hold on the questions overview's data request and green on the fix under the same hold
 - [Phase 189.1.1]: 189.1.1-21: Task 2 closed from plan 22's targeted run (48 of contestant-entity-selection passed on a tree holding the fix); the red first targeted run kept on record, UNPLANNED_RED_1_FIXED_BY=189.1.1-22; PLAN_E2E_DELTA=0
+- [Phase 189.1.1]: 189.1.1-20: the tree since the deploy is budget-only on the deployed smoke's paths (two closure files changed in wait budgets alone; the image copies no tests/), so plan 19's deploy observation stands and no redeploy is owed
+- [Phase 189.1.1]: 189.1.1-20: the phase's full E2E run is green on 46386184165f (747 passed = 745 + 2, per project and per title); the red first run stays on record under RED_RUN_1_, fixed by plans 21 and 22
 
 ### Pending Todos
 
@@ -638,6 +641,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-26T17:46:17.540Z
-**Stopped At:** Completed 189.1.1-21-PLAN.md
+Last session: 2026-11-26T18:18:36.480Z
+**Stopped At:** Completed 189.1.1-20-PLAN.md
 **Resume File:** None
