@@ -72,6 +72,6 @@ export const SIGN_IN_REDIRECT_TIMEOUT = serverAnswersTimeout(3);
 export const IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT = serverAnswersTimeout(5);
 
 /**
- * How long a profile save may take to leave the profile page: the save writes the answers, the other properties and the names, three server answers in a row, before the application navigates. The destination inside the entity adds no answer.
+ * How long a profile save may take to leave the profile page: the answers' write, the new image's upload, the other properties' write, the names' write and, after any stored property, the re-read of the page's data, five server answers in a row, before the application navigates. The destination inside the entity adds no answer.
  */
-export const PROFILE_SAVE_TIMEOUT = serverAnswersTimeout(3);
+export const PROFILE_SAVE_TIMEOUT = serverAnswersTimeout(5);
