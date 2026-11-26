@@ -61,6 +61,7 @@ import { expect } from '@playwright/test';
 import {
   IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT,
   serverAnswersTimeout,
+  SIGN_IN_REDIRECT_TIMEOUT,
   SIGN_OUT_TIMEOUT,
   TIMEOUTS,
   waitForNavigationFocusReset
@@ -394,10 +395,10 @@ export function createContestantLoginPage(page: Page) {
     },
 
     /**
-     * Assert that the sign-in screen is not rendered, as where another page is shown at its address.
+     * Assert that the sign-in screen is not rendered, as where another page is shown at its address. The screen may be left by a sign-in, so the wait has the sign-in's budget.
      */
     async expectSignInNotShown(): Promise<void> {
-      await expect(page.getByTestId(ids.signInPage)).toHaveCount(0);
+      await expect(page.getByTestId(ids.signInPage)).toHaveCount(0, { timeout: SIGN_IN_REDIRECT_TIMEOUT });
     },
 
     /**
