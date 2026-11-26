@@ -121,6 +121,35 @@ git push origin fd57d43396b4f3da85897d9196102f6aa2eb2561:refs/heads/deploy-evide
 
 The second push is made only after the deploy of the first one is green and the two staging smoke runs of 190-12 Task 3 are recorded.
 
+## Evidence commit, rebuilt (2026-11-26)
+
+Phase 189.1.1 rewrote the staging database (its plan 12 rebuilt it to 00004, and its deploys added 00005), and `planning/deployment-190` was rebased onto `feat/deployment-terraform-supabase`, which brings 00005 and other `apps/supabase` changes. The evidence commit of Task 1 was rebuilt from the rebased branch by the same recipe, with only its session line changed:
+
+```
+SOURCE_HEAD=73560241e9a63f15c043e65f7a78f18043e6ecd0
+PARENT=340a200708c28fb7ed078d452138712f3400c789
+EVIDENCE_TREE=7d9bb71896e9dc5435228ef224fd7ef712221a2e
+EVIDENCE_COMMIT=b7a78427de3c42817b04610155007f2e3d7f6c72
+```
+
+The message is `printf '%s\n\n%s\n%s\n' 'evidence: phase 190 final tree' 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>' 'Claude-Session: https://claude.ai/code/session_01SWZj9DogP8np9RRWzxceZd'`; identity and dates as above. `PARENT` is `origin/main` as fetched on 2026-11-26, unchanged since Task 1.
+
+```
+evidence_planning_paths=0          git ls-tree -r --name-only $EVIDENCE_COMMIT | grep -c '^.planning/'
+evidence_tree_equal_exit=0         git diff --quiet 73560241e $EVIDENCE_COMMIT -- . ':!.planning'
+migrations=00001 00002 00003 00004 00005
+apps_supabase_vs_served=0 files    git diff --stat 81b80140f $EVIDENCE_COMMIT -- apps/supabase
+```
+
+Staging served `deploy/staging` 81b80140f at the rebuild (Deploy run 45676071401, success). Its `apps/supabase` equals the evidence tree's, so the migration push is expected to find nothing pending.
+
+Operator push (replaces fd57d4339 on the branch):
+
+```
+git push --force-with-lease=deploy-evidence/190-final:fd57d43396b4f3da85897d9196102f6aa2eb2561 \
+  origin b7a78427de3c42817b04610155007f2e3d7f6c72:refs/heads/deploy-evidence/190-final
+```
+
 ## Deploy
 
 (Task 2, operator: pending)
