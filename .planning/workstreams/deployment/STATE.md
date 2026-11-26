@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
-current_plan: 21
+current_plan: 22
 status: executing
-stopped_at: Completed 189.1.1-22-PLAN.md
-last_updated: "2026-11-26T17:41:11.701Z"
+stopped_at: Completed 189.1.1-21-PLAN.md
+last_updated: "2026-11-26T17:46:19.067Z"
 last_activity: 2026-11-26
 last_activity_desc: Phase 189.1.1 execution started
-state_head: bc5fbeb6753d98168312e750f6311f5c5097c863
+state_head: 186e0f4abd59dc199c2508603113079d7eecf49a
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 259
-  completed_plans: 238
+  completed_plans: 239
   percent: 77
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — EXECUTING
-Plan: 21 of 22
+Plan: 22 of 22
 Status: Ready to execute
 Last activity: 2026-11-26 — Phase 189.1.1 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 21
+**Current Plan:** 22
 
 From 184 on, the numeric order is the dependency order.
 
@@ -249,6 +249,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P18 | 5min | 3 tasks | 8 files |
 | Phase 189.1.1 P19 | 40min | 4 tasks | 3 files |
 | Phase 189.1.1 P22 | 2h20m | 3 tasks | 13 files |
+| Phase 189.1.1 P21 | 35min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -560,6 +561,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-22: the shared sign-in helper's URL wait has SIGN_IN_REDIRECT_TIMEOUT = 3 x TIMEOUTS.slowPage (post, root, entity home), budget-only fix
 - [Phase 189.1.1]: 189.1.1-22: a URL wait is swept when its action can start a navigation it does not wait for; budget N x TIMEOUTS.slowPage per server answer, N read from the route files
 - [Phase 189.1.1]: 189.1.1-22: the identity provider entries are client-nav (fetch then a full load), N=5; voter (located) navigations are no-server
+- [Phase 189.1.1]: 189.1.1-21: the entity pages' four URL waits wait through one expectPath with TIMEOUTS.slowPage; the switching test's red reproduced by a 7000 ms hold on the questions overview's data request and green on the fix under the same hold
+- [Phase 189.1.1]: 189.1.1-21: Task 2 closed from plan 22's targeted run (48 of contestant-entity-selection passed on a tree holding the fix); the red first targeted run kept on record, UNPLANNED_RED_1_FIXED_BY=189.1.1-22; PLAN_E2E_DELTA=0
 
 ### Pending Todos
 
@@ -635,6 +638,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-26T17:41:10.173Z
-**Stopped At:** Completed 189.1.1-22-PLAN.md
+Last session: 2026-11-26T17:46:17.540Z
+**Stopped At:** Completed 189.1.1-21-PLAN.md
 **Resume File:** None
