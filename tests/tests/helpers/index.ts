@@ -4,6 +4,7 @@
  * helpers/ vs utils/ boundary:
  *
  *   - `tests/tests/helpers/` (this directory) — thin generic Playwright wrappers with NO domain knowledge. Operate on raw Playwright types (`Page`, `Locator`) and the generic `SupabaseAdminClient`. Naming convention: `<concern>.ts`. Examples: settle, navigation, select.
+ *     The one exception is `timeouts.ts`, the suite's timeout catalog, which also names the budgets of the Contestant App's server-answer chains.
  *
  *   - `tests/tests/utils/` — domain-specific assemblers + catalogs.
  *     Examples: `voterNavigation.ts` (the full voter journey), `supabaseAdminClient.ts` (auth + email + bulk-write surfaces), `testIds.ts` (the project-wide testId catalog), `buildRoute.ts` (typed route builder).

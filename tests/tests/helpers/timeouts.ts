@@ -3,6 +3,8 @@
  *
  * Single source of truth for spec timeouts: bucket values are the MAX observed across the suite's specs so consolidation never tightens an existing budget.
  *
+ * The file is the suite's timeout catalog, and the one module under `helpers/` that holds domain knowledge: below the generic buckets and `serverAnswersTimeout` it names the budgets of the Contestant App's server-answer chains, so that every fixture and spec reads a chain's budget from one place.
+ *
  * Bucket semantics:
  *   - element:  per-element visibility / enabled budget — a wait that does NOT change the URL (e.g. an option mounts, a button enables).
  *   - click:    action-ack budget — the click registered, a dropdown opened, a modal dismissed.
