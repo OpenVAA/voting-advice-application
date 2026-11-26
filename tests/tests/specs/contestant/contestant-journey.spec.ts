@@ -57,7 +57,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '../../fixtures/contestant/contestant-journey';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
-import { PROFILE_SAVE_TIMEOUT, serverAnswersTimeout, TIMEOUTS } from '../../helpers';
+import { PROFILE_SAVE_TIMEOUT, serverAnswersTimeout, SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS } from '../../helpers';
 import {
   contestantAppRootUrlRe,
   contestantHomeUrlRe,
@@ -208,6 +208,15 @@ const STORED_OBJECT_DELETE_POLL = { timeout: 30_000, intervals: [500, 1000, 2000
  * How long a saved password may take to reach the entity's home: the new password's request, the app's root, and the entity home the root redirects a user with one entity to, three server answers in a row.
  */
 const PASSWORD_RESET_REDIRECT_TIMEOUT = serverAnswersTimeout(3);
+
+/**
+ * Wait until a sign-in of the journey's candidate, who edits one entity, has reached that entity's home and the home's status message is shown. The address holds the whole sign-in chain, so it has the sign-in's budget.
+ * @param page - The page that signed in.
+ */
+async function expectHomeAfterSignIn(page: Page): Promise<void> {
+  await page.waitForURL(contestantHomeUrlRe(), { timeout: SIGN_IN_REDIRECT_TIMEOUT });
+  await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+}
 
 /**
  * The HTTP status of an anonymous GET of a public stored object. A deleted object answers 400.
@@ -550,9 +559,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       // Login with PASSWORD_2 (correct) → home (ToU already accepted, no re-acceptance prompt expected).
       await contestantLoginPage.enterPassword(PASSWORD_2);
       await contestantLoginPage.submit();
-      await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUTS.slowPage
-      });
+      await expectHomeAfterSignIn(page);
     });
 
     // ============== Step 10: return-from-static page =====================
@@ -673,6 +680,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       ).toHaveAccessibleName('Remove item');
       await contestantProfilePage.submit();
       // Post-submit lands on home. The required field is still empty, so the profile stays incomplete beside the open opinions, and the preview stays closed.
+      await page.waitForURL(contestantHomeUrlRe(), { timeout: PROFILE_SAVE_TIMEOUT });
       await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -976,14 +984,13 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
   test('an open answer can be written before the question is answered, and is saved with it', async ({
     page,
     contestantLoginPage,
-    contestantHomePage,
     contestantQuestionsOverviewPage,
     contestantQuestionPage
   }) => {
     await removeStoredAnswer(new SupabaseAdminClient(), OPEN_ANSWER_QUESTION_EXTERNAL_ID);
     await contestantLoginPage.goToPage();
     await contestantLoginPage.login(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
-    await contestantHomePage.expectStatusMessage();
+    await expectHomeAfterSignIn(page);
     await page.goto('/en/contestant/questions');
     await contestantQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-1-likert5\]/);
 
@@ -1010,13 +1017,13 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
   });
 
   test('a candidate removes their portrait, and its stored file is deleted', async ({
+    page,
     contestantLoginPage,
-    contestantHomePage,
     contestantProfilePage
   }) => {
     await contestantLoginPage.goToPage();
     await contestantLoginPage.login(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
-    await contestantHomePage.expectStatusMessage();
+    await expectHomeAfterSignIn(page);
     await contestantProfilePage.open();
     const portraitUrl = await contestantProfilePage.shownImageUrl();
     expect(await publicObjectStatus(portraitUrl), 'the portrait is served before it is removed').toBe(200);
