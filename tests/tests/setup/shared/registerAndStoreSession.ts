@@ -19,6 +19,13 @@ import type { Browser, Page } from '@playwright/test';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
 
 /**
+ * How long a sign-in on the sign-in screen may take to leave the login routes.
+ *
+ * The form's post, the app's root it is redirected to, and the entity home the root redirects a user with one entity to are three server answers in a row, each given a slow page's time. The click that posts the form may return before any of them has answered, so a wait for the address to leave the login routes holds the whole chain. Exported so that another wait after the same sign-in can share it.
+ */
+export const SIGN_IN_REDIRECT_TIMEOUT = 3 * TIMEOUTS.slowPage;
+
+/**
  * A user `registerAndStoreSession` registers and signs in.
  *
  * The entities the user edits are `entityGrants`, in their order. The list cannot be empty: the sign-in refuses a user with no entity to edit.
@@ -63,8 +70,8 @@ export async function registerAndStoreSession(page: Page, identity: StoredSessio
   // The backend can be slow to answer while voter tests run beside this setup, and the step opens the sign-in screen again when its form does not appear.
   await createContestantLoginPage(page).signInFromCold(identity.email, identity.password);
 
-  // The address leaves the login routes once the sign-in has redirected. That is a form post followed by two redirected loads, on a dev server that may not have compiled those routes yet, so the wait takes a slow page's time.
-  await expect(page).not.toHaveURL(/.*login.*/, { timeout: TIMEOUTS.slowPage });
+  // The address leaves the login routes once the sign-in has redirected: the form's post, the app's root it is redirected to and the entity home the root may redirect to, three answers in a row on a dev server that may not have compiled those routes yet. The click that posts the form may return before any of them has answered, so the wait has the whole chain's budget.
+  await expect(page).not.toHaveURL(/.*login.*/, { timeout: SIGN_IN_REDIRECT_TIMEOUT });
 
   // The URL has left the login route as soon as the redirect lands, before the protected page has rendered. An identity whose settled page matters names a test id of it.
   if (identity.settledTestId) {
