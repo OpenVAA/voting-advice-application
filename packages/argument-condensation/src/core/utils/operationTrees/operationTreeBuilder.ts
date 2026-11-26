@@ -10,7 +10,7 @@ export class OperationTreeBuilder {
   private tree: OperationTree;
   private nodeCounter = 0;
 
-  constructor(runId: string) {
+  constructor(runId: string, questionText?: string, condensationType?: string) {
     this.tree = {
       createdAt: new Date().toISOString(),
       runId,
@@ -18,7 +18,9 @@ export class OperationTreeBuilder {
         totalOperations: 0,
         maxDepth: 0,
         totalDuration: 0,
-        totalLlmCalls: 0
+        totalLlmCalls: 0,
+        questionText,
+        condensationType
       },
       roots: [],
       nodes: {},

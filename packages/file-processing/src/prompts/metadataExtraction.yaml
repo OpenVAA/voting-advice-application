@@ -1,0 +1,21 @@
+id: metadataExtraction
+params:
+  documentStart: string
+  documentEnd: string
+prompt: |
+  Extract metadata from this document based on the beginning and ending portions provided.
+
+  Beginning of document:
+  {{documentStart}}
+
+  End of document:
+  {{documentEnd}}
+
+  Extract the following metadata if available:
+  - title: The document title
+  - source: The source organization or publisher
+  - authors: Array of author names
+  - publishedDate: Publication date in ISO format if possible
+  - locale: The language/locale code (e.g., 'en', 'fi', 'sv')
+
+  Return a JSON object with these fields. Omit fields if they cannot be determined.
