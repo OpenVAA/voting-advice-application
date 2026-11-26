@@ -21,6 +21,7 @@ import { createContestantLoginPage } from '../../fixtures/contestant/contestantL
 import { createContestantRegisterPage } from '../../fixtures/contestant/contestantRegisterPage.fixture';
 import { createPageGeometry } from '../../fixtures/shared/pageGeometry.fixture';
 import { TIMEOUTS } from '../../helpers';
+import { SIGN_IN_REDIRECT_TIMEOUT } from '../../setup/shared/registerAndStoreSession';
 import { ADMIN_STORAGE_STATE } from '../../utils/adminCredentials';
 import { buildRoute } from '../../utils/buildRoute';
 import { declareEntryScans } from '../../utils/entryAxeScan';
@@ -138,7 +139,7 @@ test.describe('a project that is not open for voters', () => {
     const loginPage = createContestantLoginPage(page);
     await loginPage.goToPage();
     await loginPage.login(CANDIDATE_EMAIL, TEST_PASSWORD);
-    await expect(page).not.toHaveURL(/\/contestant\/login/);
+    await expect(page).not.toHaveURL(/\/contestant\/login/, { timeout: SIGN_IN_REDIRECT_TIMEOUT });
     await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible();
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();
   });

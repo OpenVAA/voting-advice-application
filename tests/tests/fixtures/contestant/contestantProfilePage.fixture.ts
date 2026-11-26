@@ -85,6 +85,13 @@ const LOAD_DATA_REQUEST = '__data.json';
 /** The accessible name of the colour field's picker in English: the field's label and the picker's own. */
 const COLOR_PICKER_NAME = /Colou?r picker/i;
 
+/**
+ * How long a profile save may take to leave the profile page: the save writes the answers, the other properties and the names, three server answers in a row, each given a slow page's time, before the application navigates. The destination inside the entity adds no answer.
+ *
+ * Exported so that a spec's wait after the same save can share it.
+ */
+export const PROFILE_SAVE_TIMEOUT = 3 * TIMEOUTS.slowPage;
+
 /** The value of the identity section's `data-name-state` attribute. */
 export type ProfileNameState = 'editable' | 'locked-confirmed' | 'locked-answers';
 
@@ -101,6 +108,11 @@ const SUBMIT_LABEL_TEXT: Readonly<Record<ProfileSubmitLabel, RegExp>> = Object.f
 });
 
 export function createContestantProfilePage(page: Page) {
+  /** Wait until a save has left the profile page, with the budget of the save's writes. */
+  async function expectLeftAfterSave(): Promise<void> {
+    await expect(page).toHaveURL(contestantUrlOutsideRe('/profile'), { timeout: PROFILE_SAVE_TIMEOUT });
+  }
+
   /**
    * Locate the per-question wrapper (data-testid="contestant-profile-info-item") whose visible content matches `label` (string | RegExp). Returns the filtered Locator without awaiting — caller chains an action.
    */
@@ -469,7 +481,7 @@ export function createContestantProfilePage(page: Page) {
       await expect(submitButton).toBeEnabled({ timeout: TIMEOUTS.page });
       await submitButton.click();
       if (opts.expect === 'navigation') {
-        await expect(page).toHaveURL(contestantUrlOutsideRe('/profile'), { timeout: TIMEOUTS.slowPage });
+        await expectLeftAfterSave();
       } else {
         await expect(saveMessage).toHaveAttribute('data-outcome', /.+/, { timeout: TIMEOUTS.slowPage });
       }
@@ -703,7 +715,7 @@ export function createContestantProfilePage(page: Page) {
      * Assert the profile-submit flow advances away from /profile (i.e., the submit was successful — the page navigates to the entity's home or to its questions page).
      */
     async expectSubmitMessage(): Promise<void> {
-      await expect(page).toHaveURL(contestantUrlOutsideRe('/profile'));
+      await expectLeftAfterSave();
     }
   };
 }

@@ -20,6 +20,7 @@
  */
 
 import { expect } from '@playwright/test';
+import { TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
@@ -45,8 +46,8 @@ export function createContestantLogoutButton(page: Page) {
       await page.getByTestId(testIds.contestant.home.logout).click();
       // No dialog is opened in this branch: triggerLogout dispatches straight to logout() per LogoutButton.svelte:58-64.
       await expect(page.getByRole('dialog')).toHaveCount(0);
-      // The logout ends with a navigation to the login screen: its address, and the screen itself.
-      await expect(page).toHaveURL(/\/contestant\/login/);
+      // The logout ends with a navigation to the login screen: its address, and the screen itself. The address follows the sign-out's request and the login page's data, two answers, each given a slow page's time.
+      await expect(page).toHaveURL(/\/contestant\/login/, { timeout: 2 * TIMEOUTS.slowPage });
       await expect(page.getByTestId(testIds.contestant.login.page)).toBeVisible();
     },
 

@@ -27,6 +27,9 @@ import type { Page } from '@playwright/test';
 const MESSAGES = messagesOf('contestantApp.nothingToEdit') as Record<'nextStepsNoAddress', string>;
 const SIGNED_IN_AS = messageOf('common', 'account.signedInAs');
 
+/** How long a sign-out from the view may take to reach the login page: the sign-out's request and then the login page's data, each given a slow page's time. */
+const SIGN_OUT_TIMEOUT = 2 * TIMEOUTS.slowPage;
+
 export function createContestantNothingToEditPage(page: Page) {
   const container = page.getByTestId(testIds.contestant.nothingToEdit.container);
 
@@ -86,7 +89,7 @@ export function createContestantNothingToEditPage(page: Page) {
     async logoutWithoutDialog(): Promise<void> {
       await container.getByTestId(testIds.contestant.nothingToEdit.logout).click();
       await expect(page.getByRole('dialog')).toHaveCount(0);
-      await expect(page).toHaveURL(/\/contestant\/login/);
+      await expect(page).toHaveURL(/\/contestant\/login/, { timeout: SIGN_OUT_TIMEOUT });
       await expect(page.getByTestId(testIds.contestant.login.page)).toBeVisible();
     }
   };

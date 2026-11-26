@@ -21,6 +21,7 @@
 
 import { expect } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
+import { SIGN_IN_REDIRECT_TIMEOUT } from '../../setup/shared/registerAndStoreSession';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantAppRootUrlRe } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
@@ -87,9 +88,11 @@ export function createContestantEntitySelectionPage(page: Page) {
 
     /**
      * Assert the selection screen is shown: the URL is the app root and the list holds a card.
+     *
+     * The screen may be reached by a sign-in on the sign-in screen, so the address has the sign-in's budget.
      */
     async expectShown(): Promise<void> {
-      await expect(page).toHaveURL(contestantAppRootUrlRe());
+      await expect(page).toHaveURL(contestantAppRootUrlRe(), { timeout: SIGN_IN_REDIRECT_TIMEOUT });
       await expect(cards.first()).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
 

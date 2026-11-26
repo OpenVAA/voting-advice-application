@@ -97,6 +97,13 @@ const IDENTITY_PROVIDER_MESSAGES = (
 /** The sentence the code field shows for a code that was not confirmed, read from the message source rather than copied. */
 const CODE_UNCONFIRMED_MESSAGE = messageOf('contestantApp.register', 'codeUnconfirmed');
 
+/**
+ * How long Continue on the identity provider's panel may take to bring the browser back to the application: the authorize request, the provider's page, the callback (which awaits the token exchange and the identity-callback function), the app's root it redirects to and the page the root leads to, five server answers in a row, each given a slow page's time.
+ *
+ * The click returns before the first of them, because its handler awaits a fetch and then leaves by a full load.
+ */
+const IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT = 5 * TIMEOUTS.slowPage;
+
 /** The sentence under the email field for each reason it can be in error, read from the message source rather than copied. */
 const EMAIL_ERROR_MESSAGES: Readonly<Record<ContestantRegisterFieldReason['email'], string>> = Object.freeze({
   required: messageOf('common', 'account.emailRequired'),
@@ -364,7 +371,7 @@ export function createContestantRegisterPage(page: Page) {
       const registerPage = new URL(page.url());
       await page.getByTestId(ids.submit).click();
       await page.waitForURL((url) => url.origin === registerPage.origin && url.pathname !== registerPage.pathname, {
-        timeout: TIMEOUTS.slowPage
+        timeout: IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT
       });
     },
 
