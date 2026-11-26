@@ -16,7 +16,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS } from '../../helpers';
+import { SIGN_OUT_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantAppRootUrlRe } from '../../utils/contestantEntityUrl';
 import { messageOf, messagesOf } from '../../utils/messages';
@@ -26,9 +26,6 @@ import type { Page } from '@playwright/test';
 /** The view's sentences that a step asserts, read from the English message source rather than copied. */
 const MESSAGES = messagesOf('contestantApp.nothingToEdit') as Record<'nextStepsNoAddress', string>;
 const SIGNED_IN_AS = messageOf('common', 'account.signedInAs');
-
-/** How long a sign-out from the view may take to reach the login page: the sign-out's request and then the login page's data, each given a slow page's time. */
-const SIGN_OUT_TIMEOUT = 2 * TIMEOUTS.slowPage;
 
 export function createContestantNothingToEditPage(page: Page) {
   const container = page.getByTestId(testIds.contestant.nothingToEdit.container);

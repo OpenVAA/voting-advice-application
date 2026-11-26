@@ -20,8 +20,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS } from '../../helpers';
-import { SIGN_IN_REDIRECT_TIMEOUT } from '../../setup/shared/registerAndStoreSession';
+import { SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantAppRootUrlRe } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';

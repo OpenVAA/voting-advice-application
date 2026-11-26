@@ -65,7 +65,7 @@
 import { expect } from '@playwright/test';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
-import { TIMEOUTS } from '../../helpers';
+import { IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { messageOf, messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
@@ -96,13 +96,6 @@ const IDENTITY_PROVIDER_MESSAGES = (
 
 /** The sentence the code field shows for a code that was not confirmed, read from the message source rather than copied. */
 const CODE_UNCONFIRMED_MESSAGE = messageOf('contestantApp.register', 'codeUnconfirmed');
-
-/**
- * How long Continue on the identity provider's panel may take to bring the browser back to the application: the authorize request, the provider's page, the callback (which awaits the token exchange and the identity-callback function), the app's root it redirects to and the page the root leads to, five server answers in a row, each given a slow page's time.
- *
- * The click returns before the first of them, because its handler awaits a fetch and then leaves by a full load.
- */
-const IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT = 5 * TIMEOUTS.slowPage;
 
 /** The sentence under the email field for each reason it can be in error, read from the message source rather than copied. */
 const EMAIL_ERROR_MESSAGES: Readonly<Record<ContestantRegisterFieldReason['email'], string>> = Object.freeze({

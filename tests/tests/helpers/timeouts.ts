@@ -40,3 +40,38 @@ export const TIMEOUTS = {
    */
   testMax: ON_GITHUB_ACTIONS || ON_SLOW_HOST ? 180_000 : 90_000
 } as const;
+
+/**
+ * The budget of a wait that holds `answers` server answers in a row, each given a slow page's time.
+ *
+ * For the first wait after an action that returns before the server has answered: a form's post, a sign-out, a save. Such a wait holds every answer of the chain the action starts, so its budget counts them.
+ *
+ * @param answers - The number of server answers the chain makes before the awaited state is reached.
+ */
+export function serverAnswersTimeout(answers: number): number {
+  return answers * TIMEOUTS.slowPage;
+}
+
+/**
+ * How long a sign-out in the Contestant App may take to reach the login page: the sign-out's request and then the login page's data, two server answers in a row.
+ */
+export const SIGN_OUT_TIMEOUT = serverAnswersTimeout(2);
+
+/**
+ * How long a sign-in on the Contestant App's sign-in screen may take to reach the page it leads to: the form's post, the app's root it is redirected to, and the entity home the root redirects a user with one entity to, three server answers in a row.
+ *
+ * The click that posts the form may return before any of them has answered, so the first wait after it holds the whole chain.
+ */
+export const SIGN_IN_REDIRECT_TIMEOUT = serverAnswersTimeout(3);
+
+/**
+ * How long a press that starts a sign-in or a registration with the identity provider may take to bring the browser back to the application: the authorize request, the provider's page, the callback (which awaits the token exchange and the identity-callback function), the app's root it redirects to and the page the root leads to, five server answers in a row.
+ *
+ * The press returns before the first of them has answered.
+ */
+export const IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT = serverAnswersTimeout(5);
+
+/**
+ * How long a profile save may take to leave the profile page: the save writes the answers, the other properties and the names, three server answers in a row, before the application navigates. The destination inside the entity adds no answer.
+ */
+export const PROFILE_SAVE_TIMEOUT = serverAnswersTimeout(3);

@@ -56,9 +56,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '../../fixtures/contestant/contestant-journey';
-import { PROFILE_SAVE_TIMEOUT } from '../../fixtures/contestant/contestantProfilePage.fixture';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { PROFILE_SAVE_TIMEOUT, serverAnswersTimeout, TIMEOUTS } from '../../helpers';
 import {
   contestantAppRootUrlRe,
   contestantHomeUrlRe,
@@ -206,9 +205,9 @@ const INVALID_PORTRAIT_PATH = path.resolve(
 const STORED_OBJECT_DELETE_POLL = { timeout: 30_000, intervals: [500, 1000, 2000] };
 
 /**
- * How long a saved password may take to reach the entity's home: the new password's request, the app's root, and the entity home the root redirects a user with one entity to, three server answers in a row, each given a slow page's time.
+ * How long a saved password may take to reach the entity's home: the new password's request, the app's root, and the entity home the root redirects a user with one entity to, three server answers in a row.
  */
-const PASSWORD_RESET_REDIRECT_TIMEOUT = 3 * TIMEOUTS.slowPage;
+const PASSWORD_RESET_REDIRECT_TIMEOUT = serverAnswersTimeout(3);
 
 /**
  * The HTTP status of an anonymous GET of a public stored object. A deleted object answers 400.

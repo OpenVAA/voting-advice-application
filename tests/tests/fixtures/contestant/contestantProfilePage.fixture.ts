@@ -52,7 +52,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS } from '../../helpers';
+import { PROFILE_SAVE_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { buildEntityLessRoute, contestantUrlOutsideRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
 import { createMultilingualTextField } from '../shared/multilingualTextFieldFixture.fixture';
@@ -84,13 +84,6 @@ const LOAD_DATA_REQUEST = '__data.json';
 
 /** The accessible name of the colour field's picker in English: the field's label and the picker's own. */
 const COLOR_PICKER_NAME = /Colou?r picker/i;
-
-/**
- * How long a profile save may take to leave the profile page: the save writes the answers, the other properties and the names, three server answers in a row, each given a slow page's time, before the application navigates. The destination inside the entity adds no answer.
- *
- * Exported so that a spec's wait after the same save can share it.
- */
-export const PROFILE_SAVE_TIMEOUT = 3 * TIMEOUTS.slowPage;
 
 /** The value of the identity section's `data-name-state` attribute. */
 export type ProfileNameState = 'editable' | 'locked-confirmed' | 'locked-answers';

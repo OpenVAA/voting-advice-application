@@ -24,4 +24,11 @@ export {
 } from './navigation';
 export { iterateSelectOptions } from './select';
 export { settleNetworkIdle } from './settle';
-export { TIMEOUTS } from './timeouts';
+export {
+  IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT,
+  PROFILE_SAVE_TIMEOUT,
+  serverAnswersTimeout,
+  SIGN_IN_REDIRECT_TIMEOUT,
+  SIGN_OUT_TIMEOUT,
+  TIMEOUTS
+} from './timeouts';

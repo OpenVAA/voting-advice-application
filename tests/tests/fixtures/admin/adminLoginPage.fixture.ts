@@ -43,7 +43,7 @@
 import { randomBytes } from 'node:crypto';
 import { expect } from '@playwright/test';
 import { COOKIE } from '../../../../apps/frontend/src/lib/cookies/index';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { serverAnswersTimeout, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { routeUntilEnded } from '../../utils/endableRoute';
 import { expectLabelInRow, expectLabelOnOneLine } from '../../utils/labelInRow';
@@ -64,9 +64,9 @@ const USER_DATA_READ_FAILURE = { status: 500, json: { message: 'The read failed.
 /**
  * How long the Admin App may take to reach an address after an action whose navigation holds two server answers in a row: a sign-in's post and then the admin home's data, a sign-out's request and then the login page's data, or a page's data answered with a redirect and then the login page's data.
  *
- * Each answer is given a slow page's time, because the action returns before either has answered. Exported so that the admin setup's wait after its sign-in can share it.
+ * The action returns before either has answered. Exported so that the admin setup's wait after its sign-in can share it.
  */
-export const ADMIN_LOGIN_REDIRECT_TIMEOUT = 2 * TIMEOUTS.slowPage;
+export const ADMIN_LOGIN_REDIRECT_TIMEOUT = serverAnswersTimeout(2);
 
 export function createAdminLoginPage(page: Page) {
   const adminHome = buildRoute({ route: 'AdminAppHome', locale: 'en' });

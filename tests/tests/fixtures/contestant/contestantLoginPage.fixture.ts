@@ -58,7 +58,14 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import {
+  IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT,
+  serverAnswersTimeout,
+  SIGN_IN_REDIRECT_TIMEOUT,
+  SIGN_OUT_TIMEOUT,
+  TIMEOUTS,
+  waitForNavigationFocusReset
+} from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { expectLabelInRow, expectLabelOnOneLine } from '../../utils/labelInRow';
 import { messageOf, messagesOf } from '../../utils/messages';
@@ -253,9 +260,8 @@ export function createContestantLoginPage(page: Page) {
       await expect(signIn).toBeEnabled({ timeout: TIMEOUTS.slowPage });
       const loginPage = new URL(page.url());
       await signIn.click();
-      // The click returns before the round trip has begun: the authorize request, the provider's page, the callback, the app's root and the page the root leads to are five answers, each given a slow page's time.
       await page.waitForURL((url) => url.origin === loginPage.origin && url.pathname !== loginPage.pathname, {
-        timeout: 5 * TIMEOUTS.slowPage
+        timeout: IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT
       });
     },
 
@@ -308,9 +314,8 @@ export function createContestantLoginPage(page: Page) {
      */
     async expectEndedOnEntry(): Promise<void> {
       const entryPath = buildRoute({ route: 'ContestantAppLogin', locale: 'en' });
-      // After a sign-out the address follows its request and the login page's data: two answers, each given a slow page's time.
       await expect(page).toHaveURL((url) => url.pathname === entryPath && url.search === '', {
-        timeout: 2 * TIMEOUTS.slowPage
+        timeout: SIGN_OUT_TIMEOUT
       });
       await expect(page.getByTestId(ids.page)).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect(page.getByTestId(ids.signInLink)).toBeVisible();
@@ -325,8 +330,8 @@ export function createContestantLoginPage(page: Page) {
      */
     async expectOnEntry(): Promise<void> {
       const entryPath = buildRoute({ route: 'ContestantAppLogin', locale: 'en' });
-      // A sign-out, or a page's data answered with a redirect, is followed by the login page's data: two answers, each given a slow page's time.
-      await expect(page).toHaveURL((url) => url.pathname === entryPath, { timeout: 2 * TIMEOUTS.slowPage });
+      // A sign-out, or a page's data answered with a redirect, is followed by the login page's data: two answers.
+      await expect(page).toHaveURL((url) => url.pathname === entryPath, { timeout: serverAnswersTimeout(2) });
       await expect(page.getByTestId(ids.page)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
 
@@ -346,9 +351,9 @@ export function createContestantLoginPage(page: Page) {
      */
     async expectLedToSettings(): Promise<void> {
       const settings = buildRoute({ route: 'ContestantAppSettings', locale: 'en' });
-      // A sign-in reaches the settings after the form's post, the app's root and the settings' data: three answers, each given a slow page's time.
+      // A sign-in reaches the settings after the form's post, the app's root and the settings' data: three answers.
       await expect(page).toHaveURL((url) => url.pathname.replace(/^\/en(?=\/)/, '') === settings, {
-        timeout: 3 * TIMEOUTS.slowPage
+        timeout: SIGN_IN_REDIRECT_TIMEOUT
       });
       await expect(page.getByTestId(testIds.contestant.settings.updateButton)).toBeVisible({
         timeout: TIMEOUTS.slowPage

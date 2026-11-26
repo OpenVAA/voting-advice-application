@@ -10,20 +10,13 @@ import { expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
 import type { Browser, Page } from '@playwright/test';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
-
-/**
- * How long a sign-in on the sign-in screen may take to leave the login routes.
- *
- * The form's post, the app's root it is redirected to, and the entity home the root redirects a user with one entity to are three server answers in a row, each given a slow page's time. The click that posts the form may return before any of them has answered, so a wait for the address to leave the login routes holds the whole chain. Exported so that another wait after the same sign-in can share it.
- */
-export const SIGN_IN_REDIRECT_TIMEOUT = 3 * TIMEOUTS.slowPage;
 
 /**
  * A user `registerAndStoreSession` registers and signs in.

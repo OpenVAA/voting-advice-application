@@ -32,7 +32,7 @@
 import { expect } from '@playwright/test';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
-import { TIMEOUTS } from '../../helpers';
+import { SIGN_OUT_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { contestantSettingsUrlRe } from '../../utils/contestantEntityUrl';
 import { messageOf, messagesOf } from '../../utils/messages';
 import { expectCountInName } from '../../utils/resendCountdown';
@@ -43,9 +43,6 @@ import type { Page } from '@playwright/test';
 
 /** The locale the party's name is required in: the project's default locale, in which the specs open every screen. */
 const NAME_LOCALE = 'en';
-
-/** How long a sign-out from the view may take to reach the login page: the sign-out's request and then the login page's data, each given a slow page's time. */
-const SIGN_OUT_TIMEOUT = 2 * TIMEOUTS.slowPage;
 
 /** The view's sentences that a step asserts, read from the message source rather than copied. */
 const MESSAGES = messagesOf('contestantApp.identityProvider') as Record<
