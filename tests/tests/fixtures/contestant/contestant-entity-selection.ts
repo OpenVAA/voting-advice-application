@@ -32,7 +32,7 @@ import { createContestantQuestionPage } from './contestantQuestionPage.fixture';
 import { createContestantQuestionsOverviewPage } from './contestantQuestionsOverviewPage.fixture';
 import { createContestantSettingsPage } from './contestantSettingsPage.fixture';
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { DRAFT_KEY_STEM } from '../../utils/contestantDrafts';
 import { messagesOf } from '../../utils/messages';
@@ -261,10 +261,12 @@ export function createContestantEntityPages(page: Page) {
     buildRoute({ route: 'ContestantAppQuestion', locale: 'en', params: { ...entityParams(entity), questionId } });
 
   /**
-   * Assert that the page's path is exactly `pathname`. After a navigation inside the application the address changes only once the server has answered the request for the next page's data, so the wait has the budget of a server round trip.
+   * Assert that the page's path is exactly `pathname`. The address changes only once the server has answered every request of the action that led there, so the wait has the budget of that action's chain: by default one server round trip, the request for the next page's data after a navigation inside the application.
+   *
+   * @param timeout - The budget of the chain the action that led to the page makes.
    */
-  async function expectPath(pathname: string): Promise<void> {
-    await expect(page).toHaveURL(exactPathRe(pathname), { timeout: TIMEOUTS.slowPage });
+  async function expectPath(pathname: string, timeout: number = TIMEOUTS.slowPage): Promise<void> {
+    await expect(page).toHaveURL(exactPathRe(pathname), { timeout });
   }
 
   return {
@@ -287,10 +289,10 @@ export function createContestantEntityPages(page: Page) {
     },
 
     /**
-     * Assert the page is that entity's home, and that the home has rendered.
+     * Assert the page is that entity's home, and that the home has rendered. The home may be reached by a sign-in, so the address has the sign-in's budget.
      */
     async expectOnHome(entity: SelectionEntity): Promise<void> {
-      await expectPath(homePath(entity));
+      await expectPath(homePath(entity), SIGN_IN_REDIRECT_TIMEOUT);
       await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
