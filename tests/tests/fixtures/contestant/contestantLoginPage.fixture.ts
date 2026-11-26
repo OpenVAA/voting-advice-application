@@ -61,7 +61,6 @@ import { expect } from '@playwright/test';
 import {
   IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT,
   serverAnswersTimeout,
-  SIGN_IN_REDIRECT_TIMEOUT,
   SIGN_OUT_TIMEOUT,
   TIMEOUTS,
   waitForNavigationFocusReset
@@ -351,9 +350,9 @@ export function createContestantLoginPage(page: Page) {
      */
     async expectLedToSettings(): Promise<void> {
       const settings = buildRoute({ route: 'ContestantAppSettings', locale: 'en' });
-      // A sign-in reaches the settings after the form's post, the app's root and the settings' data: three answers.
+      // A sign-in that carries the settings as its redirect target reaches them after the form's post and the settings' data: two answers.
       await expect(page).toHaveURL((url) => url.pathname.replace(/^\/en(?=\/)/, '') === settings, {
-        timeout: SIGN_IN_REDIRECT_TIMEOUT
+        timeout: serverAnswersTimeout(2)
       });
       await expect(page.getByTestId(testIds.contestant.settings.updateButton)).toBeVisible({
         timeout: TIMEOUTS.slowPage
