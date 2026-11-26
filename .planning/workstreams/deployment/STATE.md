@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
-current_plan: 20
+current_plan: 21
 status: executing
-stopped_at: Completed 189.1.1-19-PLAN.md
-last_updated: "2026-11-26T15:17:04.144Z"
-last_activity: 2026-11-25
+stopped_at: Completed 189.1.1-22-PLAN.md
+last_updated: "2026-11-26T17:41:11.701Z"
+last_activity: 2026-11-26
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 8920277a898b366a8c6068c4740952e92d2991c4
+state_head: bc5fbeb6753d98168312e750f6311f5c5097c863
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 259
-  completed_plans: 237
+  completed_plans: 238
   percent: 77
 ---
 
@@ -33,17 +33,17 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — READY TO EXECUTE
-Plan: 20 of 20
+Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — EXECUTING
+Plan: 21 of 22
 Status: Ready to execute
-Last activity: 2026-11-25 — Phase 189.1.1 execution started
+Last activity: 2026-11-26 — Phase 189.1.1 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 77%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 20
+**Current Plan:** 21
 
 From 184 on, the numeric order is the dependency order.
 
@@ -248,6 +248,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P17 | 45 min | 3 tasks | 4 files |
 | Phase 189.1.1 P18 | 5min | 3 tasks | 8 files |
 | Phase 189.1.1 P19 | 40min | 4 tasks | 3 files |
+| Phase 189.1.1 P22 | 2h20m | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -556,6 +557,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-18: IN-06 (no job timeouts in main.yaml) deferred to todo 2026-11-25-ci-job-timeouts.md for all thirteen jobs; editing main.yaml now would undo D-14i
 - [Phase 189.1.1]: 189.1.1-18: IN-07 (no [db] tag on the 00005 migration commit) deferred to the review restack; rewriting history now would change the SHAs the phase's evidence records
 - [Phase 189.1.1]: 189.1.1-19: the nested-Escape fix counts as observed on staging — the committed script read OPEN_AFTER_ONE_ESCAPE 0 to 1 and CONSENT_AFTER_ONE_ESCAPE denied to none across run 45676071401 (81b80140f), trackEvents true
+- [Phase 189.1.1]: 189.1.1-22: the shared sign-in helper's URL wait has SIGN_IN_REDIRECT_TIMEOUT = 3 x TIMEOUTS.slowPage (post, root, entity home), budget-only fix
+- [Phase 189.1.1]: 189.1.1-22: a URL wait is swept when its action can start a navigation it does not wait for; budget N x TIMEOUTS.slowPage per server answer, N read from the route files
+- [Phase 189.1.1]: 189.1.1-22: the identity provider entries are client-nav (fetch then a full load), N=5; voter (located) navigations are no-server
 
 ### Pending Todos
 
@@ -631,6 +635,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-25T19:07:10.956Z
-**Stopped At:** Completed 189.1.1-19-PLAN.md
+Last session: 2026-11-26T17:41:10.173Z
+**Stopped At:** Completed 189.1.1-22-PLAN.md
 **Resume File:** None
