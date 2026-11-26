@@ -186,7 +186,7 @@ emit() {
 }
 
 resolve_one() {
-  local matched count key fields out
+  local matched count key fields out line
   local -a field
   owned_keys > /dev/null
   matched="$(jq -r --arg id "$REPOSITORY_ID" --arg ref "$REF" --arg mode "$MODE" --arg event "$EVENT" \
@@ -202,7 +202,8 @@ resolve_one() {
 
   fields="$(jq -r --arg key "$key" --arg np "$NAME_PREFIX" "$ENTRY_FIELDS" "$MAP" 2> /dev/null)" \
     || refuse bad_map "an entry field of $key is not a single-line string"
-  mapfile -t field <<< "$fields"
+  field=()
+  while IFS= read -r line; do field+=("$line"); done <<< "$fields"
   [ "${#field[@]}" -eq 4 ] || refuse bad_map "the entry $key could not be read"
 
   out="key=$key

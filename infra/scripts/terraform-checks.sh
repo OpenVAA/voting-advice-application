@@ -52,11 +52,11 @@ require_reached() {
   shift 2
   for required in "$@"; do
     found=0
-    for root in "${REACHED[@]}"; do
+    for root in ${REACHED[@]+"${REACHED[@]}"}; do
       if [ "$root" = "$required" ]; then found=1; fi
     done
     if [ "$found" -ne 1 ]; then
-      echo "::error::$required was not among the $what (${REACHED[*]}). $why"
+      echo "::error::$required was not among the $what (${REACHED[*]-}). $why"
       exit 1
     fi
   done
