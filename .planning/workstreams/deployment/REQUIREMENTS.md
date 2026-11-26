@@ -66,7 +66,6 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [x] **INFRA-20**: Terraform refuses a frontend task whose stop timeout is shorter than its `SHUTDOWN_TIMEOUT`
       plus 15 seconds, and a check run in CI shows that the built server exits by itself after its drain once
       signalled, while a server held alive by a timer is seen not to (D-14e, D-14f). [189.1.1]
-- [ ] **INFRA-21**: `infra/bootstrap` takes a map of deployments, keyed by deployment name and committed as
 - [x] **INFRA-21**: `infra/bootstrap` takes a map of deployments, keyed by deployment name and committed as
       `infra/bootstrap/deployments.auto.tfvars.json`. Each entry gets its own plan role, deploy role, deploy
       policies, frontend execution role and image repository, named apart from every other entry's, while the
@@ -339,10 +338,6 @@ closes; those are not listed against the earlier phase here.
 | INFRA-18 | Phase 183 | Complete |
 | INFRA-19 | Phase 187 | Complete |
 | INFRA-20 | Phase 189.1.1 | Complete |
-| INFRA-21 | Phase 190 | Pending |
-| INFRA-22 | Phase 190 | Pending |
-| INFRA-23 | Phase 190 | Pending |
-| INFRA-24 | Phase 190 | Pending |
 | INFRA-21 | Phase 190 | Complete |
 | INFRA-22 | Phase 190 | Complete |
 | INFRA-23 | Phase 190 | Complete |
@@ -423,14 +418,10 @@ closes; those are not listed against the earlier phase here.
 | DOCS-09 | Phase 189.1.1 | Complete |
 
 **Coverage:**
-- v1 requirements: 92 total (INFRA 20, SUPA 15, PIPE 12, OBS 13, RELAY 23, DOCS 9)
-- Mapped to phases: 92
+- v1 requirements: 98 total (INFRA 24, SUPA 15, PIPE 14, OBS 13, RELAY 23, DOCS 9)
+- Mapped to phases: 98
 - Unmapped: 0
-- Per phase: 181: 1, 182: 19, 183: 4, 184: 14, 185: 19, 186: 1, 187: 13, 188: 4, 189: 8, 189.1: 3, 189.1.1: 6
-- v1 requirements: 92 total (INFRA 23, SUPA 14, PIPE 13, OBS 13, RELAY 21, DOCS 8)
-- Mapped to phases: 92
-- Unmapped: 0
-- Per phase: 181: 1, 182: 19, 183: 4, 184: 14, 185: 19, 186: 1, 187: 13, 188: 4, 189: 8, 189.1: 3, 190: 6
+- Per phase: 181: 1, 182: 19, 183: 4, 184: 14, 185: 19, 186: 1, 187: 13, 188: 4, 189: 8, 189.1: 3, 189.1.1: 6, 190: 6
 
 Count corrected on 2026-10-11: this line said 81 when the requirements were defined. The six group counts sum to
 83, and a count of the ids in this file gives 83.
@@ -440,8 +431,10 @@ Added on 2026-11-21: phase 189.1 adds OBS-12, OBS-13 and PIPE-11, from the tech 
 
 Added on 2026-11-24: phase 189.1.1 adds INFRA-20, SUPA-15, PIPE-12, RELAY-22, RELAY-23 and DOCS-09, from the
 2026-11-23 re-audit of `v2.17-MILESTONE-AUDIT.md` and the UAT todos of 189.1, which brings the count to 92.
+
 Added on 2026-11-24: phase 190 adds INFRA-21 to INFRA-24, PIPE-13 and PIPE-14, the multi-deployment bootstrap,
-which brings the count to 92.
+which brings the count to 98. Phase 190 numbered them INFRA-20 to INFRA-23, PIPE-12 and PIPE-13 when both
+phases were planned on separate branches; they were renumbered when phase 190 was rebased onto 189.1.1.
 
 ---
 *Requirements defined: 2026-10-11*
