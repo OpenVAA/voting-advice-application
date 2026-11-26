@@ -959,7 +959,7 @@ Plans:
 - [x] 189.1.1-19-PLAN.md — deploy of the fix; nested-Escape script on staging before and after (wave 15, operator decision and review approval)
 
 **Wave 16** *(blocked on Wave 15 completion)*
-- [ ] 189.1.1-22-PLAN.md — sweep of every URL wait in `tests/`: the shared sign-in helper red first under a scratch hold of its chain, then a named chain budget; each wait that needs a server answer budgeted and shown red first per changed helper; the targeted projects green (wave 16; from plan 21's red targeted run, evidence 21 `TARGETED_RED_1_`)
+- [ ] 189.1.1-22-PLAN.md — sweep of every URL wait in `tests/`: the unplanned red's click release read from its trace, then the shared sign-in helper red first with its click released while a scratch hold keeps the post in flight, then a named chain budget; each wait classified by the navigation its action starts and budgeted per server answer, shown red first per changed helper with a trace proving the delay reached the wait; the targeted projects green (wave 16; re-planned 2026-11-26 on the corrected premise that a click waits for the document navigation it starts; from plan 21's red targeted run, evidence 21 `TARGETED_RED_1_`)
 
 **Wave 17** *(blocked on Wave 16 completion)*
 - [ ] 189.1.1-21-PLAN.md — the entity pages' URL waits get a server round trip's budget, red first under a scratch data delay (wave 17; Task 1 done, its targeted run red on the shared sign-in setup; a continuation closes Task 2 from plan 22's run)
