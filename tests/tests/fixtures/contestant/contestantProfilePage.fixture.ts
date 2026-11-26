@@ -476,7 +476,8 @@ export function createContestantProfilePage(page: Page) {
       if (opts.expect === 'navigation') {
         await expectLeftAfterSave();
       } else {
-        await expect(saveMessage).toHaveAttribute('data-outcome', /.+/, { timeout: TIMEOUTS.slowPage });
+        // Every write of the save can come before the message.
+        await expect(saveMessage).toHaveAttribute('data-outcome', /.+/, { timeout: PROFILE_SAVE_TIMEOUT });
       }
     },
 
@@ -494,8 +495,9 @@ export function createContestantProfilePage(page: Page) {
       await identity.evaluate(setMark, mark);
       await saveMessage.evaluate(setMark, mark);
 
+      // The re-read follows the save's writes: the other properties', the names', then the loads' data.
       const reread = page.waitForResponse((response) => new URL(response.url()).pathname.endsWith(LOAD_DATA_REQUEST), {
-        timeout: TIMEOUTS.slowPage
+        timeout: PROFILE_SAVE_TIMEOUT
       });
       await submitButton.click();
       await reread;
