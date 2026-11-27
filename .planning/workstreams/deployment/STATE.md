@@ -4,17 +4,17 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
 current_plan: 14
-status: executing
-stopped_at: 190-14 Task 2 unblocked — the staging database was rewritten by 189.1.1 (plan 12, to 00004, then 00005 by its deploy); the branch was rebased onto feat/deployment-terraform-supabase and the evidence commit is to be rebuilt from it, since the rebase brings apps/supabase changes
-last_updated: "2026-11-26T20:00:00.000Z"
-last_activity: 2026-11-26
-last_activity_desc: 190-11 complete (both bootstrap applies through the guard, staging deploy green; INFRA-21 to INFRA-24 complete); 190-14 Task 1 committed (EVIDENCE_COMMIT fd57d43396b4f3da85897d9196102f6aa2eb2561, tree d93523b909cd); 190-14 waits at Task 2, 190-12 at Task 3 (smoke runs right after 190-14's evidence deploy)
+status: verifying
+stopped_at: "Phase 190: 14/14 plans executed; VERIFICATION human_needed 11/14 (destroy.yml scalar empty environment unobserved; infra-plan PR plan job never run; INFRA-23 cross-deployment reads accepted-risk ruling)"
+last_updated: "2026-11-27T10:30:00.000Z"
+last_activity: 2026-11-27
+last_activity_desc: 190-13 complete (gates green on 80903cde1, E2E 747/747, VALIDATION signed); phase verification human_needed
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 14
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 273
-  completed_plans: 251
+  completed_plans: 254
   percent: 92
 ---
 
@@ -32,10 +32,10 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 190 (Multi-deployment bootstrap) — EXECUTING
-Plan: 14 of 14 (190-01 to 190-11 complete; 190-14 waits at Task 2, the operator's push of EVIDENCE_COMMIT to deploy-evidence/190-final and the staging deploy approval, then the two smoke runs of 190-12 Task 3, then 190-14 Task 3, the destroy path rejected at apply-destroy and a wrong-confirm dispatch; 190-12's token probe is recorded (evidence/190-12-observations.md, EMPTY_ENVIRONMENT=runs-without), its Task 3 waits for 190-14's evidence deploy; 190-13 follows 190-14)
+Phase: 190 (Multi-deployment bootstrap) — VERIFYING (human_needed)
+Plan: 14 of 14 (all executed; 190-VERIFICATION.md human_needed, 11/14, three human items)
 Status: In progress (branch planning/deployment-190, rebased 2026-11-26 onto feat/deployment-terraform-supabase 8bbe93f9f; requirement ids renumbered to INFRA-21 to INFRA-24, PIPE-13 and PIPE-14, since 189.1.1 holds INFRA-20 and PIPE-12)
-Last activity: 2026-11-24 — 190-14 Task 1 committed: EVIDENCE_COMMIT=fd57d43396b4f3da85897d9196102f6aa2eb2561 (tree d93523b909cd1330604e8a17f6b360c51ac0e436, parent origin/main 340a20070, source b647e0d72, fixed identity and dates so the operator can rebuild it byte for byte; local ref refs/evidence/190/final; not pushed). No .planning/ path, equal to HEAD outside .planning/; resolver from its tree: deploy/destroy push/destroy dispatch all key=staging, plan mode staging alone, destroy branch refused in deploy mode. Before: 190-11 complete (b647e0d72: SUMMARY; apply 1 moved 37, 0 add/change/destroy; a catch-up apply of 46554181e's plan_deny first, DenyObjectReadsOutsidePipeline never applied live; apply 2 the four EXPECTED_UPDATES; staging deploy run 44939177207 success; 161766684: the runbook names the platform build of Terraform 1.16.5). Before: 190-12 Task 1 committed (acf6da25f: evidence/190-12-probe-workflow.yml, the OIDC subject probe for the downstream, to be copied to .github/workflows/downstream-oidc-probe.yml on a throwaway deploy/nuorten-2027 branch; jobs shape, probe-empty-environment, probe-no-environment, probe-arm; actionlint 1.7.12 clean). Checkpoint at Task 2: operator token probe in OpenVAA/deploy-nuortenvaalikone; Task 3 (two voter-only smoke runs against staging, SMOKE_DEPLOYMENT unset and =staging) follows. No 190-12 SUMMARY yet. Before: 190-10 complete (6be80d2cd, bb05f417f: infra/README.md § Roots, § The deploy pipeline and § Accepted risks for several deployments in one account, a new § Adding a deployment, the guide subsection Adding a deployment from a downstream repository, per-key backend-key comments in the example roots; rootCopies.test.ts discovers every infra/envs/<env>/<family> with readdirSync; infra 724/6, the six baseline host-only errexit failures). Before: 190-09 complete (f9d089c9c, 1e92e2b13: infra-plan.yml starts with a credential-free resolve job in plan mode; the plan and wrong-subject jobs are fail-fast: false matrices over its deployments list, each with its derived plan role, deploy role, cluster, service and AWS root; the push trigger excludes deploy-evidence/destroy-*; no workflow holds a literal role ARN and none reads vars.AWS_PLAN_ROLE_ARN; arm-lock expands the matrix-bound $AWS_ROOT; infra 715/6, the six baseline host-only errexit failures). Before: 190-08 complete (54f880e3e, be66b7f5c: deploy.yml passes --deployment and SMOKE_DEPLOYMENT, re-reads https://$DOMAIN/api/health, alerts to the resolved topic naming the key, refuses a Supabase root whose public_origin is not https://<domain>; destroy.yml heads the resolved Supabase state key; neither names staging outside comments; infra 695/6, the six baseline host-only errexit failures). Before: 190-07 complete (867dd0b2f, 7cc3afaec, 20f1ab5ea: a credential-free resolve job first in deploy.yml and destroy.yml; environments, role, account, region and roots from its outputs; aws-pipeline concurrency; deploy settings check; cross-workflow rules over resolved values; infra 676/6, the six baseline host-only errexit failures). Before: 190-11 Task 1 committed (b512010e8: infra/bootstrap/README.md Steps 11 to 13, the map, the pure move, the Environment-tag tightening, adding a deployment). Checkpoint at Task 2: operator apply 1 (pure move, MOVE_COMMIT ce17178c6) through check-bootstrap-plan.sh --pure-move; Task 3 (apply 2, TIGHTEN_COMMIT 7d4ab1242) follows. No 190-11 SUMMARY yet. Before: 190-06 complete (TIGHTEN_COMMIT update-only vs MOVE_COMMIT, 4 expected policy updates)
+Last activity: 2026-11-27 — 190-13 complete: every gate 0 on GATES_HEAD 80903cde1, full E2E 747/747 (tests/e2e-runs/190-13-full), VALIDATION signed; evidence deploy repeated green after the rebase onto 189.1.1 (run 45963033722); verifier human_needed 11/14
 
 Progress: [██████████████████░░] 172/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
@@ -674,7 +674,7 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 ## Session Continuity
 
 Last session: 2026-11-24T21:10:00.000Z
-**Stopped At:** Completed 190-11-PLAN.md; 190-14 waits at Task 2 (operator push of EVIDENCE_COMMIT and the staging deploy), then 190-12 Task 3, then 190-14 Task 3
-**Resume File:** .planning/workstreams/deployment/phases/190-multi-deployment-bootstrap/HANDOFF.md
+**Stopped At:** Phase 190 verification human_needed — three operator items (see 190-VERIFICATION.md)
+**Resume File:** .planning/workstreams/deployment/phases/190-multi-deployment-bootstrap/190-VERIFICATION.md
 
 - [Phase 190]: 190-14 evidence deploy attempt 1 (run 45564561423) failed at the migration push: staging's database holds migrations 00005-00024 of the pre-restack history, which the restacked stack dropped (bba309b72). Outside Phase 190; operator ruling 2026-11-25: wait for the session rewriting the staging database, then re-run the run.

@@ -149,11 +149,11 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       pinned by its fingerprint; a wrong CA or host name is seen refused, the guard test fails on a fallback to
       `require` or a dropped root path, SCRAM channel binding is required when the pooler is measured to offer
       it and its absence is recorded otherwise, and an observed deploy is green with it (D-08..D-12). [189.1.1]
-- [ ] **PIPE-13**: The deploy, destroy and infra-plan workflows, the migration push and the deployed smoke run
+- [x] **PIPE-13**: The deploy, destroy and infra-plan workflows, the migration push and the deployed smoke run
       read the deployment from the bootstrap map by repository id and ref, so a downstream repository runs them
       unedited. A run that matches no entry, or more than one, fails before it names an environment or assumes a
       role. An entry with no GitHub Environment runs its jobs with none. [190]
-- [ ] **PIPE-14**: Every env root under `infra/envs/<name>/` is validated and held to staging's wiring, so a
+- [x] **PIPE-14**: Every env root under `infra/envs/<name>/` is validated and held to staging's wiring, so a
       downstream's roots are checked without any upstream edit. [190]
 
 ### OBS — Hosted-behaviour observations
@@ -369,8 +369,8 @@ closes; those are not listed against the earlier phase here.
 | PIPE-10 | Phase 187 | Complete |
 | PIPE-11 | Phase 189.1 | Complete |
 | PIPE-12 | Phase 189.1.1 | Complete |
-| PIPE-13 | Phase 190 | Pending |
-| PIPE-14 | Phase 190 | Pending |
+| PIPE-13 | Phase 190 | Complete |
+| PIPE-14 | Phase 190 | Complete |
 | OBS-01 | Phase 184 | Complete |
 | OBS-02 | Phase 184 | Complete |
 | OBS-03 | Phase 184 | Complete |
