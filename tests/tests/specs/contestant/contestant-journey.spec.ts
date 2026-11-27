@@ -57,7 +57,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '../../fixtures/contestant/contestant-journey';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
-import { TIMEOUTS } from '../../helpers';
+import {
+  PASSWORD_RESET_REDIRECT_TIMEOUT,
+  PROFILE_SAVE_TIMEOUT,
+  SIGN_IN_REDIRECT_TIMEOUT,
+  TIMEOUTS
+} from '../../helpers';
 import {
   contestantAppRootUrlRe,
   contestantHomeUrlRe,
@@ -203,6 +208,15 @@ const INVALID_PORTRAIT_PATH = path.resolve(
  * How long the database's deletion of a stored object, which is sent only after the writing transaction commits, gets before the object is called undeleted.
  */
 const STORED_OBJECT_DELETE_POLL = { timeout: 30_000, intervals: [500, 1000, 2000] };
+
+/**
+ * Wait until a sign-in of the journey's candidate, who edits one entity, has reached that entity's home and the home's status message is shown. The address holds the whole sign-in chain, so it has the sign-in's budget.
+ * @param page - The page that signed in.
+ */
+async function expectHomeAfterSignIn(page: Page): Promise<void> {
+  await page.waitForURL(contestantHomeUrlRe(), { timeout: SIGN_IN_REDIRECT_TIMEOUT });
+  await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+}
 
 /**
  * The HTTP status of an anonymous GET of a public stored object. A deleted object answers 400.
@@ -521,7 +535,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       await contestantPasswordResetPage.expectAddress(UNREGISTERED_CANDIDATE_EMAIL);
       await contestantPasswordResetPage.setPassword(PASSWORD_2);
       // A saved password leaves the user signed in and leads to the app root, which sends a user with one entity to that entity's home. The terms were accepted in step 5, so no other view comes first.
-      await page.waitForURL(contestantHomeUrlRe(), { timeout: TIMEOUTS.slowPage });
+      await page.waitForURL(contestantHomeUrlRe(), { timeout: PASSWORD_RESET_REDIRECT_TIMEOUT });
       await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -545,9 +559,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       // Login with PASSWORD_2 (correct) → home (ToU already accepted, no re-acceptance prompt expected).
       await contestantLoginPage.enterPassword(PASSWORD_2);
       await contestantLoginPage.submit();
-      await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUTS.slowPage
-      });
+      await expectHomeAfterSignIn(page);
     });
 
     // ============== Step 10: return-from-static page =====================
@@ -668,6 +680,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       ).toHaveAccessibleName('Remove item');
       await contestantProfilePage.submit();
       // Post-submit lands on home. The required field is still empty, so the profile stays incomplete beside the open opinions, and the preview stays closed.
+      await page.waitForURL(contestantHomeUrlRe(), { timeout: PROFILE_SAVE_TIMEOUT });
       await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -707,7 +720,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       // Positively settle on the contestant-home route BEFORE asserting the home status message. With the required field still empty, the profile's save leads to the home of the entity in the URL. Asserting that exact destination makes a misroute (to login, an error page or another candidate sub-route) fail here and name the true destination.
       // The pattern matches the entity's home with or without a trailing slash, a query or a fragment (tolerating an optional locale prefix), but not the app root, which carries no entity, nor the profile page or any other sub-route.
       // The URL settle stays split from the element-visibility wait, so the status check runs against an already-navigated home route rather than a mid-transition DOM.
-      await page.waitForURL(contestantHomeUrlRe(), { timeout: TIMEOUTS.slowPage });
+      await page.waitForURL(contestantHomeUrlRe(), { timeout: PROFILE_SAVE_TIMEOUT });
       await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -722,7 +735,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       await contestantProfilePage.fillQuestion(/\[qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
       await contestantProfilePage.submit();
       // With the required field filled in and opinion questions unanswered, the profile's save leads to the questions overview.
-      await expect(page).toHaveURL(contestantUrlRe('/questions', 'any'), { timeout: TIMEOUTS.slowPage });
+      await expect(page).toHaveURL(contestantUrlRe('/questions', 'any'), { timeout: PROFILE_SAVE_TIMEOUT });
     });
 
     // ============== Step 15: questions overview intro + clickStart =======
@@ -971,14 +984,13 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
   test('an open answer can be written before the question is answered, and is saved with it', async ({
     page,
     contestantLoginPage,
-    contestantHomePage,
     contestantQuestionsOverviewPage,
     contestantQuestionPage
   }) => {
     await removeStoredAnswer(new SupabaseAdminClient(), OPEN_ANSWER_QUESTION_EXTERNAL_ID);
     await contestantLoginPage.goToPage();
     await contestantLoginPage.login(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
-    await contestantHomePage.expectStatusMessage();
+    await expectHomeAfterSignIn(page);
     await page.goto('/en/contestant/questions');
     await contestantQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-1-likert5\]/);
 
@@ -1005,13 +1017,13 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
   });
 
   test('a candidate removes their portrait, and its stored file is deleted', async ({
+    page,
     contestantLoginPage,
-    contestantHomePage,
     contestantProfilePage
   }) => {
     await contestantLoginPage.goToPage();
     await contestantLoginPage.login(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
-    await contestantHomePage.expectStatusMessage();
+    await expectHomeAfterSignIn(page);
     await contestantProfilePage.open();
     const portraitUrl = await contestantProfilePage.shownImageUrl();
     expect(await publicObjectStatus(portraitUrl), 'the portrait is served before it is removed').toBe(200);

@@ -43,7 +43,7 @@
 import { randomBytes } from 'node:crypto';
 import { expect } from '@playwright/test';
 import { COOKIE } from '../../../../apps/frontend/src/lib/cookies/index';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { ADMIN_LOGIN_REDIRECT_TIMEOUT, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { routeUntilEnded } from '../../utils/endableRoute';
 import { expectLabelInRow, expectLabelOnOneLine } from '../../utils/labelInRow';
@@ -83,6 +83,11 @@ export function createAdminLoginPage(page: Page) {
   page.on('request', (request) => {
     if (new URL(request.url()).pathname.endsWith('/admin/login/__data.json')) loginPageDataRequests += 1;
   });
+
+  /** Wait until the address matches, with the budget of the two server answers that lead to it. */
+  async function expectAddress(pattern: RegExp | ((url: URL) => boolean)): Promise<void> {
+    await expect(page).toHaveURL(pattern, { timeout: ADMIN_LOGIN_REDIRECT_TIMEOUT });
+  }
 
   return {
     /**
@@ -156,7 +161,7 @@ export function createAdminLoginPage(page: Page) {
      * A redirect is followed silently, so the address alone cannot tell a landing from a bounce that came back; the content is what a refused login never shows.
      */
     async expectAdminHome(): Promise<void> {
-      await expect(page).toHaveURL(new RegExp(`${adminHome}$`), { timeout: TIMEOUTS.slowPage });
+      await expectAddress(new RegExp(`${adminHome}$`));
       await expect(page).not.toHaveURL(new RegExp(`${adminLogin}(\\?|$)`));
       await expect(page.getByRole('button', { name: 'Jobs Monitoring' })).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
@@ -165,7 +170,7 @@ export function createAdminLoginPage(page: Page) {
      * Assert that the browser is on the login page: the address is the login page's and the email field is visible.
      */
     async expectOnLoginPage(): Promise<void> {
-      await expect(page).toHaveURL(new RegExp(`${adminLogin}(\\?|$)`), { timeout: TIMEOUTS.slowPage });
+      await expectAddress(new RegExp(`${adminLogin}(\\?|$)`));
       await expect(emailInput).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
 
@@ -325,18 +330,14 @@ export function createAdminLoginPage(page: Page) {
      * The address is what settles a link here, because the form does not change.
      */
     async expectLoginAddressSaysLoginFailed(): Promise<void> {
-      await expect(page).toHaveURL(new RegExp(`${adminLogin}\\?.*errorMessage=loginFailed`), {
-        timeout: TIMEOUTS.slowPage
-      });
+      await expectAddress(new RegExp(`${adminLogin}\\?.*errorMessage=loginFailed`));
     },
 
     /**
      * Assert that the address is the login page's and carries the code of the message that the user is not authorized.
      */
     async expectLoginAddressSaysNotAuthorized(): Promise<void> {
-      await expect(page).toHaveURL(new RegExp(`${adminLogin}\\?.*errorMessage=userNotAuthorized`), {
-        timeout: TIMEOUTS.slowPage
-      });
+      await expectAddress(new RegExp(`${adminLogin}\\?.*errorMessage=userNotAuthorized`));
     },
 
     /**
@@ -357,7 +358,7 @@ export function createAdminLoginPage(page: Page) {
      * Assert that the browser is on the login page, whose alert holds the sentence of a mailed link that could not be used, as the page's English catalogue words it.
      */
     async expectSaysLinkFailed(): Promise<void> {
-      await expect(page).toHaveURL((url) => url.pathname === adminLogin, { timeout: TIMEOUTS.slowPage });
+      await expectAddress((url) => url.pathname === adminLogin);
       await expect(notice).toContainText(messageOf('adminApp.login', 'errors.linkFailed'), {
         timeout: TIMEOUTS.slowPage
       });

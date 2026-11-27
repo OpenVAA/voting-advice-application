@@ -20,6 +20,7 @@
  */
 
 import { expect } from '@playwright/test';
+import { SIGN_OUT_TIMEOUT } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
@@ -43,10 +44,10 @@ export function createContestantLogoutButton(page: Page) {
      */
     async clickWithoutDialog(): Promise<void> {
       await page.getByTestId(testIds.contestant.home.logout).click();
-      // No dialog is opened in this branch: triggerLogout dispatches straight to logout() per LogoutButton.svelte:58-64.
+      // No dialog is opened in this branch: `triggerLogout` in LogoutButton.svelte opens the modal only while a task is left or a navigation guard is active, and otherwise logs out at once.
       await expect(page.getByRole('dialog')).toHaveCount(0);
       // The logout ends with a navigation to the login screen: its address, and the screen itself.
-      await expect(page).toHaveURL(/\/contestant\/login/);
+      await expect(page).toHaveURL(/\/contestant\/login/, { timeout: SIGN_OUT_TIMEOUT });
       await expect(page.getByTestId(testIds.contestant.login.page)).toBeVisible();
     },
 
