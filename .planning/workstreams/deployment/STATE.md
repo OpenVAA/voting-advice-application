@@ -4,15 +4,15 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
 current_plan: 14
-status: verifying
-stopped_at: "Phase 190: 14/14 plans executed; VERIFICATION human_needed 11/14 (destroy.yml scalar empty environment unobserved; infra-plan PR plan job never run; INFRA-23 cross-deployment reads accepted-risk ruling)"
+status: completed
+stopped_at: "Phase 190 complete: 14/14 plans, VERIFICATION passed after operator rulings (destroy.yml object form fixed; PR plan job deferred; 6 scopable + 7 unscopable cross-deployment reads accepted)"
 last_updated: "2026-11-27T10:30:00.000Z"
 last_activity: 2026-11-27
-last_activity_desc: 190-13 complete (gates green on 80903cde1, E2E 747/747, VALIDATION signed); phase verification human_needed
+last_activity_desc: Phase 190 complete
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 14
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 273
   completed_plans: 254
   percent: 92
@@ -32,8 +32,8 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 190 (Multi-deployment bootstrap) — VERIFYING (human_needed)
-Plan: 14 of 14 (all executed; 190-VERIFICATION.md human_needed, 11/14, three human items)
+Phase: 190 (Multi-deployment bootstrap) — COMPLETE 2026-11-27
+Plan: 14 of 14 (all executed; VERIFICATION passed after the operator rulings of 2026-11-27)
 Status: In progress (branch planning/deployment-190, rebased 2026-11-26 onto feat/deployment-terraform-supabase 8bbe93f9f; requirement ids renumbered to INFRA-21 to INFRA-24, PIPE-13 and PIPE-14, since 189.1.1 holds INFRA-20 and PIPE-12)
 Last activity: 2026-11-27 — 190-13 complete: every gate 0 on GATES_HEAD 80903cde1, full E2E 747/747 (tests/e2e-runs/190-13-full), VALIDATION signed; evidence deploy repeated green after the rebase onto 189.1.1 (run 45963033722); verifier human_needed 11/14
 
@@ -674,7 +674,7 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 ## Session Continuity
 
 Last session: 2026-11-24T21:10:00.000Z
-**Stopped At:** Phase 190 verification human_needed — three operator items (see 190-VERIFICATION.md)
-**Resume File:** .planning/workstreams/deployment/phases/190-multi-deployment-bootstrap/190-VERIFICATION.md
+**Stopped At:** Phase 190 complete
+**Resume File:** None
 
 - [Phase 190]: 190-14 evidence deploy attempt 1 (run 45564561423) failed at the migration push: staging's database holds migrations 00005-00024 of the pre-restack history, which the restacked stack dropped (bba309b72). Outside Phase 190; operator ruling 2026-11-25: wait for the session rewriting the staging database, then re-run the run.

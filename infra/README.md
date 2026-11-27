@@ -521,9 +521,13 @@ any other entry of the map.
   tags (`DescribeLoadBalancers`, `DescribeListeners`, `DescribeRules`, `DescribeTargetGroups`,
   `DescribeLoadBalancerAttributes`, `DescribeTags`), its SSM String parameters (`GetParameter`,
   `GetParameters`, `GetParametersByPath`), and its ECS service and task definitions
-  (`DescribeServices`, `DescribeTaskDefinition`). The origin secret header is among them. Whether
-  any of these actions takes a resource-tag condition is unconfirmed, so no tag-conditioned deny
-  narrows them; a confirmed one can be added to the plan role's deny policy in place. The plan
+  (`DescribeServices`, `DescribeTaskDefinition`). The origin secret header is among them. Per the
+  Service Authorization Reference, seven of these cannot be scoped: the six load balancer reads and
+  `DescribeTaskDefinition` apply to `*` alone and take no condition key. The other six can be:
+  `GetDistribution` and `GetDistributionConfig` by `aws:ResourceTag/Environment`, the three
+  `GetParameter*` reads by the parameter path `/openvaa/<key>/`, and `DescribeServices` by the
+  service ARN under the cluster `openvaa-<key>`. They are accepted unscoped for now; a deny of
+  them outside the deployment's own key can be added to the plan role's deny policy in place. The plan
   role's deny still keeps every S3 object but its own pipeline state, every secret value and every
   data-plane read out of its reach.
 - The account has one monthly budget, so its alert cannot say which deployment spent.

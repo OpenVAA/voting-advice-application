@@ -84,6 +84,7 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 - [x] **Phase 189.1: Address tech debt: invitation-limit guard and trackEvents smoke** (completed 2026-11-22)
 - [x] **Phase 189.1.1: Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit** (completed 2026-11-27)
 - [ ] **Phase 189.1.2: Move the deployment to Supabase publishable and secret keys before the legacy anon and service_role keys retire (FUT-02)**
+- [x] **Phase 190: Multi-deployment bootstrap** - `infra/bootstrap` takes a map of deployments, so a second instance deploys from its own repository into the same AWS account (INFRA-21 to INFRA-24, PIPE-13, PIPE-14) (completed 2026-11-27)
 
 ## Phase Details
 
