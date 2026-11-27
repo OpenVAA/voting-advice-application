@@ -1,0 +1,1 @@
+No external API integration: the phase provisions AWS infrastructure with Terraform and observes it with the AWS CLI; the application gains no client of an external API, and its reads from Supabase are the ones it already makes (the detector fired on "no AWS API" and "the Supabase REST host" in plan prose).

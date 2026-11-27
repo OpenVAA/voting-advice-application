@@ -60,7 +60,7 @@ key-decisions:
   - "The producer's clock is performance.now(), shared by the view tracker and the buffered events' ages; tests stand it in with a spy"
   - "startPageview reads the page's visibility from document.visibilityState when a document exists, and treats a missing document as visible"
 
-requirements-completed: []   # RELAY-05/10/11/15/16/17/18 are completed by the cutover as a whole; they are marked when plan 182-26 closes the span
+requirements-completed: [RELAY-18]   # marked at the v2.17 milestone audit (2026-11-21) from the phase VERIFICATION.md
 
 duration: 12min
 completed: 2026-10-19
