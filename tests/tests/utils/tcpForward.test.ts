@@ -43,9 +43,9 @@ const TEST_CONNECT_TIMEOUT_MS = 200;
 const TEST_CONNECT_ATTEMPTS = 3;
 
 /**
- * TEST-NET-2 (RFC 5737). Guaranteed never to be assigned to a real host, so a dial to it cannot connect and cannot be refused — it is silently dropped, which is precisely the dropped-SYN shape this fix exists for, without having to induce packet loss.
+ * The helper `startBlackhole` spawns: a loopback listener whose accept queue it has filled itself, so the kernel drops every further SYN to it unanswered. A dial to it cannot connect and is not refused, which is precisely the dropped-SYN shape this fix exists for, without having to induce packet loss — and without depending on how the host routes a non-loopback address, since an egress firewall that answers with a reset would turn a remote "unreachable" address into an instant refusal.
  */
-const BLACKHOLE_HOST = '198.51.100.1';
+const BLACKHOLE_LISTENER = path.join(path.dirname(fileURLToPath(import.meta.url)), 'blackholeListener.py');
 
 const started: Array<ChildProcess> = [];
 const servers: Array<Server | net.Server> = [];
@@ -78,6 +78,36 @@ async function startEchoUpstream(port: number): Promise<Server> {
   await new Promise((resolve) => server.listen(port, '127.0.0.1', () => resolve(null)));
   servers.push(server);
   return server;
+}
+
+/** Start a loopback port that drops every SYN, resolving its port once the helper has seen a dial to it hang. */
+async function startBlackhole(): Promise<number> {
+  const child = spawn('python3', [BLACKHOLE_LISTENER]);
+  started.push(child);
+  let output = '';
+  child.stderr?.on('data', (d) => (output += String(d)));
+  return new Promise<number>((resolve, reject) => {
+    const deadline = setTimeout(
+      () => reject(new Error(`blackhole listener never reported READY; output:\n${output}`)),
+      10_000
+    );
+    child.on('error', (err) => {
+      clearTimeout(deadline);
+      reject(err);
+    });
+    child.on('exit', (code) => {
+      clearTimeout(deadline);
+      reject(new Error(`blackhole listener exited with ${code}; output:\n${output}`));
+    });
+    child.stdout?.on('data', (d) => {
+      output += String(d);
+      const ready = output.match(/READY (\d+)/);
+      if (ready) {
+        clearTimeout(deadline);
+        resolve(Number(ready[1]));
+      }
+    });
+  });
 }
 
 /** Spawn the relay and resolve once it reports ALL READY. Collects its output for assertions. */
@@ -171,8 +201,9 @@ describe('tcp-forward.mjs — upstream dial contract (answer-surface-wait-timeou
   it('gives up on an unreachable upstream in BOUNDED time rather than hanging', async () => {
     // Without the deadline this dial sits in Linux SYN backoff for minutes — the defect.
     // With it, the ladder is attempts x timeout and then the downstream is destroyed.
+    const blackholePort = await startBlackhole();
     const relayPort = await freePort();
-    await startRelay([`${relayPort}:${BLACKHOLE_HOST}:9`]);
+    await startRelay([`${relayPort}:127.0.0.1:${blackholePort}`]);
 
     const startedAt = Date.now();
     await expect(postThroughRelay(relayPort, Buffer.from('x'), 30_000)).rejects.toThrow();
@@ -185,8 +216,9 @@ describe('tcp-forward.mjs — upstream dial contract (answer-surface-wait-timeou
   });
 
   it('reports dial statistics on shutdown so a run log carries the evidence', async () => {
+    const blackholePort = await startBlackhole();
     const relayPort = await freePort();
-    const relay = await startRelay([`${relayPort}:${BLACKHOLE_HOST}:9`]);
+    const relay = await startRelay([`${relayPort}:127.0.0.1:${blackholePort}`]);
     await postThroughRelay(relayPort, Buffer.from('x'), 30_000).catch(() => null);
 
     relay.child.kill('SIGTERM');
