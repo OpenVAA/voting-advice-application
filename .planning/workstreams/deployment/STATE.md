@@ -5,15 +5,15 @@ milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytic
 current_phase: 189.1.1
 current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
 current_plan: 22
-status: verifying
-stopped_at: Completed 189.1.1-20-PLAN.md
-last_updated: "2026-11-26T18:18:38.064Z"
-last_activity: 2026-11-26
-last_activity_desc: Phase 189.1.1 execution started
+status: completed
+stopped_at: Phase 189.1.1 complete — verification passed 5/5, UAT 2/2, security threats_open 0, R-1 observed in deploy run 45960590610
+last_updated: "2026-11-27T08:30:00.000Z"
+last_activity: 2026-11-27
+last_activity_desc: Phase 189.1.1 complete
 state_head: 6233f62295999476d0c7d29231d1f325fa0d9138
 progress:
   total_phases: 13
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 259
   completed_plans: 240
   percent: 77
@@ -35,8 +35,8 @@ Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is 
 
 Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — EXECUTING
 Plan: 22 of 22
-Status: Phase complete — ready for verification
-Last activity: 2026-11-26 — Phase 189.1.1 execution started
+Status: Phase complete — verified
+Last activity: 2026-11-27 — Phase 189.1.1 complete: R-1 observed in deploy run 45960590610 (push_connection=pooler, drift_status=0); closing gates green on 65fa340ad
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 77%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
@@ -642,5 +642,5 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 ## Session Continuity
 
 Last session: 2026-11-26T18:18:36.480Z
-**Stopped At:** Completed 189.1.1-20-PLAN.md
+**Stopped At:** Phase 189.1.1 complete
 **Resume File:** None
