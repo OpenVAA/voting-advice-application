@@ -171,7 +171,32 @@ After the run, `curl -s https://staging.openvaa.org/api/health` printed `{"statu
 
 ## Destroy
 
-(Task 3, operator: pending)
+Task 3, 2026-11-27. With the operator's go-ahead the session pushed EVIDENCE_COMMIT to `deploy-evidence/destroy-staging` (`+ 331b5db28...b7a78427d`, force-with-lease on 331b5db28, a leftover of phase 187). The push started "Destroy staging AWS" alone; no Deploy or Infrastructure plan run. The operator approved `plan-destroy` and rejected `apply-destroy` at the `staging-destroy` gate.
+
+```
+key=staging
+destroy_environment=staging-destroy
+supabase_root_refused=yes
+destroy_guard=pass
+```
+
+Approvals of the run (`gh api repos/OpenVAA/voting-advice-application/actions/runs/45954382752/approvals`): `approved staging-destroy` (plan-destroy), `rejected staging-destroy` (apply-destroy). Jobs: resolve success (5 steps), plan-destroy success (15 steps), apply-destroy failure with no step run (GitHub's conclusion for a rejected deployment). Afterwards `https://staging.openvaa.org/api/health` still printed `{"status":"ok","build":"b7a78427de3c42817b04610155007f2e3d7f6c72"}`.
+
+DESTROY_RUN=https://github.com/OpenVAA/voting-advice-application/actions/runs/45954382752 plan-destroy=success apply-destroy=rejected
+
+The wrong-confirm dispatch, `gh workflow run destroy.yml --ref deploy-evidence/190-final -f confirm=no`: run conclusion success on `deploy-evidence/190-final`, resolve success, both destroy jobs skipped.
+
+DISPATCH_RUN=https://github.com/OpenVAA/voting-advice-application/actions/runs/45958867533 resolve=success plan-destroy=skipped apply-destroy=skipped
+
+Both evidence branches deleted:
+
+```
+$ git push origin --delete deploy-evidence/190-final deploy-evidence/destroy-staging
+ - [deleted]             deploy-evidence/190-final
+ - [deleted]             deploy-evidence/destroy-staging
+$ git ls-remote origin refs/heads/deploy-evidence/190-final refs/heads/deploy-evidence/destroy-staging | wc -l
+       0
+```
 
 ## Evidence deploy, attempt 1 (2026-11-25)
 
