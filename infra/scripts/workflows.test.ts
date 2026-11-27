@@ -63,6 +63,12 @@ const EXPECTED_ENVIRONMENTS: Record<string, Array<string>> = {
   'destroy.yml': ['${{ needs.resolve.outputs.destroy_environment }}'],
   'infra-plan.yml': []
 };
+/** The jobs that name a resolved environment, each in the object form with a url: for a deployment with no GitHub Environment the name is empty, and only that form was observed to run with no environment. */
+const OBJECT_FORM_JOBS: Array<[string, string]> = [
+  ['deploy.yml', 'deploy'],
+  ['destroy.yml', 'plan-destroy'],
+  ['destroy.yml', 'apply-destroy']
+];
 /** A literal IAM role ARN. */
 const ROLE_ARN = /arn:aws:iam::\d{12}:role\/[\w+=,.@/-]+/g;
 /**
@@ -304,12 +310,13 @@ function environmentViolations(files: Array<WorkflowFile>): Array<string> {
       ? []
       : [`environments: ${name} names ${JSON.stringify(actual)}, not ${JSON.stringify(expected)}`];
   });
-  const deploy = workflowJobs(parseWorkflow(workflowFile(files, 'deploy.yml').text)).find(([id]) => id === 'deploy');
-  const environment = deploy?.[1].environment;
-  const form =
-    isRecord(environment) && typeof environment.url === 'string'
+  const form = OBJECT_FORM_JOBS.flatMap(([name, jobId]) => {
+    const job = workflowJobs(parseWorkflow(workflowFile(files, name).text)).find(([id]) => id === jobId);
+    const environment = job?.[1].environment;
+    return isRecord(environment) && typeof environment.url === 'string'
       ? []
-      : [`environments: deploy.yml job deploy names its environment without a url: ${JSON.stringify(environment)}`];
+      : [`environments: ${name} job ${jobId} names its environment without a url: ${JSON.stringify(environment)}`];
+  });
   return [...named, ...form];
 }
 
@@ -728,8 +735,16 @@ describe('environments: the resolved environment in deploy.yml, the resolved des
     {
       fault: 'the destroy apply job names a literal staging-destroy',
       name: 'destroy.yml',
-      pattern: /environment: \$\{\{ needs\.resolve\.outputs\.destroy_environment \}\}(?![\s\S]*environment: \$\{\{)/,
-      replacement: 'environment: staging-destroy'
+      pattern:
+        /name: \$\{\{ needs\.resolve\.outputs\.destroy_environment \}\}(?![\s\S]*name: \$\{\{ needs\.resolve\.outputs\.destroy_environment)/,
+      replacement: 'name: staging-destroy'
+    },
+    {
+      fault: 'the destroy apply job names its environment in the short form',
+      name: 'destroy.yml',
+      pattern:
+        /environment:\n {6}name: (\$\{\{ needs\.resolve\.outputs\.destroy_environment \}\})\n {6}url: [^\n]*(?![\s\S]*name: \$\{\{ needs\.resolve\.outputs\.destroy_environment)/,
+      replacement: 'environment: $1'
     },
     {
       fault: 'the deploy job names a literal staging',

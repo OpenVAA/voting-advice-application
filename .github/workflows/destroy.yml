@@ -113,7 +113,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    environment: ${{ needs.resolve.outputs.destroy_environment }}
+    environment:
+      name: ${{ needs.resolve.outputs.destroy_environment }}
+      url: https://${{ needs.resolve.outputs.domain }}
 
     steps:
       - name: "Checkout source code"
@@ -284,7 +286,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    environment: ${{ needs.resolve.outputs.destroy_environment }}
+    environment:
+      name: ${{ needs.resolve.outputs.destroy_environment }}
+      url: https://${{ needs.resolve.outputs.domain }}
 
     steps:
       - name: "Checkout source code"

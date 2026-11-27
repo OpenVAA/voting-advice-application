@@ -26,6 +26,8 @@ const RESOLVED_AWS_ROOT = '${{ needs.resolve.outputs.aws_root }}';
 const RESOLVED_SUPABASE_ROOT = '${{ needs.resolve.outputs.supabase_root }}';
 const DEPLOY_ROLE_ARN = '${{ needs.resolve.outputs.deploy_role_arn }}';
 const DESTROY_ENVIRONMENT = '${{ needs.resolve.outputs.destroy_environment }}';
+/** The environment of each destroy job, in the object form whose empty name was observed to run with no environment. */
+const DESTROY_JOB_ENVIRONMENT = { name: DESTROY_ENVIRONMENT, url: 'https://${{ needs.resolve.outputs.domain }}' };
 /** The condition both destroy jobs run under: a push of the resolved destroy branch, or a dispatch with the resolved confirmation. */
 const JOB_CONDITION =
   "(github.event_name == 'push' && github.ref == format('refs/heads/{0}', needs.resolve.outputs.destroy_branch)) || (github.event_name == 'workflow_dispatch' && inputs.confirm == needs.resolve.outputs.destroy_confirm)";
@@ -289,7 +291,7 @@ describe('the jobs of destroy.yml', () => {
     'runs %s in the resolved destroy environment with its own approval',
     (id) => {
       const job = jobOf(doc, id);
-      expect(job.environment).toBe(DESTROY_ENVIRONMENT);
+      expect(job.environment).toEqual(DESTROY_JOB_ENVIRONMENT);
       expect(job.permissions).toEqual({ contents: 'read', 'id-token': 'write' });
       expect(job['runs-on']).toBe('ubuntu-24.04');
       expect('env' in job).toBe(false);
@@ -621,10 +623,19 @@ describe('the destroy-specific guards are red on a faulty copy', () => {
   it('sees the apply job in another environment', () => {
     const mutated = mutate(
       text,
-      /(apply-destroy:[\s\S]*?)environment: \$\{\{ needs\.resolve\.outputs\.destroy_environment \}\}/,
-      '$1environment: ${{ needs.resolve.outputs.environment }}'
+      /(apply-destroy:[\s\S]*?)name: \$\{\{ needs\.resolve\.outputs\.destroy_environment \}\}/,
+      '$1name: ${{ needs.resolve.outputs.environment }}'
     );
-    expect(jobOf(parseWorkflow(mutated), 'apply-destroy').environment).not.toBe(DESTROY_ENVIRONMENT);
+    expect(jobOf(parseWorkflow(mutated), 'apply-destroy').environment).not.toEqual(DESTROY_JOB_ENVIRONMENT);
+  });
+
+  it('sees the apply job name its environment in the short form', () => {
+    const mutated = mutate(
+      text,
+      /(apply-destroy:[\s\S]*?)environment:\n {6}name: (\$\{\{ needs\.resolve\.outputs\.destroy_environment \}\})\n {6}url: [^\n]*/,
+      '$1environment: $2'
+    );
+    expect(jobOf(parseWorkflow(mutated), 'apply-destroy').environment).not.toEqual(DESTROY_JOB_ENVIRONMENT);
   });
 
   it('sees a pull-request trigger', () => {
