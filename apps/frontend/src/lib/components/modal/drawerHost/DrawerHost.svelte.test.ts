@@ -1,12 +1,13 @@
 /**
- * `DrawerHost.svelte` timing: focus enters the dialog only while it still shows the payload it opened with, the close waits out the CSS animation unless the user prefers reduced motion — regardless of View Transitions support — and a drawer closed within its first two frames keeps its closed-state styles, so its next open slides up again. User dismissal calls the payload's `onDismiss` once per open: Escape, the backdrop and the close button do nothing while the drawer is closing.
+ * `DrawerHost.svelte` timing: focus enters the dialog only while it still shows the payload it opened with, the close waits out the CSS animation unless the user prefers reduced motion — regardless of View Transitions support — and a drawer closed within its first two frames keeps its closed-state styles, so its next open slides up again. User dismissal calls the payload's `onDismiss` once per open: Escape, the backdrop and the close button do nothing while the drawer is closing. An Escape the drawer takes has its default action cancelled, so the browser's own Escape handling closes no other dialog, and the drawer takes an Escape only while it is the topmost open modal: a `Modal` opened above it takes the key first, and one under it is left open; tests/tests/specs/voter/voter-prefs-tracking.spec.ts drives the consent prompt open under a drawer in a browser.
  */
 
-import { flushSync, mount, unmount } from 'svelte';
+import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Button } from '$lib/components/button';
 import { DELAY } from '$lib/utils/timing';
 import { drawerHost } from './drawerHostState.svelte';
+import { polyfillDialogs, pressEscape as pressPlatformEscape } from '../dialogPlatform.testUtils';
 
 vi.mock('$app/environment', () => ({ browser: true, dev: true, building: false, version: 'test' }));
 
@@ -15,24 +16,15 @@ vi.mock('$lib/contexts/component', () => ({
 }));
 
 const DrawerHost = (await import('./DrawerHost.svelte')).default;
+const Modal = (await import('../Modal.svelte')).default;
 
-const proto = HTMLDialogElement.prototype as HTMLDialogElement & Record<string, unknown>;
-const original = { showModal: proto.showModal, close: proto.close };
+let restoreDialogs: () => void;
 
 beforeAll(() => {
-  // jsdom implements neither method.
-  proto.showModal = function (this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  proto.close = function (this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
+  restoreDialogs = polyfillDialogs();
 });
 
-afterAll(() => {
-  proto.showModal = original.showModal;
-  proto.close = original.close;
-});
+afterAll(() => restoreDialogs());
 
 let host: ReturnType<typeof mount> | undefined;
 let target: HTMLElement;
@@ -42,7 +34,11 @@ beforeEach(() => {
   stubReducedMotion(false);
 });
 
+let modalTeardown: Array<() => void> = [];
+
 afterEach(() => {
+  for (const fn of modalTeardown.reverse()) fn();
+  modalTeardown = [];
   drawerHost.close();
   flushSync();
   if (host) unmount(host);
@@ -160,7 +156,66 @@ describe('DrawerHost', () => {
     pressEscape();
     expect(onDismiss).toHaveBeenCalledTimes(2);
   });
+
+  it('cancels the default action of an Escape it takes, so the browser closes no other dialog', () => {
+    mountHost();
+    const onDismiss = openRoutedPayload();
+    const keydown = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.dispatchEvent(keydown);
+    flushSync();
+    expect(keydown.defaultPrevented, 'the Escape should have its default action cancelled').toBe(true);
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
 });
+
+describe('DrawerHost — beside a Modal', () => {
+  it('leaves an Escape to a modal opened above the drawer, and takes the next one', () => {
+    const dialog = mountHost();
+    const onDismiss = openRoutedPayload();
+    const { modalDialog, onClose } = mountOpenModal();
+
+    pressPlatformEscape();
+
+    expect(modalDialog.hasAttribute('open'), 'the modal should be closed').toBe(false);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onDismiss, 'the drawer should not have been dismissed').not.toHaveBeenCalled();
+    expect(dialog.open, 'the drawer should still be open').toBe(true);
+
+    pressPlatformEscape();
+
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('takes an Escape when it opens above a modal, and leaves the modal open', () => {
+    const { modalDialog, onClose } = mountOpenModal();
+    mountHost();
+    const onDismiss = openRoutedPayload();
+
+    pressPlatformEscape();
+
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    expect(modalDialog.hasAttribute('open'), 'the modal should still be open').toBe(true);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
+/** Mounts a `Modal` outside the drawer, opens it and returns its dialog and `onClose`. */
+function mountOpenModal(): { modalDialog: HTMLDialogElement; onClose: ReturnType<typeof vi.fn> } {
+  const onClose = vi.fn();
+  const modalTarget = document.body.appendChild(document.createElement('div'));
+  const children = createRawSnippet(() => ({ render: () => '<p>Modal content</p>' }));
+  const modal = mount(Modal, { target: modalTarget, props: { title: 'The modal', onClose, children } });
+  flushSync();
+  modalTeardown.push(() => {
+    unmount(modal);
+    modalTarget.remove();
+  });
+  modal.openModal();
+  flushSync();
+  const modalDialog = modalTarget.querySelector('dialog')!;
+  expect(modalDialog.hasAttribute('open'), 'the modal should be open').toBe(true);
+  return { modalDialog, onClose };
+}
 
 function advanceTwoFrames(): void {
   vi.advanceTimersToNextFrame();
