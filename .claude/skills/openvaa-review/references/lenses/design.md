@@ -13,7 +13,7 @@ Novel styling only (not every class), as _where_ → _what_ → _likely intent_.
 - `dsn-raw-style`: an inline `style` or arbitrary value whose static part belongs in a class or a CSS variable. Dynamic values are fine; the static part is not.
 - `dsn-small-text`: text smaller than `text-sm` must be strictly non-essential — decorative, redundant, or a hint available elsewhere. Say what the text conveys and whether a user needs it.
 - `dsn-precedent`: the class choices match how siblings style the same thing; named spacing and sizes over arbitrary values. Check two sibling components before claiming no precedent exists.
-- `dsn-logical-props`: prefer logical properties (`ms-`/`me-`, `ps-`/`pe-`, `start-`/`end-`, `text-start`) over physical ones (`ml-`/`mr-`, `left-`/`right-`, `text-left`) so right-to-left locales lay out correctly. `consider` severity until right-to-left locales ship, `should-fix` afterwards.
+- `dsn-logical-props`: prefer logical properties (`ms-`/`me-`, `ps-`/`pe-`, `start-`/`end-`, `text-start`) over physical ones (`ml-`/`mr-`, `left-`/`right-`, `text-left`) so right-to-left locales lay out correctly. Until right-to-left locales ship, raise it only where the PR adds new physical properties.
 
 ## Where to look
 

@@ -316,4 +316,4 @@ Print a short summary:
 
 ## 12. Human-review brief
 
-Unless the PR is trivial (docs only, a one-file fix, or a dependency bump with no code), finish by running `/openvaa-review <PR#>`. It posts one thematic comment that walks the non-author reviewer through the change and lists only the design findings left to fix. If it finds `blocking` items, fix them (`/openvaa-review fix <PR#>`) and re-run it before requesting review. The re-run updates the same comment.
+Unless the PR is trivial (docs only, a one-file fix, or a dependency bump with no code), finish by running `/openvaa-review <PR#>`. It posts a thematic brief that walks the non-author reviewer through the change, its findings in three comments: decisions needed, critical, and fixed by default. If it finds critical items, fix them (`/openvaa-review fix <PR#>`, or `--auto` to be asked only the hard decisions) and re-run it before requesting review. The re-run updates the same comments.

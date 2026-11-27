@@ -18,7 +18,7 @@ The script prints a per-criterion table with these columns:
 
 - distinct PRs;
 - times raised;
-- blocking count;
+- critical count;
 - false positives (ticked by a reviewer);
 - refuted (killed by the verifier);
 - likely addressed (the author changed the cited files after the review).
@@ -30,7 +30,7 @@ The script prints a per-criterion table with these columns:
 | Signal | Action |
 | --- | --- |
 | Confirmed in **≥3 distinct PRs**, mostly addressed, not already a checklist item | **Promote to the checklist.** |
-| **Any `blocking`** finding that was addressed and isn't covered by a checklist item | **Promote to the checklist**, even after one occurrence. |
+| **Any `critical`** finding that was addressed and isn't covered by a checklist item | **Promote to the checklist**, even after one occurrence. |
 | Already a checklist item (`checklist_rule` set) yet still reaching human review | The item is too vague to apply pre-review. **Sharpen it** with the concrete detection hint the lens used. If it is mechanical, propose an `assert:*` guard or a lint rule instead, and check the guard against the tests lens's `tst-invariant-blocks-change` before adding it. |
 | Promoted to the checklist earlier and still recurring | **Promote to the owning skill** (the lens file's *Promote to* line), so the author's own agent avoids the mistake while writing. |
 | False-positive rate **≥ 1/3** over ≥3 raises, or refuted ≥3 times | **Calibrate.** Add a one-line "not a finding" note to `.claude/skills/openvaa-review/references/calibration.md` under the lens, with the reason and the count. If the criterion itself is wrong, reword it in the lens file. |

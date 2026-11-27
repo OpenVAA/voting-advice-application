@@ -113,14 +113,14 @@ def main():
                         "findings": data.get("findings", []), "refuted": data.get("refuted", []),
                         "human_comments": human})
 
-    agg = defaultdict(lambda: {"raised": 0, "prs": set(), "blocking": 0, "false_positive": 0,
+    agg = defaultdict(lambda: {"raised": 0, "prs": set(), "critical": 0, "false_positive": 0,
                                "likely_addressed": 0, "refuted": 0, "examples": []})
     for r in records:
         for f in r.get("findings", []):
             a = agg[f.get("criterion", "unknown")]
             a["raised"] += 1
             a["prs"].add(r["pr"])
-            a["blocking"] += f.get("severity") == "blocking"
+            a["critical"] += f.get("severity") in ("critical", "blocking")
             a["false_positive"] += f["false_positive"]
             a["likely_addressed"] += f["likely_addressed"]
             if len(a["examples"]) < 5:
@@ -136,7 +136,7 @@ def main():
 
     print(f"{len(records)} reviewed PRs out of the last {len(prs)}.")
     for k, v in sorted(by_criterion.items(), key=lambda kv: -kv[1]["distinct_prs"]):
-        print(f"  {k:<32} prs={v['distinct_prs']:<3} raised={v['raised']:<3} blocking={v['blocking']:<2} "
+        print(f"  {k:<32} prs={v['distinct_prs']:<3} raised={v['raised']:<3} critical={v['critical']:<2} "
               f"fp={v['false_positive']:<2} refuted={v['refuted']:<2} addressed={v['likely_addressed']}")
 
 

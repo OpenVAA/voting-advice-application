@@ -142,7 +142,9 @@ Write two files.
     {
       "id": "{PREFIX}-1",
       "criterion": "<slug from your lens file or global-principles, e.g. cmp-extend-not-fork or G-reuse; use {LENS}.other:<kebab> if none fits>",
-      "severity": "blocking | should-fix | consider",
+      "severity": "critical | normal",
+      "needs_decision": false,    // true only when the routes below lead to outcomes a reviewer must choose between (global-principles.md); then "alternatives" is required
+      "decision": "<only with needs_decision: the choice as one question, e.g. 'Should an unconfirmed nomination stay visible to its own candidate?'>",
       "title": "<≤80 chars, the claim>",
       "detail": "<2-5 sentences: what the PR does, why it's a problem, citing the principle, invariant or checklist item>",
       "evidence": ["<link or path#Lx-Ly in {EVIDENCE_FORMAT}>", "..."],
@@ -200,7 +202,9 @@ For each finding, independently:
 - Is it a real design problem, or a defensible choice the PR made deliberately (look for comments,
   the PR body, a documented exception, a recorded decision)? A deliberate, documented exception → REFUTED or
   DOWNGRADED.
-- Is the severity right per global-principles.md?
+- Is the severity right per global-principles.md, and is `needs_decision` right? A finding whose routes reach the
+  same outcome is not a decision (set needs_decision false); one whose recommended fix settles a product or
+  policy question a reviewer could reasonably answer the other way is (set it true, with a `revised_decision`).
 - Does it cite a CLAUDE.md invariant or checklist item that the code actually follows?
 - For a stack slice: does it complain about something another slice of the stack provides? → REFUTED.
 - Does another lens own it (ownership table), or does a sibling raise the same defect? Name the sibling id in
@@ -219,7 +223,9 @@ Write {RUN}/verify-{LENS}.json:
 {
   "lens": "{LENS}",
   "verdicts": [ { "id": "...", "verdict": "CONFIRMED | DOWNGRADED | REFUTED",
-                  "severity": "<final severity if CONFIRMED/DOWNGRADED>",
+                  "severity": "<final severity if CONFIRMED/DOWNGRADED: critical | normal>",
+                  "needs_decision": "<optional: true | false, overriding the lens>",
+                  "revised_decision": "<optional: the decision question restated>",
                   "reason": "<1-3 sentences with the evidence you checked>",
                   "revised_title": "<optional, any verdict: the title restated so it is true>",
                   "revised_detail": "<optional, any verdict: the detail restated so it is true>",
@@ -349,8 +355,8 @@ read "what the plans propose". Wherever it says "introduced by this PR", read "p
   and add `apps/frontend/src/lib/components/expander/` to files_modified".
   An option that only repairs the plan as instructions (a false premise, a verify command that cannot go red)
   still opens with `Outcome:`: say what the executor would otherwise have built or failed to prove.
-- Severity: `blocking` means executing the plan as written would break a CLAUDE.md invariant, build a second
-  source of truth, or fail outright on a false premise. The rest of the severity rule is unchanged.
+- Severity: `critical` means executing the plan as written would break a CLAUDE.md invariant, build a second
+  source of truth, or fail outright on a false premise. That is `critical`; the rest of the rule is unchanged.
 ```
 
 `{EVIDENCE_FORMAT}` is chosen in plan-mode step P1, as for code reviews: a permalink when the head is on the remote, `path#Lx-Ly` text when it is local only.

@@ -12,14 +12,17 @@ fold cross-lens duplicates; --drop / --xref do the same by hand.
 
 Lens sections drop their **Affected** list, except Common patterns (the pattern and its outliers) and Conciseness (the size table); --verbose keeps every list.
 
-Findings render under `### Findings`, grouped by severity, each with its detail in a <details> block and a
-checkbox list of fix options (the recommended one first, then any alternatives, then Discuss / Don't fix).
-`/openvaa-review fix` reads those ticks back with parse_decisions.py, so the option labels are a contract:
-keep "Discuss" and "Don't fix" exact.
+Findings render in three blocks, in this order: decisions (a finding whose fix is the reviewer's choice), critical
+(severity critical: the operator reads what went wrong, so the detail is open) and fixed by default (everything else).
+Each finding carries a checkbox list of fix options (the recommended one first, then any alternatives, then
+Discuss / Don't fix). Everything is fixed by default: an untouched finding means its recommended option, except in
+the decisions block, where `/openvaa-review fix` asks. parse_decisions.py reads the ticks back, so the option labels
+are a contract: keep "Discuss" and "Don't fix" exact.
 
-Writes comment.md. If the whole review exceeds BUDGET (about a third of GitHub's comment limit, because checkboxes
-toggle unreliably in long comments), comment.md holds the header and the feedback checklist, followed by as many
-findings and lens sections as fit; the rest go to comment-2.md, comment-3.md, ... Each continuation starts with the
+Writes comment.md. Each non-empty block after the first starts a new comment, so the seams between the blocks are the
+seams between comments. A part that exceeds BUDGET (about a third of GitHub's comment limit, because checkboxes
+toggle unreliably in long comments) overflows into the next one. comment.md holds the header and the feedback
+checklist; the rest go to comment-2.md, comment-3.md, ... Each continuation starts with the
 `openvaa-review:v1-cont` marker. Every part, the first included, stays within BUDGET. The hidden data block counts
 towards it: it rides in the first part when it fits there, and otherwise gets a final part of its own, which holds no
 checkboxes. parse_decisions.py and harvest.py read it from whichever part carries it.
@@ -45,8 +48,25 @@ ORDER = [("plan", "Plan soundness"), ("behaviour", "Behaviour"), ("analytics", "
          ("components", "Components"), ("design", "Design"), ("accessibility", "Accessibility"), ("i18n", "Localization"),
          ("tests", "Tests"), ("docs-comments", "Docs & comments"), ("dependencies", "Dependencies")]
 KEEP_AFFECTED = {"common-patterns", "conciseness"}  # their list is the substance: the pattern and its outliers, the size table
-SEV_RANK = {"blocking": 0, "should-fix": 1, "consider": 2}
-SEV_TITLE = {"blocking": "Blocking", "should-fix": "Should-fix", "consider": "Consider"}
+BLOCKS = [("decision", "1. Decisions needed",
+           "Each of these has more than one reasonable fix, and the choice is yours. Tick one option under each; "
+           "`{fix}` asks about any left untouched."),
+          ("critical", "2. Critical",
+           "Each of these breaks an invariant, a rule or an authority boundary. Read what went wrong; "
+           "the recommended fix is applied unless you tick another option."),
+          ("fix", "3. Fixed by default",
+           "Everything here is fixed with its recommended option. Tick another option, `Discuss` or `Don't fix` "
+           "only to change that.")]
+BLOCK_RANK = {k: i for i, (k, _, _) in enumerate(BLOCKS)}
+
+
+def severity(f):
+    """`critical | normal`; the older `blocking | should-fix | consider` scale maps blocking to critical."""
+    return "critical" if f.get("severity") in ("critical", "blocking") else "normal"
+
+
+def block_of(f):
+    return "decision" if f.get("needs_decision") else "critical" if severity(f) == "critical" else "fix"
 LIMIT = 65536
 BUDGET = 20000  # well under LIMIT: GitHub task-list checkboxes stop toggling reliably in long comments
 CONT_OVERHEAD = 200  # a continuation's marker and "part i of n" heading
@@ -181,14 +201,24 @@ def option_fingerprint(text):
 
 
 def finding_block(f):
-    """One finding: heading, collapsed detail, then the fix options as checkboxes."""
-    out = [f"##### <sub>{f['id']} · *{f['severity']}* · `{f.get('criterion', '')}`</sub>", "",
-           "<details>", f"<summary>{inline_html(f['title'])}</summary>", block_html(f.get("detail", ""))]
+    """One finding: heading, detail, then the fix options as checkboxes.
+
+    A critical finding shows its detail open, because the operator needs to know what went wrong; a decision shows
+    the question it asks above its collapsed detail; the rest collapse their detail."""
+    blk = block_of(f)
+    out = [f"##### <sub>{f['id']} · *{blk}* · `{f.get('criterion', '')}`</sub>", ""]
+    refs = []
     ev = evidence_html(f.get("evidence") or [])
-    if ev: out.append(f"<p>Evidence: {ev}</p>")
-    if f.get("existing"): out.append(f"<p>Existing: <code>{html.escape(str(f['existing']), quote=False)}</code></p>")
-    if f.get("checklist_rule"): out.append(f"<p>Covered by the code review checklist (<code>.agents/code-review-checklist.md</code>): {html.escape(str(f['checklist_rule']))}</p>")
-    out += ["</details>", "", "—", ""]
+    if ev: refs.append(f"<p>Evidence: {ev}</p>")
+    if f.get("existing"): refs.append(f"<p>Existing: <code>{html.escape(str(f['existing']), quote=False)}</code></p>")
+    if f.get("checklist_rule"): refs.append(f"<p>Covered by the code review checklist (<code>.agents/code-review-checklist.md</code>): {html.escape(str(f['checklist_rule']))}</p>")
+    if blk == "critical":
+        out += [f"**{escape_angles(f['title'])}**", "", block_html(f.get("detail", "")), *refs]
+    else:
+        if blk == "decision" and f.get("decision"):
+            out += [f"**Decide:** {escape_angles(str(f['decision']))}", ""]
+        out += ["<details>", f"<summary>{inline_html(f['title'])}</summary>", block_html(f.get("detail", "")), *refs, "</details>"]
+    out += ["", "—", ""]
     # Continuation lines are indented so a multi-line option (a lead sentence and its list) nests under its checkbox.
     out += ["- [ ] " + "\n".join(("  " + l) if j and l.strip() else l for j, l in enumerate(o.splitlines()))
             for o in fix_options(f)] + ["- [ ] Discuss", "- [ ] Don't fix"]
@@ -244,6 +274,11 @@ def main():
                 refuted.append({"lens": key, "criterion": f.get("criterion"), "title": f.get("title"), "reason": v.get("reason")}); continue
             if f["id"] in drop: continue
             if v.get("severity"): f["severity"] = v["severity"]
+            if v.get("needs_decision") is not None: f["needs_decision"] = v["needs_decision"]
+            if v.get("revised_decision"): f["decision"] = v["revised_decision"]
+            f["severity"] = severity(f)
+            if f.get("needs_decision") and not f.get("alternatives") and not v.get("revised_alternatives"):
+                print(f"WARN {key}:{f['id']}: needs_decision with no alternatives; a decision needs two routes", file=sys.stderr)
             if v.get("revised_title"): f["title"] = v["revised_title"]
             if v.get("revised_suggestion"): f["suggestion"] = v["revised_suggestion"]
             if v.get("revised_alternatives") is not None: f["alternatives"] = v["revised_alternatives"]
@@ -254,10 +289,10 @@ def main():
             elif v.get("verdict") == "DOWNGRADED": f["detail"] += f"\n\n*Verifier narrowed this:* {v.get('reason', '')}"
             f["lens"], f["lens_title"] = key, title
             kept.append(f)
-        kept.sort(key=lambda f: SEV_RANK.get(f["severity"], 3))
+        kept.sort(key=lambda f: BLOCK_RANK[block_of(f)])
         lenses.append((key, title, escape_angles((load(f"{run}/lens-{key}.md", "") or "").strip()), kept))
         findings += kept
-    findings.sort(key=lambda f: (SEV_RANK.get(f["severity"], 3), f["id"]))
+    findings.sort(key=lambda f: (BLOCK_RANK[block_of(f)], f["id"]))
 
     if a.plan:
         pj = load(f"{run}/plans.json", {}) or {}
@@ -285,18 +320,21 @@ def main():
         head.append(f"- **{m.group(1).strip()}**: {slice_summary(m.group(2))}")
     head += ["", "### Findings", ""]
     if findings:
-        counts = ", ".join(f"{sum(1 for f in findings if f['severity'] == s)} {s}"
-                           for s in SEV_TITLE if any(f["severity"] == s for f in findings))
-        head.append(f"{len(findings)} findings: {counts}. Tick one option under each. An untouched finding means "
-                    f"the recommended option; `{fix_cmd}` applies them.")
+        counts = ", ".join(f"{n} {t.split('. ', 1)[1].lower()}" for k, t, _ in BLOCKS
+                           if (n := sum(1 for f in findings if block_of(f) == k)))
+        head.append(f"{len(findings)} findings: {counts}. Everything is fixed by default: an untouched finding means "
+                    f"its recommended option, except a decision, which `{fix_cmd}` asks about.")
     else:
         head.append("Nothing to fix. The lenses below explain the change.")
 
-    # Chunks are packed into comments in order. Each carries the heading to repeat when it starts a new part.
+    # Chunks are packed into comments in order. Each carries the heading to repeat when it starts a new part;
+    # `seam` forces a new part, so each block after the first opens a comment of its own.
     chunks = []
-    for sev in ("blocking", "should-fix", "consider"):
-        for f in [f for f in findings if f["severity"] == sev]:
-            chunks.append({"heading": f"### {SEV_TITLE[sev]}", "text": finding_block(f)})
+    for k, title, intro in BLOCKS:
+        group = [f for f in findings if block_of(f) == k]
+        for i, f in enumerate(group):
+            text = (intro.format(fix=fix_cmd) + "\n\n" if i == 0 else "") + finding_block(f)
+            chunks.append({"heading": f"### {title}", "text": text, "seam": i == 0 and bool(chunks)})
     for key, title, body, kept in lenses:
         out = [body if a.verbose or key in KEEP_AFFECTED else strip_affected(body)]
         if kept: out.append("Findings: " + ", ".join(f"**{f['id']}**" for f in kept) + ".")
@@ -307,6 +345,7 @@ def main():
 
     data = {"version": 1, "pr": int(a.pr) if a.pr else None, "head": a.head, "base": a.mb, "lenses": [l[0] for l in lenses],
             "findings": [{"id": f["id"], "lens": f["lens"], "criterion": f.get("criterion"), "severity": f["severity"],
+                          "block": block_of(f),
                           "title": f["title"], "files": sorted({re.sub(r"^https://github\.com/[^/]+/[^/]+/blob/[0-9a-f]+/|#.*$", "", u)
                                                                 for u in f.get("evidence") or []}),
                           "checklist_rule": f.get("checklist_rule"),
@@ -333,7 +372,7 @@ def main():
     for c in chunks:
         repeat = " (continued)" if c["heading"] in seen and c["heading"] != last else ""
         piece = ("" if c["heading"] == last else f"{c['heading']}{repeat}\n\n") + c["text"]
-        if cur and len(piece) + 8 > room:
+        if cur and (len(piece) + 8 > room or (c.get("seam") and not as_file)):
             parts.append(cur); cur, room, last = [], budget - CONT_OVERHEAD, None
             piece = f"{c['heading']}{' (continued)' if c['heading'] in seen else ''}\n\n" + c["text"]
         cur.append(piece); room -= len(piece) + 8
@@ -375,7 +414,7 @@ def main():
         if m and int(m.group(1)) > total: os.remove(stale)
 
     print("; ".join(f"{n}: {c} chars" for n, c in written) + f" · {len(lenses)} lenses · {len(findings)} findings · {len(refuted)} refuted")
-    for f in findings: print(f"  {f['id']:<7} {f['severity']:<10} {f['title']}")
+    for f in findings: print(f"  {f['id']:<7} {block_of(f):<9} {f['title']}")
 
 
 if __name__ == "__main__":

@@ -173,7 +173,10 @@ def main():
         end = heads[i + 1].start() if i + 1 < len(heads) else len(whole_wo_feedback)
         block = whole_wo_feedback[h.start():end]
         block = block.split("\n---", 1)[0]  # options stop at the separator that closes the finding
-        fid, severity, criterion = h.group(1), h.group(2), h.group(3)
+        fid, token, criterion = h.group(1), h.group(2), h.group(3)
+        df = data_findings.get(fid) or {}
+        blk = df.get("block") or (token if token in ("decision", "critical", "fix") else
+                                  "critical" if token == "blocking" else "fix")
         summary = SUMMARY_RE.search(block)
         cut = block.rfind("</details>")
         opts, notes = parse_option_region(block[cut + len("</details>"):] if cut >= 0 else block)
@@ -188,7 +191,7 @@ def main():
                 o["user_text"] = bool(generated) and option_fingerprint(o["text"]) not in generated
         ticked = [o for o in opts if o["ticked"]]
         fixes = [o for o in opts if o["kind"] == "fix"]
-        d = {"id": fid, "severity": severity, "criterion": criterion,
+        d = {"id": fid, "block": blk, "severity": df.get("severity") or token, "criterion": criterion,
              "title": html.unescape(re.sub(r"<[^>]+>", "", summary.group(1))).strip() if summary else "",
              "options": [unescape_angles(o["text"]) for o in opts], "ticked": [unescape_angles(o["text"]) for o in ticked],
              "notes": notes, "mentions": mentions.get(fid, []),
@@ -200,6 +203,8 @@ def main():
             d["decision"] = ticked[0]["kind"]
         elif ticked:
             d["decision"], chosen = "fix", ticked[0]
+        elif blk == "decision":
+            d["decision"], d["undecided"] = "discuss", True  # a decision is never taken by default
         else:
             d["decision"], chosen = "fix", (fixes[0] if fixes else None)
             d["defaulted"] = True

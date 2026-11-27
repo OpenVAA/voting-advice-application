@@ -23,11 +23,15 @@ The first line is the marker that the re-run and the learning loop search for. K
 
 ### Findings
 
-{n} findings: {x} blocking, {y} should-fix, {z} consider. Tick one option under each. An untouched finding means the recommended option; `/openvaa-review fix {N}` applies them.
+{n} findings: {x} decisions needed, {y} critical, {z} fixed by default. Everything is fixed by default: an untouched finding means its recommended option, except a decision, which `/openvaa-review fix {N}` asks about.
 
-### Blocking
+### 1. Decisions needed
 
-##### <sub>SRV-1 · *blocking* · `srv-refuse-first`</sub>
+Each of these has more than one reasonable fix, and the choice is yours. …
+
+##### <sub>XC-2 · *decision* · `xc-visibility`</sub>
+
+**Decide:** {decision: the choice, as one question}
 
 <details>
 <summary>{title}</summary>
@@ -39,14 +43,49 @@ The first line is the marker that the re-run and the learning loop search for. K
 —
 
 - [ ] {suggestion} *(Recommended)*
-- [ ] {alternatives[0], when the lens offered one}
+- [ ] {alternatives[0]: a decision always has at least one}
 - [ ] Discuss
 - [ ] Don't fix
 
 ---
 
-{…every finding, grouped under ### Blocking, ### Should-fix, ### Consider. A group that spans two comments
-repeats its heading as "### Should-fix (continued)".}
+{…first comment ends here: the feedback block and the data block follow}
+
+<!-- the next comment -->
+### 2. Critical
+
+Each of these breaks an invariant, a rule or an authority boundary. Read what went wrong; …
+
+##### <sub>SRV-1 · *critical* · `srv-refuse-first`</sub>
+
+**{title}**
+
+<p>{detail, shown open: what went wrong, and which gate should have caught it}</p>
+<p>Evidence: …</p>
+
+—
+
+- [ ] {suggestion} *(Recommended)*
+- [ ] Discuss
+- [ ] Don't fix
+
+<!-- the next comment -->
+### 3. Fixed by default
+
+Everything here is fixed with its recommended option. …
+
+##### <sub>CMP-1 · *fix* · `cmp-extend-not-fork`</sub>
+
+<details>…</details>
+
+—
+
+- [ ] {suggestion} *(Recommended)*
+- [ ] Discuss
+- [ ] Don't fix
+
+{…every finding of the block. A block that overflows into another comment repeats its heading with "(continued)".
+The lens sections follow the last block.}
 
 ---
 
@@ -70,7 +109,7 @@ Findings: **BEH-1**, **BEH-2**.
 <sub>{k} lenses · {n} findings, {r} refuted by peer verification · openvaa-review v1</sub>
 
 <!-- openvaa-review-data
-{"version":1,"pr":N,"head":"…","base":"…","lenses":[…],"findings":[{"id","lens","criterion","severity","title","files","checklist_rule","opts"}],"refuted":[{"lens","criterion","title","reason"}]}
+{"version":1,"pr":N,"head":"…","base":"…","lenses":[…],"findings":[{"id","lens","criterion","severity","block","title","files","checklist_rule","opts"}],"refuted":[{"lens","criterion","title","reason"}]}
 -->
 ````
 
@@ -78,9 +117,9 @@ Findings: **BEH-1**, **BEH-2**.
 
 `/openvaa-review fix` reads these ticks back with `.claude/skills/openvaa-review/scripts/parse_decisions.py`, so the shape matters as much as the prose:
 
-- The heading line carries the id, severity and criterion. The parser anchors on it, and options belong to the heading above them, up to the closing `---`.
+- The heading line carries the id, the block (`decision`, `critical` or `fix`) and the criterion. The parser anchors on it, and options belong to the heading above them, up to the closing `---`.
 - `Discuss` and `Don't fix` are exact labels, always last, always in that order. Every other option is a fix the agent can apply as written, so an option has to name the change, not a direction.
-- Ticking nothing means the recommended option. That makes the common case — the reviewer agrees — zero work, and it is why the recommended option must be the one you would apply unattended.
+- Ticking nothing means the recommended option. That makes the common case — the reviewer agrees — zero work, and it is why the recommended option must be the one you would apply unattended. The exception is a `decision` finding: ticking nothing there leaves it undecided, and fix mode asks.
 - Ticking two options is a conflict the fix mode refuses rather than resolves.
 - One route per checkbox. Two acceptable fixes are two options — the recommended one first, carrying *(Recommended)*, the other as an alternative — never one option reading "(a) … (b) …". A bundled option cannot be chosen between, and it hands the fix agent both routes at once.
 - A multi-line option indents its continuation lines by two spaces so they nest under its checkbox; the parser reads every line up to the next option as part of it, so the choice reaches the fix agent whole.
@@ -88,17 +127,21 @@ Findings: **BEH-1**, **BEH-2**.
 
 The reviewer-feedback block at the end is separate: it says a finding was **wrong**, which tunes future reviews, whereas `Don't fix` declines a fix for a finding that is real. A finding can be both.
 
-## Continuations
+## Blocks and continuations
 
-When the whole review would exceed about 20,000 characters (a third of GitHub's 65,536-character limit, because checkboxes toggle unreliably in long comments), the first comment still carries the header and the feedback checklist, so the reviewer's feedback never splits. The data block counts towards the first comment's size. It joins the first comment when there is room, and otherwise gets a last comment of its own with no checkboxes. Every part with checkboxes stays within the cap. Findings come first and lens sections last, so the reviewer's own work lands in the earliest comments. Both continue in follow-up comments:
+The three blocks are separate comments: each non-empty block after the first starts a comment of its own, so a reviewer sees the decisions on their own first, the critical findings next, and the rest last. Empty blocks are left out, so a review whose only findings are fixed by default is one comment. The first comment carries the header, the first non-empty block, the feedback checklist and, when there is room, the data block. The lens sections follow the last block.
+
+A part that would exceed about 20,000 characters (a third of GitHub's 65,536-character limit, because checkboxes toggle unreliably in long comments) overflows into a further comment. The data block counts towards the first comment's size; when it does not fit, it gets a last comment of its own with no checkboxes. Every continuation opens:
 
 ```markdown
 <!-- openvaa-review:v1-cont pr={N} head={HEAD_SHA} part={i}/{total} -->
 ## Review brief, part {i} of {total}
 
-### {Lens}
+### 2. Critical
 …
 ```
+
+A committed review file (`--local`, or a plan review without a PR) is never split: the blocks follow one another.
 
 ## Plan reviews
 
