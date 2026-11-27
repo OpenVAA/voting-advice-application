@@ -248,10 +248,7 @@ if ! [[ "$PGDATABASE" =~ ^[A-Za-z0-9_]+$ ]]; then
   fatal "PGDATABASE '$PGDATABASE' is not a plain database name; nothing was pushed" 2
 fi
 export PGPORT PGDATABASE
-# The CLI is given this address and never --linked: on --linked it connects to the direct host whenever that
-# host accepts a TCP connection, and that connection verifies no certificate whatever PGSSLMODE says. Given an
-# address with no sslmode, sslrootcert or password in it, the CLI reads PGSSLMODE, PGSSLROOTCERT and PGPASSWORD
-# as psql does, so the push and the drift check meet the same verification.
+# The CLI is given this address and never --linked: on --linked it connects to the direct host whenever that host accepts a TCP connection, and that connection verifies no certificate whatever PGSSLMODE says. Given an address with no sslmode, sslrootcert or password in it, the CLI reads PGSSLMODE, PGSSLROOTCERT and PGPASSWORD as psql does, so the push and the drift check meet the same verification.
 DB_URL="postgresql://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE"
 if [ -n "$MANIFEST" ]; then
   MANIFEST="$(resolve_path "$MANIFEST")"
