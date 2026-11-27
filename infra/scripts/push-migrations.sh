@@ -5,10 +5,10 @@
 # A migration applied to a hosted database is never revised by a later push, so this script refuses every wrong target before it calls the Supabase CLI at all, shows what would be applied, and pushes only after the person at the terminal types the project ref.
 #
 # How it works. Five steps, in this order:
-#   1. Refusals. The ref, a confirmed ref, the work directory, its link and the password are checked as listed under Prerequisites. A refusal exits 2, and the CLI has not run.
-#   2. Dry run. `supabase db push --linked --dry-run --skip-vault --debug` lists the migrations the project lacks. One `push_pending=<version>` line is printed for each. The debug log tells which path the CLI took to the database, printed as `push_connection=direct`, `pooler` or `unknown`.
+#   1. Refusals. The ref, a confirmed ref, the work directory, its link, the password and the PG* address are checked as listed under Prerequisites. A refusal exits 2, and the CLI has not run.
+#   2. Dry run. `supabase db push --db-url <address> --dry-run --skip-vault --debug` lists the migrations the project lacks. One `push_pending=<version>` line is printed for each. The address is built from PGUSER, PGHOST, PGPORT and PGDATABASE and holds no password, sslmode or sslrootcert, so the CLI reads PGPASSWORD, PGSSLMODE and PGSSLROOTCERT as psql does and verifies the server exactly as the drift check's psql does. The CLI is never given `--linked`: on it, the CLI connects to the project's direct host whenever that host accepts a TCP connection, and that connection verifies no certificate whatever PGSSLMODE says. The path the address takes is printed as `push_connection=direct` (PGHOST is db.<ref>.supabase.co) or `pooler` (a session pooler host).
 #   3. Up to date. When the dry run says the database `is up to date.`, `push_up_to_date=yes` is printed, nothing is pushed, and the script goes on to the drift check. A second run after a push is this case. Otherwise `push_up_to_date=no` is printed.
-#   4. Confirmed push. The pending versions and the question `Type the project ref to push to it:` are written to the terminal (/dev/tty, never standard output), and the answer is read from it. Anything but the ref exits 2 and pushes nothing; so does a run with no terminal. A correct answer prints `push_confirmation=terminal`. In the confirmed form, `--confirmed-ref <ref>`, the approval of the GitHub Environment the job runs in stands in for the typed ref: nothing is asked, `push_confirmation=environment` is printed, and the push goes ahead without a terminal. That approval is given when the job starts, before the dry run has listed anything, so unlike the typed ref it is not given with the pending versions in view. The confirmed form is accepted only when its value equals `--ref`, GITHUB_ACTIONS is `true`, OPENVAA_DEPLOY_ENVIRONMENT is `staging` and GITHUB_REF is `refs/heads/deploy/staging` or a `refs/heads/deploy-evidence/` branch; otherwise step 1 refuses it. These conditions guard against using the confirmed form by mistake, and prove nothing: each is an environment variable that any process can set, and a repository or organisation variable named DEPLOY_ENVIRONMENT would satisfy the second in any job. What keeps a push out of every other job's reach is SUPABASE_DB_PASSWORD, a secret of the `staging` environment alone, released only on its approval. Then `supabase db push --linked --yes --skip-vault` applies the migrations. The CLI's own question is answered by `--yes`, because without a terminal it applies by itself. The push's status is read directly, never through a pipe, and printed as `push_status=<n>`. No seed is pushed, and no migration older than the project's last one is applied out of order.
+#   4. Confirmed push. The pending versions and the question `Type the project ref to push to it:` are written to the terminal (/dev/tty, never standard output), and the answer is read from it. Anything but the ref exits 2 and pushes nothing; so does a run with no terminal. A correct answer prints `push_confirmation=terminal`. In the confirmed form, `--confirmed-ref <ref>`, the approval of the GitHub Environment the job runs in stands in for the typed ref: nothing is asked, `push_confirmation=environment` is printed, and the push goes ahead without a terminal. That approval is given when the job starts, before the dry run has listed anything, so unlike the typed ref it is not given with the pending versions in view. The confirmed form is accepted only when its value equals `--ref`, GITHUB_ACTIONS is `true`, OPENVAA_DEPLOY_ENVIRONMENT is `staging` and GITHUB_REF is `refs/heads/deploy/staging` or a `refs/heads/deploy-evidence/` branch; otherwise step 1 refuses it. These conditions guard against using the confirmed form by mistake, and prove nothing: each is an environment variable that any process can set, and a repository or organisation variable named DEPLOY_ENVIRONMENT would satisfy the second in any job. What keeps a push out of every other job's reach is the database password, SUPABASE_DB_PASSWORD, a secret of the `staging` environment alone, released only on its approval and given to this script as PGPASSWORD. Then `supabase db push --db-url <address> --yes --skip-vault` applies the migrations. The CLI's own question is answered by `--yes`, because without a terminal it applies by itself. The push's status is read directly, never through a pipe, and printed as `push_status=<n>`. No seed is pushed, and no migration older than the project's last one is applied out of order.
 #   5. Drift check. infra/scripts/check-drift.sh --target linked --workdir <dir> runs against the same project, and its status decides this script's status. It is printed as `drift_status=<n>`. The drift check reads the history over the PG* variables and refuses to run unless they name the linked project.
 #
 # Every CLI call passes `--agent no --output-format text`. Called by an agent the CLI answers in JSON, and the text it prints for an up-to-date database is then absent.
@@ -17,7 +17,7 @@
 #
 # Usage:
 #   ```sh
-#   read -rs SUPABASE_DB_PASSWORD; export SUPABASE_DB_PASSWORD PGPASSWORD="$SUPABASE_DB_PASSWORD"
+#   read -rs PGPASSWORD; export PGPASSWORD
 #   export PGHOST=db.<ref>.supabase.co PGPORT=5432 PGUSER=postgres PGDATABASE=postgres
 #   infra/scripts/push-migrations.sh --ref <ref> --workdir <linked work directory>
 #   ```
@@ -36,7 +36,7 @@
 #
 #   A relative path is resolved against the REPO ROOT, never against $PWD, so the script behaves identically from any working directory.
 #
-#   There is no flag for a database address. An address on a command line holds the password, and a command line can be read by every process of the host. The password comes from SUPABASE_DB_PASSWORD, for the CLI, and from PGPASSWORD or a password file, for the drift check's psql. Shell tracing must stay off for the same reason.
+#   There is no flag for a database address: the address comes from the PG* variables alone. A command line can be read by every process of the host, so the address the CLI is given holds no password; the CLI and the drift check's psql both read it from PGPASSWORD. Shell tracing must stay off for the same reason.
 #
 #   The log directory holds the CLI's unredacted debug output, which names the database's address. It is created readable by its owner only; keep it out of the repository.
 #
@@ -46,9 +46,9 @@
 #   1. `--ref` is 20 lower-case letters. A `--confirmed-ref` equals it, and is given only with GITHUB_ACTIONS=true, OPENVAA_DEPLOY_ENVIRONMENT=staging and a GITHUB_REF of `refs/heads/deploy/staging` or `refs/heads/deploy-evidence/<name>`.
 #   2. The work directory is not apps/supabase, and it holds supabase/migrations.
 #   3. The work directory is linked: supabase/.temp/project-ref exists and holds the ref given by `--ref`.
-#   4. SUPABASE_DB_PASSWORD is set and not empty. Without it the CLI signs in through a temporary login role it creates, instead of as `postgres`.
+#   4. PGPASSWORD is set and not empty, and PGHOSTADDR and PGSERVICE are unset. PGHOST names the project: either the direct host db.<ref>.supabase.co with PGUSER `postgres`, or one session pooler host <name>.pooler.supabase.com with PGUSER `postgres.<ref>`. PGPORT (default 5432) is not 6543, the transaction pooler, and PGDATABASE (default `postgres`) is a plain name. The TLS mode is not asserted: PGSSLMODE and PGSSLROOTCERT apply to the CLI and psql alike, and the deploy workflow sets `verify-full` with the committed Supabase root.
 #   5. `yarn install` has run: the CLI is node_modules/.bin/supabase of the repository root.
-#   6. The drift check's own prerequisites: its PG* variables name the linked project, and Docker is running. It asserts them itself, after the push.
+#   6. The drift check's own prerequisites: Docker is running, and the PG* variables of prerequisite 4 name the linked project, which it asserts again itself, after the push.
 #
 # Exit codes -- the caller must be able to branch on the status alone:
 #   0:  the migrations were applied, or the database was already up to date, and the drift check found no drift
@@ -211,9 +211,48 @@ IFS= read -r LINKED_REF <"$REF_FILE" || true
 if [ "$LINKED_REF" != "$REF" ]; then
   fatal "the work directory is linked to the project '$LINKED_REF', and --ref is '$REF'; nothing was pushed" 2
 fi
-if [ -z "${SUPABASE_DB_PASSWORD:-}" ]; then
-  fatal "SUPABASE_DB_PASSWORD is unset or empty; without it the CLI signs in through a temporary login role instead of as postgres" 2
+if [ -z "${PGPASSWORD:-}" ]; then
+  fatal "PGPASSWORD is unset or empty; the CLI and the drift check both read the database password from it" 2
 fi
+for variable in PGHOSTADDR PGSERVICE; do
+  if [ -n "${!variable:-}" ]; then
+    fatal "$variable is set, which can send a connection to another address than PGHOST; nothing was pushed" 2
+  fi
+done
+PGPORT="${PGPORT:-5432}"
+PGDATABASE="${PGDATABASE:-postgres}"
+case "${PGHOST:-}" in
+  "db.$REF.supabase.co")
+    PUSH_CONNECTION=direct
+    ;;
+  *.pooler.supabase.com)
+    if ! [[ "$PGHOST" =~ ^[a-z0-9-]+\.pooler\.supabase\.com$ ]]; then
+      fatal "PGHOST '$PGHOST' is not one session pooler host; nothing was pushed" 2
+    fi
+    if [ "${PGUSER:-}" != "postgres.$REF" ]; then
+      fatal "PGHOST is a session pooler host, and PGUSER '${PGUSER:-}' is not postgres.$REF; nothing was pushed" 2
+    fi
+    PUSH_CONNECTION=pooler
+    ;;
+  *)
+    fatal "PGHOST '${PGHOST:-}' is neither db.$REF.supabase.co nor a session pooler host; nothing was pushed" 2
+    ;;
+esac
+if [ "$PUSH_CONNECTION" = direct ] && [ "${PGUSER:-}" != "postgres" ]; then
+  fatal "PGHOST is the direct host, and PGUSER '${PGUSER:-}' is not postgres; nothing was pushed" 2
+fi
+if ! [[ "$PGPORT" =~ ^[0-9]+$ ]] || [ "$PGPORT" = "6543" ]; then
+  fatal "PGPORT '$PGPORT' is not a port, or is 6543, the transaction pooler; use the session port 5432. Nothing was pushed" 2
+fi
+if ! [[ "$PGDATABASE" =~ ^[A-Za-z0-9_]+$ ]]; then
+  fatal "PGDATABASE '$PGDATABASE' is not a plain database name; nothing was pushed" 2
+fi
+export PGPORT PGDATABASE
+# The CLI is given this address and never --linked: on --linked it connects to the direct host whenever that
+# host accepts a TCP connection, and that connection verifies no certificate whatever PGSSLMODE says. Given an
+# address with no sslmode, sslrootcert or password in it, the CLI reads PGSSLMODE, PGSSLROOTCERT and PGPASSWORD
+# as psql does, so the push and the drift check meet the same verification.
+DB_URL="postgresql://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE"
 if [ -n "$MANIFEST" ]; then
   MANIFEST="$(resolve_path "$MANIFEST")"
   if [ ! -f "$MANIFEST" ] || [ ! -r "$MANIFEST" ]; then
@@ -264,16 +303,10 @@ run_child() {
 DRY_OUT="$LOG_DIR/dry-run.stdout"
 DRY_LOG="$LOG_DIR/dry-run.stderr"
 dry_status=0
-note "dry run: supabase db push --linked --dry-run"
-run_child 1 "$DRY_OUT" "$DRY_LOG" "$CLI" db push --linked --dry-run --skip-vault --debug --workdir "$WORKDIR" --agent no --output-format text || dry_status=$?
+note "dry run: supabase db push --db-url <the PG* address> --dry-run"
+run_child 1 "$DRY_OUT" "$DRY_LOG" "$CLI" db push --db-url "$DB_URL" --dry-run --skip-vault --debug --workdir "$WORKDIR" --agent no --output-format text || dry_status=$?
 
-if grep -q -F -- "Resolved DNS" "$DRY_LOG" "$DRY_OUT"; then
-  echo "push_connection=direct"
-elif grep -q -F -- "Using connection pooler" "$DRY_LOG" "$DRY_OUT"; then
-  echo "push_connection=pooler"
-else
-  echo "push_connection=unknown"
-fi
+echo "push_connection=$PUSH_CONNECTION"
 
 if [ "$dry_status" -ne 0 ]; then
   print_redacted "$DRY_LOG" >&2 || true
@@ -320,8 +353,8 @@ else
   fi
 
   push_status=0
-  note "push: supabase db push --linked"
-  run_child 1 "$LOG_DIR/push.stdout" "$LOG_DIR/push.stderr" "$CLI" db push --linked --yes --skip-vault --workdir "$WORKDIR" --agent no --output-format text || push_status=$?
+  note "push: supabase db push --db-url"
+  run_child 1 "$LOG_DIR/push.stdout" "$LOG_DIR/push.stderr" "$CLI" db push --db-url "$DB_URL" --yes --skip-vault --workdir "$WORKDIR" --agent no --output-format text || push_status=$?
   echo "push_status=$push_status"
   if [ "$push_status" -ne 0 ]; then
     print_redacted "$LOG_DIR/push.stderr" >&2 || true

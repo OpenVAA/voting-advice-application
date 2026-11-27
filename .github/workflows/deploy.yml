@@ -307,9 +307,9 @@ jobs:
       # environment. The database is reached through the session pooler on port 5432, whose user name carries the ref;
       # the transaction pooler is never used. PGSSLMODE=verify-full verifies the server against the Supabase root
       # committed under infra/certs and pinned by supabase-ca.test.ts, refusing a server that root did not sign or whose
-      # certificate does not name the pooler host; psql in this step verifies the server, and the Supabase CLI is
-      # given the same variables; whether the CLI's own connection honours them is not shown by a run. The session
-      # pooler offers no SCRAM channel binding, so none is required.
+      # certificate does not name the pooler host. psql in this step and the Supabase CLI both verify it: the script
+      # gives the CLI an address built from these variables, never --linked, so the CLI reads PGSSLMODE and
+      # PGSSLROOTCERT as psql does. The session pooler offers no SCRAM channel binding, so none is required.
       - name: "Push the migrations"
         id: migrations
         env:
