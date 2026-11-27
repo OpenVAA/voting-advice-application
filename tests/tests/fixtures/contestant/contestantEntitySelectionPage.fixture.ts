@@ -20,7 +20,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS } from '../../helpers';
+import { serverAnswersTimeout, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantAppRootUrlRe } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
@@ -87,9 +87,11 @@ export function createContestantEntitySelectionPage(page: Page) {
 
     /**
      * Assert the selection screen is shown: the URL is the app root and the list holds a card.
+     *
+     * The screen may be reached by a sign-in on the sign-in screen, which reaches it after the form's post and the root's data, so the address has the budget of those two answers.
      */
     async expectShown(): Promise<void> {
-      await expect(page).toHaveURL(contestantAppRootUrlRe());
+      await expect(page).toHaveURL(contestantAppRootUrlRe(), { timeout: serverAnswersTimeout(2) });
       await expect(cards.first()).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
 

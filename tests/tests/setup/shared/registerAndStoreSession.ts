@@ -10,7 +10,7 @@ import { expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
@@ -63,8 +63,8 @@ export async function registerAndStoreSession(page: Page, identity: StoredSessio
   // The backend can be slow to answer while voter tests run beside this setup, and the step opens the sign-in screen again when its form does not appear.
   await createContestantLoginPage(page).signInFromCold(identity.email, identity.password);
 
-  // The address leaves the login routes once the sign-in has redirected. That is a form post followed by two redirected loads, on a dev server that may not have compiled those routes yet, so the wait takes a slow page's time.
-  await expect(page).not.toHaveURL(/.*login.*/, { timeout: TIMEOUTS.slowPage });
+  // The address leaves the login routes once the sign-in's redirects have landed.
+  await expect(page).not.toHaveURL(/.*login.*/, { timeout: SIGN_IN_REDIRECT_TIMEOUT });
 
   // The URL has left the login route as soon as the redirect lands, before the protected page has rendered. An identity whose settled page matters names a test id of it.
   if (identity.settledTestId) {

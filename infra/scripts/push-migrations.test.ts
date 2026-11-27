@@ -30,6 +30,8 @@ const SCRIPT = join(HERE, 'push-migrations.sh');
 const REDACT_LIB = join(HERE, '../../scripts/lib/redact.sh');
 const CLI_LIB = join(HERE, '../../scripts/lib/cli.sh');
 const PROJECT_REF = 'abcdefghijklmnopqrst';
+const POOLER_HOST = 'aws-0-test.pooler.supabase.com';
+const STAND_IN_PASSWORD = 'stand-in-password';
 
 const STUB_CLI = `#!/usr/bin/env bash
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -100,7 +102,11 @@ function run(args: Array<string>, caseEnv: Record<string, string> = {}): Promise
           PATH: process.env.PATH ?? '',
           HOME: process.env.HOME ?? '',
           TMPDIR: process.env.TMPDIR ?? '/tmp',
-          SUPABASE_DB_PASSWORD: 'stand-in',
+          PGPASSWORD: STAND_IN_PASSWORD,
+          PGHOST: POOLER_HOST,
+          PGPORT: '5432',
+          PGUSER: `postgres.${PROJECT_REF}`,
+          PGDATABASE: 'postgres',
           ...caseEnv
         }
       }
@@ -124,6 +130,11 @@ const PIPELINE_ENV = {
 };
 const CONFIRMED = ['--ref', PROJECT_REF, '--workdir', 'work', '--confirmed-ref', PROJECT_REF];
 
+/** `text` with every regular-expression metacharacter escaped. */
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /** The positions of `lines` in `text`, each the index of the first line equal to it, or -1. */
 function lineIndexes(text: string, lines: Array<string>): Array<number> {
   const all = text.split('\n');
@@ -142,7 +153,36 @@ describe('push-migrations.sh --confirmed-ref', () => {
     ]);
     expect(indexes.every((index) => index >= 0)).toBe(true);
     expect([...indexes].sort((a, b) => a - b)).toEqual(indexes);
-    expect(cliLog).toMatch(/^db push --linked --yes /m);
+    const address = escapeRegExp(`postgresql://postgres.${PROJECT_REF}@${POOLER_HOST}:5432/postgres`);
+    const pushes = cliLog.split('\n').filter((line) => line.startsWith('db push '));
+    expect(pushes).toHaveLength(2);
+    expect(pushes[0]).toMatch(
+      new RegExp(
+        `^db push --db-url ${address} --dry-run --skip-vault --debug --workdir \\S+ --agent no --output-format text$`
+      )
+    );
+    expect(pushes[1]).toMatch(
+      new RegExp(`^db push --db-url ${address} --yes --skip-vault --workdir \\S+ --agent no --output-format text$`)
+    );
+    expect(cliLog).not.toContain('--linked');
+    expect(cliLog).not.toContain(STAND_IN_PASSWORD);
+    expect(stdout.split('\n')).toContain('push_connection=pooler');
+    expect(status).toBe(0);
+  }, 60_000);
+
+  it('gives the CLI the direct address when PGHOST is the direct host', async () => {
+    const { status, stdout, cliLog } = await run(CONFIRMED, {
+      ...PIPELINE_ENV,
+      PGHOST: `db.${PROJECT_REF}.supabase.co`,
+      PGUSER: 'postgres'
+    });
+    expect(cliLog).toMatch(
+      new RegExp(
+        `^db push --db-url ${escapeRegExp(`postgresql://postgres@db.${PROJECT_REF}.supabase.co:5432/postgres`)} --yes `,
+        'm'
+      )
+    );
+    expect(stdout.split('\n')).toContain('push_connection=direct');
     expect(status).toBe(0);
   }, 60_000);
 
@@ -293,16 +333,31 @@ interface RefusalResult {
   logEntries: Array<string>;
 }
 
+/** A pooler address naming `REF`, as the deploy workflow gives it. */
+const POOLER_ADDRESS = {
+  PGHOST: 'aws-0-test.pooler.supabase.com',
+  PGPORT: '5432',
+  PGUSER: `postgres.${REF}`,
+  PGDATABASE: 'postgres'
+};
+
 /**
- * Run the wrapper with `args` plus a fresh `--log-dir`.
- * @param password - The value of `SUPABASE_DB_PASSWORD`, or `null` to leave it unset.
+ * Run the wrapper with `args` plus a fresh `--log-dir`. No PG* variable of the shell that runs the suite reaches it.
+ * @param password - The value of `PGPASSWORD`, or `null` to leave it unset.
+ * @param address - The PG* variables the case sets; the pooler address of `REF` by default.
  */
-function runRefused(args: Array<string>, password: string | null = 'placeholder-not-a-password'): RefusalResult {
+function runRefused(
+  args: Array<string>,
+  password: string | null = 'placeholder-not-a-password',
+  address: Record<string, string> = POOLER_ADDRESS
+): RefusalResult {
   const logDir = tempDir('push-migrations-log-');
   const env: NodeJS.ProcessEnv = { ...process.env, ...UNREACHABLE_NETWORK };
+  for (const name of Object.keys(env)) if (name.startsWith('PG')) delete env[name];
   delete env.SUPABASE_DB_PASSWORD;
   delete env.SUPABASE_ACCESS_TOKEN;
-  if (password !== null) env.SUPABASE_DB_PASSWORD = password;
+  Object.assign(env, address);
+  if (password !== null) env.PGPASSWORD = password;
   const result = spawnSync('bash', [SCRIPT_PATH, ...args, '--log-dir', logDir], {
     cwd: REPO_ROOT,
     env,
@@ -369,17 +424,60 @@ describe('push-migrations.sh refuses every wrong target before the CLI runs', ()
     expect(logEntries).toEqual([]);
   });
 
-  it('refuses a run without SUPABASE_DB_PASSWORD', () => {
+  it('refuses a run without PGPASSWORD', () => {
     const { status, stderr, logEntries } = runRefused(['--ref', REF, '--workdir', workdir({ linkedRef: REF })], null);
     expect(status).toBe(2);
-    expect(stderr).toContain('SUPABASE_DB_PASSWORD');
+    expect(stderr).toContain('PGPASSWORD');
     expect(logEntries).toEqual([]);
   });
 
-  it('refuses a run with an empty SUPABASE_DB_PASSWORD', () => {
+  it('refuses a run with an empty PGPASSWORD', () => {
     const { status, stderr, logEntries } = runRefused(['--ref', REF, '--workdir', workdir({ linkedRef: REF })], '');
     expect(status).toBe(2);
-    expect(stderr).toContain('SUPABASE_DB_PASSWORD');
+    expect(stderr).toContain('PGPASSWORD');
+    expect(logEntries).toEqual([]);
+  });
+
+  it.each([
+    ['no PGHOST', { ...POOLER_ADDRESS, PGHOST: '' }, 'is neither'],
+    [
+      'the direct host of another project',
+      { ...POOLER_ADDRESS, PGHOST: `db.${OTHER_REF}.supabase.co`, PGUSER: 'postgres' },
+      'is neither'
+    ],
+    ['a host outside Supabase', { ...POOLER_ADDRESS, PGHOST: 'pooler.supabase.com.example.org' }, 'is neither'],
+    [
+      'two pooler hosts',
+      { ...POOLER_ADDRESS, PGHOST: 'a.pooler.supabase.com,b.pooler.supabase.com' },
+      'not one session pooler host'
+    ],
+    [
+      'a pooler user of another project',
+      { ...POOLER_ADDRESS, PGUSER: `postgres.${OTHER_REF}` },
+      `is not postgres.${REF}`
+    ],
+    [
+      'the direct host with the pooler user',
+      { ...POOLER_ADDRESS, PGHOST: `db.${REF}.supabase.co` },
+      'is not postgres;'
+    ],
+    ['the transaction pooler port', { ...POOLER_ADDRESS, PGPORT: '6543' }, '6543'],
+    ['a port that is not a number', { ...POOLER_ADDRESS, PGPORT: '5432/x' }, 'is not a port'],
+    [
+      'a database name with a query in it',
+      { ...POOLER_ADDRESS, PGDATABASE: 'postgres?sslmode=disable' },
+      'not a plain database name'
+    ],
+    ['PGHOSTADDR', { ...POOLER_ADDRESS, PGHOSTADDR: '127.0.0.1' }, 'PGHOSTADDR is set'],
+    ['PGSERVICE', { ...POOLER_ADDRESS, PGSERVICE: 'other' }, 'PGSERVICE is set']
+  ])('refuses an address with %s', (_label, address, fragment) => {
+    const { status, stderr, logEntries } = runRefused(
+      ['--ref', REF, '--workdir', workdir({ linkedRef: REF })],
+      'placeholder-not-a-password',
+      address
+    );
+    expect(status).toBe(2);
+    expect(stderr).toContain(fragment);
     expect(logEntries).toEqual([]);
   });
 
@@ -414,6 +512,12 @@ describe('push-migrations.sh calls the CLI as a push to a hosted project require
   it('dry-runs first, skips the vault, answers in text and confirms on the terminal', () => {
     for (const fragment of ['--dry-run', '--skip-vault', '--agent no', '--output-format text', '/dev/tty'])
       expect(scriptText()).toContain(fragment);
+  });
+
+  it('gives the CLI the PG* address and never --linked, whose direct path verifies no certificate', () => {
+    expect(commandLines().match(/db push --db-url "\$DB_URL" /g)).toHaveLength(2);
+    expect(commandLines()).not.toMatch(/db push --linked/);
+    expect(commandLines()).toContain('DB_URL="postgresql://$PGUSER@$PGHOST:$PGPORT/$PGDATABASE"');
   });
 
   it('never pushes a seed, never links, and runs the drift check against the linked target', () => {

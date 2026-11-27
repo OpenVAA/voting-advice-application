@@ -35,6 +35,12 @@ When in doubt, prefer `utils/` — domain assemblers can always be
 de-duplicated later by extracting a generic helper, but a premature
 helper that bakes in a domain assumption is hard to undo.
 
+`timeouts.ts` is the one exception: it is the suite's timeout catalog.
+Besides the generic buckets and `serverAnswersTimeout`, it holds the
+named budgets of the Contestant App's server-answer chains (sign-in,
+sign-out, identity-provider round trip, profile save), so that every
+fixture and spec reads a chain's budget from one place.
+
 ## Fixture boundary
 
 Helpers do NOT call fixture methods. Helpers take raw `Page` / `Locator`,

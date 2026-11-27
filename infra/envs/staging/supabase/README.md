@@ -833,8 +833,8 @@ Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
    sed 's/^/s16_/' "$L/s16.out"
    ```
 
-   The lines it prints, in this order: `s16_push_connection=direct`, `pooler` or `unknown`, the path
-   the CLI took; one `s16_push_pending=<version>` per migration the project lacks;
+   The lines it prints, in this order: `s16_push_connection=direct` or `pooler`, the host `PGHOST`
+   names, which the CLI is given as its address; one `s16_push_pending=<version>` per migration the project lacks;
    `s16_push_up_to_date=yes` or `no`; `s16_push_confirmation=terminal` and `s16_push_status=<n>` when
    a push ran; `s16_drift_status=<n>`, followed by the drift check's report. `s16_push_exit=` is 0
    when the migrations are in place and there is no drift, 1 on drift after the push, 2 when it

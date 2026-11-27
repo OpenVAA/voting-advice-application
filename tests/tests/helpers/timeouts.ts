@@ -3,6 +3,8 @@
  *
  * Single source of truth for spec timeouts: bucket values are the MAX observed across the suite's specs so consolidation never tightens an existing budget.
  *
+ * The file is the suite's timeout catalog, and the one module under `helpers/` that holds domain knowledge: below the generic buckets and `serverAnswersTimeout` it names the budgets of the Contestant App's server-answer chains, so that every fixture and spec reads a chain's budget from one place.
+ *
  * Bucket semantics:
  *   - element:  per-element visibility / enabled budget — a wait that does NOT change the URL (e.g. an option mounts, a button enables).
  *   - click:    action-ack budget — the click registered, a dropdown opened, a modal dismissed.
@@ -40,3 +42,38 @@ export const TIMEOUTS = {
    */
   testMax: ON_GITHUB_ACTIONS || ON_SLOW_HOST ? 180_000 : 90_000
 } as const;
+
+/**
+ * The budget of a wait that holds `answers` server answers in a row, each given a slow page's time.
+ *
+ * For the first wait after an action that returns before the server has answered: a form's post, a sign-out, a save. Such a wait holds every answer of the chain the action starts, so its budget counts them.
+ *
+ * @param answers - The number of server answers the chain makes before the awaited state is reached.
+ */
+export function serverAnswersTimeout(answers: number): number {
+  return answers * TIMEOUTS.slowPage;
+}
+
+/**
+ * How long a sign-out in the Contestant App may take to reach the login page: the sign-out's request and then the login page's data, two server answers in a row.
+ */
+export const SIGN_OUT_TIMEOUT = serverAnswersTimeout(2);
+
+/**
+ * How long a sign-in on the Contestant App's sign-in screen may take to reach the page it leads to: the form's post, the app's root it is redirected to, and the entity home the root redirects a user with one entity to, three server answers in a row.
+ *
+ * The click that posts the form may return before any of them has answered, so the first wait after it holds the whole chain.
+ */
+export const SIGN_IN_REDIRECT_TIMEOUT = serverAnswersTimeout(3);
+
+/**
+ * How long a press that starts a sign-in or a registration with the identity provider may take to bring the browser back to the application: the authorize request, the provider's page, the callback (which awaits the token exchange and the identity-callback function), the app's root it redirects to and the page the root leads to, five server answers in a row.
+ *
+ * The press returns before the first of them has answered.
+ */
+export const IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT = serverAnswersTimeout(5);
+
+/**
+ * How long a profile save may take to leave the profile page: the answers' write, the new image's upload, the other properties' write, the names' write and, after any stored property, the re-read of the page's data, five server answers in a row for a save with no file answer, before the application navigates. Each file answer adds its upload before the answers' write, and no spec saves one. The destination inside the entity adds no answer.
+ */
+export const PROFILE_SAVE_TIMEOUT = serverAnswersTimeout(5);

@@ -65,7 +65,7 @@
 import { expect } from '@playwright/test';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
-import { TIMEOUTS } from '../../helpers';
+import { IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { messageOf, messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
@@ -364,7 +364,7 @@ export function createContestantRegisterPage(page: Page) {
       const registerPage = new URL(page.url());
       await page.getByTestId(ids.submit).click();
       await page.waitForURL((url) => url.origin === registerPage.origin && url.pathname !== registerPage.pathname, {
-        timeout: TIMEOUTS.slowPage
+        timeout: IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT
       });
     },
 

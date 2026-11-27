@@ -32,7 +32,7 @@
 import { expect } from '@playwright/test';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
-import { TIMEOUTS } from '../../helpers';
+import { SIGN_OUT_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { contestantSettingsUrlRe } from '../../utils/contestantEntityUrl';
 import { messageOf, messagesOf } from '../../utils/messages';
 import { expectCountInName } from '../../utils/resendCountdown';
@@ -268,7 +268,7 @@ export function createContestantIdentityProviderGate(page: Page) {
       await expect(page.getByTestId(ids.submit)).toBeEnabled({ timeout: TIMEOUTS.slowPage });
       await page.getByTestId(ids.logout).click();
       await expect(page.getByRole('dialog')).toHaveCount(0);
-      await expect(page).toHaveURL(/\/contestant\/login/);
+      await expect(page).toHaveURL(/\/contestant\/login/, { timeout: SIGN_OUT_TIMEOUT });
       await expect(page.getByTestId(testIds.contestant.login.page)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     }
   };
