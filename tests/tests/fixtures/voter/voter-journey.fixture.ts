@@ -88,8 +88,8 @@ type VoterJourneyFixtures = VoterJourneyFixtureOptions & {
  */
 async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   // 0. Consent-popup guard. When data-collection consent is `indetermined` (the
-  //    default for a fresh context) the voter layout auto-opens the DataConsentPopup — a modal `Alert` (role=dialog "Collecting Usage Data").
-  //    It mounts a beat after navigation and, depending on timing, can overlay the bottom-anchored "Continue" button on the elections/constituencies pages (full-width at mobile; intermittently at desktop under full-suite load), intercepting the click and stalling the walk at /elections. `addLocatorHandler` grants consent through the real in-app control the moment the popup obstructs an actionability check, then Playwright retries the original action — so the walk proceeds deterministically. It fires ONLY when the popup is present (no-op otherwise), so it is safe for every walk consumer.
+  //    default for a fresh context) the voter layout auto-opens the DataConsentPopup — a modal dialog (role=dialog "Collecting Usage Data").
+  //    While the prompt is open the page under it is inert, whatever the viewport, so the walk cannot act under it. Playwright runs the handler whenever the prompt's grant button is visible at an actionability check; the handler grants consent through the real in-app control, and the original action then proceeds. It fires ONLY when the popup is present (no-op otherwise), so it is safe for every walk consumer.
   const consentGrant = page.getByRole('dialog').getByRole('button', { name: /agree to share my data/i });
   await page.addLocatorHandler(consentGrant, async () => {
     await consentGrant.click();

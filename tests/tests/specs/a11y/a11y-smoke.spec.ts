@@ -24,7 +24,7 @@
  *   1. home                             (/)              [raw]
  *   2. elections-selector               (/elections)     [raw]
  *   3. constituencies-selector-located  (/constituencies)[raw + settle: walks the elections Continue gate, because /constituencies 307-redirects a goto that carries no electionId]
- *   4. privacy                          (/privacy)       [raw: `e2e/base` configures no analytics, so the analytics section and the `DataConsent` control are not rendered in the scanned state and are not covered]
+ *   4. privacy                          (/privacy)       [raw: `e2e/base` configures no analytics, so the analytics section and the `DataConsent` control are not rendered in the scanned state and are not covered here. The consent prompt, the modal dialog that carries the same control, is scanned in both themes by `voter/voter-prefs-tracking.spec.ts` (`the accessibility of the consent prompt`), on the `perm-analytics-tracking` dataset that opens it]
  *   5. questions                        (/questions)     [located]
  *   6. results                          (/results)       [answered]
  *   7. voter-detail-drawer  (opened from Results)        [answered + settle]
