@@ -459,6 +459,14 @@
   }
 
   /**
+   * WCAG 2.1 AA fix (SC 1.4.11, non-text contrast) — an unchecked checkbox is drawn by its border alone. daisyUI 5 draws that border `var(--border)` wide in its nested `@layer utilities { @layer daisyui.l1.l2.l3 }`, and both themes set `--border: 0px`, so the unchecked box has no visible boundary. A rule in `@layer components` never wins against that layer; this un-sublayered rule in the same `utilities` layer wins by cascade order. The colour is a `checkbox-*` variant's `--input-color` or, for a bare `.checkbox`, the theme's content colour. `--input-color` itself is left unset: it is also the checked box's background, under a check mark drawn in the content colour.
+   */
+  :where(.checkbox) {
+    border-width: 2px;
+    border-color: var(--input-color, var(--color-base-content));
+  }
+
+  /**
    * iOS Safari zooms the page when a field whose text is smaller than 16px takes focus, so on iOS the form controls' text is at least 16px.
    */
   @supports (-webkit-touch-callout: none) {

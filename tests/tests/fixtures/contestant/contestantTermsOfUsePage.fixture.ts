@@ -6,6 +6,7 @@
  * Surface:
  *  - accept()                — toggle the terms-checkbox (no submit click).
  *  - getSubmit(): Locator    — return the terms-of-use-submit Locator.
+ *  - getCheckbox(): Locator  — return the terms-checkbox Locator, for a measurement of the box itself.
  *  - acceptAndAdvance()      — composed: accept() + getSubmit().click().
  *  - open()                  — navigate to the app root and wait until the view has hydrated.
  *  - expectShown()           — the view is shown, wherever the user is.
@@ -22,6 +23,7 @@
  *  - tickTrackingOptOut()                 — check the box.
  *  - toggleTrackingOptOutByKeyboard()     — reach the box with Tab from the terms-checkbox and press Space.
  *  - isTrackingOptOutTicked(): boolean    — whether the box is ticked.
+ *  - getTrackingOptOut(): Locator         — return the box's Locator, for a measurement of the box itself.
  *  - expectTrackingOptOutInsideViewport() — the whole box lies inside the viewport.
  *  - expectUsageDataInTerms()             — open the terms text and assert the heading of its usage-data section.
  *
@@ -34,7 +36,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { serverAnswersTimeout, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildEntityLessRoute } from '../../utils/contestantEntityUrl';
 import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
@@ -61,6 +63,13 @@ export function createContestantTermsOfUsePage(page: Page) {
     },
 
     /**
+     * Return the terms-checkbox Locator, for a measurement of the box itself, such as its border contrast.
+     */
+    getCheckbox(): Locator {
+      return page.getByTestId(testIds.contestant.terms.checkbox);
+    },
+
+    /**
      * Composed convenience: tick the checkbox + click the submit button.
      * Use only when the spec does not need to assert the disabled→enabled state transition.
      */
@@ -78,7 +87,8 @@ export function createContestantTermsOfUsePage(page: Page) {
     async open(): Promise<void> {
       await page.goto(buildEntityLessRoute({ route: 'ContestantAppHome', locale: 'en' }));
       await expect(page.getByTestId(testIds.contestant.terms.submit)).toBeVisible({ timeout: TIMEOUTS.slowPage });
-      await waitForNavigationFocusReset(page);
+      // reason: the first wait after a cold document load spans the page's hydration, which waits on two server answers in a row, the page's script and the root layout's data the browser reads again, so the wait has the budget of that chain.
+      await waitForNavigationFocusReset(page, { timeout: serverAnswersTimeout(2) });
     },
 
     /**
@@ -170,6 +180,13 @@ export function createContestantTermsOfUsePage(page: Page) {
      */
     async isTrackingOptOutTicked(): Promise<boolean> {
       return page.getByTestId(testIds.contestant.terms.trackingOptOut).isChecked();
+    },
+
+    /**
+     * Return the opt-out box's Locator, for a measurement of the box itself, such as its border contrast.
+     */
+    getTrackingOptOut(): Locator {
+      return page.getByTestId(testIds.contestant.terms.trackingOptOut);
     },
 
     /**

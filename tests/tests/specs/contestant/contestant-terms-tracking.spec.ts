@@ -7,6 +7,7 @@
  *
  * This spec observes that in a browser, on the `perm-analytics-tracking` dataset, whose settings row turns `analytics.trackEvents` on:
  *  - the view shows the box unticked, passes the suite's axe scan with the box visible, and the box is reached with Tab and toggled with Space; the terms text holds the usage-data section;
+ *  - the unticked box's border has a contrast of at least 3:1 against the view in the light and the dark theme, which axe does not check;
  *  - at 320 px wide the view does not overflow sideways and the box lies inside the viewport;
  *  - accepting without ticking the box stores `granted`, after which a menu opening is sent with a visit id and every pageview is sent without one;
  *  - accepting with the box ticked stores `denied`, after which nothing but pageviews is sent;
@@ -27,6 +28,8 @@
  *
  * The describe is serial: the acceptances of the third and fourth tests remove the view the first two read, and every test reads the dataset's settings row, which only the perm serial chain writes. The project that hosts the spec runs its files one test at a time.
  *
+ * The contrast test runs after the serial describe and outside it, so its failure cannot stop the serial tests from running. By then the granting user has accepted, so its own `beforeAll` registers that user again without an acceptance.
+ *
  * Rigidity contract: hard assertions only, no retry, every locator behind a fixture.
  */
 
@@ -43,6 +46,7 @@ import { settleNetworkIdle, TIMEOUTS } from '../../helpers';
 import { registerAndStoreSession } from '../../setup/shared/registerAndStoreSession';
 import { assertAxeScan } from '../../utils/axeScan';
 import { assertContestantReach } from '../../utils/contestantAxeScan';
+import { measureBorderContrastInSchemes, NON_TEXT_CONTRAST_MINIMUM } from '../../utils/nonTextContrast';
 import { NARROW_PHONE, phoneUse } from '../../utils/phoneViewports';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import {
@@ -56,7 +60,7 @@ import {
 } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import { toScanEntry } from '../../utils/themedAxeScans';
-import type { BrowserContext, Page, TestInfo } from '@playwright/test';
+import type { Browser, BrowserContext, Page, TestInfo } from '@playwright/test';
 import type { ContestantTermsOfUsePageFixture } from '../../fixtures/contestant/contestantTermsOfUsePage.fixture';
 import type { CapturedRelayEvent, RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
 import type { StoredSessionIdentity } from '../../setup/shared/registerAndStoreSession';
@@ -101,6 +105,28 @@ function requireBaseURL(testInfo: TestInfo): string {
   const baseURL = testInfo.project.use.baseURL;
   if (!baseURL) throw new Error('contestant-terms-tracking: the project has no baseURL.');
   return baseURL;
+}
+
+/**
+ * Register each identity without an acceptance of the terms of use and store its session, each in a browser context of its own, so that no state of one sign-in reaches another's stored session.
+ */
+async function registerTermsPendingUsers(
+  browser: Browser,
+  testInfo: TestInfo,
+  identities: ReadonlyArray<StoredSessionIdentity>
+): Promise<void> {
+  const baseURL = requireBaseURL(testInfo);
+  for (const identity of identities) {
+    // The empty storage state is explicit: Playwright fills every option `newContext` leaves out from the use options of the test that runs this hook, and the first test's `storageState` names a file this hook has not written yet.
+    const context = await browser.newContext({
+      ...devices['Desktop Chrome'],
+      baseURL,
+      storageState: { cookies: [], origins: [] }
+    });
+    const page = await context.newPage();
+    await registerAndStoreSession(page, identity);
+    await context.close();
+  }
 }
 
 /** True when `routeId` belongs to the route whose id is `root`, or to a route under it. */
@@ -151,19 +177,7 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
   let capture: RelayCaptureFixture;
 
   test.beforeAll(async ({ browser }, testInfo) => {
-    const baseURL = requireBaseURL(testInfo);
-    for (const identity of TERMS_PENDING_IDENTITIES) {
-      // A context of its own for each user, so that no state of one sign-in reaches the other's stored session.
-      // The empty storage state is explicit: Playwright fills every option `newContext` leaves out from the use options of the test that runs this hook, and the first test's `storageState` names a file this hook has not written yet.
-      const context = await browser.newContext({
-        ...devices['Desktop Chrome'],
-        baseURL,
-        storageState: { cookies: [], origins: [] }
-      });
-      const page = await context.newPage();
-      await registerAndStoreSession(page, identity);
-      await context.close();
-    }
+    await registerTermsPendingUsers(browser, testInfo, TERMS_PENDING_IDENTITIES);
   });
 
   test.beforeEach(({ context }) => {
@@ -296,5 +310,29 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
       await openAndCloseMenu(page);
       await expectOnlyAllowedDeviceState(context, page);
     });
+  });
+});
+
+test.describe('the opt-out box in the light and the dark theme', () => {
+  test.use({ storageState: ANALYTICS_TERMS_GRANTING_STORAGE_STATE });
+
+  test.beforeAll(async ({ browser }, testInfo) => {
+    await registerTermsPendingUsers(browser, testInfo, [TERMS_PENDING_IDENTITIES[0]]);
+  });
+
+  test('the unchecked opt-out box has a border of at least 3:1 contrast in the light and the dark theme', async ({
+    page
+  }, testInfo) => {
+    const ratios = await measureBorderContrastInSchemes(page, async () => {
+      const termsPage = await openTermsView(page);
+      await termsPage.expectTrackingOptOutUnticked();
+      return termsPage.getTrackingOptOut();
+    });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      testInfo.annotations.push({ type: 'border-contrast', description: `${scheme}=${ratio.toFixed(2)}` });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      expect(ratio, `the border contrast of the unchecked opt-out box in the ${scheme} theme`).toBeGreaterThanOrEqual(
+        NON_TEXT_CONTRAST_MINIMUM
+      );
   });
 });
