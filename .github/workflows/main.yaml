@@ -36,6 +36,9 @@ on:
       - "**/*/.env.example"
       - ".env.example"
 
+permissions:
+  contents: read
+
 jobs:
   skill-drift-check:
     runs-on: ubuntu-latest
@@ -200,6 +203,10 @@ jobs:
 
   supabase-tests:
     runs-on: ubuntu-latest
+    # dorny/paths-filter lists a pull request's changed files through the API.
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - name: "Checkout source code"
         uses: actions/checkout@v7
