@@ -303,7 +303,7 @@ Every step runs in the same shell, at the root of this checkout, with Node 24 on
    node tests/scripts/e2e-spec-verdict.mjs "$RUN" \
      --passed caller-limit.smoke.ts \
      --passed voter.smoke.ts \
-     --passed contestant.smoke.ts --no-flaky
+     --passed contestant.smoke.ts
    echo "verdict_exit=$?"
    ```
 

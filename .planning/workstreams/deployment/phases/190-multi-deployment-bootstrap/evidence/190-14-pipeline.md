@@ -152,7 +152,22 @@ git push --force-with-lease=deploy-evidence/190-final:fd57d43396b4f3da85897d9196
 
 ## Deploy
 
-(Task 2, operator: pending)
+Task 2, 2026-11-27. The operator approved pushing EVIDENCE_COMMIT b7a78427d to `deploy-evidence/190-final` (`+ fd57d4339...b7a78427d`, force-with-lease on fd57d4339) and approved the `staging` gate in the GitHub UI.
+
+- INFRA_PLAN_RUN=https://github.com/OpenVAA/voting-advice-application/actions/runs/45947196249 success (resolve success, checks success, wrong-subject (staging) success, plan skipped on push)
+- DEPLOY_RUN=https://github.com/OpenVAA/voting-advice-application/actions/runs/45947196363 success
+
+Every job and step of the Deploy run is `success` (resolve; checks; deploy: "Check the settings name the resolved deployment", the role assumptions, build and push, init, plan, show, link, "Push the migrations", "Check the deployment settings", "Deploy the functions", apply, "Check the rollout is stable", the smoke entry, "Read the served build again"), and the two alert steps are `skipped`. From its log:
+
+```
+key=staging
+push_exit=0
+settings_exit=0
+smoke_exit=0
+served_build_after_smoke=b7a78427de3c42817b04610155007f2e3d7f6c72
+```
+
+After the run, `curl -s https://staging.openvaa.org/api/health` printed `{"status":"ok","build":"b7a78427de3c42817b04610155007f2e3d7f6c72"}`.
 
 ## Destroy
 
