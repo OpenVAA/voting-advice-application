@@ -208,3 +208,37 @@ Pushed by the operator: `deploy-evidence/190-final` = fd57d43396b4f3da85897d9196
 Cause (outside Phase 190): `supabase db push --dry-run` refused with "Remote migration versions not found in local migrations directory" for 00005 to 00024. The staging database was migrated from the pre-restack history (24 migrations, as at deploy/staging 2ddc331d1); the restacked stack (46554181e and every tree after it) regenerated the baseline and dropped 00002 to 00024 (bba309b72), and its `apps/supabase/supabase/schema/` differs from the deployed one in 13 files.
 
 Operator ruling: another session is rewriting the staging database; this plan waits for it. When it is done, re-run the failed Deploy run (same commit, so no new push is needed), approve the `staging` gate, and continue with 190-12's smoke runs and Task 3.
+
+## Evidence deploy after the rebase onto the completed 189.1.1 (2026-11-27)
+
+Phase 189.1.1 changed `infra/scripts/push-migrations.sh` (the CLI given `--db-url`, never `--linked`) and `deploy.yml` after the deploy above, and closed. `planning/deployment-190` was rebased onto it (`3d0df58a9`), and the evidence commit was rebuilt by the same recipe from the rebased branch:
+
+```
+SOURCE_HEAD=a045ca44c5e4613a1bcd48759985ef4eac43caa5
+PARENT=340a200708c28fb7ed078d452138712f3400c789
+EVIDENCE_TREE=639bedbd62488d2983cb8f430c723b0295c10935
+EVIDENCE_COMMIT_2=1a3050da75c6f39e0967b32294afacaa74f53876
+evidence_planning_paths=0
+evidence_tree_equal_exit=0
+apps_supabase_vs_served=0 files    git diff --stat 804835bbf 1a3050da7 -- apps/supabase
+```
+
+Pushed to `deploy-evidence/190-final` (a new branch; the earlier one had been deleted), with the operator's go-ahead to rebase and deploy again, and the operator approved the `staging` gate.
+
+- INFRA_PLAN_RUN_2=https://github.com/OpenVAA/voting-advice-application/actions/runs/45963033703 success
+- DEPLOY_RUN_2=https://github.com/OpenVAA/voting-advice-application/actions/runs/45963033722 success
+
+```
+key=staging
+push_connection=pooler
+push_up_to_date=yes
+drift_status=0
+push_exit=0
+settings_exit=0
+smoke_exit=0
+served_build_after_smoke=1a3050da75c6f39e0967b32294afacaa74f53876
+```
+
+After the run, `https://staging.openvaa.org/api/health` printed `{"status":"ok","build":"1a3050da75c6f39e0967b32294afacaa74f53876"}`. The branch was deleted again (`- [deleted] deploy-evidence/190-final`).
+
+The destroy evidence above stands for this tree: `git diff --stat b7a78427d 1a3050da7 -- .github infra/scripts/resolve-deployment.sh infra/bootstrap` prints `.github/workflows/deploy.yml` alone (3 lines, the `--db-url` change), so `destroy.yml`, the resolver and the bootstrap are unchanged.
