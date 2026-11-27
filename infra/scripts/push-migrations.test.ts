@@ -302,9 +302,18 @@ describe('push-migrations.sh --confirmed-ref', () => {
 
 describe('push-migrations.sh --deployment', () => {
   it('pushes without a terminal for a second deployment whose tfvars, environment and branch agree', async () => {
-    const { status, stdout, cliLog } = await run(OTHER_CONFIRMED, OTHER_PIPELINE_ENV, OTHER_PROJECT_REF);
+    const { status, stdout, cliLog } = await run(
+      OTHER_CONFIRMED,
+      { ...OTHER_PIPELINE_ENV, PGUSER: `postgres.${OTHER_PROJECT_REF}` },
+      OTHER_PROJECT_REF
+    );
     expect(stdout.split('\n')).toContain('push_confirmation=environment');
-    expect(cliLog).toMatch(/^db push --linked --yes /m);
+    expect(cliLog).toMatch(
+      new RegExp(
+        `^db push --db-url ${escapeRegExp(`postgresql://postgres.${OTHER_PROJECT_REF}@${POOLER_HOST}:5432/postgres`)} --yes `,
+        'm'
+      )
+    );
     expect(status).toBe(0);
   }, 60_000);
 
