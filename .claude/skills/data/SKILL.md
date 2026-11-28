@@ -87,8 +87,8 @@ See `packages/data/README.md` for class diagrams and detailed documentation.
     `TRANSLATIONS_KEY` marks translation objects in `packages/data/src/i18n/localized.ts`.
 
 11. **Never fall back to the ambient machine locale**: `packages/data/src/utils/formatAnswer.ts`
-    exports `DEFAULT_LOCALE = 'en-US'`, and every `Intl`-backed formatter (`formatDateAnswer`,
-    `formatNumberAnswer`) resolves `locale ?? DEFAULT_LOCALE` -- never `locale ?? undefined`.
+    falls back to the module-private `FALLBACK_FORMAT_LOCALE = 'en-US'`, and every `Intl`-backed formatter (`formatDateAnswer`,
+    `formatNumberAnswer`) resolves `locale ?? FALLBACK_FORMAT_LOCALE` -- never `locale ?? undefined`.
     `Intl` reads an `undefined` locale as "use the runtime default", which makes rendered output a
     function of the host: the same `Date` renders `10/5/2023` on an `en-US` machine and `5.10.2023`
     on a `fi` one. Under SSR that means a user's dates depend on the server's environment rather
@@ -138,7 +138,7 @@ Use this checklist when reviewing or making changes to `packages/data/`:
 - The nomination-shape matrix: `packages/data/src/objects/election/nominationShape.ts` (`NOMINATION_SHAPE`, `isNominableInShape`, `allowedParentTypes`), read from an election as `Election.nominationShape`; see object-model.md § _The nomination shape of an election_
 - Question factory: `packages/data/src/objects/questions/variants/variants.ts`
 - Localization: `packages/data/src/i18n/translate.ts`
-- Answer formatters + `DEFAULT_LOCALE`: `packages/data/src/utils/formatAnswer.ts`
+- Answer formatters + `FALLBACK_FORMAT_LOCALE`: `packages/data/src/utils/formatAnswer.ts`
 - Test utilities: `packages/data/src/testUtils/`
 
 ## Cross-Package Interfaces

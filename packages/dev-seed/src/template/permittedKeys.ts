@@ -615,7 +615,7 @@ type SentinelKeysFor<TCollection extends CollectionKey> = KeysWhenRuleCovers<
 /**
  * Non-column keys admitted on `TCollection` — globally-stripped-but-reader-scoped, plus per-collection.
  *
- * ⚠ **The first arm is derived from {@link NON_COLUMN_FIELD_READERS}, not from {@link NON_COLUMN_FIELD_LIST}, and that is the whole point.** The runtime arm (`derivePermittedKeys`, source (3)) consults the readers map, so `answersByExternalId` is legal on `candidates` and `organizations` only. Unioning the flat LIST unconditionally would let `QuestionsFixedRow` compile a row carrying that key, and the same row would then fail at seed time. The mapped type below derives the arm per collection so the two layers cannot drift apart; `tests/template/strictRowTypes.type-test.ts` holds a `@ts-expect-error` on the `questions` case, so a regression is a compile error rather than a seed-time surprise.
+ * ⚠ **The first arm is derived from {@link NON_COLUMN_FIELD_READERS}, not from {@link NON_COLUMN_FIELD_LIST}, and that is the whole point.** The runtime arm (`derivePermittedKeys`, source (3)) consults the readers map, so `answersByExternalId` is legal on `candidates` and `organizations` only. Unioning the flat LIST unconditionally would let `QuestionsFixedRow` compile a row carrying that key, and the same row would then fail at seed time. The mapped type below derives the arm per collection so the two layers cannot drift apart; `strictRowTypes.type-test.ts` holds a `@ts-expect-error` on the `questions` case, so a regression is a compile error rather than a seed-time surprise.
  */
 type NonColumnKeysFor<TCollection extends CollectionKey> =
   | {

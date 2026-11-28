@@ -1,4 +1,4 @@
-# `@openvaa/app-shared`: Common settings and utilities shared by the frontend and backend
+# `@openvaa/app-shared`: Settings and utilities shared by the frontend, docs site and workspace packages
 
 A module shared by the OpenVAA frontend, the docs site and other workspace packages, which contains:
 

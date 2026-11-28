@@ -611,7 +611,7 @@ export class SupabaseAdminClient {
    *
    * The two constituency join tables are not written here: `bulk_import` writes them from the link keys `bulkImport` sends, before any nomination.
    *
-   * ⚠ **The resolution set is NOT declared here.** It is the `jsonb` rules of `LINK_SENTINELS` in `./template/linkSentinels`, and this method ITERATES them via that module's pure `planLinks`, so adding a `jsonb` pair to the const cannot leave it unresolved — and the const cannot grow silently, because `tests/template/linkSentinels.test.ts` holds it to a hand-enumerated expectation. To add a scoping link, edit `LINK_SENTINELS` — not this method.
+   * ⚠ **The resolution set is NOT declared here.** It is the `jsonb` rules of `LINK_SENTINELS` in `./template/linkSentinels`, and this method ITERATES them via that module's pure `planLinks`, so adding a `jsonb` pair to the const cannot leave it unresolved — and the const cannot grow silently, because `template/linkSentinels.test.ts` holds it to a hand-enumerated expectation. To add a scoping link, edit `LINK_SENTINELS` — not this method.
    *
    * This method owns only the I/O: `external_id` → UUID lookups and the JSONB column update.
    *

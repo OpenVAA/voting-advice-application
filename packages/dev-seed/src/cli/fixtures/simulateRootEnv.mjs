@@ -11,7 +11,7 @@ const NETWORK_DISABLED = 'network disabled by simulateRootEnv';
 
 const simulated = JSON.parse(process.env.SIMULATED_ROOT_ENV ?? '{}');
 
-// `Object.assign` rather than `process.loadEnvFile = ...` and `globalThis.fetch = ...`: this package's `tsc` includes `tests/**/*`, and in a JavaScript file a direct assignment to a member of `process` or `globalThis` declares that member's type for the whole program, which would retype both for every caller.
+// `Object.assign` rather than `process.loadEnvFile = ...` and `globalThis.fetch = ...`: this package's `tsc` includes `src/**/*`, and in a JavaScript file a direct assignment to a member of `process` or `globalThis` declares that member's type for the whole program, which would retype both for every caller.
 Object.assign(process, {
   loadEnvFile: () => {
     for (const [name, value] of Object.entries(simulated)) {

@@ -3,7 +3,7 @@
  *
  * Renamed in place from perm-header-show-feedback and EXTENDED with the results-view feedback/survey popup-coordination assertions + the survey.showIn[] per-surface audit.
  *
- * Seed (`show-feedback-survey.ts`):
+ * Seed (`perm-show-feedback-survey.ts`):
  *   - `header.showFeedback: true`            — feedback Button in Banner top bar.
  *   - `results.showFeedbackPopup: 1`         — feedback popup, 1s countdown on /results.
  *   - `results.showSurveyPopup: 1`           — survey popup, 1s countdown on /results.

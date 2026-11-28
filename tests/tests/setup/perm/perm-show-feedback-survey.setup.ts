@@ -7,7 +7,7 @@
 import { test as setup } from '@playwright/test';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
-setup('import show-feedback-survey dataset', async () => {
+setup('import perm-show-feedback-survey dataset', async () => {
   await setupFromTemplate('perm-show-feedback-survey', {
     extraTeardownPrefix: ['test-', 'e2e-perm-']
   });

@@ -27,7 +27,7 @@ export const COLUMN_MAP = {
 
   // NominationData
   candidate_id: 'candidateId',
-  // One key per property: `PROPERTY_MAP` reverses this map last-wins, so two keys mapping to one property would resolve that property to one of them only. `packages/dev-seed/tests/template/permittedKeys.test.ts` asserts that no two keys here share a property, because this package has no test runner of its own.
+  // One key per property: `PROPERTY_MAP` reverses this map last-wins, so two keys mapping to one property would resolve that property to one of them only. `packages/dev-seed/src/template/permittedKeys.test.ts` asserts that no two keys here share a property, because this package has no test runner of its own.
   organization_id: 'organizationId',
   faction_id: 'factionId',
   alliance_id: 'allianceId',

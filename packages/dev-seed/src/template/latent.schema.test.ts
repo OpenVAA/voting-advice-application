@@ -23,7 +23,7 @@ describe('template schema — latent block', () => {
   it('accepts an empty template (regression)', () => {
     expect(() => validateTemplate({})).not.toThrow();
     // ⚠ Scoped exception, N/A by construction.
-    // This site declares NO field, so no declaration can be removed from the schema to make it fail; strictness cannot repair it and it is NOT counted among the four sites strictness makes failable. It is repaired instead by the round-trip form already in-tree at `tests/template.test.ts:24`, which asserts what comes BACK rather than only that nothing was thrown.
+    // This site declares NO field, so no declaration can be removed from the schema to make it fail; strictness cannot repair it and it is NOT counted among the four sites strictness makes failable. It is repaired instead by the round-trip form already in-tree at `schema.test.ts`, which asserts what comes BACK rather than only that nothing was thrown.
     expect(validateTemplate({})).toEqual({});
   });
 

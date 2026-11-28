@@ -169,7 +169,7 @@ describe('log', () => {
 /**
  * `log.*` must be TOTAL.
  *
- * Every one of this repo's `log.*` call sites sits in a catch block or an error branch, so a logger that throws converts a handled failure into an unhandled one — strictly worse than a logger that is silent. These are the three triggers measured in the 157 review (Lot A CR-03).
+ * Every one of this repo's `log.*` call sites sits in a catch block or an error branch, so a logger that throws converts a handled failure into an unhandled one — strictly worse than a logger that is silent. The cases below cover a throwing sink, an unserialisable thrown value and a type-legal `{ level: undefined }` reconfiguration.
  */
 describe('log.* never throws', () => {
   test('keeps the configured level across a type-legal `{ level: undefined }`', async () => {

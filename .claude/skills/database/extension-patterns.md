@@ -69,7 +69,7 @@ Follow these steps in order. Each step names the file to create or modify.
    - A new table stays invisible to local development and to the Playwright suite until some template emits rows for it. Decide which templates need it, then change only those -- this is a check, not a sweep.
    - Start from the registry: `BUILT_IN_TEMPLATES` and `BUILT_IN_OVERRIDES` in `packages/dev-seed/src/templates/index.ts` (30 registered built-ins, backed by 40 `.ts` files under `packages/dev-seed/src/templates/`)
    - Usually in scope: `packages/dev-seed/src/templates/default.ts` (the `default` demo dataset) and `packages/dev-seed/src/templates/e2e/base.ts` (the canonical E2E base dataset)
-   - Usually NOT in scope: the 28 per-permutation E2E fixtures under `packages/dev-seed/src/templates/e2e/perm/` (`perm-*` plus `show-feedback-survey`). Each exists to exercise one settings or topology combination; touch one only when the new table participates in the combination that fixture owns.
+   - Usually NOT in scope: the per-permutation `perm-*` E2E fixtures under `packages/dev-seed/src/templates/e2e/perm/`. Each exists to exercise one settings or topology combination; touch one only when the new table participates in the combination that fixture owns.
    - A template can only carry the table once the `Template` type declares a `{ count?, fixed? }` fragment for it in `packages/dev-seed/src/template/types.ts`; the fragment's field semantics are described in `packages/dev-seed/README.md` under "Template shape reference"
    - Pattern: follow existing `organizations` fragment in `packages/dev-seed/src/templates/default.ts`
 

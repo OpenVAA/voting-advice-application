@@ -25,7 +25,7 @@ import type { Template } from './types';
  *
  * ## `.strict()` here is NOT redundant with `TemplateSchema.strict()`
  *
- * `.strict()` is a PER-OBJECT setting; it does not descend. Measured at this tree's zod (4.3.6): a top-level-only strict schema parses `{ candidates: { fixed: [...], bogus: 3 } }` with **success** and silently strips `bogus`. Both objects therefore carry `.strict()`, and `tests/template.test.ts` holds each direction with its own case.
+ * `.strict()` is a PER-OBJECT setting; it does not descend. Measured at this tree's zod (4.3.6): a top-level-only strict schema parses `{ candidates: { fixed: [...], bogus: 3 } }` with **success** and silently strips `bogus`. Both objects therefore carry `.strict()`, and `schema.test.ts` holds each direction with its own case.
  */
 const perEntityFragment = z
   .object({

@@ -6,7 +6,7 @@
  *   - empty-input regression: `questions.length === 0` → `{}` (no throw, no
  *     iteration — the determinism tests with an empty `{}` template rely on this).
  *   - `dims === 0` edge: keys present with length-0 vectors (no throw).
- *   - guard replication: questions with no `external_id` are silently skipped (mirrors `extractChoiceIds` / `defaultRandomValidEmit`).
+ *   - guard replication: questions with no `external_id` are silently skipped (mirrors `readChoiceIds` (`../choices`) / `defaultRandomValidEmit`).
  *   - N(0, 1) statistics over 60 entries at seed 42 (loose bounds for small N).
  *   - per-question override — supplied vector copied verbatim into the matching `external_id` slot.
  *   - Override copy semantics — mutating the returned vector does NOT mutate the source `tplLoadings` entry.

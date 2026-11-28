@@ -14,7 +14,7 @@
  *
  * The latent emitter (emitters/latent/project.ts) supports number (via the defaultRandomValidEmit fallback) and multipleChoiceCategorical (mapMultiCategorical), so candidate answers for both types are emitted.
  *
- * ⚠ They are NOT emitted validly "for free". A fallback that draws every number answer from a hardcoded 0-100, irrespective of the range the question declares below, gives the { min: 0, max: 10 } number question 294 out-of-range answers out of 327 — measured — which normalizeCoordinate (@openvaa/core) throws on. The fallback reads custom_data.min/max, and tests/emitters/answers.test.ts holds it there.
+ * ⚠ They are NOT emitted validly "for free". A fallback that draws every number answer from a hardcoded 0-100, irrespective of the range the question declares below, gives the { min: 0, max: 10 } number question 294 out-of-range answers out of 327 — measured — which normalizeCoordinate (@openvaa/core) throws on. The fallback reads custom_data.min/max, and src/emitters/answers.test.ts holds it there.
  *
  * Questions are distributed across the 4 categories from `ctx.refs.question_categories` in round-robin so every category receives questions.
  *

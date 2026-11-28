@@ -24,7 +24,7 @@ import negctlEntityTypeSnake from '../tests/fixtures/negctl-nominations-entity-t
 import negctlEntityTypeCamel from '../tests/fixtures/negctl-nominations-entity-type-camel';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-/** `packages/dev-seed/tests` → repo root. */
+/** `packages/dev-seed/src` → repo root. */
 const REPO_ROOT = resolve(HERE, '../../..');
 /** Note the doubled `supabase/` segment — that is the real path. */
 const SCHEMA_SQL = resolve(REPO_ROOT, 'apps/supabase/supabase/schema/501-bulk-operations.sql');

@@ -20,7 +20,6 @@ test('ParseNominationTree should return one item per tree leaf, each carrying it
   nominationData.forEach((d) => {
     // Membership, not definedness: a nomination with a defined but wrong id must fail.
     //
-    // The election-id assertion is also the GUARD for the dereference on the line below it, and both properties are load-bearing: it must stay FIRST and it must stay a hard `expect`.
     // A wrong id makes `tree[d.electionId]` `undefined`, so these two assertions stay hard and in this order: a wrong id then fails here rather than as a `TypeError`.
     expect(electionIds).toContain(d.electionId);
     expect(Object.keys(tree[d.electionId])).toContain(d.constituencyId);

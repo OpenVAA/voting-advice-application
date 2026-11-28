@@ -7,4 +7,4 @@
 import { test as teardown } from '@playwright/test';
 import { runTemplateTeardownAsserted } from '../shared/assertTeardown';
 
-teardown('delete show-feedback-survey dataset', () => runTemplateTeardownAsserted('perm-show-feedback-survey'));
+teardown('delete perm-show-feedback-survey dataset', () => runTemplateTeardownAsserted('perm-show-feedback-survey'));
