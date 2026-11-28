@@ -33,6 +33,7 @@ export type {
   EntityVariantData,
   EntityVariantTree,
   FactionData,
+  FilterTargets,
   FilterValue,
   FullVaaData,
   Image,

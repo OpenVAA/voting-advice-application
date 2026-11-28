@@ -2,10 +2,8 @@ import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, EntityType, QuestionCategory } from '@openvaa/data';
 import type { MatchingAlgorithm } from '@openvaa/matching';
 import type { AppContext } from '../app';
-import type { FilterContext } from '../filter/filterContext.type';
 import type { QuestionBlocks } from '../utils/questionBlockState.type';
 import type { AnswerState } from './answerState.type';
-import type { FilterTree } from './filters/filterState.svelte';
 import type { MatchTree } from './matchState.svelte';
 
 export type VoterContext = AppContext & {
@@ -63,15 +61,6 @@ export type VoterContext = AppContext & {
    * The matched `Nomination`s for each `Election` and `EntityType`.
    */
   matches: MatchTree;
-  /**
-   * The currently active `EntityFilter`s for each `Election` and `EntityType`.
-   */
-  entityFilters: FilterTree;
-  /**
-   * The scoped `FilterContext` for the current (`electionId`, `entityTab`) tuple.
-   * Bundled through voterContext for ergonomic consumption from the voter flow UI; also directly accessible via `getFilterContext()` for the future LLM chat integration. Same Symbol-keyed instance both ways.
-   */
-  filterContext: FilterContext;
   /**
    * The non-opinion `QuestionCategory`s applicable to the current `Election`s and `Constituency`s.
    * NB. When accessing the `Question`s in the categories, use the `getApplicableQuestions({election, constituency})` method.

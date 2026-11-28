@@ -19,7 +19,7 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
 
 ### Callbacks
 
-- `onChange`: Triggered when the voter releases the slider or steps it with the keyboard, never per drag pixel.
+- `onChange`: Triggered when the voter releases the slider or steps it with the keyboard, never per drag pixel, and when the voter presses an unset slider, which saves the value it shows.
 
 ### Usage
 

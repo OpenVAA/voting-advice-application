@@ -9,6 +9,7 @@ import type {
   EntityType,
   OrganizationNomination
 } from '@openvaa/data';
+import type { ReactiveHandle } from '../utils/reactiveHandle.type';
 import type { SelectionTree } from './selectionTree.type';
 
 /**
@@ -26,6 +27,27 @@ type NominationAndQuestionStateDeps = {
   /** The setting that names, by entity type, whose nominations are hidden while the entity lacks an answer to an opinion question asked of its type. The candidate key also removes such a candidate from its organization and hides an organization left with none. The organization key hides an organization for its own missing answers and decides nothing else. */
   hideIfMissingAnswers: () => AppSettings['entities']['hideIfMissingAnswers'];
 };
+
+/**
+ * Create a reactive value that contains `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType` included in `entityTypes`. A nomination whose entity lacks an answer to an opinion question asked of its type is left out when `hideIfMissingAnswers` holds that type's key. It is used internally by the `VoterContext`.
+ *
+ * @param deps - The getters the tree is derived from: the data root, the selected constituencies and elections, the entity types to include and the `hideIfMissingAnswers` setting.
+ * @returns A reactive nomination and question tree handle.
+ */
+export function nominationAndQuestionState(
+  deps: NominationAndQuestionStateDeps
+): ReactiveHandle<NominationAndQuestionTree> {
+  return new NominationAndQuestionStateImpl(deps);
+}
+
+/**
+ * Contains the nominations, info and opinion questions for each `Election` and each `EntityType`.
+ */
+export type NominationAndQuestionTree = SelectionTree<{
+  infoQuestions: Array<AnyQuestionVariant>;
+  opinionQuestions: Array<AnyQuestionVariant>;
+  nominations: Array<AnyNominationVariant>;
+}>;
 
 class NominationAndQuestionStateImpl {
   #deps: NominationAndQuestionStateDeps;
@@ -103,7 +125,7 @@ class NominationAndQuestionStateImpl {
     return tree as NominationAndQuestionTree;
   });
 
-  get value(): NominationAndQuestionTree {
+  get current(): NominationAndQuestionTree {
     return this.#value;
   }
 }
@@ -114,24 +136,3 @@ class NominationAndQuestionStateImpl {
 function answersEvery(entity: AnyNominationVariant['entity'], questions: Array<AnyQuestionVariant>): boolean {
   return questions.every((q) => q.isAnswered(entity.answers[q.id]));
 }
-
-/**
- * Create a reactive value that contains `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType` included in `entityTypes`. A nomination whose entity lacks an answer to an opinion question asked of its type is left out when `hideIfMissingAnswers` holds that type's key. It is used internally by the `VoterContext`.
- *
- * @param deps - The getters the tree is derived from: the data root, the selected constituencies and elections, the entity types to include and the `hideIfMissingAnswers` setting.
- * @returns A reactive nomination and question tree value.
- */
-export function nominationAndQuestionState(deps: NominationAndQuestionStateDeps): {
-  readonly value: NominationAndQuestionTree;
-} {
-  return new NominationAndQuestionStateImpl(deps);
-}
-
-/**
- * Contains the nominations, info and opinion questions for each `Election` and each `EntityType`.
- */
-export type NominationAndQuestionTree = SelectionTree<{
-  infoQuestions: Array<AnyQuestionVariant>;
-  opinionQuestions: Array<AnyQuestionVariant>;
-  nominations: Array<AnyNominationVariant>;
-}>;

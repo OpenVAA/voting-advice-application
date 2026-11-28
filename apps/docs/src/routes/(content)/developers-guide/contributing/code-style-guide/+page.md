@@ -210,7 +210,11 @@ To combine the component's own classes with a `class` the caller passes, spread 
 <div {...concatClass(restProps, 'default-class')}>...</div>
 ```
 
-`concatClass` merges the two with `tailwind-merge`, and the caller's classes come last, so where the two conflict (for example `h-16` and `h-32`), the caller's class wins.
+`concatClass` merges the two with `tailwind-merge`, and the caller's classes come last, so where the two conflict (for example `h-16` and `h-32`), the caller's class wins. After the properties, `concatClass` takes the same arguments as `cn`, so conditional classes go straight into it rather than through a nested `cn` call:
+
+```svelte
+<div {...concatClass(restProps, 'grid gap-md', isOpen && 'opacity-100')}>...</div>
+```
 
 ##### Aria attributes and the `class` attribute
 

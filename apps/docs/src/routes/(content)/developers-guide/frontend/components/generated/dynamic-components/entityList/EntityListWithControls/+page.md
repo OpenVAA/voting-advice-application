@@ -1,6 +1,6 @@
 # EntityListWithControls
 
-Compound component combining search + filter controls with an `EntityList` in a fixed layout. Uses pure `$derived` computations bridged to `FilterGroup.onChange` via the version counter provided by `filterContext` — NOT an `$effect` + `filterGroup.onChange` + `updateFilters` chain, which is circular and breaks.
+An `EntityListControls` rendering an `EntityList` of the filtered entities, filtered by the voter's active `FilterGroup` unless one is given.
 
 ### Properties
 
@@ -10,11 +10,8 @@ Compound component combining search + filter controls with an `EntityList` in a 
 - `searchProperty`: property used by the search filter. @default `'name'`
 - `itemsPerPage` / `itemsTolerance` / `scrollIntoView`: forwarded to the
   nested `<EntityList>`.
+- `data-testid`: forwarded to the nested `<EntityList>`.
 - Any valid attributes of a `<div>` element.
-
-### Reactivity bridge
-
-This component reads `fctx.version` inside its `$derived` so that any filter-rule mutation (which fires `FilterGroup.onChange` and bumps `fctx.version` via the `filterContext` `$effect`) re-runs the filter computation. The local `searchVersion` mirrors the same pattern for the search filter (no global subscription needed — search state is component-local). See `helpers.ts` for the pure `computeFiltered` / `countActiveFilters` functions consumed here.
 
 ## Source
 

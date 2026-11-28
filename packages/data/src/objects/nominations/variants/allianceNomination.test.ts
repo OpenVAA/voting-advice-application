@@ -46,6 +46,24 @@ test('Should reject id-only data without an entityId', () => {
   expect(() => new AllianceNomination({ data, root })).toThrow(DataProvisionError);
 });
 
+test('Should list its organizations as child nominations and the candidates of all of them', () => {
+  const alliances = root.allianceNominations ?? [];
+  expect(alliances.length).toBeGreaterThan(0);
+  for (const obj of alliances) {
+    expect(obj.childNominations).toEqual(obj.organizationNominations);
+    expect(obj.allCandidateNominations).toEqual(
+      obj.organizationNominations.flatMap((o) =>
+        o.hasFactions ? o.factionNominations.flatMap((f) => f.candidateNominations) : o.candidateNominations
+      )
+    );
+  }
+  const withFactionParty = alliances.find((a) => a.organizationNominations.some((o) => o.hasFactions));
+  expect(withFactionParty, 'Test data to include an alliance with a party nominated through factions').toBeDefined();
+  expect(withFactionParty!.allCandidateNominations.map((c) => c.entity.id)).toEqual(
+    expect.arrayContaining(['candidate-3', 'candidate-4'])
+  );
+});
+
 /**
  * Find the implicit alliance that matches the nomination, i.e. has the same electionId, constituencyId, and member organizations
  * @param entities - The entities to search in

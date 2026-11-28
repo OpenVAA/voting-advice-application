@@ -1,7 +1,7 @@
 import type { FeedbackWriter } from '$lib/api/base/feedbackWriter.type';
 import type { ComponentContext } from '../component';
 import type { DataContext } from '../data';
-import type { ReactiveHandle } from '../utils/reactiveHandle.type';
+import type { ReactiveHandle, UpdatableHandle, WritableHandle } from '../utils/reactiveHandle.type';
 import type { AppCustomization } from './appCustomization.type';
 import type { RouteBuilder } from './getRoute.svelte';
 import type { PopupState } from './popup';
@@ -32,28 +32,20 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
     /**
      * Available locales, exposed as a `{ readonly current }` rune handle. Read via `.current`.
      */
-    locales: { readonly current: ReadonlyArray<string> };
+    locales: ReactiveHandle<ReadonlyArray<string>>;
     /**
      * Dark mode state, exposed as a `{ readonly current }` rune handle. Read via `.current`.
      */
-    darkMode: { readonly current: boolean };
+    darkMode: ReactiveHandle<boolean>;
     /**
      * The application type we're using. Set this to the current type in the layout containing the app.
      */
-    appType: {
-      readonly current: AppType;
-      set(v: AppType): void;
-      update(fn: (v: AppType) => AppType): void;
-    };
+    appType: UpdatableHandle<AppType>;
     /**
      * App customization from `DataProvider`, exposed as a writable rune handle.
      * NB. It is writable, but it should not be written to under normal circumstances.
      */
-    appCustomization: {
-      readonly current: AppCustomization;
-      set(v: AppCustomization): void;
-      update(fn: (v: AppCustomization) => AppCustomization): void;
-    };
+    appCustomization: UpdatableHandle<AppCustomization>;
     /**
      * Currently effective app settings, exposed as a BARE reactive accessor.
      * Read directly via `ctx.appSettings`. MUST be read off `ctx` (never destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring Rule. There is deliberately no writable `set`/`update` surface: internal writes go through the private `#appSettingsValue` $state (re-merge `$effect`s).
@@ -62,19 +54,15 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
     /**
      * Rune-native route-builder handle. Read via `getRoute.current(opts)`.
      */
-    getRoute: { readonly current: RouteBuilder };
+    getRoute: ReactiveHandle<RouteBuilder>;
     /**
      * The possible survey link, exposed as a `{ readonly current }` rune handle. Read via `.current`.
      */
-    surveyLink: { readonly current: string | undefined };
+    surveyLink: ReactiveHandle<string | undefined>;
     /**
      * User (not necessarily a voter) preferences maintained in local storage, exposed as a writable rune handle backed by `localStorageState`.
      */
-    userPreferences: {
-      readonly current: UserPreferences;
-      set(v: UserPreferences): void;
-      update(fn: (v: UserPreferences) => UserPreferences): void;
-    };
+    userPreferences: UpdatableHandle<UserPreferences>;
     /**
      * A store that manages a queue of popup components and resolves to the first component in the queue.
      */
@@ -83,10 +71,7 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
      * Holds the function for opening the feedback modal, exposed as a writable rune handle.
      * TODO: Refactor when Cand App is refactored.
      */
-    openFeedbackModal: {
-      readonly current: (() => void) | undefined;
-      set(v: (() => void) | undefined): void;
-    };
+    openFeedbackModal: WritableHandle<(() => void) | undefined>;
     /**
      * Send feedback using the `FeedbackWriter` api.
      */

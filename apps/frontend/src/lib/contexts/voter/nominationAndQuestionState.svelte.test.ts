@@ -113,7 +113,7 @@ function setup({
     entityTypes: () => [ENTITY_TYPE.Candidate, ENTITY_TYPE.Organization],
     hideIfMissingAnswers: () => hideIfMissingAnswers as HideIfMissingAnswers
   });
-  const leaves = state.value['election-1'];
+  const leaves = state.current['election-1'];
   const organizationLeaf = leaves?.[ENTITY_TYPE.Organization];
   return {
     candidateIds: leaves?.[ENTITY_TYPE.Candidate]?.nominations.map((n) => n.id),
@@ -319,7 +319,7 @@ describe('nominationAndQuestionState, the constituency an election resolves to',
       entityTypes: () => [ENTITY_TYPE.Candidate],
       hideIfMissingAnswers: () => undefined as unknown as HideIfMissingAnswers
     });
-    return state.value['mixed']?.[ENTITY_TYPE.Candidate]?.nominations.map((n) => n.id);
+    return state.current['mixed']?.[ENTITY_TYPE.Candidate]?.nominations.map((n) => n.id);
   }
 
   it.each([

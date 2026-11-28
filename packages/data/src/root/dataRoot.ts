@@ -512,6 +512,20 @@ export class DataRoot extends Updatable {
   }
 
   /**
+   * Find the `QuestionCategory`s that hold at least one question applicable to the `FilterTargets`.
+   * @param type - The type of the `QuestionCategory`. All types when omitted.
+   * @param filters - Any `FilterTargets`
+   */
+  findQuestionCategories({
+    type,
+    ...filters
+  }: FilterTargets & { type?: QuestionCategoryType }): Array<QuestionCategory> {
+    return this.questionCategories.filter(
+      (qc) => (!type || qc.type === type) && qc.getApplicableQuestions(filters).length > 0
+    );
+  }
+
+  /**
    * Get `AnyQuestionVariant`s of a specific `QuestionCategoryType`.
    * @param type - The type to look for.
    * @returns An array of `AnyQuestionVariant`s or `undefined` if questions haven't been provided yet.

@@ -13,28 +13,39 @@ import type {
 } from '@openvaa/data';
 import type { Match, MatchingAlgorithm } from '@openvaa/matching';
 import type { MatchingProxy } from '$lib/utils/matching';
+import type { ReactiveHandle } from '../utils/reactiveHandle.type';
 import type { AnswerState } from './answerState.type';
 import type { NominationAndQuestionTree } from './nominationAndQuestionState.svelte';
 import type { SelectionTree } from './selectionTree.type';
 
-/**
- * Create a reactive value that contains `Match`es for each `Election` and each `EntityType` included in `entityTypes`.
- * @param answers - The answer store (reactive via getter)
- * @param nominationsAndQuestions - A getter returning `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType`
- * @param algorithm - The matching algorithm
- * @param minAnswers - A getter returning the minimum number of answers required to perform matching, default `1`
- * @param calcSubmatches - A getter returning the `entityType`s for which to calculate submatches, default `[]`
- * @param parentMatchingMethod - A getter returning the parent matching method. `'impute'` preimputes answers for `Nomination`s with children, `'answersOnly'` matches parents on their own answers, and `'none'` leaves organizations, factions and alliances unmatched: they are returned as plain nominations, without a score.
- * @returns A reactive match tree value.
- */
 type MatchStateDeps = {
+  /** The answer store (reactive via getter). */
   answers: AnswerState;
+  /** A getter returning `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType`. */
   nominationsAndQuestions: () => NominationAndQuestionTree;
+  /** The matching algorithm. */
   algorithm: MatchingAlgorithm;
+  /** A getter returning the minimum number of answers required to perform matching, default `1`. */
   minAnswers: () => number;
+  /** A getter returning the `entityType`s for which to calculate submatches, default `[]`. */
   calcSubmatches: () => Array<EntityType>;
+  /** A getter returning the parent matching method. `'impute'` preimputes answers for `Nomination`s with children, `'answersOnly'` matches parents on their own answers, and `'none'` leaves organizations, factions and alliances unmatched: they are returned as plain nominations, without a score. */
   parentMatchingMethod: () => AppSettings['matching']['organizationMatching'];
 };
+
+/**
+ * Create a reactive value that contains `Match`es for each `Election` and each `EntityType` included in `entityTypes`.
+ * @param deps - The answers, the matching algorithm and the getters the matches are derived from.
+ * @returns A reactive match tree handle.
+ */
+export function matchState(deps: MatchStateDeps): ReactiveHandle<MatchTree> {
+  return new MatchStateImpl(deps);
+}
+
+/**
+ * Contains the matches for each `Election` and each `EntityType`.
+ */
+export type MatchTree = SelectionTree<Array<MaybeWrappedEntityVariant>>;
 
 class MatchStateImpl {
   #deps: MatchStateDeps;
@@ -55,7 +66,7 @@ class MatchStateImpl {
 
     for (const [electionId, electionContent] of Object.entries(nq)) {
       const electionMatches: Record<EntityType, Array<MaybeWrappedEntityVariant>> = {} as never;
-      // Cross-iteration org-proxy cache. Populated by the Org branch in Pass 1; consumed by the Alliance branch in Pass 2 via the imputeParentAnswers childProxies arg. Per the Org-first invariant documented in imputeParentAnswers.ts.
+      // Imputed organization proxies, read by the alliance branch as its children's answers.
       const orgProxiesById = new Map<Id, MatchingProxy<AnyNominationVariant>>();
 
       for (const [entityType, { nominations, opinionQuestions: questions }] of Object.entries(electionContent)) {
@@ -109,16 +120,22 @@ class MatchStateImpl {
               throw new Error(`Unsupported parent matching method: ${parentMethod}`);
           }
         } else if (entityType === ENTITY_TYPE.Alliance) {
-          // Org-first invariant: this branch reads orgProxiesById which is populated by the Organization branch above. The default seed orders sections ['candidate', 'organization', 'alliance'] so Org runs before Alliance within each electionContent iteration. A customer override that listed alliance first would result in an empty orgProxiesById Map; the alliance pass would then fall back to entity-answer reads (which are null for alliances → no impute → match scores degrade silently).
-          // See JSDoc on imputeParentAnswers for the broader cascading-proxy pattern.
           switch (parentMethod) {
-            case 'impute':
+            case 'impute': {
+              const alliances = nominations as Array<AllianceNomination>;
+              // Impute the member organizations not imputed by an organization section, whether that section comes later or is not shown at all.
+              const missingOrgs = alliances
+                .flatMap((a) => a.organizationNominations)
+                .filter((o) => !orgProxiesById.has(o.id));
+              for (const p of imputeParentAnswers({ nominations: missingOrgs, questions }))
+                orgProxiesById.set(p.target.id, p);
               proxies = imputeParentAnswers({
-                nominations: nominations as Array<AllianceNomination>,
+                nominations: alliances,
                 questions,
                 childProxies: orgProxiesById
               });
               break;
+            }
             case 'answersOnly':
               break;
             default:
@@ -144,16 +161,7 @@ class MatchStateImpl {
     return tree as MatchTree;
   });
 
-  get value(): MatchTree {
+  get current(): MatchTree {
     return this.#value;
   }
 }
-
-export function matchState(deps: MatchStateDeps): { readonly value: MatchTree } {
-  return new MatchStateImpl(deps);
-}
-
-/**
- * Contains the matches for each `Election` and each `EntityType`.
- */
-export type MatchTree = SelectionTree<Array<MaybeWrappedEntityVariant>>;

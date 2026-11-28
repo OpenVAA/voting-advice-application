@@ -1,6 +1,7 @@
 import { DataNotFoundError, DataProvisionError, ENTITY_TYPE, Nomination, OBJECT_TYPE } from '../../../internal';
 import type {
   AllianceNominationData,
+  CandidateNomination,
   DataAccessor,
   DataRoot,
   OrganizationNomination,
@@ -74,6 +75,20 @@ export class AllianceNomination
   //////////////////////////////////////////////////////////////////////////////
   // Property and collection getters
   //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * The `CandidateNomination`s of all member organizations, including those nominated through factions.
+   */
+  get allCandidateNominations(): Array<CandidateNomination> {
+    return this.organizationNominations.flatMap((o) => o.allCandidateNominations);
+  }
+
+  /**
+   * The direct child nominations, i.e. the member `OrganizationNomination`s.
+   */
+  get childNominations(): Array<OrganizationNomination> {
+    return this.organizationNominations;
+  }
 
   /**
    * A utility synonym for `organizationNominations`.

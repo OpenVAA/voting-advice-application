@@ -19,7 +19,7 @@ export const locales: Array<ParaglideLocale> = [];
 
 if (!supportedLocales?.length) error(500, 'Could not load supported locales from settings');
 
-// NB. Locale *display names* are no longer sourced from settings — they live in the Paraglide message catalog (`messages/{locale}/lang.json`, keyed `lang.<code>`) and are resolved via `t()` in `initI18nContext()`. `supportedLocales` remains the source for which locales are *offered* (the `locales` array + the default).
+// Locale display names come from the `lang.json` catalogue via `t()`; `supportedLocales` decides which locales are offered.
 for (const { code } of supportedLocales) {
   if (code == undefined || typeof code !== 'string' || !isParaglideLocale(code))
     error(500, `Invalid locale code in supported locales settings: ${code}`);

@@ -226,33 +226,6 @@ describe('filterContext', () => {
     expect(bumpedVersion).toBe(1);
   });
 
-  it('resetFilters() invokes FilterGroup.reset() on the active group', () => {
-    const f1 = new FakeFilter('f1');
-    const group = new FakeGroup([f1]);
-    const resetSpy = vi.spyOn(group, 'reset');
-    const tree = { e1: { candidate: group } } as unknown as FilterTree;
-    setParams({ electionId: 'e1', entityTab: 'candidates' });
-
-    let captured: FilterContext | undefined;
-    const target = mountTarget();
-    const component = mount(FilterContextHarness, {
-      target,
-      props: {
-        init: { entityFilters: () => tree },
-        onReady: (ctx) => {
-          captured = ctx;
-        }
-      }
-    });
-    flushSync();
-    void captured!.filterGroup;
-    flushSync();
-    captured!.resetFilters();
-    flushSync();
-    unmount(component);
-    expect(resetSpy).toHaveBeenCalledTimes(1);
-  });
-
   it('removes the onChange listener on unmount', () => {
     const oldGroup = new FakeGroup([new FakeFilter('old')]);
     const tree = { e1: { candidate: oldGroup } } as unknown as FilterTree;

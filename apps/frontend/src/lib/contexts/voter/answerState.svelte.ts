@@ -7,6 +7,14 @@ import type { TrackingService } from '../app/tracking';
 import type { AnswerState } from './answerState.type';
 
 /**
+ * Create an extended reactive store saved in `localStorage` for holding the voter's `Answer`s. The answers can be read via the `answers` getter, but setting and deleting them can only be done using the dedicated methods.
+ * The returned `Answers` are frozen to prevent accidental modifications.
+ */
+export function answerState({ track }: { track: TrackingService['track'] }): AnswerState {
+  return new AnswerStateImpl(track);
+}
+
+/**
  * A Svelte 5 class implementation of the voter's `Answer` store. The persistence
  * + version bridge is INHERITED from `localStorageState`/`PersistedStateImpl` — this class does NOT own a `#version`; the `{ version, data }` payload + expiry live in `persistedState.svelte.ts`, so the silent-spin caveat of a hand-rolled version bridge is mitigated upstream and is NOT re-implemented here.
  *
@@ -53,12 +61,4 @@ class AnswerStateImpl implements AnswerState {
     this.#track('answer_resetAll');
     log.debug('answerState.reset()');
   };
-}
-
-/**
- * Create an extended reactive store saved in `localStorage` for holding the voter's `Answer`s. The answers can be read via the `answers` getter, but setting and deleting them can only be done using the dedicated methods.
- * The returned `Answers` are frozen to prevent accidental modifications.
- */
-export function answerState({ track }: { track: TrackingService['track'] }): AnswerState {
-  return new AnswerStateImpl(track);
 }

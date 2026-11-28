@@ -24,7 +24,7 @@ export interface PersistedState<TValue> {
 }
 
 /**
- * Create a rune-native state handle persisted in `localStorage`, replacing the three-layer `$state → store-shaped writable → fromStore` bridge with a single `{ current, set, update }` handle. Reads the initial value via the versioned `getItemFromStorage` helper (so a stale/wrong-version or old-format payload is discarded and `defaultValue` is returned — there is deliberately NO format-migration shim) and persists every `set`/`update` via `saveItemToStorage`.
+ * Create a `{ current, set, update }` handle persisted in `localStorage`. Reads the initial value via the versioned `getItemFromStorage` helper (so a stale/wrong-version or old-format payload is discarded and `defaultValue` is returned — there is deliberately NO format-migration shim) and persists every `set`/`update` via `saveItemToStorage`.
  *
  * In the browser the handle follows another document's change of its key, as the `storage` event announces it, and writes nothing back: a removed key or a cleared storage returns it to `defaultValue`, and a new value is read as the handle's first read reads one. So a later `set` or `update` stores only what it adds, and cannot store again what another tab removed.
  *

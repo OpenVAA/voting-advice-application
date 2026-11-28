@@ -3,13 +3,13 @@
 
 ### Properties
 
-- `aria-roledescription`: The Aria role description of the `<hgroup>` element. Default: `t('aria.headingGroup')`
+- `aria-roledescription`: The Aria role description of the `<hgroup>` element. Default: `t('components.headingGroup.roleDescription')`
 - `role`: The Aria role of the `<hgroup>` element. Default: `'group'`
 - Any valid attributes of a `<hgroup>` element.
 
-### Slots
+### Snippet Props
 
-- default: the contents of the heading group.
+- `children`: the contents of the heading group.
 
 ### Usage
 

@@ -1,7 +1,7 @@
 import { DataRoot, MultipleChoiceCategoricalQuestion, NumberQuestion } from '@openvaa/data';
 import { ChoiceQuestionFilter, NumberQuestionFilter } from '@openvaa/filters';
 import { describe, expect, test } from 'vitest';
-import { countDistinctAnswers, MIN_DISTINCT_ANSWERS, retainRelevantFilters } from './filterRelevance';
+import { MIN_DISTINCT_ANSWERS, retainRelevantFilters } from './filterRelevance';
 import type { Answer, AnswerDict, HasAnswers } from '@openvaa/core';
 import type { Choice } from '@openvaa/data';
 import type { Filter } from '@openvaa/filters';
@@ -62,43 +62,33 @@ describe('MIN_DISTINCT_ANSWERS', () => {
   });
 });
 
-describe('countDistinctAnswers: single-value filters', () => {
+describe('retainRelevantFilters: single-value filters', () => {
   test('Two different answers count as two distinct values', () => {
     const filter = numberFilter();
     const targets = asTargets(population([42, 99]));
-    expect(countDistinctAnswers({ filter, targets })).toBe(2);
     expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([filter]);
   });
 
   test('Everybody answered the same and nobody skipped, so the filter is dropped', () => {
     const filter = numberFilter();
     const targets = asTargets(population([42, 42, 42]));
-    expect(countDistinctAnswers({ filter, targets })).toBe(1);
     expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([]);
   });
 
   test('Nobody answered at all, so the filter is dropped. This is the reported symptom, on the organizations and alliances tabs', () => {
     const filter = numberFilter();
     const targets = asTargets(population([undefined, undefined, undefined]));
-    expect(countDistinctAnswers({ filter, targets })).toBe(1);
     expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([]);
   });
 
-  test('OPERATOR RULING: a missing answer counts as a distinct value, so a unanimous question with one skipper KEEPS its filter', () => {
+  test('A missing answer counts as a distinct value, so a unanimous question with one skipper keeps its filter', () => {
     const filter = numberFilter();
     const targets = asTargets(population([42, 42, undefined]));
-    expect(countDistinctAnswers({ filter, targets })).toBe(2);
     expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([filter]);
-  });
-
-  test('OPERATOR RULING: missing is ONE shared value, not one per non-answerer', () => {
-    const filter = numberFilter();
-    const targets = asTargets(population([42, undefined, undefined, undefined, undefined]));
-    expect(countDistinctAnswers({ filter, targets })).toBe(2);
   });
 });
 
-describe('countDistinctAnswers: multi-value filters', () => {
+describe('retainRelevantFilters: multi-value filters', () => {
   test('An entity answer is its whole SET, so a population all choosing the same two choices counts as one', () => {
     const filter = multiChoiceFilter();
     const targets = asTargets(
@@ -108,18 +98,16 @@ describe('countDistinctAnswers: multi-value filters', () => {
         ['a', 'b']
       ])
     );
-    expect(countDistinctAnswers({ filter, targets })).toBe(1);
     expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([]);
   });
 
   test('A differing answer set counts as a second distinct value and the filter is retained', () => {
     const filter = multiChoiceFilter();
     const targets = asTargets(population([['a', 'b'], ['a', 'b'], ['c']]));
-    expect(countDistinctAnswers({ filter, targets })).toBe(2);
     expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([filter]);
   });
 
-  test('Value order and duplicates inside an answer set do not create distinct values', () => {
+  test('Value order and duplicates inside an answer set do not create distinct values, so the filter is dropped', () => {
     const filter = multiChoiceFilter();
     const targets = asTargets(
       population([
@@ -128,13 +116,12 @@ describe('countDistinctAnswers: multi-value filters', () => {
         ['a', 'b', 'a']
       ])
     );
-    expect(countDistinctAnswers({ filter, targets })).toBe(1);
+    expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([]);
   });
 
-  test('OPERATOR RULING: "did not answer" and "answered with nothing" are two different values', () => {
+  test('"Did not answer" and "answered with nothing" are two different values, so the filter is retained', () => {
     const filter = multiChoiceFilter();
     const targets = asTargets(population([[], undefined]));
-    expect(countDistinctAnswers({ filter, targets })).toBe(2);
     expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([filter]);
   });
 });
@@ -149,25 +136,18 @@ describe('retainRelevantFilters', () => {
       new AnsweringEntity({ qA: 99, qB: 7, qC: ['c'] })
     ];
     const targets = asTargets(entities);
-    expect(countDistinctAnswers({ filter: middle, targets })).toBe(1);
     expect(retainRelevantFilters({ filters: [first, middle, last], targets })).toEqual([first, last]);
   });
 
   test('A filter whose getValue throws for every target is dropped rather than propagating the throw', () => {
-    const throwing = {
-      name: 'Throwing filter',
-      getValue: () => {
-        throw new Error('Entity does not have answers.');
-      }
-    } as unknown as Filter<MaybeWrappedEntityVariant, unknown>;
-    const targets = asTargets(population([42, 99]));
-    expect(countDistinctAnswers({ filter: throwing, targets })).toBe(1);
-    expect(retainRelevantFilters({ filters: [throwing], targets })).toEqual([]);
+    const filter = numberFilter();
+    // Targets without answers make `getValue` throw.
+    const targets = asTargets([{}, {}] as Array<AnsweringEntity>);
+    expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([]);
   });
 
   test('An empty target array retains nothing, because zero targets produce zero distinct values', () => {
     const filter = numberFilter();
-    expect(countDistinctAnswers({ filter, targets: [] })).toBe(0);
     expect(retainRelevantFilters({ filters: [filter], targets: [] })).toEqual([]);
   });
 });

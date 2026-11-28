@@ -17,18 +17,13 @@
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
-  import { EntityList } from '$lib/dynamic-components/entityList';
-  import { EntityListControls } from '../entityList';
+  import { EntityList, EntityListControls } from '../entityList';
   import type { EntityCardProps } from '../entityCard';
   import type { EntityChildrenProps } from './EntityChildren.type';
 
   let { entities, entityType, action }: EntityChildrenProps = $props();
 
   const { t } = getComponentContext();
-
-  // filteredEntities seeds from `entities` prop and is then replaced by EntityListControls' onUpdate callback (mutable thereafter).
-  // svelte-ignore state_referenced_locally
-  let filteredEntities = $state(entities);
 
   function getCardProps(entity: MaybeWrappedEntityVariant): EntityCardProps {
     return {
@@ -38,15 +33,24 @@
   }
 </script>
 
+{#snippet list(shown: Array<MaybeWrappedEntityVariant>)}
+  <EntityList cards={shown.map(getCardProps)} class="mb-lg" scrollIntoView={false} />
+{/snippet}
+
 <div class="px-md py-lg pb-safelgb grow" class:bg-base-300={!!entities.length}>
   {#if entities.length}
     <h3 class="m-md">
-      {t(`results.${entityType}.numShown`, { numShown: filteredEntities.length })}
+      {t(`results.${entityType}.numShown`, { numShown: entities.length })}
     </h3>
     {#if entities.length > 5}
-      <EntityListControls {entities} onUpdate={(results) => (filteredEntities = results)} class="mb-md mx-10" />
+      <EntityListControls {entities} class="mb-md mx-10">
+        {#snippet children(filtered)}
+          {@render list(filtered)}
+        {/snippet}
+      </EntityListControls>
+    {:else}
+      {@render list(entities)}
     {/if}
-    <EntityList cards={filteredEntities.map(getCardProps)} class="mb-lg" scrollIntoView={false} />
   {:else}
     <h3 class="mb-md mt-md mx-10 text-center">
       {t(`results.${entityType}.numShown`, { numShown: 0 })}

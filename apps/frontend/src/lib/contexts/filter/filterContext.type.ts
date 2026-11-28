@@ -3,9 +3,9 @@ import type { FilterGroup } from '@openvaa/filters';
 import type { FilterTree } from '$lib/contexts/voter/filters/filterState.svelte';
 
 /**
- * Symbol-keyed Svelte context exposing the active `FilterGroup` for the current (`electionId`, `entityTab`) URL scope (`entityTab` renamed from `entityTypePlural`), plus a `$state` version counter that bridges `FilterGroup.onChange` imperative notifications into `$derived` reactivity. See `filterContext.svelte.ts` for the implementation analog (`dataContext.svelte.ts` lines 33-50).
+ * Symbol-keyed Svelte context exposing the active `FilterGroup` for the current (`electionId`, `entityTab`) URL scope, plus a `$state` version counter that bridges `FilterGroup.onChange` imperative notifications into `$derived` reactivity.
  *
- * This context is initialized by `initVoterContext()` and accessible either directly via `getFilterContext()` (for the future LLM chat surface) or via `getVoterContext().filterContext` (for the voter-flow UI).
+ * Initialized by `initVoterContext()` and read with `getFilterContext()`.
  */
 export type FilterContext = {
   /**
@@ -19,23 +19,6 @@ export type FilterContext = {
    * Read inside `$derived.by(() => { void fctx.version; ... })` to subscribe to filter-state changes.
    */
   readonly version: number;
-  /**
-   * Set a filter rule by filter name/id. Routes through `filter.setRule()` to preserve the `onChange` emission that drives the version counter.
-   * This is the typed mutator surface intended for the future LLM chat integration; UI components today still call `filter.setRule()` directly via the `EntityFilters` component.
-   */
-  setFilter(id: string, value: unknown): void;
-  /**
-   * Reset all filters in the active `FilterGroup`. Calls `FilterGroup.reset()`, which itself emits `onChange` and bumps the version counter.
-   */
-  resetFilters(): void;
-  /**
-   * Add a filter to the active group. Not implemented — the spec is deferred to the future LLM chat integration. Logs a warning when called so any pre-completion consumer hits a visible signal.
-   */
-  addFilter(spec: unknown): void;
-  /**
-   * Remove a filter by id. Not implemented (see `addFilter`).
-   */
-  removeFilter(id: string): void;
 };
 
 /**

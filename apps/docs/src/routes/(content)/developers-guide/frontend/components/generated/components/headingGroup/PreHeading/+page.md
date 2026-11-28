@@ -4,12 +4,12 @@ Used for a pre-title, or kicker, above the main title of a page within a `Headin
 
 ### Properties
 
-- `aria-roledescription`: The Aria role description of the `<p>` element representing the pre-title. Default: `t('aria.preHeading')`
+- `aria-roledescription`: The Aria role description of the `<p>` element representing the pre-title. Default: `t('components.preHeading.roleDescription')`
 - Any valid attributes of a `<p>` element.
 
-### Slots
+### Snippet Props
 
-- default: the contents of pre-title
+- `children`: the contents of the pre-title.
 
 ### Usage
 

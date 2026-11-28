@@ -2,6 +2,13 @@ import type { PopupQueueItem } from './popupComponent.type';
 import type { PopupState as PopupStateApi } from './popupState.type';
 
 /**
+ * Create a store that manages a queue of popup components and resolves to the first component in the queue.
+ */
+export function popupState(): PopupStateApi {
+  return new PopupState();
+}
+
+/**
  * Manages a queue of popup components and resolves to the first component in the queue, as a Svelte 5 CLASS.
  *
  * The reactive core is the private `#queue` `$state` array field, reassigned wholesale on `push`/`shift` (a reassigned array field needs no `{current}` handle; the `$derived` head tracks the reassignment). `current` is a prototype getter over the `#current` `$derived` head-of-queue.
@@ -23,11 +30,4 @@ class PopupState implements PopupStateApi {
   get current(): PopupQueueItem | undefined {
     return this.#current;
   }
-}
-
-/**
- * Create a store that manages a queue of popup components and resolves to the first component in the queue.
- */
-export function popupState(): PopupStateApi {
-  return new PopupState();
 }

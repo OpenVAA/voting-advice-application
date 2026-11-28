@@ -33,10 +33,6 @@ import type {
  *
  * Backward-compat: when `childProxies` is undefined, the function reads child answers from `child.entity.getAnswer(...)` — output is byte-identical for organization + faction parents. Callers only pass `childProxies` when they want to compose passes (e.g. matchStore Pass 2 for alliances).
  *
- * # Org-first invariant
- *
- * `matchStore.svelte.ts` MUST run the Organization branch before the Alliance branch within each election iteration so the org proxies are available when alliance-pass runs. The sequential for...of loop in matchStore documents this invariant.
- *
  * # Future refactor
  *
  * The broader imputation-paradigm refactor (per-entity-type matching method, separation of imputation strategy from the matching loop) is captured in the pending todo `2026-05-09-rewrite-parent-answer-imputation.md`.
@@ -72,14 +68,7 @@ export function imputeParentAnswers<
 
   for (let i = 0; i < nominations.length; i++) {
     const parent = nominations[i];
-    let children: ReadonlyArray<AnyNominationVariant>;
-    if (isObjectType(parent, OBJECT_TYPE.AllianceNomination)) {
-      children = parent.organizationNominations;
-    } else if (isObjectType(parent, OBJECT_TYPE.OrganizationNomination) && parent.hasFactions) {
-      children = parent.factionNominations;
-    } else {
-      children = (parent as OrganizationNomination | FactionNomination).candidateNominations;
-    }
+    const children: ReadonlyArray<AnyNominationVariant> = parent.childNominations;
     if (children.length === 0) continue;
 
     // Only impute the answer if it's missing NB. If we enable different imputation methods, we should overwrite answers imputed with a different method

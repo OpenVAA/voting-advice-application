@@ -1,6 +1,6 @@
 # EntityListControls
 
-Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
+Show filter, sorting (TBA) and search tools for a list of entities, and render the list from the filtered entities with the `children` snippet.
 
 TODO: Consider moving the tracking events away from the component and just adding callbacks that the consumer can use to trigger tracking events.
 
@@ -9,8 +9,11 @@ TODO: Consider moving the tracking events away from the component and just addin
 - `entities`: A list of possibly ranked entities, e.g. candidates or a parties.
 - `filterGroup`: The filters applied to the contents.
 - `searchProperty`: The property used for the search tool. Default: `'name'`
-- `onUpdate`: Callback for when the filters are applied.
 - Any valid attributes of a `<div>` element.
+
+### Snippet Props
+
+- `children`: Renders the list. Receives the entities left after the filters and the search.
 
 ### Tracking events
 
@@ -20,7 +23,11 @@ TODO: Consider moving the tracking events away from the component and just addin
 ### Usage
 
 ```tsx
-<EntityListControls entities={allParties} bind:output={filteredParties} />
+<EntityListControls entities={allParties} {filterGroup}>
+  {#snippet children(filtered)}
+    <EntityList cards={filtered.map((entity) => ({ entity }))} />
+  {/snippet}
+</EntityListControls>
 ```
 
 ## Source

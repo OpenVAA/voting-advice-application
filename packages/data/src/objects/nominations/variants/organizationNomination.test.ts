@@ -44,6 +44,23 @@ test('Should have nomination objects for all Organization nominations with the c
   });
 });
 
+test('Should list its direct child nominations and all its candidate nominations', () => {
+  const orgs = root.organizationNominations ?? [];
+  const withFactions = orgs.filter((o) => o.hasFactions);
+  const withCandidates = orgs.filter((o) => o.hasCandidates);
+  expect(withFactions.length, 'Test data to include an organization nominated through factions').toBeGreaterThan(0);
+  expect(withCandidates.length, 'Test data to include an organization with direct candidates').toBeGreaterThan(0);
+  for (const obj of withFactions) {
+    expect(obj.childNominations).toEqual(obj.factionNominations);
+    expect(obj.allCandidateNominations).toEqual(obj.factionNominations.flatMap((f) => f.candidateNominations));
+    expect(obj.allCandidateNominations.length).toBeGreaterThan(0);
+  }
+  for (const obj of withCandidates) {
+    expect(obj.childNominations).toEqual(obj.candidateNominations);
+    expect(obj.allCandidateNominations).toEqual(obj.candidateNominations);
+  }
+});
+
 /**
  * Find the nomination object that matches the nomination data, i.e. has the same electionId, electionRound, constituencyId and entityId.
  * @param nominations - The entities to search in

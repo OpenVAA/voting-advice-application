@@ -1,6 +1,6 @@
 import { getEntity, hasAnswers } from '@openvaa/core';
 import { castValue } from './castValue';
-import { MISSING_VALUE } from '../../missingValue';
+import { isMissing, MISSING_VALUE } from '../../missingValue';
 import { copyRules, matchRules, ruleIsActive } from '../rules';
 import type { MaybeWrappedEntity } from '@openvaa/core';
 import type { MaybeMissing } from '../../missingValue';
@@ -78,6 +78,36 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
       : value == null
         ? MISSING_VALUE
         : castValue<TValue>(value, this.options.type);
+  }
+
+  /**
+   * Count the distinct values the targets produce for this filter.
+   *
+   * Each target contributes exactly one key. A target whose value cannot be read, or whose values are all missing, contributes the single `MISSING_VALUE` key, shared by every such target. Every other target contributes the canonicalisation of its de-duplicated, sorted non-missing values, so value order and duplicates inside a multi-value answer create no distinct values. An empty multi-value answer ("answered with nothing") is a value of its own, distinct from a missing one.
+   * @param targets - The targets to count over.
+   * @returns The number of distinct values, where missing counts once.
+   */
+  countDistinctValues(targets: Array<TTarget>): number {
+    const keys = new Set<unknown>();
+    for (const target of targets) {
+      let raw: unknown;
+      try {
+        raw = this.getValue(target);
+      } catch {
+        keys.add(MISSING_VALUE);
+        continue;
+      }
+      const values = Array.isArray(raw) ? raw : [raw];
+      // Classify before reducing: only a non-empty array of missing values is missing, an empty one is "answered with nothing".
+      if (values.length > 0 && values.every((value) => isMissing(value))) {
+        keys.add(MISSING_VALUE);
+        continue;
+      }
+      const answered = [...new Set(values.filter((value) => !isMissing(value)))].sort();
+      // The missing key is an object and every answer key a string, so no answer can collide with it.
+      keys.add(JSON.stringify(answered));
+    }
+    return keys.size;
   }
 
   /////////////////////////////////////////////////////////////////////////////////

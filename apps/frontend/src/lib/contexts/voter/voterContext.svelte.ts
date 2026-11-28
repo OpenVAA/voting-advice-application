@@ -3,7 +3,7 @@ import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openv
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext, untrack } from 'svelte';
 import { page } from '$app/state';
-import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/routes';
+import { getImpliedConstituencyIds, getImpliedElectionIds, parseParams } from '$lib/routes';
 import { resolveOrganizationMatching } from '$lib/utils/organizationMatching';
 import { answerState } from './answerState.svelte';
 import { countAnswers } from './countAnswers';
@@ -11,9 +11,8 @@ import { filterState } from './filters/filterState.svelte';
 import { matchState } from './matchState.svelte';
 import { nominationAndQuestionState } from './nominationAndQuestionState.svelte';
 import { getAppContext } from '../../contexts/app';
-import { getFilterContext, initFilterContext } from '../filter';
+import { initFilterContext } from '../filter';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
-import { paramState } from '../utils/paramState.svelte';
 import { sessionStorageState } from '../utils/persistedState.svelte';
 import { rollUpQuestionCategories } from '../utils/questionRollup';
 import { sameRefs } from '../utils/sameRefs';
@@ -66,9 +65,9 @@ export class VoterContextProvider implements VoterContext {
 
   #firstQuestionId = sessionStorageState('voterContext-firstQuestionId', null as Id | null);
 
-  // Param-based collection stores (class instances; read via `.value`).
-  #electionId = paramState('electionId');
-  #constituencyId = paramState('constituencyId');
+  // The selected ids from the route and search params.
+  #electionId = $derived(parseParams(page).electionId as Array<string> | undefined);
+  #constituencyId = $derived(parseParams(page).constituencyId as Array<string> | undefined);
 
   /**
    * The matching algorithm, exposed as the `algorithm` member.
@@ -116,14 +115,14 @@ export class VoterContextProvider implements VoterContext {
   #matches = matchState({
     algorithm: this.algorithm,
     answers: this.#answers,
-    nominationsAndQuestions: () => this.#nominationsAndQuestions.value,
+    nominationsAndQuestions: () => this.#nominationsAndQuestions.current,
     minAnswers: () => this.#minAnswers,
     calcSubmatches: () => this.#calcSubmatches,
     parentMatchingMethod: () => this.#parentMatchingMethod
   });
 
   #entityFilters = filterState({
-    nominationsAndQuestions: () => this.#nominationsAndQuestions.value,
+    nominationsAndQuestions: () => this.#nominationsAndQuestions.current,
     locale: () => this.#locale,
     t: () => this.#t
   });
@@ -179,7 +178,7 @@ export class VoterContextProvider implements VoterContext {
   #hideIfMissingAnswers = $derived(this.#appSettings.entities?.hideIfMissingAnswers || {});
 
   #nominationsAvailable = $derived.by(() => {
-    const nq = this.#nominationsAndQuestions.value;
+    const nq = this.#nominationsAndQuestions.current;
     return Object.fromEntries(
       Object.entries(nq).map(([id, contents]) => [
         id,
@@ -207,7 +206,7 @@ export class VoterContextProvider implements VoterContext {
   // Read it as `ctx.currentResultsEntityType`; never destructure it (CLAUDE.md, Context Destructuring Rule).
   #currentResultsEntityType = $derived.by<EntityType | undefined>(() => {
     if (!this.#currentResultsElection) return undefined;
-    const matchesForElection = this.#matches.value[this.#currentResultsElection.id];
+    const matchesForElection = this.#matches.current[this.#currentResultsElection.id];
     if (!matchesForElection) return undefined;
     const availableTypes = Object.keys(matchesForElection) as Array<EntityType>;
     if (availableTypes.length === 0) return undefined;
@@ -271,8 +270,8 @@ export class VoterContextProvider implements VoterContext {
     $effect(() => {
       const dr = this.#dataRoot;
       const settings = this.#appSettings;
-      const electionId = this.#electionId.value;
-      const constituencyId = this.#constituencyId.value;
+      const electionId = this.#electionId;
+      const constituencyId = this.#constituencyId;
       if (!dr.elections.length) {
         if (this.#selectedElections.length !== 0) this.#selectedElections = [];
         return;
@@ -301,8 +300,8 @@ export class VoterContextProvider implements VoterContext {
 
     $effect(() => {
       const dr = this.#dataRoot;
-      const constituencyId = this.#constituencyId.value;
-      const electionId = this.#electionId.value;
+      const constituencyId = this.#constituencyId;
+      const electionId = this.#electionId;
       if (!dr.constituencies.length) {
         if (this.#selectedConstituencies.length !== 0) this.#selectedConstituencies = [];
         return;
@@ -424,7 +423,7 @@ export class VoterContextProvider implements VoterContext {
 
     // The filter context reads the filter tree and the current entity type through these thunks, so it resolves its scope without `entityTab` in the URL. `initFilterContext` throws a 500 when called a second time.
     initFilterContext({
-      entityFilters: () => this.#entityFilters.value,
+      entityFilters: () => this.#entityFilters.current,
       currentEntityType: () => this.#currentResultsEntityType
     });
   }
@@ -460,15 +459,6 @@ export class VoterContextProvider implements VoterContext {
   get electionsSelectable() {
     return this.#electionsSelectable;
   }
-  get entityFilters() {
-    return this.#entityFilters.value;
-  }
-  /**
-   * The filter context, read through `getFilterContext()` on every access, so this exposes the same instance without capturing it at construction.
-   */
-  get filterContext() {
-    return getFilterContext();
-  }
   get firstQuestionId() {
     return this.#firstQuestionId.current;
   }
@@ -482,7 +472,7 @@ export class VoterContextProvider implements VoterContext {
     return this.#infoQuestions;
   }
   get matches() {
-    return this.#matches.value;
+    return this.#matches.current;
   }
   get nominationsAvailable() {
     return this.#nominationsAvailable;

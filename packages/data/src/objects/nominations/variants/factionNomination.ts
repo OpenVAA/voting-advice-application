@@ -74,6 +74,13 @@ export class FactionNomination
   }
 
   /**
+   * The direct child nominations, i.e. the `CandidateNomination`s.
+   */
+  get childNominations(): Array<CandidateNomination> {
+    return this.candidateNominations;
+  }
+
+  /**
    * A utility synonym for `parentNomination`. A `FactionNomination` always belongs to an `OrganizationNomination`.
    */
   get list(): OrganizationNomination {

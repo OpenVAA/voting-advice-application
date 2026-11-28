@@ -6,9 +6,9 @@
 - `hidden`: Set to `true` to whenever the navigation is hidden. Default: `false`
 - Any valid attributes of a `<nav>` element.
 
-### Snippets
+### Snippet Props
 
-- children: The content of the navigation menu. It should mainly consist of `<NavGroup>` components containing `<NavItem>` components.
+- `children`: The content of the navigation menu. It should mainly consist of `<NavGroup>` components containing `<NavItem>` components.
 
 ### Callback Props
 

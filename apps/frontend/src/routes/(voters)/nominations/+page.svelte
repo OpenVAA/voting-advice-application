@@ -33,9 +33,6 @@ List all nominations in the application.
   // Filters
   ////////////////////////////////////////////////////////////////////
 
-  // This will hold the filtered entities returned by EntityListControls
-  let filteredEntities: Array<MaybeWrappedEntityVariant> = $state([]);
-
   const filterGroup = new FilterGroup(
     buildParentFilters({
       nominations,
@@ -59,19 +56,21 @@ List all nominations in the application.
   {#snippet fullWidth()}
     <div class="bg-base-300 flex min-h-[120vh] flex-col items-center" data-testid="voter-nominations-container">
       <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
-        <h3 class="my-lg mx-10 text-xl">
-          {t('results.candidate.numShown', { numShown: filteredEntities.length })}
-        </h3>
         <EntityListControls
           entities={nominations}
           {filterGroup}
-          onUpdate={(results) => (filteredEntities = results)}
           class="mb-md mx-10"
-          data-testid="voter-nominations-controls" />
-        <EntityList
-          cards={filteredEntities.map((e) => ({ entity: e, action: false, showElection: true }))}
-          class="mb-lg"
-          data-testid="voter-nominations-list" />
+          data-testid="voter-nominations-controls">
+          {#snippet children(filtered)}
+            <h3 class="my-lg mx-10 text-xl">
+              {t('results.candidate.numShown', { numShown: filtered.length })}
+            </h3>
+            <EntityList
+              cards={filtered.map((e) => ({ entity: e, action: false, showElection: true }))}
+              class="mb-lg"
+              data-testid="voter-nominations-list" />
+          {/snippet}
+        </EntityListControls>
       </div>
     </div>
   {/snippet}

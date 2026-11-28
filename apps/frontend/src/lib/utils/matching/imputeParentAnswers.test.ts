@@ -10,10 +10,10 @@ import { MatchingProxy } from './imputeParentAnswers.type';
  *    to the entity-only read path for Organization / Faction parents. A regression here would silently degrade voter match scores for ALL parties.
  * 2. **Cascade (childProxies provided):** when a child has an entry in childProxies,
  *    the proxy answer wins over the entity answer. When a child has no entry, the function falls back to the entity read.
- * 3. **Alliance parent type:** parent.organizationNominations
- *    is read as the children array.
+ * 3. **Alliance parent type:** parent.childNominations, the member organization
+ *    nominations, is read as the children array.
  *
- * Test strategy: synthetic input — no seed coupling. Mock objects conform to the minimum shape `imputeParentAnswers` requires (objectType, id, entity.getAnswer, candidateNominations / organizationNominations accessors as needed). The casts via `as never` are intentional — the test exercises the function's runtime behaviour with minimal-shape mocks rather than constructing fully-typed nomination instances — unit tests are deliberately not coupled to the seed shape.
+ * Test strategy: synthetic input — no seed coupling. Mock objects conform to the minimum shape `imputeParentAnswers` requires (objectType, id, entity.getAnswer, childNominations). The casts via `as never` are intentional — the test exercises the function's runtime behaviour with minimal-shape mocks rather than constructing fully-typed nomination instances — unit tests are deliberately not coupled to the seed shape.
  */
 
 // --- Synthetic fixtures ---
@@ -62,6 +62,7 @@ function makeFakeOrgParent(opts: {
     answers: opts.ownAnswers,
     hasFactions: false,
     candidateNominations: opts.candidates,
+    childNominations: opts.candidates,
     entity: {
       getAnswer: (q: { id: string }) => opts.ownAnswers[q.id]
     }
@@ -78,6 +79,7 @@ function makeFakeAllianceParent(opts: {
     objectType: OBJECT_TYPE.AllianceNomination,
     answers: opts.ownAnswers,
     organizationNominations: opts.orgs,
+    childNominations: opts.orgs,
     entity: {
       getAnswer: (q: { id: string }) => opts.ownAnswers[q.id]
     }
@@ -195,7 +197,7 @@ describe('imputeParentAnswers', () => {
   });
 
   describe('Alliance parent type (new branch)', () => {
-    it('reads parent.organizationNominations as children when parent is an AllianceNomination', () => {
+    it('reads the member organizations as children when parent is an AllianceNomination', () => {
       const q = makeFakeQuestion({ id: 'q1', type: 'Number' });
       const orgChild1 = makeFakeOrgParent({
         id: 'org1',

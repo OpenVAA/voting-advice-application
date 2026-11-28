@@ -82,7 +82,7 @@ If not provided, the `video` element will be hidden until these properties are p
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import { videoPreferences } from './component-stores.svelte';
+  import { videoPreferences } from './videoPreferences.svelte';
   import type { VideoContent } from '@openvaa/app-shared';
   import type { TrackingEvent } from '$lib/contexts/app/tracking';
   import type { OptionalVideoProps, PlayButtonAction, VideoProps, VideoTrackingEventData } from './Video.type';

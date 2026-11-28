@@ -1,5 +1,5 @@
 <!--
-@component Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
+@component Show filter, sorting (TBA) and search tools for a list of entities, and render the list from the filtered entities with the `children` snippet.
 
 TODO: Consider moving the tracking events away from the component and just adding callbacks that the consumer can use to trigger tracking events.
 
@@ -8,8 +8,11 @@ TODO: Consider moving the tracking events away from the component and just addin
 - `entities`: A list of possibly ranked entities, e.g. candidates or a parties.
 - `filterGroup`: The filters applied to the contents.
 - `searchProperty`: The property used for the search tool. Default: `'name'`
-- `onUpdate`: Callback for when the filters are applied.
 - Any valid attributes of a `<div>` element.
+
+### Snippet Props
+
+- `children`: Renders the list. Receives the entities left after the filters and the search.
 
 ### Tracking events
 
@@ -19,13 +22,16 @@ TODO: Consider moving the tracking events away from the component and just addin
 ### Usage
 
 ```tsx
-<EntityListControls entities={allParties} bind:output={filteredParties}/>
+<EntityListControls entities={allParties} {filterGroup}>
+  {#snippet children(filtered)}
+    <EntityList cards={filtered.map((entity) => ({ entity }))} />
+  {/snippet}
+</EntityListControls>
 ```
 -->
 
-<script lang="ts">
+<script lang="ts" generics="TEntity extends MaybeWrappedEntityVariant = MaybeWrappedEntityVariant">
   import { TextPropertyFilter } from '@openvaa/filters';
-  import { untrack } from 'svelte';
   import { slide } from 'svelte/transition';
   import { Button } from '$lib/components/button';
   import { EntityFilters } from '$lib/components/entityFilters';
@@ -35,58 +41,77 @@ TODO: Consider moving the tracking events away from the component and just addin
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import { DELAY } from '$lib/utils/timing';
+  import { computeFiltered, countActiveFilters } from './helpers';
+  import type { FilterGroup } from '@openvaa/filters';
   import type { EntityListControlsProps } from './EntityListControls.type';
 
-  let { entities, filterGroup, searchProperty = 'name', onUpdate, ...restProps }: EntityListControlsProps = $props();
+  let {
+    entities,
+    filterGroup: filterGroupProp,
+    searchProperty = 'name',
+    children,
+    ...restProps
+  }: EntityListControlsProps<TEntity> = $props();
 
   const ctx = getAppContext();
   const { track, t } = ctx;
   // locale is a reactive accessor — read via ctx.locale, never destructure.
   const locale = $derived(ctx.locale);
-  let filtersModalRef: Modal | undefined = $state();
-  let filteredContents: EntityListControlsProps['entities'] = $state([]);
-  let output: EntityListControlsProps['entities'] = $state([]);
-  let numActiveFilters = $state(0);
 
-  // searchFilter depends on searchProperty + locale; recompute reactively (the props are typically stable, but this honors Svelte 5 idioms).
+  // `FilterGroup<TEntity>` is invariant in `TEntity`, while `EntityFilters` and `computeFiltered` only read its filters and call `apply`.
+  const filterGroup = $derived(filterGroupProp as FilterGroup<MaybeWrappedEntityVariant> | undefined);
+
   const searchFilter = $derived(
     searchProperty
       ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
           { property: searchProperty as keyof MaybeWrappedEntityVariant },
-          // `ctx.locale` is a bare reactive accessor read through the `$derived` alias above; TextPropertyFilter wants the string.
           locale
         )
       : undefined
   );
 
-  // Wire onChange handlers via $effect so cleanup runs symmetrically and re-attaches if filterGroup / searchFilter ever change.
+  // Version counters bridging the filters' imperative `onChange` into `$derived`: a `FilterGroup` is mutated in place, so its reference never changes. Each effect detaches its handler before a new filter attaches one.
+  let filterVersion = $state(0);
   $effect(() => {
-    filterGroup?.onChange(updateFilters);
-    return () => filterGroup?.onChange(updateFilters, false);
+    const fg = filterGroup;
+    if (!fg) return;
+    function handler() {
+      filterVersion++;
+    }
+    fg.onChange(handler, true);
+    return () => fg.onChange(handler, false);
   });
 
+  let searchVersion = $state(0);
   $effect(() => {
-    searchFilter?.onChange(updateSearch);
-    return () => searchFilter?.onChange(updateSearch, false);
+    const sf = searchFilter;
+    if (!sf) return;
+    function handler() {
+      searchVersion++;
+    }
+    sf.onChange(handler, true);
+    return () => sf.onChange(handler, false);
   });
 
-  // Re-run when the `entities` prop reference changes. The body is wrapped in `untrack` so reactive reads inside updateFilters → updateSearch → onUpdate (notably the `onUpdate` callback prop, which the consumer re-creates on every render via inline arrow) do NOT become dependencies of this effect.
-  // Without untrack, the inline-arrow identity churn produced an effect_update_depth_exceeded loop on the nominations page.
-  $effect(() => {
-    void entities;
-    untrack(() => updateFilters());
+  // `computeFiltered` only calls `apply`, which the generic filter types declare invariantly in their target type.
+  type ApplyFn = { apply: <TFn>(targets: Array<TFn>) => Array<TFn> };
+  const filtered = $derived.by(() => {
+    void filterVersion;
+    void searchVersion;
+    return computeFiltered(
+      entities,
+      filterGroup as unknown as ApplyFn | undefined,
+      searchFilter as unknown as ApplyFn | undefined
+    );
   });
 
-  function updateFilters() {
-    filteredContents = filterGroup ? filterGroup.apply(entities) : [...entities];
-    numActiveFilters = filterGroup ? filterGroup.filters.filter((f) => f.active).length : 0;
-    updateSearch();
-  }
+  const numActiveFilters = $derived.by(() => {
+    void filterVersion;
+    return countActiveFilters(filterGroup);
+  });
 
-  function updateSearch() {
-    output = searchFilter ? searchFilter.apply(filteredContents) : [...filteredContents];
-    onUpdate(output);
-  }
+  let filtersModalRef: Modal | undefined = $state();
+
   function openFilters() {
     filtersModalRef?.openModal();
   }
@@ -96,7 +121,7 @@ TODO: Consider moving the tracking events away from the component and just addin
     filtersModalRef?.closeModal();
   }
   function trackActiveFilters() {
-    const count = filterGroup?.filters.filter((f) => f.active).length ?? 0;
+    const count = countActiveFilters(filterGroup);
     if (count > 0) track('filters_active', { count });
   }
 </script>
@@ -134,7 +159,7 @@ TODO: Consider moving the tracking events away from the component and just addin
     {/if}
   </div>
   {#if entities.length > 0}
-    {#if output.length === 0}
+    {#if filtered.length === 0}
       <div
         class="my-lg text-secondary flex flex-col items-center text-center"
         transition:slide={{ duration: DELAY.md }}>
@@ -142,11 +167,11 @@ TODO: Consider moving the tracking events away from the component and just addin
           ? t('entityList.controls.noFilterResults')
           : t('entityList.controls.noSearchResults')}
       </div>
-    {:else if output.length !== entities.length}
+    {:else if filtered.length !== entities.length}
       <div
         class="my-lg text-secondary flex flex-col items-center text-center"
         transition:slide={{ duration: DELAY.md }}>
-        {t('entityList.controls.showingNumResults', { numShown: output.length })}
+        {t('entityList.controls.showingNumResults', { numShown: filtered.length })}
       </div>
     {/if}
   {/if}
@@ -178,3 +203,5 @@ TODO: Consider moving the tracking events away from the component and just addin
     {/snippet}
   </Modal>
 {/if}
+
+{@render children?.(filtered)}

@@ -79,10 +79,26 @@ export class OrganizationNomination
   }
 
   /**
+   * The `CandidateNomination`s nominated directly by this organization or through any of its `FactionNomination`s.
+   */
+  get allCandidateNominations(): Array<CandidateNomination> {
+    return this.hasFactions
+      ? this.factionNominations.flatMap((f) => f.candidateNominations)
+      : this.candidateNominations;
+  }
+
+  /**
    * The `CandidateNomination`s in this nomination.
    */
   get candidateNominations(): Array<CandidateNomination> {
     return this.data.candidateNominationIds?.map((id) => this.root.getCandidateNomination(id)) ?? [];
+  }
+
+  /**
+   * The direct child nominations: the `FactionNomination`s when the organization has factions, otherwise its `CandidateNomination`s.
+   */
+  get childNominations(): Array<FactionNomination> | Array<CandidateNomination> {
+    return this.hasFactions ? this.factionNominations : this.candidateNominations;
   }
 
   /**

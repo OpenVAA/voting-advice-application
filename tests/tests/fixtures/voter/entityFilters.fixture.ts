@@ -7,7 +7,7 @@
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.
  *
- * **Conditional rendering invariant**: the `entity-list-filter` testid is set on TWO Buttons inside EntityListControls.svelte (one for the active-filter-state variant at line 128, one for the inactive variant at line 137). Only ONE is in the DOM at any time — `.first()` is safe and is the documented pattern.
+ * **Conditional rendering invariant**: the `entity-list-filter` testid is set on TWO Buttons inside EntityListControls.svelte (one for the active-filter-state variant, one for the inactive variant). Only ONE is in the DOM at any time — `.first()` is safe and is the documented pattern.
  */
 
 import { expect } from '@playwright/test';
@@ -216,7 +216,7 @@ export function createEntityFilters(page: Page) {
       },
 
       /**
-       * Click the reset Button. NB — `resetFilters()` at EntityListControls.svelte:96-100 calls `filterGroup?.reset()` AND `filtersModalRef?.closeModal()` synchronously, so clicking reset CLOSES the dialog as a side-effect. Callers should NOT call `close()` afterwards; the dialog is already gone.
+       * Click the reset Button. NB — `resetFilters()` in EntityListControls.svelte calls `filterGroup?.reset()` AND `filtersModalRef?.closeModal()` synchronously, so clicking reset CLOSES the dialog as a side-effect. Callers should NOT call `close()` afterwards; the dialog is already gone.
        *
        * Awaits the dialog being hidden before returning so subsequent `openFilterDialog()` calls observe a clean baseline.
        */

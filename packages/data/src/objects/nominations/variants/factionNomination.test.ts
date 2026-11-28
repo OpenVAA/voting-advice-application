@@ -30,6 +30,12 @@ test('Should have nomination objects for all faction nominations with the correc
   });
 });
 
+test('Should list its candidate nominations as child nominations', () => {
+  const factions = root.factionNominations ?? [];
+  expect(factions.length).toBeGreaterThan(0);
+  for (const obj of factions) expect(obj.childNominations).toEqual(obj.candidateNominations);
+});
+
 /**
  * Find the nomination object that matches the nomination data, i.e. has the same electionId, constituencyId, electionRound and child and parent nominations.
  * @param nominations - The entities to search in

@@ -7,9 +7,9 @@ Use to group `NavItem` components. Displays a faint line above the group.
 - `title`: Optional title for the navigation group.
 - Any valid attributes of a `<ul>` element.
 
-### Snippets
+### Snippet Props
 
-- children: The contents of the navigation group. Should be mostly `<NavItem>` components.
+- `children`: The contents of the navigation group. Should be mostly `<NavItem>` components.
 
 ### Usage
 

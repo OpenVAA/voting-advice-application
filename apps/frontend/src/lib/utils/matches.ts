@@ -1,14 +1,7 @@
-import { ENTITY_TYPE } from '@openvaa/data';
 import { unwrapEntity } from './entities';
 import { compareMaybeWrappedEntities } from './sorting';
 import type { Id } from '@openvaa/core';
-import type {
-  AllianceNomination,
-  CandidateNomination,
-  EntityType,
-  OrganizationNomination,
-  QuestionCategory
-} from '@openvaa/data';
+import type { CandidateNomination, EntityType, OrganizationNomination, QuestionCategory } from '@openvaa/data';
 import type { Match } from '@openvaa/matching';
 import type { MatchTree } from '$lib/contexts/voter/matchState.svelte';
 
@@ -51,67 +44,25 @@ export function findNomination({
 }
 
 /**
- * A utility function to find the `CandidateNomination` for an `OrganizationNomination` in the match tree.
+ * Find the matches of an `OrganizationNomination`'s `CandidateNomination`s or an `AllianceNomination`'s `OrganizationNomination`s in the match tree.
  * @param matches - The possible `MatchTree`.
- * @param nomination - The `OrganizationNomination` whose children to find.
- * @returns An array of `CandidateNomination` matches or the non-matched `CandidateNomination`s if matches are not found for all of the candidates.
+ * @param children - The child nominations whose matches to find.
+ * @param entityType - The entity type of the children.
+ * @returns The children's matches, sorted. Children without a match are omitted. Without `matches`, the children themselves, sorted.
  */
-export function findCandidateNominations({
+export function findChildMatches<TNomination extends CandidateNomination | OrganizationNomination>({
   matches,
-  nomination: { candidateNominations }
+  children,
+  entityType
 }: {
   matches?: MatchTree;
-  nomination: OrganizationNomination;
-}): Array<CandidateNomination | Match<CandidateNomination, QuestionCategory>> {
-  if (!matches) return candidateNominations.sort(compareMaybeWrappedEntities);
-
-  // Try to find matches for all of the candidateNominations
-  const candidateMatches = candidateNominations
-    .map(
-      ({ id }) =>
-        findNomination({
-          matches,
-          entityType: ENTITY_TYPE.Candidate,
-          nominationId: id
-        })?.match
-    )
+  children: Array<TNomination>;
+  entityType: EntityType;
+}): Array<TNomination | Match<TNomination, QuestionCategory>> {
+  if (!matches) return children.sort(compareMaybeWrappedEntities);
+  const childMatches = children
+    .map(({ id }) => findNomination({ matches, entityType, nominationId: id })?.match)
     .filter((n) => n != null)
     .sort(compareMaybeWrappedEntities);
-
-  return candidateMatches as Array<Match<CandidateNomination, QuestionCategory>>;
-
-  // // Use the matches only if these are found for all nominations if (candidateMatches.length === candidateNominations.length)
-  //   return candidateMatches as Array<Match<CandidateNomination, QuestionCategory>>;
-  // return candidateNominations.sort(compareMaybeWrappedEntities);
-}
-
-/**
- * A utility function to find the `OrganizationNomination`s for an `AllianceNomination` in the match tree.
- * Mirror of {@link findCandidateNominations} one level up the parent hierarchy: an alliance's "children" are its member organization-nominations.
- * @param matches - The possible `MatchTree`.
- * @param nomination - The `AllianceNomination` whose member organization-nominations to find.
- * @returns An array of `OrganizationNomination` matches; falls back to the non-matched `OrganizationNomination`s sorted by `compareMaybeWrappedEntities` if matches are not found for all member orgs.
- */
-export function findOrganizationNominations({
-  matches,
-  nomination: { organizationNominations }
-}: {
-  matches?: MatchTree;
-  nomination: AllianceNomination;
-}): Array<OrganizationNomination | Match<OrganizationNomination, QuestionCategory>> {
-  if (!matches) return organizationNominations.sort(compareMaybeWrappedEntities);
-
-  const orgMatches = organizationNominations
-    .map(
-      ({ id }) =>
-        findNomination({
-          matches,
-          entityType: ENTITY_TYPE.Organization,
-          nominationId: id
-        })?.match
-    )
-    .filter((n) => n != null)
-    .sort(compareMaybeWrappedEntities);
-
-  return orgMatches as Array<Match<OrganizationNomination, QuestionCategory>>;
+  return childMatches as Array<Match<TNomination, QuestionCategory>>;
 }

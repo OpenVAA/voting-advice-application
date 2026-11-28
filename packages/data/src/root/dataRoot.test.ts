@@ -110,6 +110,47 @@ describe('FindQuestions', () => {
   });
 });
 
+describe('findQuestionCategories', () => {
+  test('Should find the categories of the given type holding applicable questions', () => {
+    const categories = root.findQuestionCategories({
+      type: QUESTION_CATEGORY_TYPE.Info,
+      entityType: ENTITY_TYPE.Organization
+    });
+    expect(categories.map((c) => c.id)).toEqual(['questionCategory-1', 'questionCategory-2']);
+  });
+  test('Should exclude categories that do not apply to the targets', () => {
+    const categories = root.findQuestionCategories({
+      type: QUESTION_CATEGORY_TYPE.Info,
+      entityType: ENTITY_TYPE.Candidate // questionCategory-2 has an Organization entityType filter
+    });
+    expect(categories.map((c) => c.id)).toEqual(['questionCategory-1']);
+  });
+  test('Should find categories of all types when type is omitted', () => {
+    const categories = root.findQuestionCategories({ entityType: ENTITY_TYPE.Candidate });
+    expect(categories.map((c) => c.id)).toEqual(['questionCategory-1', 'questionCategory-3', 'questionCategory-4']);
+  });
+  test('Should exclude a category that applies but none of whose questions do', () => {
+    const smallRoot = new DataRoot();
+    smallRoot.provideQuestionData({
+      categories: [
+        { id: 'category-1', name: 'x', type: QUESTION_CATEGORY_TYPE.Info },
+        { id: 'category-2', name: 'y', type: QUESTION_CATEGORY_TYPE.Info }
+      ],
+      questions: [
+        { id: 'question-1', type: 'text', name: 'x', categoryId: 'category-1' },
+        { id: 'question-2', type: 'text', name: 'y', categoryId: 'category-2', entityType: [ENTITY_TYPE.Organization] }
+      ]
+    });
+    expect(smallRoot.findQuestionCategories({ entityType: ENTITY_TYPE.Candidate }).map((c) => c.id)).toEqual([
+      'category-1'
+    ]);
+    expect(smallRoot.findQuestionCategories({ entityType: ENTITY_TYPE.Organization }).map((c) => c.id)).toEqual([
+      'category-1',
+      'category-2'
+    ]);
+  });
+});
+
 describe('formatAnswer', () => {
   // Get a copy, bc we set the locale
   const root = getTestDataRoot();

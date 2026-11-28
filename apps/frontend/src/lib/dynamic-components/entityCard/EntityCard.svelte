@@ -57,8 +57,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { cn, concatClass, getUUID } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { getCardQuestions } from '$lib/utils/entityCards';
-  import { getAllianceSummary } from '$lib/utils/getAllianceSummary';
-  import { findCandidateNominations, findOrganizationNominations } from '$lib/utils/matches';
+  import { findChildMatches } from '$lib/utils/matches';
   import EntityCard from './EntityCard.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { Snippet } from 'svelte';
@@ -145,11 +144,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       isObjectType(unwrapped.nomination, OBJECT_TYPE.OrganizationNomination) &&
       appSettings.results?.cardContents?.organization?.includes('children')
     ) {
-      subcards = findCandidateNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map(
-        (e) => ({
-          entity: e
-        })
-      );
+      subcards = findChildMatches({
+        matches: voterContext?.matches,
+        children: unwrapped.nomination.candidateNominations,
+        entityType: ENTITY_TYPE.Candidate
+      }).map((e) => ({
+        entity: e
+      }));
     } else if (
       !headerOnly &&
       variant === 'list' &&
@@ -157,11 +158,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
       appSettings.results?.cardContents?.alliance?.includes('children')
     ) {
-      subcards = findOrganizationNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map(
-        (e) => ({
-          entity: e
-        })
-      );
+      subcards = findChildMatches({
+        matches: voterContext?.matches,
+        children: unwrapped.nomination.organizationNominations,
+        entityType: ENTITY_TYPE.Organization
+      }).map((e) => ({
+        entity: e
+      }));
       subcardsMaxOverride = Infinity; // render all member orgs, not just top-3
     }
 
@@ -174,7 +177,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
       variant === 'list'
     ) {
-      allianceSummary = getAllianceSummary(unwrapped.nomination);
+      allianceSummary = {
+        numCandidates: unwrapped.nomination.allCandidateNominations.length,
+        numParties: unwrapped.nomination.organizationNominations.length
+      };
     }
 
     return {

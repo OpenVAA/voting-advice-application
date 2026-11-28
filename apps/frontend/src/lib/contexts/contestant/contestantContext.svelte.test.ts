@@ -3,39 +3,27 @@
 // CLAUDE.md Context Destructuring Rule: this harness never destructures a reactive context accessor. The provider's members are read through the live instance only.
 
 import { log as appLog } from '@openvaa/app-shared';
-import { ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
+import { DataRoot, ENTITY_TYPE, QUESTION_CATEGORY_TYPE, QUESTION_TYPE } from '@openvaa/data';
 import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RESEND_WAIT_SECONDS } from '$lib/auth/entryFlow';
 import { isLeavingUnasked, registerNavigationGuard } from '$lib/components/preventNavigation/navigationGuards';
 import { requiredNameLocale } from '$lib/contestant/utils/nameRule';
 import type { LocalizedString } from '@openvaa/app-shared';
-import type { EntityType } from '@openvaa/data';
+import type { AnyQuestionVariantData, EntityType, FilterTargets, QuestionCategory } from '@openvaa/data';
 import type { Mock } from 'vitest';
 import type { BasicUserData, EntityNomination, SignOutOrigin, UserEntity } from '$lib/api/base/dataWriter.type';
-import type { QuestionRollupTargets } from '../utils/questionRollup';
 import type { ContestantContextProvider } from './contestantContext.svelte';
 
-/** A question as far as the context reads one. `entityType`, when set, is the one type the question is addressed to. */
-type FakeQuestion = {
-  id: string;
-  isMatchable: boolean;
-  required: boolean;
-  customData: Record<string, unknown>;
-  category: { id: string };
-  entityType?: EntityType;
-  isAnswered: (answer?: { value?: unknown } | null) => boolean;
-};
+/** A question of a test category. `entityType`, when set, is the one type the question is addressed to. */
+type QuestionSpec = { id: string; entityType?: EntityType; required?: boolean };
 
-type FakeCategory = {
-  id: string;
-  type: string;
-  appliesTo: (targets: QuestionRollupTargets) => boolean;
-  getApplicableQuestions: (targets: QuestionRollupTargets) => Array<FakeQuestion>;
-};
+/** A category of a test data root, built into a real `QuestionCategory` by {@link makeDataRoot}. */
+type CategorySpec = { id: string; type: string; questions: Array<QuestionSpec> };
 
 type FakeDataRoot = {
-  questionCategories: Array<FakeCategory>;
+  questionCategories: Array<QuestionCategory>;
+  findQuestionCategories: DataRoot['findQuestionCategories'];
   elections: Array<{ id: string }>;
   constituencies: Array<{ id: string }>;
   getElection: (id: string) => { id: string };
@@ -57,7 +45,7 @@ type FakeSettings = { access: { contestantEditing?: 'open' | 'nominationsLocked'
 type FakePage = { data: Record<string, unknown>; params: Record<string, string>; url?: URL };
 
 /** The targets every category method was called with. */
-type CallLog = { appliesTo: Array<QuestionRollupTargets>; getApplicableQuestions: Array<QuestionRollupTargets> };
+type CallLog = { appliesTo: Array<FilterTargets>; getApplicableQuestions: Array<FilterTargets> };
 
 const ELECTION = { id: 'election-1' };
 const CONSTITUENCY = { id: 'constituency-1' };
@@ -65,6 +53,7 @@ const CONSTITUENCY = { id: 'constituency-1' };
 /** A data root with no election, so that no election is ever selected. */
 const EMPTY_DATA_ROOT: FakeDataRoot = {
   questionCategories: [],
+  findQuestionCategories: () => [],
   elections: [],
   constituencies: [],
   getElection: () => ELECTION,
@@ -226,61 +215,57 @@ vi.mock('$lib/auth/logoutAnnouncement', () => ({
   listenForLogoutAnnouncements: () => announcementBox.listen()
 }));
 
-function makeQuestion({
-  id,
-  categoryId,
-  entityType,
-  required = false
-}: {
-  id: string;
-  categoryId: string;
-  entityType?: EntityType;
-  required?: boolean;
-}): FakeQuestion {
-  return {
-    id,
-    isMatchable: true,
-    required,
-    customData: {},
-    category: { id: categoryId },
-    entityType,
-    isAnswered: (answer) => answer?.value != null
-  };
+/** The choices of an opinion question. `answer` is the value {@link makeUserData} stores, so it answers every question. */
+const CHOICES = [
+  { id: 'answer', label: 'Agree', normalizableValue: 1 },
+  { id: 'other', label: 'Disagree', normalizableValue: 2 }
+];
+
+/** A category of a test data root, checked against {@link CategorySpec}. */
+function makeCategory(spec: CategorySpec): CategorySpec {
+  return spec;
 }
 
 /**
- * A category whose lookup answers as the data model's does: a question addressed to one entity type is returned for that type and for a lookup that names no type, and an unscoped question for every lookup.
+ * A data root with one election and one constituency, which every nomination of {@link makeUserData} names, and the given categories as real `QuestionCategory`s: opinion questions are ordinal, info questions text. With a `log`, every category's applicability check and applicable-question lookup records the targets it receives.
  */
-function makeCategory({
-  id,
-  type,
-  questions,
-  log
-}: {
-  id: string;
-  type: string;
-  questions: Array<Omit<Parameters<typeof makeQuestion>[0], 'categoryId'>>;
-  log?: CallLog;
-}): FakeCategory {
-  const all = questions.map((question) => makeQuestion({ ...question, categoryId: id }));
-  return {
-    id,
-    type,
-    appliesTo: (targets) => {
-      log?.appliesTo.push(targets);
-      return true;
-    },
-    getApplicableQuestions: (targets) => {
-      log?.getApplicableQuestions.push(targets);
-      return all.filter((q) => !q.entityType || !targets.entityType || q.entityType === targets.entityType);
+function makeDataRoot(categories: Array<CategorySpec>, log?: CallLog): FakeDataRoot {
+  const root = new DataRoot();
+  root.provideQuestionData({
+    categories: categories.map(({ id, type }) => ({ id, name: id, type: type as QuestionCategory['type'] })),
+    questions: categories.flatMap(({ id: categoryId, type, questions }) =>
+      questions.map(
+        ({ id, entityType, required }) =>
+          ({
+            id,
+            name: id,
+            categoryId,
+            required,
+            entityType: entityType ? [entityType] : undefined,
+            ...(type === QUESTION_CATEGORY_TYPE.Opinion
+              ? { type: QUESTION_TYPE.SingleChoiceOrdinal, choices: CHOICES }
+              : { type: QUESTION_TYPE.Text })
+          }) as AnyQuestionVariantData
+      )
+    )
+  });
+  if (log) {
+    for (const category of root.questionCategories) {
+      const appliesTo = category.appliesTo.bind(category);
+      const getApplicableQuestions = category.getApplicableQuestions.bind(category);
+      category.appliesTo = (targets, ...rest) => {
+        log.appliesTo.push(targets);
+        return appliesTo(targets, ...rest);
+      };
+      category.getApplicableQuestions = (targets, ...rest) => {
+        log.getApplicableQuestions.push(targets);
+        return getApplicableQuestions(targets, ...rest);
+      };
     }
-  };
-}
-
-/** A data root with one election and one constituency, which every nomination of {@link makeUserData} names. */
-function makeDataRoot(questionCategories: Array<FakeCategory>): FakeDataRoot {
+  }
   return {
-    questionCategories,
+    questionCategories: root.questionCategories,
+    findQuestionCategories: (targets) => root.findQuestionCategories(targets),
     elections: [ELECTION],
     constituencies: [CONSTITUENCY],
     getElection: () => ELECTION,
@@ -290,24 +275,25 @@ function makeDataRoot(questionCategories: Array<FakeCategory>): FakeDataRoot {
 
 /** One opinion category holding a question for each entity type and one for both, and one info category holding a required question for both. */
 function makeScopedDataRoot(log?: CallLog): FakeDataRoot {
-  return makeDataRoot([
-    makeCategory({
-      id: 'opinion',
-      type: QUESTION_CATEGORY_TYPE.Opinion,
-      questions: [
-        { id: 'q-candidate', entityType: ENTITY_TYPE.Candidate },
-        { id: 'q-organization', entityType: ENTITY_TYPE.Organization },
-        { id: 'q-any' }
-      ],
-      log
-    }),
-    makeCategory({
-      id: 'info',
-      type: QUESTION_CATEGORY_TYPE.Info,
-      questions: [{ id: 'q-info', required: true }],
-      log
-    })
-  ]);
+  return makeDataRoot(
+    [
+      makeCategory({
+        id: 'opinion',
+        type: QUESTION_CATEGORY_TYPE.Opinion,
+        questions: [
+          { id: 'q-candidate', entityType: ENTITY_TYPE.Candidate },
+          { id: 'q-organization', entityType: ENTITY_TYPE.Organization },
+          { id: 'q-any' }
+        ]
+      }),
+      makeCategory({
+        id: 'info',
+        type: QUESTION_CATEGORY_TYPE.Info,
+        questions: [{ id: 'q-info', required: true }]
+      })
+    ],
+    log
+  );
 }
 
 const ENTITY_ID = '7c1f0a52-3d7e-4b1f-9c56-2f1a8e0d4b63';

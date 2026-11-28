@@ -35,8 +35,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { EntityCard } from '$lib/dynamic-components/entityCard';
   import { cn, concatClass } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
-  import { getAllianceSummary } from '$lib/utils/getAllianceSummary';
-  import { findCandidateNominations, findOrganizationNominations } from '$lib/utils/matches';
+  import { findChildMatches } from '$lib/utils/matches';
   import { sortQuestions } from '$lib/utils/sorting';
   import { EntityChildren, EntityInfo, EntityOpinions } from './';
   import type { CustomData, EntityDetailsContent, ParentEntityDetailsContent } from '@openvaa/app-shared';
@@ -91,9 +90,17 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     const tabs = contentTabs.map((ct) => ct.id);
     if (tabs.includes('children')) {
       if (isObjectType(nomination, OBJECT_TYPE.OrganizationNomination))
-        return findCandidateNominations({ matches: voterContext?.matches, nomination });
+        return findChildMatches({
+          matches: voterContext?.matches,
+          children: nomination.candidateNominations,
+          entityType: ENTITY_TYPE.Candidate
+        });
       if (isObjectType(nomination, OBJECT_TYPE.AllianceNomination))
-        return findOrganizationNominations({ matches: voterContext?.matches, nomination });
+        return findChildMatches({
+          matches: voterContext?.matches,
+          children: nomination.organizationNominations,
+          entityType: ENTITY_TYPE.Organization
+        });
     }
     return [];
   });
@@ -102,7 +109,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   let allianceSummary: { numCandidates: number; numParties: number } | undefined = $derived.by(() => {
     const { nomination } = unwrapEntity(entity);
     if (isObjectType(nomination, OBJECT_TYPE.AllianceNomination)) {
-      return getAllianceSummary(nomination);
+      return {
+        numCandidates: nomination.allCandidateNominations.length,
+        numParties: nomination.organizationNominations.length
+      };
     }
     return undefined;
   });

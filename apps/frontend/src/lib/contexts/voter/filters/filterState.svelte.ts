@@ -7,22 +7,33 @@ import { buildQuestionFilter } from './buildQuestionFilter';
 import { retainRelevantFilters } from './filterRelevance';
 import type { Filter } from '@openvaa/filters';
 import type { TranslationKey } from '$types';
+import type { ReactiveHandle } from '../../utils/reactiveHandle.type';
 import type { NominationAndQuestionTree } from '../nominationAndQuestionState.svelte';
 import type { SelectionTree } from '../selectionTree.type';
+
+type FilterStateDeps = {
+  /** A getter returning `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType`. */
+  nominationsAndQuestions: () => NominationAndQuestionTree;
+  /** A getter returning the current locale string. */
+  locale: () => string;
+  /** A getter returning the translation function. */
+  t: () => (key: TranslationKey) => string;
+};
 
 /**
  * Create a reactive value that contains `FilterGroup`s for each `Election` and each `EntityType` included in `entityTypes`.
  *
- * @param nominationsAndQuestions - A getter returning `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType`
- * @param locale - A getter returning the current locale string.
- * @param t - A getter returning the translation function.
- * @returns A reactive filter tree value.
+ * @param deps - The getters the filter tree is derived from.
+ * @returns A reactive filter tree handle.
  */
-type FilterStateDeps = {
-  nominationsAndQuestions: () => NominationAndQuestionTree;
-  locale: () => string;
-  t: () => (key: TranslationKey) => string;
-};
+export function filterState(deps: FilterStateDeps): ReactiveHandle<FilterTree> {
+  return new FilterStateImpl(deps);
+}
+
+/**
+ * Contains the filters for each `Election` and each `EntityType`.
+ */
+export type FilterTree = SelectionTree<FilterGroup<MaybeWrappedEntityVariant>>;
 
 class FilterStateImpl {
   #deps: FilterStateDeps;
@@ -75,16 +86,7 @@ class FilterStateImpl {
     return tree as FilterTree;
   });
 
-  get value(): FilterTree {
+  get current(): FilterTree {
     return this.#value;
   }
 }
-
-export function filterState(deps: FilterStateDeps): { readonly value: FilterTree } {
-  return new FilterStateImpl(deps);
-}
-
-/**
- * Contains the filters for each `Election` and each `EntityType`.
- */
-export type FilterTree = SelectionTree<FilterGroup<MaybeWrappedEntityVariant>>;

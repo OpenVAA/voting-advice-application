@@ -9,7 +9,7 @@ export type LayoutContext = {
    */
   topBarSettings: SettingsOverlayApi<TopBarSettings, DeepPartial<TopBarSettings>>;
   /**
-   * A token-keyed overlay registry containing CSS classes used to customize different parts of the layout. Register overlays via `usePageStyles(...)` (or `.use(...)`); the overlay is auto-reverted on component destroy via `$effect` cleanup (token-keyed, so out-of-order mount/unmount no longer corrupts the merged result).
+   * A token-keyed overlay registry containing CSS classes used to customize different parts of the layout. Register overlays via `usePageStyles(...)` (or `.use(...)`); the overlay is auto-reverted on component destroy via `$effect` cleanup.
    */
   pageStyles: SettingsOverlayApi<PageStyles, DeepPartial<PageStyles>>;
   /**
