@@ -140,8 +140,9 @@ authoritative list is the `BUILT_IN_TEMPLATES` map in
 built-in that leaves its project **closed to voters**: it declares
 `openForVoters: false`, so the writer's last pass sets
 `projects.open_for_voters = false` and the project's public data becomes
-unreadable to anon. It keeps `access.voterApp: true`, so a maintenance page seen
-against it is caused by the closure, not by the access flag.
+unreadable to anon. `open_for_voters` is the one switch that publishes a project
+to voters, so this is also the only template whose Voter App shows anon the
+maintenance page.
 
 > ⚠ `yarn db:seed --template perm-closed-project` closes the **default**
 > project (`00000000-0000-0000-0000-000000000001`), the one a local `yarn dev`

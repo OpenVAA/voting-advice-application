@@ -12,7 +12,7 @@
 
 ### Settings
 
-- `access.voterApp`: Whether to show the Voter App.
+- `voterAppAccessible`: Whether to show the Voter App, derived by the data provider from the project's `open_for_voters`. Absent means `true`.
 - `analytics.trackEvents`: Affects whether the data consent popup is shown, through `shouldShowVoterPrompt` with the analytics projection, the Global Privacy Control signal and the stored consent choice (`ctx.analyticsPolicy.current`).
 - `header.showHelp`: Whether the help button is shown in the header.
 - `header.showFeedback`: Whether the feedback button is shown in the header.
@@ -39,6 +39,7 @@
   const ctx = initVoterContext();
   const { appType, popupQueue, t } = ctx;
   const appSettings = $derived(ctx.appSettings);
+  const voterAppAccessible = $derived(appSettings.voterAppAccessible !== false);
   appType.set('voter');
 
   ////////////////////////////////////////////////////////////////////
@@ -65,7 +66,7 @@
 
   // Queued once on mount rather than reactively: a reactive queue re-pushes on every settings change, re-showing a dismissed popup.
   onMount(() => {
-    if (!appSettings.access.voterApp) return;
+    if (!voterAppAccessible) return;
     if (appSettings.notifications.voterApp?.show) {
       popupQueue.push({
         component: Notification,
@@ -73,7 +74,7 @@
       });
     }
     // Ask for event tracking consent when the send policy says the voter has a choice to make and has not made it
-    if (shouldShowVoterPrompt({ ...ctx.analyticsPolicy.current, voterAppAccessible: appSettings.access.voterApp }))
+    if (shouldShowVoterPrompt({ ...ctx.analyticsPolicy.current, voterAppAccessible }))
       popupQueue.push({ component: DataConsentPopup });
   });
 
@@ -82,7 +83,7 @@
   let isDrawerOpen = $state(false);
 </script>
 
-{#if appSettings.access.voterApp}
+{#if voterAppAccessible}
   <Layout {menuId} bind:isDrawerOpen>
     {#snippet menu()}
       <VoterNav onKeyboardFocusOut={() => navigation.close?.()} id={menuId} hidden={!isDrawerOpen} />

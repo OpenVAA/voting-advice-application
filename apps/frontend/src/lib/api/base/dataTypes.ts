@@ -25,10 +25,20 @@ export const DP_METHOD: Record<keyof DPDataType, keyof DataProvider> = {
 } as const;
 
 /**
+ * The members of the application settings that are not stored settings but facts about the project the provider derives for its caller.
+ */
+export type DerivedAppSettings = {
+  /**
+   * Whether the Voter App is shown to this caller. It follows the project's `open_for_voters`, the one switch that publishes a project to voters: `false` only when the project is closed and the caller holds no grant in it, so a grant holder previews a closed project's Voter App. Absent means `true`: a provider without projects, such as the local one, leaves it out.
+   */
+  voterAppAccessible?: boolean;
+};
+
+/**
  * The data types of the collections that `DataProvider` provides.
  */
 export type DPDataType = {
-  appSettings: Partial<DynamicSettings>;
+  appSettings: Partial<DynamicSettings> & DerivedAppSettings;
   appCustomization: AppCustomization;
   elections: Array<ElectionData>;
   constituencies: {

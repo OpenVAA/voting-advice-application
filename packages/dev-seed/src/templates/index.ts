@@ -94,7 +94,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // Contestant-nominations perm. Three elections of three nomination shapes, parties and alliances with and without a nomination, and a candidate and a party with no nomination row; opinion questions scoped to single elections. Distinct externalIdPrefix 'e2e-perm-contestant-nominations-'.
   'perm-contestant-nominations': permContestantNominationsTemplate,
 
-  // Access-gating perm. Serves every access mode, access.voterApp, access.contestantApp and access.underMaintenance, through a per-mode singleton re-seed in its spec, so no dataset of a single mode is registered. Distinct externalIdPrefix 'e2e-perm-access-disable-'.
+  // Access-gating perm. Serves both access modes, access.contestantApp and access.underMaintenance, through a per-mode singleton re-seed in its spec, so no dataset of a single mode is registered. Distinct externalIdPrefix 'e2e-perm-access-disable-'.
   'perm-access-disable': permAccessDisableTemplate,
 
   // Analytics overlay perm. Seeds app_settings analytics.trackEvents:true so the voter-prefs-tracking spec sees usage events beyond the page-view count.

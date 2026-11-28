@@ -85,7 +85,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
   /**
    * Fetch application settings from the `app_settings` table.
    *
-   * The row is read with `maybeSingle`, so zero rows is a value rather than an error. A readable row is parsed and returned. Zero rows asks `project_open_for_voters` for this provider's project: `true` returns `{}`, and `false` returns the closed-project answer described below, whose `voterApp: false` `(voters)/+layout.svelte` renders as MaintenancePage. An RPC error or a non-boolean answer throws. The RPC decides rather than the missing row because nothing creates a settings row for a project, so an open project may have none.
+   * Every answer states `voterAppAccessible`, derived from the project's `open_for_voters`, the one switch that publishes a project to voters; no stored setting opens or closes the Voter App. The row is read with `maybeSingle`, so zero rows is a value rather than an error. A readable row is parsed and returned with `voterAppAccessible: true`: RLS returns the row only when the project is open for voters or the caller holds a grant in it. Zero rows asks `project_open_for_voters` for this provider's project: `true` returns `{ voterAppAccessible: true }`, and `false` returns the closed-project answer described below, whose `voterAppAccessible: false` `(voters)/+layout.svelte` renders as MaintenancePage. An RPC error or a non-boolean answer throws. The RPC decides rather than the missing row because nothing creates a settings row for a project, so an open project may have none.
    *
    * Preview is decided by RLS, not by a role check. `authenticated_select_app_settings` returns the row to any grant holder of the project, so a signed-in admin or candidate gets the real voter app; anon, or a signed-in user with no grant, reads zero rows and gets the maintenance page.
    *
@@ -107,7 +107,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         p_project_id: this.projectId
       });
       if (rpcError) throw new Error(`getAppSettings: ${rpcError.message}`);
-      if (open === true) return {};
+      if (open === true) return { voterAppAccessible: true };
       if (open === false) {
         const { data: publicSettings, error: settingsError } = await this.supabase.rpc('get_public_app_settings', {
           p_project_id: this.projectId
@@ -128,8 +128,9 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         const shipped = dynamicSettings.contestantApp;
 
         return {
-          // The whole `access` object over the shipped defaults, so that every other gate is stated in this answer itself. The voter route loaders merge it over the static settings only, with no shipped dynamic defaults beneath it. `voterApp: false` comes last, so nothing declared can open the voter app.
-          access: { ...dynamicSettings.access, ...declared.access, voterApp: false },
+          voterAppAccessible: false,
+          // The whole `access` object over the shipped defaults, so that every other gate is stated in this answer itself. The voter route loaders merge it over the static settings only, with no shipped dynamic defaults beneath it.
+          access: { ...dynamicSettings.access, ...declared.access },
           // The whole root over the shipped default for the same reason as `access`: the tracking switch is the only member the function answers.
           analytics: { ...dynamicSettings.analytics, ...declared.analytics },
           // The whole root for the same reason as `access`. `questions` is the shipped one: the stored one is not read for this caller. A stored `servedEntityTypes` replaces the shipped one as a whole.
@@ -151,7 +152,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
 
     // An absent column and a malformed value with nothing preserved both continue as the empty stored value. The helper has already reported the malformed case.
     const stored: StoredSettings = outcome.value ?? {};
-    const settings: Record<string, unknown> = { ...stored };
+    const settings: Record<string, unknown> = { ...stored, voterAppAccessible: true };
     const locale = options?.locale ?? this.locale;
 
     // Localize notification titles and contents.

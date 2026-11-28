@@ -1,6 +1,7 @@
 import type { DynamicSettings, LocalizedString as SharedLocalizedString, StaticSettings } from '@openvaa/app-shared';
 import type { MaybeWrappedEntity } from '@openvaa/core';
 import type { AnyEntityVariant, Image, QuestionCategory } from '@openvaa/data';
+import type { DerivedAppSettings } from '$lib/api/base/dataTypes';
 
 export {};
 
@@ -55,9 +56,9 @@ declare global {
   };
 
   /**
-   * The application settings, combined from both local settings and those retrieved from the database.
+   * The application settings, combined from both local settings and those retrieved from the database, with the members the data provider derives for its caller.
    */
-  type AppSettings = StaticSettings & DynamicSettings;
+  type AppSettings = StaticSettings & DynamicSettings & DerivedAppSettings;
 
   /**
    * The possible values for a user's data collection consent

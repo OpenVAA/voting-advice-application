@@ -25,7 +25,7 @@ The Contestant App's entry screen. It offers the ways into the app and holds no 
 
 - `contestantApp.servedEntityTypes`: The entity types the project serves and the registration modes of each, which decide the app's name in the heading, whether "Register" is offered, as `listedRegistrationModes` reads them, and whether "Sign in with Bank ID" is, as `identityProviderSignInOffered` reads them.
 - `access.contestantEditing`: Whether the locked sentence is shown, which it is under `locked`. While it is, no registration mode is listed.
-- `access.voterApp`: Whether a link to the voter app is shown.
+- `voterAppAccessible`: Whether a link to the voter app is shown, derived by the data provider from the project's `open_for_voters`. Absent means `true`.
 
 -->
 
@@ -199,7 +199,7 @@ The Contestant App's entry screen. It offers the ways into the app and holds no 
         href={getRoute.current('ContestantAppHelp')}
         text={t('contestantApp.help.title')}
         data-testid="login-help-link" />
-      {#if contestantCtx.appSettings.access.voterApp}
+      {#if contestantCtx.appSettings.voterAppAccessible !== false}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
           onclick={() => goto(getRoute.current('Home'), { invalidateAll: true })}

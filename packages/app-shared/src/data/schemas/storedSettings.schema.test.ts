@@ -1,7 +1,7 @@
 /**
  * `StoredSettingsSchema` — the stored shape of the `app_settings.settings` JSONB column.
  *
- * Covers the `{}` case the column's `'{}'::jsonb` default and the provider's `PGRST116` branch both produce, a representative real payload (the package's own shipped `dynamicSettings`), the locale-object notification fields, one unknown-key rejection per nesting level (top level, `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp`, `contestantApp.servedEntityTypes` and `contestantApp.servedEntityTypes.candidate`), the one member of `analytics` and the stored provider member it rejects, `contestantApp.servedEntityTypes` — what parses, what it parses to, and the path each rejection names — the key `access.contestantEditing` with the values it accepts and refuses, and the key `entities.hideIfMissingAnswers.organization`.
+ * Covers the `{}` case the column's `'{}'::jsonb` default and the provider's `PGRST116` branch both produce, a representative real payload (the package's own shipped `dynamicSettings`), the locale-object notification fields, one unknown-key rejection per nesting level (top level, `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp`, `contestantApp.servedEntityTypes` and `contestantApp.servedEntityTypes.candidate`), the one member of `analytics` and the stored provider member it rejects, `contestantApp.servedEntityTypes` — what parses, what it parses to, and the path each rejection names — the key `access.contestantEditing` with the values it accepts and refuses, the retired key `access.voterApp`, which is stripped, and the key `entities.hideIfMissingAnswers.organization`.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -190,6 +190,15 @@ describe('StoredSettingsSchema — contestant editing and the organization key o
     const result = StoredSettingsSchema.safeParse({ access: { contestantEditing: value } });
     expect(result.success).toBe(false);
     expect(result.success === false && result.error.issues[0]?.path).toEqual(['access', 'contestantEditing']);
+  });
+
+  it('strips a stored `access.voterApp` and keeps the other `access` members', () => {
+    const result = StoredSettingsSchema.safeParse({
+      access: { voterApp: false, contestantApp: false, contestantEditing: 'locked' }
+    });
+    expect(result.success === false ? result.error.issues : result.data).toEqual({
+      access: { contestantApp: false, contestantEditing: 'locked' }
+    });
   });
 
   it('rejects the lock booleans `access.answersLocked` and `access.nominationsLocked`', () => {

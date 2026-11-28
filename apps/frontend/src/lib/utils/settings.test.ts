@@ -46,7 +46,7 @@ describe('mergeAppSettings', () => {
 
     const result = mergeAppSettings(
       base,
-      stored({ access: { voterApp: false }, results: { sections: ['candidate'] } })
+      stored({ access: { adminApp: false }, results: { sections: ['candidate'] } })
     );
 
     expect(JSON.parse(JSON.stringify(base))).toEqual(snapshot);
@@ -57,7 +57,7 @@ describe('mergeAppSettings', () => {
   it('shares a subtree the source does not touch, by reference', () => {
     const base = mergeAppSettings(staticSettings, dynamicSettings);
 
-    const result = mergeAppSettings(base, stored({ access: { voterApp: false } }));
+    const result = mergeAppSettings(base, stored({ access: { adminApp: false } }));
 
     expect(result.entityDetails).toBe(base.entityDetails);
     expect(result.contestantApp).toBe(base.contestantApp);
@@ -197,11 +197,11 @@ describe('mergeAppSettings', () => {
     const result = mergeInitialAppSettings(
       staticSettings,
       dynamicSettings,
-      stored({ contestantApp: { questions: undefined, servedEntityTypes: undefined }, access: { voterApp: undefined } })
+      stored({ contestantApp: { questions: undefined, servedEntityTypes: undefined }, access: { adminApp: undefined } })
     );
 
     expect(result.contestantApp).toEqual(dynamicSettings.contestantApp);
-    expect(result.access.voterApp).toBe(dynamicSettings.access.voterApp);
+    expect(result.access.adminApp).toBe(dynamicSettings.access.adminApp);
   });
 
   it('lets a nested null replace the value beneath it', () => {
@@ -236,26 +236,26 @@ describe('mergeAppSettings', () => {
   it.each(['__proto__', 'constructor', 'prototype'])('skips a source key named %s at the root', (key) => {
     const base = mergeAppSettings(staticSettings, dynamicSettings);
     // Parsed from JSON so that `__proto__` is an own key of the source, as it is in a stored value.
-    const additional = JSON.parse(`{ "${key}": { "polluted": true }, "access": { "voterApp": false } }`);
+    const additional = JSON.parse(`{ "${key}": { "polluted": true }, "access": { "adminApp": false } }`);
 
     const result = mergeAppSettings(base, stored(additional));
 
     expect(Object.hasOwn(result, key)).toBe(false);
     expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
     expect(({} as Record<string, unknown>).polluted).toBeUndefined();
-    expect(result.access.voterApp).toBe(false);
+    expect(result.access.adminApp).toBe(false);
   });
 
   it.each(['__proto__', 'constructor', 'prototype'])('skips a source key named %s inside a merged root', (key) => {
     const base = mergeAppSettings(staticSettings, dynamicSettings);
-    const additional = JSON.parse(`{ "access": { "${key}": { "polluted": true }, "voterApp": false } }`);
+    const additional = JSON.parse(`{ "access": { "${key}": { "polluted": true }, "adminApp": false } }`);
 
     const result = mergeAppSettings(base, stored(additional));
 
     expect(Object.hasOwn(result.access, key)).toBe(false);
     expect(Object.getPrototypeOf(result.access)).toBe(Object.prototype);
     expect(({} as Record<string, unknown>).polluted).toBeUndefined();
-    expect(result.access.voterApp).toBe(false);
+    expect(result.access.adminApp).toBe(false);
     expect(result.access.contestantApp).toBe(dynamicSettings.access.contestantApp);
   });
 });

@@ -1,12 +1,13 @@
 /**
  * perm-access-disable minimal-data template.
  *
- * The one access-gating perm: it serves every access mode, so no dataset of a single mode exists. Its spec re-seeds this app_settings singleton per sub-test to exercise each of the three access modes:
- *   - `access.voterApp: false`        — voter-app routes (`/`, `/elections`) render the MaintenancePage.
+ * The one access-gating perm: it serves every access mode, so no dataset of a single mode exists. Its spec re-seeds this app_settings singleton per sub-test to exercise each of the two access modes:
  *   - `access.contestantApp: false`    — contestant-app route (`/contestant`) renders the MaintenancePage.
  *   - `access.underMaintenance: true` — the whole app renders the MaintenancePage.
  *
- * The template ships a single base posture (`access.voterApp: false`); the spec re-seeds the singleton per mode via `settingsOverlay` at setup time, matching the perm-singleton re-seed pattern. All three `access.*` flags are plain app-availability toggles seeded into the local test DB's app_settings — they gate maintenance-page display, NOT authentication or authorization.
+ * The Voter App is not closed by a setting: whether voters may use a project is the project's `open_for_voters`, which `perm-closed-project` exercises.
+ *
+ * The template ships a single base posture with both apps available; the spec re-seeds the singleton per mode, matching the perm-singleton re-seed pattern. Both `access.*` flags are plain app-availability toggles seeded into the local test DB's app_settings — they gate maintenance-page display, NOT authentication or authorization.
  *
  * Topology: 1 election, 1 CG with 1 CO, 2 candidates, 1 opinion Likert-5 question. A single Likert question suffices, so `buildMinimal` is used.
  *
@@ -26,7 +27,7 @@ export const permAccessDisableTemplate: Template = buildMinimal({
   opinionQuestions: 1,
   infoQuestions: 0,
   settingsOverlay: {
-    access: { voterApp: false, contestantApp: true, underMaintenance: false }
+    access: { contestantApp: true, underMaintenance: false }
   }
 });
 

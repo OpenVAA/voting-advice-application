@@ -5,7 +5,7 @@
  *
  * What it pins: an anonymous visitor sees the existing `MaintenancePage` with `dynamic.voterAppNotAccessible` on the voter app, including on deep links, never the global `ErrorMessage`; the contestant app's login screen still renders its entries, its sign-in screen and the admin login their forms, and a candidate can log in and reach the candidate home, because candidates must be able to answer before a project opens. A grant holder (the admin stored session) sees the real voter app and the admin shell, because preview is decided by what RLS returns to the caller, not by a client-side role check.
  *
- * The seeded settings keep `access.voterApp: true`, so a maintenance page seen here can only have been caused by the project being closed, never by the access flag.
+ * `open_for_voters` is the one switch that publishes a project to voters: no stored setting closes the Voter App, so the maintenance page seen here is the closure's.
  *
  * The `afterAll` reopens the project (restore layer 1 of 3; the teardown project and the next run's global setup are layers 2 and 3).
  *

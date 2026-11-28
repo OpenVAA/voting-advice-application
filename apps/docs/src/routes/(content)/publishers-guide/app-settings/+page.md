@@ -133,8 +133,9 @@ Settings related to election and constituency selection in VAAs with multiple el
 
 Settings related to access to the applications.
 
+No setting opens or closes the Voter App. A project is published to voters by its `open_for_voters` switch, which is not an App Setting but a column of the project's row in the `projects` table, and new projects start with it off. While it is off, voters see a page saying the Voter App has not been released yet, and the project's elections, questions, candidates, parties and nominations cannot be read by anyone without access to the project, not even through the database's public interface. Candidates, parties and administrators can still sign in, and anyone with access to the project sees the Voter App as voters will. Turning it on publishes everything that has been confirmed. Your developer sets it in the database, or with the deployment's bootstrap script.
+
 - `contestantApp`: If `true`, the Contestant App (the app candidates and parties use, named after `servedEntityTypes`; see below) can be accessed. Default: `true`.
-- `voterApp`: If `true`, the Voter App can be accessed. Default: `true`.
 - `adminApp`: If `true`, the Admin App can be accessed. Default: `true`.
 - `underMaintenance`: If `true`, an under maintenance error page will be shown when attempting to access any part of the app. Default: `false`.
 - `contestantEditing`: What candidates and parties may still edit in the Contestant App. Administrators and project editors can always edit everything. Default: `open`.

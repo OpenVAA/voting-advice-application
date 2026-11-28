@@ -68,10 +68,10 @@
   // Validation is a pure `$derived` over the already-resolved loader data (`+layout.ts` awaits every data field before returning; see its policy comment). No `Promise.all`, no `.then()`, no microtask boundary between `$effect` and `$state` writes, so SSR and hydration cannot race and leave a full page load at <Loading />.
   // A project that is not open for voters returns zero elections and zero constituencies to anonymous readers by design: the anon read policies are gated on `project_open_for_voters`.
   //
-  // The adapter maps that state to `access.voterApp = false`, and `(voters)/+layout.svelte` then renders MaintenancePage with `dynamic.voterAppNotAccessible`. Empty data is therefore valid here: rejecting it would render ErrorMessage on every route, both login pages included, so nobody could log in before a project opens.
+  // The adapter maps that state to `voterAppAccessible = false`, and `(voters)/+layout.svelte` then renders MaintenancePage with `dynamic.voterAppNotAccessible`. Empty data is therefore valid here: rejecting it would render ErrorMessage on every route, both login pages included, so nobody could log in before a project opens.
   //
   // Read through the `appSettings` alias above, never destructured (CLAUDE.md's Context Destructuring Rule). `validity` depends on the settings alias and on nothing derived from `validity`, so there is no cycle.
-  const voterAppInaccessible = $derived(appSettings.access?.voterApp === false);
+  const voterAppInaccessible = $derived(appSettings.voterAppAccessible === false);
 
   const validity:
     | { error: Error }

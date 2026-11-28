@@ -39,7 +39,7 @@ export type DynamicSettings = {
       /**
        * The content tabs to show for alliances. Alliances have no own answers, so 'opinions' is typically omitted by default; the broader union allows future opt-in without a type-rename.
        */
-      [ENTITY_TYPE.Alliance]?: Array<EntityDetailsContent | ParentEntityDetailsContent>;
+      [ENTITY_TYPE.Alliance]: Array<EntityDetailsContent | ParentEntityDetailsContent>;
     };
     /**
      * Whether to show a marker for missing election symbol in entity details, e.g. 'Election Symbol: --', or hide missing items completely. The marker, if shown, is defined in the translations.
@@ -210,39 +210,11 @@ export type DynamicSettings = {
       /**
        * The additional contents of party cards. NB. the order of the items has currently no effect.
        */
-      [ENTITY_TYPE.Organization]: Array<
-        /**
-         * Show the matching scores for each question category.
-         */
-        | 'submatches'
-        /**
-         * List the parent entity's children (CandidateNominations) within its card.
-         * Only applies to the results list. Named 'children' rather than 'candidates' so that parent-entity children are named uniformly across entity types.
-         */
-        | 'children'
-        /**
-         * Show the entity's answer to a specific question. Only applies to the results list.
-         */
-        | QuestionInCardContent
-      >;
+      [ENTITY_TYPE.Organization]: Array<ParentEntityCardContent>;
       /**
        * The additional contents of alliance cards. NB. the order of the items has currently no effect.
        */
-      [ENTITY_TYPE.Alliance]?: Array<
-        /**
-         * Show the matching scores for each question category.
-         */
-        | 'submatches'
-        /**
-         * List the parent entity's children (OrganizationNominations) within its card.
-         * An alliance's children are its member organization-nominations.
-         */
-        | 'children'
-        /**
-         * Show the entity's answer to a specific question. Only applies to the results list.
-         */
-        | QuestionInCardContent
-      >;
+      [ENTITY_TYPE.Alliance]: Array<ParentEntityCardContent>;
     };
     /**
      * Which entity types to show in the results view. There must be at least one.
@@ -282,10 +254,6 @@ export type DynamicSettings = {
      * If `true`, the Contestant App can be accessed. While it is `false`, entity invitations are not honoured and the identity provider registers no one.
      */
     contestantApp: boolean;
-    /**
-     * If `true`, the Voter App can be accessed.
-     */
-    voterApp: boolean;
     /**
      * If `true`, the Admin App can be accessed.
      */
@@ -350,13 +318,36 @@ export type DynamicSettings = {
   };
 };
 
-export type OrganizationMatchingMethod =
+/**
+ * The party-matching methods `matching.organizationMatching` may name.
+ */
+export const ORGANIZATION_MATCHING_METHODS = [
   /** No party matching is done */
-  | 'none'
+  'none',
   /** Matching is only performed on the parties explicit answers. */
-  | 'answersOnly'
+  'answersOnly',
   /** Missing party answers are substituted with an anwswer imputed from the party's candidates' answers. */
-  | 'impute';
+  'impute'
+] as const;
+
+export type OrganizationMatchingMethod = (typeof ORGANIZATION_MATCHING_METHODS)[number];
+
+/**
+ * The additional contents of a parent entity's card, a party's or an alliance's, in the results list.
+ */
+export type ParentEntityCardContent =
+  /**
+   * Show the matching scores for each question category.
+   */
+  | 'submatches'
+  /**
+   * List the parent entity's children within its card: a party's candidate nominations, an alliance's member organization nominations. Only applies to the results list.
+   */
+  | 'children'
+  /**
+   * Show the entity's answer to a specific question. Only applies to the results list.
+   */
+  | QuestionInCardContent;
 
 /**
  * Used to show the entity's answer to a specific question. Only applies to the results list.

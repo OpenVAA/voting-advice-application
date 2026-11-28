@@ -157,7 +157,7 @@ beforeEach(() => {
     locale: () => 'en'
   });
   appContextHolder.current = {
-    appSettings: { access: { voterApp: false } },
+    appSettings: { voterAppAccessible: false },
     t: (key: string) => key,
     setDataRoot: () => undefined,
     openFeedbackModal: { set: () => undefined },

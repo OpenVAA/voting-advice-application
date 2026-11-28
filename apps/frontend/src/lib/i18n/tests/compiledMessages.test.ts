@@ -1,8 +1,8 @@
+import { ORGANIZATION_MATCHING_METHODS } from '@openvaa/app-shared';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { describe, expect, test } from 'vitest';
-import { ORGANIZATION_MATCHING_METHODS } from '$lib/utils/organizationMatching';
 
 /**
  * Calls every compiled Paraglide message in every locale and fails when one answers with its own key, which is what a compiled message returns when none of its variants matches its inputs.

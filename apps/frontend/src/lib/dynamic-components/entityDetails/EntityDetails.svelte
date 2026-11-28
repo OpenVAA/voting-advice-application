@@ -65,8 +65,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   let contentTabs: Array<ContentTab> = $derived.by(() => {
     const { entity: nakedEntity } = unwrapEntity(entity);
-    // cardContents.alliance / entityDetails.contents.alliance are typed as optional in @openvaa/app-shared, so the indexed access can yield `undefined` when the alliance entry is missing from the active settings.
-    // The `!tabs?.length` guard already handles undefined at runtime.
+    // An entity type with no entry in `entityDetails.contents`, such as a faction, yields `undefined` here. The `!tabs?.length` fallback covers it and a configured empty list alike.
     let tabs: Array<EntityDetailsContent | ParentEntityDetailsContent> | undefined =
       appSettings.entityDetails.contents[nakedEntity.type as keyof AppSettings['entityDetails']['contents']];
     if (!tabs?.length)

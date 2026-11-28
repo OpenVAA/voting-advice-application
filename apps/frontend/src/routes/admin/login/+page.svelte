@@ -193,7 +193,7 @@
     </div>
 
     <div class="mt-lg">
-      {#if appSettings.access.voterApp}
+      {#if appSettings.voterAppAccessible !== false}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
           onclick={() => goto(getRoute.current('Home'), { invalidateAll: true })}

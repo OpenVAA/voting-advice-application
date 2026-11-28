@@ -52,6 +52,21 @@ const ServedEntityTypesSchema = z
   .refine((served) => Object.keys(served).length > 0, { message: 'At least one entity type must be served' });
 
 /**
+ * Keys a stored `access` may carry that are not settings, and that the parse removes. `voterApp` is one: whether voters may use a project is the project's `open_for_voters`, not a setting.
+ */
+const RETIRED_ACCESS_KEYS: ReadonlyArray<string> = ['voterApp'];
+
+/**
+ * Remove the {@link RETIRED_ACCESS_KEYS} from a stored `access` value before the strict parse, so a row that still carries one keeps its other `access` members instead of failing at `access`. Any other value is returned unchanged for the schema to judge.
+ * @param value - The stored `access` value.
+ * @returns The value without the retired keys.
+ */
+function withoutRetiredAccessKeys(value: unknown): unknown {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return value;
+  return Object.fromEntries(Object.entries(value).filter(([key]) => !RETIRED_ACCESS_KEYS.includes(key)));
+}
+
+/**
  * The stored shape of the `app_settings.settings` JSONB column.
  *
  * ## Stored, not application
@@ -67,7 +82,7 @@ const ServedEntityTypesSchema = z
  *
  * ## Strict at EVERY level
  *
- * Strictness is a PER-OBJECT setting in zod and does not descend. This column nests objects three deep, as at `settings` -> `notifications` -> `contestantApp`, and four deep at `settings` -> `contestantApp` -> `servedEntityTypes` -> `candidate` and where a `results.cardContents` list holds a question object, so a top-level-only strict schema would parse an unknown key at any inner level with SUCCESS and silently strip it. Every object in this schema is therefore its own `z.strictObject`. `storedSettings.schema.test.ts` holds an unknown-key rejection case for the top level and for `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp`, `contestantApp.servedEntityTypes` and `contestantApp.servedEntityTypes.candidate`.
+ * Strictness is a PER-OBJECT setting in zod and does not descend. This column nests objects three deep, as at `settings` -> `notifications` -> `contestantApp`, and four deep at `settings` -> `contestantApp` -> `servedEntityTypes` -> `candidate` and where a `results.cardContents` list holds a question object, so a top-level-only strict schema would parse an unknown key at any inner level with SUCCESS and silently strip it. Every object in this schema is therefore its own `z.strictObject`. The one tolerated unknown key is `access.voterApp`, stripped before the strict parse: see {@link withoutRetiredAccessKeys}. `storedSettings.schema.test.ts` holds an unknown-key rejection case for the top level and for `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp`, `contestantApp.servedEntityTypes` and `contestantApp.servedEntityTypes.candidate`.
  */
 export const StoredSettingsSchema = z.strictObject({
   survey: z
@@ -149,15 +164,17 @@ export const StoredSettingsSchema = z.strictObject({
       startFromConstituencyGroup: z.string().optional()
     })
     .optional(),
-  access: z
-    .strictObject({
-      contestantApp: z.boolean().optional(),
-      voterApp: z.boolean().optional(),
-      adminApp: z.boolean().optional(),
-      underMaintenance: z.boolean().optional(),
-      contestantEditing: z.enum(CONTESTANT_EDITING_VALUES).optional()
-    })
-    .optional(),
+  access: z.preprocess(
+    withoutRetiredAccessKeys,
+    z
+      .strictObject({
+        contestantApp: z.boolean().optional(),
+        adminApp: z.boolean().optional(),
+        underMaintenance: z.boolean().optional(),
+        contestantEditing: z.enum(CONTESTANT_EDITING_VALUES).optional()
+      })
+      .optional()
+  ),
   notifications: z
     .strictObject({
       contestantApp: StoredNotificationSchema.nullable().optional(),

@@ -389,6 +389,22 @@ export const testIds = {
     setPasswordGate: {
       // The Admin App's set-password view's root. Carries data-set-password-state="idle" | "saving" | "failed".
       container: 'admin-set-password-gate'
+    },
+    // The Admin home's root, with its list of tools, rendered once a signed-in admin has a password.
+    home: 'admin-home',
+    // The Jobs page's root.
+    jobs: 'admin-jobs',
+    argumentCondensation: {
+      // The Argument condensation page's root.
+      page: 'admin-argument-condensation',
+      // Its election `select`, rendered while no argument condensation job is running.
+      election: 'admin-argument-condensation-election'
+    },
+    questionInfo: {
+      // The Question info page's root.
+      page: 'admin-question-info',
+      // Its election `select`.
+      election: 'admin-question-info-election'
     }
   },
   auth: {
@@ -408,7 +424,7 @@ export const testIds = {
     consentPrompt: 'voter-consent-prompt',
     home: {
       startButton: 'voter-home-start',
-      // stable page-content load anchor on the home `MainContent` root <div> (apps/frontend/src/routes/(voters)/+page.svelte). Unlike `startButton` (an action that is HIDDEN under access.voterApp=false maintenance mode), this anchor confirms "the home page content loaded" so `voterHomePage.expectPageVisible()` checks page-load, not action presence.
+      // stable page-content load anchor on the home `MainContent` root <div> (apps/frontend/src/routes/(voters)/+page.svelte). Unlike `startButton` (an action that is HIDDEN under the voter app's maintenance page), this anchor confirms "the home page content loaded" so `voterHomePage.expectPageVisible()` checks page-load, not action presence.
       page: 'voter-home'
     },
     elections: {

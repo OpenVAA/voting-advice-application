@@ -3,7 +3,7 @@
  *
  * Invokes setupFromTemplate('perm-access-disable').
  *
- * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain leakage from base / contestant-journey / prior perm chains still mid-teardown when this setup starts. The consolidated spec re-seeds the app_settings singleton per access mode (voterApp / contestantApp / underMaintenance).
+ * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain leakage from base / contestant-journey / prior perm chains still mid-teardown when this setup starts. The consolidated spec re-seeds the app_settings singleton per access mode (contestantApp / underMaintenance).
  */
 
 import { test as setup } from '@playwright/test';

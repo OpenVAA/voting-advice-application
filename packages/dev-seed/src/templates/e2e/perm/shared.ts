@@ -99,7 +99,6 @@ export const MINIMAL_BASE_APP_SETTINGS = {
   },
   access: {
     contestantApp: true,
-    voterApp: true,
     adminApp: true,
     underMaintenance: false,
     contestantEditing: 'open'

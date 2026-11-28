@@ -1,14 +1,5 @@
-import { dynamicSettings, log } from '@openvaa/app-shared';
+import { dynamicSettings, log, ORGANIZATION_MATCHING_METHODS } from '@openvaa/app-shared';
 import type { OrganizationMatchingMethod } from '@openvaa/app-shared';
-
-/**
- * Every value `matching.organizationMatching` may take.
- */
-export const ORGANIZATION_MATCHING_METHODS: ReadonlyArray<OrganizationMatchingMethod> = [
-  'none',
-  'answersOnly',
-  'impute'
-];
 
 /**
  * The out-of-vocabulary values already logged, so each is logged once rather than on every recomputation.

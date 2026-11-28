@@ -6,7 +6,7 @@
  * The route is locale-aware via `buildRoute({ route: 'Home', locale })`.
  * Note: `ROUTE.Home` resolves to just the locale segment, so `buildRoute` returns the bare locale (e.g. `'en'`); prepend `/` to form `/en`.
  *
- * Load anchor: `testIds.voter.home.page` ('voter-home') — the always-rendered `MainContent` root content div (NOT `startButton`, which is hidden under the access.voterApp=false maintenance variant).
+ * Load anchor: `testIds.voter.home.page` ('voter-home') — the always-rendered `MainContent` root content div (NOT `startButton`, which is hidden under the voter app's maintenance variant).
  *
  * **Rigidity contract**:
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO

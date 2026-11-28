@@ -8,7 +8,7 @@ import type { DynamicSettings } from '@openvaa/app-shared';
 describe('mergeAppSettings over a `$state` proxy target', () => {
   it('merges without throwing and without unwrapping the list the proxy holds', () => {
     const target = $state({
-      access: { voterApp: true, contestantApp: true },
+      access: { adminApp: true, contestantApp: true },
       results: { sections: ['candidate', 'organization'] }
     });
     // The control: this is the kind of value a cloning merge fails on.
@@ -16,11 +16,11 @@ describe('mergeAppSettings over a `$state` proxy target', () => {
 
     const result = mergeAppSettings(
       target as unknown as AppSettings,
-      { access: { voterApp: false } } as unknown as DynamicSettings
+      { access: { adminApp: false } } as unknown as DynamicSettings
     );
 
-    expect(result.access).toEqual({ voterApp: false, contestantApp: true });
+    expect(result.access).toEqual({ adminApp: false, contestantApp: true });
     expect(result.results.sections).toEqual(['candidate', 'organization']);
-    expect(target.access.voterApp).toBe(true);
+    expect(target.access.adminApp).toBe(true);
   });
 });

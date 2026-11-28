@@ -112,13 +112,13 @@ describe('AppContextProvider — the settings recompute on a new loader payload'
 
   it('reads the shipped default again for a member the previous payload set and the new one omits', () => {
     const instance = setup();
-    expect(dynamicSettings.access.voterApp).toBe(true);
+    expect(dynamicSettings.access.adminApp).toBe(true);
 
-    load({ access: { voterApp: false } });
-    expect(instance.appSettings.access.voterApp).toBe(false);
+    load({ access: { adminApp: false } });
+    expect(instance.appSettings.access.adminApp).toBe(false);
 
     load({ access: { contestantApp: true } });
-    expect(instance.appSettings.access.voterApp).toBe(true);
+    expect(instance.appSettings.access.adminApp).toBe(true);
     expect(instance.appSettings.access).toEqual(dynamicSettings.access);
   });
 
@@ -126,10 +126,10 @@ describe('AppContextProvider — the settings recompute on a new loader payload'
     const instance = setup();
 
     load({
-      access: { voterApp: false },
+      access: { adminApp: false },
       contestantApp: { servedEntityTypes: { organization: { registrationModes: [] } } }
     });
-    expect(instance.appSettings.access.voterApp).toBe(false);
+    expect(instance.appSettings.access.adminApp).toBe(false);
     expect(instance.appSettings.contestantApp.servedEntityTypes).toEqual({ organization: { registrationModes: [] } });
 
     load({ matching: { minimumAnswers: 1 } });
@@ -140,7 +140,7 @@ describe('AppContextProvider — the settings recompute on a new loader payload'
 
   it('keeps the effective settings object when a navigation hands over the same payload', () => {
     const instance = setup();
-    const payload = { access: { voterApp: false } };
+    const payload = { access: { adminApp: false } };
     load(payload);
     const before = instance.appSettings;
 
@@ -151,12 +151,12 @@ describe('AppContextProvider — the settings recompute on a new loader payload'
 
   it('keeps the effective settings when the new payload is an Error or is missing', () => {
     const instance = setup();
-    load({ access: { voterApp: false } });
+    load({ access: { adminApp: false } });
 
     load(new Error('the settings failed to load'));
-    expect(instance.appSettings.access.voterApp).toBe(false);
+    expect(instance.appSettings.access.adminApp).toBe(false);
 
     load(undefined);
-    expect(instance.appSettings.access.voterApp).toBe(false);
+    expect(instance.appSettings.access.adminApp).toBe(false);
   });
 });

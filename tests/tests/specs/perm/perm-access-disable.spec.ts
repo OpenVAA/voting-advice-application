@@ -1,16 +1,16 @@
 /**
  * @file perm-access-disable.spec.ts — the access-gating perm-chain spec.
  *
- * ONE access-gating perm covering all three `access.*` modes, the global `underMaintenance` slice included. The spec re-seeds the `app_settings` singleton per sub-test (perm-singleton pattern via `updateAppSettings`) so each mode is exercised against the same seeded dataset (`data-setup-perm-access-disable` → `perm-access-disable.ts`).
+ * ONE access-gating perm covering both `access.*` modes, the global `underMaintenance` slice included. The spec re-seeds the `app_settings` singleton per sub-test (perm-singleton pattern via `updateAppSettings`) so each mode is exercised against the same seeded dataset (`data-setup-perm-access-disable` → `perm-access-disable.ts`).
  *
- * Three access modes (all plain app-availability toggles — they gate the MaintenancePage display, NOT auth/authorization):
+ * Two access modes (both plain app-availability toggles — they gate the MaintenancePage display, NOT auth/authorization):
  *
- *   1. access.voterApp = false        — voter-app routes (`/`, `/elections`) render the MaintenancePage (root <main>
- *                                       + <h1>, voter start button HIDDEN); the contestant-app route stays available.
- *   2. access.contestantApp = false    — contestant-app route (`/contestant`) renders the MaintenancePage (the login screen is not rendered); the voter-app routes stay available.
- *   3. access.underMaintenance = true — NET-NEW global slice: BOTH the voter (`/`, `/elections`) AND candidate (`/contestant`) routes render the MaintenancePage simultaneously.
+ *   1. access.contestantApp = false    — contestant-app route (`/contestant`) renders the MaintenancePage (the login screen is not rendered); the voter-app routes stay available.
+ *   2. access.underMaintenance = true — global slice: BOTH the voter (`/`, `/elections`) AND candidate (`/contestant`) routes render the MaintenancePage simultaneously.
  *
- * The afterAll restores the seed's shipped base posture (voterApp:false, contestantApp:true, underMaintenance:false) so the singleton is not left mutated for any downstream perm node.
+ * No setting closes the Voter App alone: that is the project's `open_for_voters`, which `perm-closed-project.spec.ts` covers on the voter routes `/`, `/elections` and `/questions` with the contestant app still available.
+ *
+ * The afterAll restores the seed's shipped base posture (contestantApp:true, underMaintenance:false) so the singleton is not left mutated for any downstream perm node.
  *
  * Rigidity contract: every assertion is HARD — no expect.soft, no try/catch wrapping expect(), no .catch fallbacks. Testid-only via `testIds` (`getByRole('main')` / `heading` permitted per the maintenance-page pattern); the login screen is asserted through its page object.
  */
@@ -33,36 +33,14 @@ test.describe('perm-access-disable (EPERM-11)', () => {
     // Restore the seed's shipped base posture so the singleton is clean for any downstream perm node (the per-app-notifications node re-points here).
     if (client) {
       await client.updateAppSettings({
-        access: { voterApp: false, contestantApp: true, underMaintenance: false }
+        access: { contestantApp: true, underMaintenance: false }
       });
     }
   });
 
-  test('voterApp disabled: / + /elections show maintenance; /contestant available', async ({ page }) => {
-    await client.updateAppSettings({
-      access: { voterApp: false, contestantApp: true, underMaintenance: false }
-    });
-
-    // GET /en — maintenance page on the voter-app root route.
-    await page.goto('/en');
-    await expect(page.getByRole('main')).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByTestId(testIds.voter.home.startButton)).toBeHidden();
-
-    // GET /en/elections — maintenance page on the voter-app elections route.
-    await page.goto('/en/elections');
-    await expect(page.getByRole('main')).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByTestId(testIds.voter.home.startButton)).toBeHidden();
-
-    // GET /en/contestant — NON-maintenance: the login screen renders.
-    await page.goto('/en/contestant');
-    await createContestantLoginPage(page).expectEntryShown();
-  });
-
   test('contestantApp disabled: /contestant shows maintenance; / + /elections available', async ({ page }) => {
     await client.updateAppSettings({
-      access: { voterApp: true, contestantApp: false, underMaintenance: false }
+      access: { contestantApp: false, underMaintenance: false }
     });
 
     // GET /en/contestant — maintenance page on the contestant-app route.
@@ -82,7 +60,7 @@ test.describe('perm-access-disable (EPERM-11)', () => {
 
   test('underMaintenance: BOTH voter + contestant apps show maintenance simultaneously', async ({ page }) => {
     await client.updateAppSettings({
-      access: { voterApp: true, contestantApp: true, underMaintenance: true }
+      access: { contestantApp: true, underMaintenance: true }
     });
 
     // GET /en — voter root under global maintenance: MaintenancePage, start hidden.

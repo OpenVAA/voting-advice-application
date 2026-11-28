@@ -3,9 +3,10 @@ import { ENTITY_TYPE, NOMINATION_SHAPE } from '@openvaa/data';
 import { Constants } from '@openvaa/supabase-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupabaseDataProvider } from './supabaseDataProvider';
-import type { DynamicSettings, LogRecord } from '@openvaa/app-shared';
+import type { LogRecord } from '@openvaa/app-shared';
 import type { Database } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DPDataType } from '$lib/api/base/dataTypes';
 import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
 
 // Mock $env/dynamic/public before any imports that depend on it
@@ -192,7 +193,7 @@ async function withCapturedLogs<TResult>(
 
 // Local narrow type for assertion casts in this file (replaces `(result as any)` patterns).
 // reason: assertions read into nested JSONB shapes that aren't in DynamicSettings's strict typing
-type DynamicSettingsTestNarrow = Partial<DynamicSettings> & {
+type DynamicSettingsTestNarrow = DPDataType['appSettings'] & {
   notifications?: {
     contestantApp?: { title?: string; content?: string };
     voterApp?: { title?: string; content?: string };
@@ -275,7 +276,7 @@ describe('SupabaseDataProvider', () => {
 
     it('fetches from app_settings table and returns the validated settings JSONB', async () => {
       const mockSettings = {
-        access: { contestantApp: true, voterApp: true, adminApp: false },
+        access: { contestantApp: true, adminApp: false },
         header: { showFeedback: true, showHelp: true }
       };
       mockSupabase._mockResponses['app_settings'] = {
@@ -286,7 +287,7 @@ describe('SupabaseDataProvider', () => {
       const result = await provider.getAppSettings();
 
       expect(mockSupabase.from).toHaveBeenCalledWith('app_settings');
-      expect(result).toEqual(mockSettings);
+      expect(result).toEqual({ ...mockSettings, voterAppAccessible: true });
     });
 
     it('localizes notification title and content fields when locale provided', async () => {
@@ -356,7 +357,7 @@ describe('SupabaseDataProvider', () => {
 
       const result = (await provider.getAppSettings()) as DynamicSettingsTestNarrow;
 
-      expect(result.access?.voterApp).toBe(false);
+      expect(result.voterAppAccessible).toBe(false);
       // The whole `access` object is carried over the shipped defaults, so the other gates are stated in the provider's own answer.
       expect(result.access?.contestantApp).toBe(true);
       expect(mockSupabase.rpc).toHaveBeenCalledWith('project_open_for_voters', {
@@ -370,7 +371,7 @@ describe('SupabaseDataProvider', () => {
 
       const result = await provider.getAppSettings();
 
-      expect(result).toEqual({});
+      expect(result).toEqual({ voterAppAccessible: true });
       expect(rpcNamesCalled()).toEqual(['project_open_for_voters']);
     });
 
@@ -393,7 +394,8 @@ describe('SupabaseDataProvider', () => {
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
         expect(result).toEqual({
-          access: { ...dynamicSettings.access, voterApp: false },
+          voterAppAccessible: false,
+          access: dynamicSettings.access,
           analytics: { trackEvents: false },
           contestantApp: dynamicSettings.contestantApp
         });
@@ -411,7 +413,8 @@ describe('SupabaseDataProvider', () => {
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
         expect(result).toEqual({
-          access: { ...dynamicSettings.access, voterApp: false },
+          voterAppAccessible: false,
+          access: dynamicSettings.access,
           analytics: { trackEvents: true },
           contestantApp: dynamicSettings.contestantApp
         });
@@ -424,7 +427,8 @@ describe('SupabaseDataProvider', () => {
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
         expect(result).toEqual({
-          access: { ...dynamicSettings.access, voterApp: false },
+          voterAppAccessible: false,
+          access: dynamicSettings.access,
           analytics: { trackEvents: false },
           contestantApp: dynamicSettings.contestantApp
         });
@@ -441,7 +445,8 @@ describe('SupabaseDataProvider', () => {
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
         expect(result).toEqual({
-          access: { ...dynamicSettings.access, voterApp: false },
+          voterAppAccessible: false,
+          access: dynamicSettings.access,
           analytics: { trackEvents: true },
           contestantApp: dynamicSettings.contestantApp
         });
@@ -454,7 +459,8 @@ describe('SupabaseDataProvider', () => {
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
         expect(result).toEqual({
-          access: { ...dynamicSettings.access, voterApp: false },
+          voterAppAccessible: false,
+          access: dynamicSettings.access,
           analytics: { trackEvents: false },
           contestantApp: dynamicSettings.contestantApp
         });
@@ -478,7 +484,7 @@ describe('SupabaseDataProvider', () => {
 
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
+        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false });
         expect(result.contestantApp?.servedEntityTypes).toEqual({
           candidate: { registrationModes: ['email', 'code'] },
           organization: { registrationModes: [] }
@@ -509,8 +515,7 @@ describe('SupabaseDataProvider', () => {
         expect(result.access).toEqual({
           ...dynamicSettings.access,
           contestantApp: false,
-          contestantEditing: 'locked',
-          voterApp: false
+          contestantEditing: 'locked'
         });
         expect(records).toHaveLength(0);
       });
@@ -522,7 +527,7 @@ describe('SupabaseDataProvider', () => {
         });
         const locked = await provider.getAppSettings();
 
-        expect(locked.access).toEqual({ ...dynamicSettings.access, contestantEditing: 'locked', voterApp: false });
+        expect(locked.access).toEqual({ ...dynamicSettings.access, contestantEditing: 'locked' });
 
         mockClosedProject({
           access: { contestantApp: null, contestantEditing: 'open' },
@@ -530,7 +535,7 @@ describe('SupabaseDataProvider', () => {
         });
         const unlocked = await provider.getAppSettings();
 
-        expect(unlocked.access).toEqual({ ...dynamicSettings.access, contestantEditing: 'open', voterApp: false });
+        expect(unlocked.access).toEqual({ ...dynamicSettings.access, contestantEditing: 'open' });
       });
 
       it('leaves a contestant editing that is null out, so that the shipped one stands', async () => {
@@ -543,7 +548,7 @@ describe('SupabaseDataProvider', () => {
 
         // The shipped value itself, so a change to the defaults cannot make the comparison pass on something else.
         expect(dynamicSettings.access.contestantEditing).toBe('open');
-        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
+        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false });
         expect(records).toHaveLength(0);
       });
 
@@ -557,12 +562,11 @@ describe('SupabaseDataProvider', () => {
 
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-        expect(Object.keys(result).sort()).toEqual(['access', 'analytics', 'contestantApp']);
+        expect(Object.keys(result).sort()).toEqual(['access', 'analytics', 'contestantApp', 'voterAppAccessible']);
         expect(result.contestantApp?.questions).toEqual({ hideHero: false, hideVideo: false });
         expect(result.access).toEqual({
           ...dynamicSettings.access,
           contestantApp: false,
-          voterApp: false,
           underMaintenance: false,
           contestantEditing: 'locked'
         });
@@ -583,7 +587,7 @@ describe('SupabaseDataProvider', () => {
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
         expect(result.contestantApp).toEqual(dynamicSettings.contestantApp);
-        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
+        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false });
         expect(records).toHaveLength(1);
         expect(records[0].severityText).toBe('ERROR');
         expect(records[0].attributes).toEqual({
@@ -604,7 +608,7 @@ describe('SupabaseDataProvider', () => {
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
         expect(result.contestantApp).toEqual(dynamicSettings.contestantApp);
-        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
+        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false });
         expect(records).toHaveLength(1);
       });
 
@@ -646,12 +650,15 @@ describe('SupabaseDataProvider', () => {
       await expect(provider.getAppSettings()).rejects.toThrow('non-boolean');
     });
 
-    it('asks neither RPC when the caller can read the settings row', async () => {
-      mockSupabase._mockResponses['app_settings'] = { data: { settings: { access: { voterApp: true } } }, error: null };
+    it('asks neither RPC when the caller can read the settings row, and opens the voter app whatever a stored `access.voterApp` says', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: { settings: { access: { voterApp: false, contestantApp: false } } },
+        error: null
+      };
 
       const result = await provider.getAppSettings();
 
-      expect(result).toEqual({ access: { voterApp: true } });
+      expect(result).toEqual({ access: { contestantApp: false }, voterAppAccessible: true });
       expect(mockSupabase.rpc).not.toHaveBeenCalled();
     });
 
@@ -663,7 +670,7 @@ describe('SupabaseDataProvider', () => {
 
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-      expect(result).toEqual({ access: { contestantEditing: 'nominationsLocked' } });
+      expect(result).toEqual({ access: { contestantEditing: 'nominationsLocked' }, voterAppAccessible: true });
       expect(records).toHaveLength(0);
     });
 
@@ -675,7 +682,10 @@ describe('SupabaseDataProvider', () => {
 
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-      expect(result).toEqual({ entities: { hideIfMissingAnswers: { candidate: false, organization: true } } });
+      expect(result).toEqual({
+        entities: { hideIfMissingAnswers: { candidate: false, organization: true } },
+        voterAppAccessible: true
+      });
       expect(records).toHaveLength(0);
     });
 
@@ -696,7 +706,7 @@ describe('SupabaseDataProvider', () => {
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
       // No `contestantApp` root is returned, so the merge leaves the shipped one in place, the stored `questions` beside the bad mode included.
-      expect(result).toEqual({ access: { contestantApp: false } });
+      expect(result).toEqual({ access: { contestantApp: false }, voterAppAccessible: true });
       expect(records).toHaveLength(1);
       expect(records[0].severityText).toBe('ERROR');
       expect(records[0].attributes?.issues).toEqual(['contestantApp.servedEntityTypes.candidate.registrationModes.0']);
@@ -717,7 +727,7 @@ describe('SupabaseDataProvider', () => {
 
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-      expect(result).toEqual({ matching: { minimumAnswers: 1 } });
+      expect(result).toEqual({ matching: { minimumAnswers: 1 }, voterAppAccessible: true });
       expect(result).not.toHaveProperty('analytics');
       expect(records).toHaveLength(1);
       expect(records[0].severityText).toBe('ERROR');
@@ -740,7 +750,7 @@ describe('SupabaseDataProvider', () => {
 
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-      expect(result).toEqual({});
+      expect(result).toEqual({ voterAppAccessible: true });
       expect(records).toHaveLength(0);
     });
 
@@ -761,7 +771,7 @@ describe('SupabaseDataProvider', () => {
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
       // This assertion read `toEqual({})` and the case was named for it: one unrecognised nested key discarded every dynamic setting in the column, the availability gates among them (T-157.1-14). The offending top-level ancestor is now dropped by name and the remainder re-parses, so the access member survives its malformed sibling.
-      expect(result).toEqual({ access: { contestantApp: true } });
+      expect(result).toEqual({ access: { contestantApp: true }, voterAppAccessible: true });
       expect(records).toHaveLength(1);
       expect(records[0].severityText).toBe('ERROR');
       expect(records[0].attributes?.issues).toEqual(['notifications.contestantApp']);
@@ -785,7 +795,7 @@ describe('SupabaseDataProvider', () => {
 
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-      expect(result).toEqual({ access: { contestantApp: true } });
+      expect(result).toEqual({ access: { contestantApp: true }, voterAppAccessible: true });
       expect(records).toHaveLength(1);
       expect(records[0].severityText).toBe('ERROR');
       // The path is empty precisely because the key is top-level; `rejectedKeys` is the only field that names it.

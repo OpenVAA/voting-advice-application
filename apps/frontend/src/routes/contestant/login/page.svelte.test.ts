@@ -41,7 +41,7 @@ const DEFAULT_SETTINGS = {
   candidate: ['email', 'code'] as Modes,
   organization: [] as Modes,
   answersLocked: false,
-  voterApp: false
+  voterAppAccessible: false
 };
 
 const { context, box } = fakeContestantContext(DEFAULT_SETTINGS, (held) => ({
@@ -56,7 +56,8 @@ const { context, box } = fakeContestantContext(DEFAULT_SETTINGS, (held) => ({
           settings.entityTypes.map((entityType) => [entityType, { registrationModes: settings[entityType] }])
         )
       },
-      access: { contestantEditing: settings.answersLocked ? 'locked' : 'open', voterApp: settings.voterApp }
+      access: { contestantEditing: settings.answersLocked ? 'locked' : 'open' },
+      voterAppAccessible: settings.voterAppAccessible
     };
   }
 }));
@@ -607,7 +608,7 @@ describe('the links under the entries', () => {
   it('leads to the voter app only where it is accessible', () => {
     const target = render();
     expect(target.querySelector(VOTER_APP)).toBeNull();
-    box.set({ voterApp: true });
+    box.set({ voterAppAccessible: true });
     flushSync();
     one(target, VOTER_APP).click();
     expect(goto).toHaveBeenCalledWith(buildRoute({ route: 'Home' }, { params: {} }), { invalidateAll: true });

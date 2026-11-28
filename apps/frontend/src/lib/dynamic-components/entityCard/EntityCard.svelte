@@ -157,7 +157,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
-      appSettings.results?.cardContents?.alliance?.includes('children')
+      appSettings.results?.cardContents?.alliance.includes('children')
     ) {
       subcards = findChildMatches({
         matches: voterContext?.matches,
