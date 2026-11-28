@@ -6,8 +6,6 @@ files:
   - packages/dev-seed/src/emitters/answers.ts
   - packages/dev-seed/src/emitters/latent/project.ts
   - packages/dev-seed/src/templates/defaults/questions-override.ts
-tags: [dev-seed, bug]
-keywords: [seed-emitter, multi-choice, min-selections, max-selections, data-fidelity]
 ---
 
 ## Problem

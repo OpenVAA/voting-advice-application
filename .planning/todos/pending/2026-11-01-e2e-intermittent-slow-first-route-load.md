@@ -8,8 +8,6 @@ files:
   - tests/tests/setup/shared/registerAndStoreSession.ts
   - tests/tests/fixtures/contestant/contestantEmailSentPage.fixture.ts
   - tests/scripts/e2e-run.sh
-tags: [contestant, frontend, tests, bug]
-keywords: [e2e, flaky, slow-route-load, dev-server, host-load, timeout, contestant-journey, waitforurl, intermittent]
 ---
 
 ## Problem
@@ -155,9 +153,3 @@ is known.
 
 The cause is measured, a fix is committed, and full runs under held load are green. Until then, every green run on this
 branch still carries this risk.
-
-## Merged from `candidate-journey-135-intermittent.md` (2026-11-28)
-
-Record the 2026-08-28 step 13.5 failure, its trace path, and the unconfirmed appContext/inheritContextMembers suspect in the surviving todo's record.
-
-The merged todo is kept at `.planning/todos/completed/candidate-journey-135-intermittent.md`.

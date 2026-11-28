@@ -11,8 +11,6 @@ files:
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/questions/+layout.svelte
   - apps/frontend/src/lib/components/input/Input.svelte
   - tests/tests/specs/perm/perm-organization-editing.spec.ts
-tags: [contestant, frontend, tests, ui, improvement]
-keywords: [manual-verification, phone-width, locales, color-picker, focus-ring]
 ---
 
 ## Finding

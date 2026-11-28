@@ -4,8 +4,6 @@ title: dataWriter erases the get_candidate_user_data row, so the RPC nullability
 area: api
 files:
   - apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts
-tags: [frontend, supabase, improvement]
-keywords: [data-writer, type-erasure, rpc-nullability, supabase-types]
 ---
 
 ## Problem

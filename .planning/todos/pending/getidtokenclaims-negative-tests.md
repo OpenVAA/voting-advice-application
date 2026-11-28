@@ -12,8 +12,6 @@ files:
   - apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts
   - apps/frontend/src/lib/api/utils/auth/providers/signicat.ts
   - apps/frontend/src/lib/api/utils/auth/providers/signicat.test.ts
-tags: [contestant, frontend, tests, improvement]
-keywords: [id-token, jwt, signature, negative-tests, oidc]
 ---
 
 ## ⚠ Repointed 2026-08-22 — this todo used to name a module that no longer exists

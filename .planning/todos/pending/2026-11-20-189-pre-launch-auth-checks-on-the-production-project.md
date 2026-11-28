@@ -9,8 +9,6 @@ files:
   - apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md
   - apps/supabase/supabase/functions/account-access/index.ts
   - apps/supabase/supabase/functions/identity-callback/index.ts
-tags: [contestant, supabase, infra, improvement]
-keywords: [pre-launch, identity-callback, rate-limit, hosted-supabase, auth, sign-in, password-sign-in]
 ---
 
 ## Problem
@@ -76,9 +74,3 @@ If the budget is shared, the remedies are a trusted forwarded-address header fro
 higher `Rate limit for sign-ups and sign-ins`. The fuller procedure, including the auth-log read, is
 in `.planning/todos/pending/2026-10-26-179.1-deployment-measure-the-shared-sign-in-budget-on-a-hosted-project.md`.
 Close both todos together, and update the residual on the authentication page.
-
-## Merged from `2026-10-26-179.1-deployment-measure-the-shared-sign-in-budget-on-a-hosted-project.md` (2026-11-28)
-
-Carry over the auth-log (Logs Explorer) read of which address each sign-in is recorded under, the open question of which forwarded-address header a hosted auth service trusts and that only the deployment's servers may set it, and the instruction to update the docs' Known residuals on closing.
-
-The merged todo is kept at `.planning/todos/completed/2026-10-26-179.1-deployment-measure-the-shared-sign-in-budget-on-a-hosted-project.md`.

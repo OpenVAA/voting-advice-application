@@ -12,8 +12,6 @@ files:
   - tests/tests/specs/perm/perm-show-feedback-survey.spec.ts
   - tests/tests/fixtures/contestant/contestantProfilePage.fixture.ts
   - tests/tests/fixtures/contestant/contestantPreviewPage.fixture.ts
-tags: [tests, improvement]
-keywords: [e2e-fixtures, hydration, results-page, entity-card, workaround]
 ---
 
 ## 1. `resultsPage.openEntityDetailsForCard` cannot open a card without subcards

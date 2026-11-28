@@ -6,8 +6,22 @@ source_phase: 153-build-tooling-config-correctness
 source_plan: 07
 priority: medium
 suggested_phase: future-build-tooling
-tags: [tooling, bug]
-keywords: [turbo, build-cache, cache-replay, tsbuildinfo, emitDeclarationOnly, tsup-clean, declaration-emit, dev-seed, matching, checkJs, allowJs, false-red, gate-protocol, torn-dist]
+keywords:
+  [
+    turbo,
+    build-cache,
+    cache-replay,
+    tsbuildinfo,
+    emitDeclarationOnly,
+    tsup-clean,
+    declaration-emit,
+    dev-seed,
+    matching,
+    checkJs,
+    allowJs,
+    false-red,
+    gate-protocol
+  ]
 ---
 
 # Turbo's build cache can replay a torn `dist/`, producing a false RED downstream

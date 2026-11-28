@@ -5,9 +5,8 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: medium
 suggested_phase: post-v2.15-ship
-re_check_trigger: "v2.15 merged to main"
-tags: [ci, tooling, improvement]
 keywords: [dependabot, renovate, monorepo, grouped-updates, security-updates, D-31]
+re_check_trigger: "v2.15 merged to main"
 ---
 
 # Dependabot watches one directory of the old layout

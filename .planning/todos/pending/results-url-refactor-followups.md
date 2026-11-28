@@ -4,9 +4,6 @@ priority: medium
 created: 2026-04-24
 updated: 2026-09-24
 context: Carried forward from Phase 62 (Results Page Consolidation) discuss-phase on 2026-04-24. Phase 62 ships the path-based /results/[electionId]/[[entityTypePlural]]/[[entityTypeSingular]]/[[id]] shape for the results subtree only. Three related items are explicitly deferred to keep Phase 62 focused.
-tags: [voter, frontend, contexts, feat]
-keywords: [results-url, nomination-id, short-ids, deeplinks, sharing, election-selection, constituency, deep-link, persistence, url-params]
-github_issues: [782]
 ---
 
 # Results URL refactor follow-ups
@@ -222,9 +219,3 @@ Success for the full follow-up (whether shipped as one milestone or split):
 - Multi-election/constituency selection is either explicitly supported in the UX or explicitly restricted with a clear product rationale.
 - Election + constituency selection lives in localStorage and syncs across tabs; a nomination (or election) deeplink implies it and shows an inline, non-modal Note with a change link (item 6).
 - Each shareable voter route has a documented sharing policy (private / link-with-answers / server-token) — see item 5.
-
-## From GitHub issue #782 (2026-11-28)
-
-[#782 feat: save constituency and check when arriving with direct link](https://github.com/openvaa/voting-advice-application/issues/782)
-
-From GitHub #782: remember the voter's last selected constituency (and election) and use it when the voter arrives via a direct link that lacks them, or prefill/validate when the link carries a constituency id. Decide together with the URL-carrying of election/constituency for upstream voter routes (item 3).

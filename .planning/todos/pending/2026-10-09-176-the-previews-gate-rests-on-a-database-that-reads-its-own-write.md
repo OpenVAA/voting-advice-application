@@ -8,8 +8,6 @@ owner: the deployment milestone (`2026-10-08-next-milestone-full-deployment-aws-
 files:
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/preview/+page.server.ts
   - apps/frontend/src/lib/server/contestant/previewGate.ts
-tags: [contestant, supabase, infra, tests, improvement]
-keywords: [read-your-writes, preview-gate, hosted-supabase, consistency, staging]
 ---
 
 ## What is so

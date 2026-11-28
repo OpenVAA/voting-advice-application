@@ -9,8 +9,6 @@ files:
   - apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte (line 50, above `valid = $bindable(true)`)
   - apps/frontend/src/lib/components/video/Video.svelte (line 132, above `mode = $bindable(undefined)`)
   - apps/frontend/src/lib/dynamic-components/entityList/EntityList.svelte (line 45, above `itemsShown = $bindable(0)`)
-tags: [frontend, tooling, improvement]
-keywords: [eslint, no-useless-assignment, bindable, eslint-plugin-svelte, lint-disable]
 ---
 
 ## Problem

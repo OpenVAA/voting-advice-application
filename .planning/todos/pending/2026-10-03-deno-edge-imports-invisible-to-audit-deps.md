@@ -5,9 +5,8 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: high
 suggested_phase: next security/CI-hardening phase (before the nodemailer pin is next allowed to go stale)
+keywords: [audit, deno, edge-functions, npm-imports, nodemailer, supabase-js, jose, blind-spot, D-09, cigate-03]
 re_check_trigger: "now (structural gap); concretely visible until the send-email nodemailer pin moves (todo 2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md)"
-tags: [supabase, ci, tooling, improvement]
-keywords: [audit, deno, edge-functions, npm-imports, nodemailer, supabase-js, jose, blind-spot, D-09, cigate-03, security, dependency-gate]
 ---
 
 # The audit gate reads `yarn.lock`; the Edge Functions resolve their imports at boot under Deno

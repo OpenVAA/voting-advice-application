@@ -6,8 +6,7 @@ source_phase: 153-build-tooling-config-correctness
 source_plan: 06
 priority: low
 suggested_phase: future-build-tooling
-tags: [frontend, supabase, docs, tooling, improvement]
-keywords: [tsbuildinfo, tsBuildInfoFile, composite, typescript, incremental-build, canonical-paradigm, gitignore, REVIEW-CFG-06, D-B2, prevention, tsconfig, build-artifacts]
+keywords: [tsbuildinfo, tsBuildInfoFile, composite, typescript, incremental-build, canonical-paradigm, gitignore, REVIEW-CFG-06, D-B2, prevention]
 ---
 
 # Ignoring the artefact is the fix; pointing it into `dist/` is the prevention

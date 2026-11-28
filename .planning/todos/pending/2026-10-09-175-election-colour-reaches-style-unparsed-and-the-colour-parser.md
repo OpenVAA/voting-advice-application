@@ -3,8 +3,8 @@ created: 2026-10-09T00:00:00.000Z
 title: The colour parser accepts what it should refuse; three more colour columns are handed on unparsed (item 1, an election's colour reaching a style attribute unparsed, is fixed)
 area: Frontend / security (stored CSS); colour utilities
 severity: minor
-source: 'Phase 175 plan 08 (175-08-SUMMARY.md § Threat Flags; deferred-items.md items 1 to 3); filed by 175-13. Operator decision B3 was answered (b) on 2026-10-09 (v2.16-OPERATOR-DECISIONS-2026-10-09.md): item 1 is fixed by the quick task .planning/quick/261009-b2-b3-b6-operator-replies, commit 33c8de3ad; items 2 and 3 are open'
-owner: 'a security or frontend plan of a later phase, for items 2 and 3. Item 1 is done: Phase 176 had closed when B3 was answered, so it was fixed in a quick task instead of the phase''s closing plan'
+source: Phase 175 plan 08 (175-08-SUMMARY.md § Threat Flags; deferred-items.md items 1 to 3); filed by 175-13. Operator decision B3 was answered (b) on 2026-10-09 (v2.16-OPERATOR-DECISIONS-2026-10-09.md): item 1 is fixed by the quick task .planning/quick/261009-b2-b3-b6-operator-replies, commit 33c8de3ad; items 2 and 3 are open
+owner: a security or frontend plan of a later phase, for items 2 and 3. Item 1 is done: Phase 176 had closed when B3 was answered, so it was fixed in a quick task instead of the phase's closing plan
 files:
   - apps/frontend/src/lib/components/electionTag/ElectionTag.svelte
   - apps/frontend/src/lib/api/base/universalDataProvider.ts
@@ -12,8 +12,6 @@ files:
   - apps/frontend/src/lib/utils/color/ensureColors.ts
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/preview/+page.svelte
   - apps/supabase/supabase/schema/011-validation-functions.sql
-tags: [frontend, bug]
-keywords: [color-parser, ensurecolors, stored-css, validation, security]
 ---
 
 ## Background

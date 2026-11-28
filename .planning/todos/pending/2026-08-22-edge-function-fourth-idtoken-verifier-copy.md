@@ -9,8 +9,6 @@ files:
   - apps/frontend/src/lib/api/utils/auth/decryptAndVerifyIdToken.ts
   - apps/frontend/src/lib/api/utils/auth/providers/idura.ts
   - apps/frontend/src/lib/api/utils/auth/providers/signicat.ts
-tags: [frontend, supabase, improvement]
-keywords: [edge-function, id-token, oidc, duplication, drift-guard]
 ---
 
 ## Problem

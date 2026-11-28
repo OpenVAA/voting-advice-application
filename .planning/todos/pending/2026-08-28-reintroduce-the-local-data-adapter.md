@@ -10,8 +10,6 @@ files:
   - apps/frontend/src/lib/api/README.md
 source: PR #869 review comment (kaljarv) on apps/frontend/src/lib/api/dataProvider.ts; filed during Phase 157 per D-N2.
 related_phase: 157
-tags: [frontend, feat]
-keywords: [local-adapter, static-data, data-provider, adapter]
 ---
 
 ## Problem

@@ -7,9 +7,6 @@ source: operator, 2026-10-10 (while answering 177-UI-SPEC.md; the spec's `gap-12
 files:
   - apps/frontend/src/app.css
   - apps/frontend/src/tailwind-theme.css
-tags: [frontend, ui, improvement]
-keywords: [tailwind, spacing-scale, t-shirt-sizes, css-structure, refactor, spacing, content-padding, safe-area, edgetoedge]
-github_issues: [348]
 ---
 
 ## Problem
@@ -49,9 +46,3 @@ Related: `2026-08-26-146-dead-font-weight-utility-classes.md` (the same `@theme`
 ## Update 2026-10-11 — the nominations view's three numeric classes are converted; Phase 177's markup wrote none (Phase 177 close)
 
 The nominations view (`…/nominations/+page.svelte`) held three numeric spacing classes at the phase's base commit, `mt-12`, `gap-12` and `mt-12`; it now holds none. The markup Phase 177 added (the editor's three steps, `EntitySelector`) writes T-shirt names only, read by a search of every `class` attribute of those files for a numeric step. The one numeric class in those files is `pl-0`, a reset to zero on a `list-none` list, for which the T-shirt scale has no name: on the view's list, where it is older than the phase, and on the details step's list of cards. The rest of the application's roughly 120 numeric classes are untouched.
-
-## From GitHub issue #348 (2026-11-28)
-
-[#348 refactor: create dedicated Tailwind spacing terms for content padding](https://github.com/openvaa/voting-advice-application/issues/348)
-
-GitHub #348: the page templates pad content with the safe-area spacing terms `safelgl`/`safelgr`/`safelgb` (e.g. `pl-safelgl pr-safelgr pb-safelgb`), and `.edgetoedge-x` in app.css cancels them (`-ml-safelgl -mr-safelgr pl-safelgl pr-safelgr w-screen match-w-xl:...`). Rename or alias these so the names say 'default content padding' (e.g. `content-x`/`content-b`) while keeping the safe-area inset maths, and update edgetoedge-x to use them.

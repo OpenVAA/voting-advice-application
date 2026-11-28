@@ -10,8 +10,6 @@ files:
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/nominations/+page.svelte
   - apps/frontend/src/lib/dynamic-components/navigation/contestant/ContestantNav.svelte
   - tests/tests/specs/perm/perm-no-nomination.spec.ts
-tags: [contestant, frontend, tests, ui, improvement]
-keywords: [manual-verification, locales, focus, voiceover, phone-width]
 ---
 
 ## Finding

@@ -5,9 +5,8 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: medium
 suggested_phase: the phase that wires the invite / email flows into the product (see 168-03 F2/F3)
+keywords: [edge-functions, send-email, invite-candidate, e2e, coverage, nodemailer, 168-03-F2]
 re_check_trigger: "before the nodemailer 10 pin lands (it is the next change to send-email), and whenever either function gains a caller"
-tags: [admin, supabase, tests, improvement]
-keywords: [edge-functions, send-email, invite-candidate, e2e, coverage, nodemailer, 168-03-F2, mail]
 ---
 
 # No E2E coverage of the two email Edge Functions (169-07, confirms 168-03 F2)

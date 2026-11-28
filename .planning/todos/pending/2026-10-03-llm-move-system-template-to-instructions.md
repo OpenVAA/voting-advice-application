@@ -5,10 +5,9 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source: 169-REVIEW.md WR-01 (also WR-02 residue and IN-04); disposition 169-REVIEW-DISPOSITION.md
 priority: medium
 suggested_phase: the next phase that touches the LLM prompts or the admin LLM jobs (argument condensation, question info)
+keywords: [ai-sdk-7, llm, allowSystemInMessages, instructions, prompt-injection, argument-condensation, question-info, generateObject-deprecated]
 re_check_trigger: "a prompt restructure in packages/llm, argument-condensation or question-info; an AI SDK release that removes generateObject or the allowSystemInMessages opt-in"
 supersedes: 2026-10-03-ai-sdk-7-allow-system-in-messages-opt-in.md
-tags: [llm, argument-condensation, question-info, improvement]
-keywords: [ai-sdk-7, llm, allowSystemInMessages, instructions, prompt-injection, argument-condensation, question-info, generateObject-deprecated, allowsysteminmessages, ai-sdk, generateobject, system-message, allow-system-in-messages, prompts]
 ---
 
 # Untrusted candidate text currently runs with system-role authority
@@ -54,9 +53,3 @@ a dependency phase.
 
 - `.planning/phases/169-dependency-bump-to-latest-safe-versions/169-REVIEW.md` WR-01, WR-02, IN-04.
 - `.planning/phases/169-dependency-bump-to-latest-safe-versions/169-REVIEW-DISPOSITION.md`.
-
-## Merged from `2026-10-03-ai-sdk-7-allow-system-in-messages-opt-in.md` (2026-11-28)
-
-Nothing beyond this todo; closed as a duplicate.
-
-The merged todo is kept at `.planning/todos/completed/2026-10-03-ai-sdk-7-allow-system-in-messages-opt-in.md`.

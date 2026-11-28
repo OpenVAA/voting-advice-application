@@ -10,8 +10,6 @@ files:
   - infra/envs/staging/supabase/README.md
   - infra/envs/scratch/supabase/terraform.tfvars
   - infra/scripts/bootstrap.sql
-tags: [supabase, infra, improvement]
-keywords: [restore, backup, drill, disaster-recovery, supabase]
 ---
 
 ## Problem

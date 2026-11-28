@@ -9,8 +9,6 @@ files:
   - apps/supabase/supabase/functions/invite-candidate/index.ts
   - apps/supabase/supabase/functions/identity-callback/index.ts
   - packages/supabase-types/src/database.overrides.ts
-tags: [supabase, improvement]
-keywords: [edge-functions, deno, supabase-types, type-safety]
 ---
 
 ## Problem

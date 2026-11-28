@@ -11,8 +11,6 @@ files:
   - apps/frontend/messages/sv/feedback.json
   - apps/frontend/messages/sv/privacy.json
   - apps/frontend/messages/sv/results.json
-tags: [voter, frontend, translations, improvement]
-keywords: [native-speaker-review, danish, swedish, i18n, machine-translation]
 ---
 
 ## Problem

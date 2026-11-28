@@ -17,8 +17,6 @@ files:
   - apps/frontend/src/lib/api/adapters/supabase/utils/userEntities.ts
   - apps/frontend/src/lib/api/adapters/supabase/utils/invitationAccess.ts
   - apps/frontend/src/lib/contestant/utils/entityDescriptor.test.ts
-tags: [contestant, frontend, contexts, improvement]
-keywords: [duplication, task-state, refactor, closed-reason, contestant-context]
 ---
 
 ## Finding

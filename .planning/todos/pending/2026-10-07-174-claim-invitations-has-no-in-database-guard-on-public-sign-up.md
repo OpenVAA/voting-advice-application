@@ -10,8 +10,6 @@ files:
   - apps/supabase/supabase/config.toml
   - scripts/assert-auth-signup-closed.mjs
   - apps/docs/src/routes/(content)/developers-guide/deployment/+page.md
-tags: [supabase, infra, bug]
-keywords: [claim-invitations, signup, hosted-settings, account-takeover, auth]
 ---
 
 ## Problem

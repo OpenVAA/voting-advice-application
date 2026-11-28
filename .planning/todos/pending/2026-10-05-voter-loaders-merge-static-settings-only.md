@@ -11,8 +11,6 @@ files:
   - apps/frontend/src/routes/(voters)/nominations/+layout.ts
   - apps/frontend/src/lib/utils/settings.ts
   - packages/dev-seed/src/templates/default.ts
-tags: [voter, frontend, app-shared, bug]
-keywords: [app-settings, merge, route-loaders, dynamic-settings, defaults]
 ---
 
 ## Problem

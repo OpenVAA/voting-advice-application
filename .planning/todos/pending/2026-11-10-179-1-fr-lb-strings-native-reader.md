@@ -29,8 +29,6 @@ files:
   - apps/frontend/messages/lb/common.json
   - apps/frontend/messages/lb/components.json
   - apps/frontend/messages/lb/questions.json
-tags: [admin, frontend, translations, improvement]
-keywords: [native-speaker-review, french, luxembourgish, admin-app, i18n]
 ---
 
 ## Problem

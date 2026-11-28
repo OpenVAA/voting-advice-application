@@ -8,8 +8,6 @@ files:
   - .planning/phases/151-ship-v0-2-akita-review-stack/151-STACK-MANIFEST.md
   - .agents/code-review-checklist.md
   - apps/supabase/migrations/
-tags: [supabase, docs, improvement]
-keywords: [review-findings, ship-stack, akita, disposition, pull-requests]
 ---
 
 ## Problem

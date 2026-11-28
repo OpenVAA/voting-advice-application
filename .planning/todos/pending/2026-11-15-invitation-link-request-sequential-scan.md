@@ -8,8 +8,6 @@ owner: a later database phase
 files:
   - apps/supabase/supabase/schema/506-invitation-rpcs.sql
   - apps/supabase/supabase/migrations/00023_invitation_caller_limit.sql
-tags: [contestant, supabase, improvement]
-keywords: [invitation-link-request, auth-users, sequential-scan, index, performance]
 ---
 
 ## Problem

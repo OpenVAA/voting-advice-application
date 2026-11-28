@@ -7,8 +7,6 @@ files:
   - tests/tests/setup/shared/setupFromTemplate.ts
   - tests/tests/setup/shared/base.setup.ts
 filed_by: Phase 161 (161-05), as the second half of a deliberate two-step — re-aim now, promote later
-tags: [tests, improvement]
-keywords: [e2e, fresh-db-probe, setup, residue, polarity]
 ---
 
 ## What exists today

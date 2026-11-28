@@ -11,8 +11,6 @@ files:
   - packages/dev-seed/src/templates/default.ts
 related:
   - 2026-05-16-extend-e2e-tests-to-cover-election-and-constituency-scoped-q.md
-tags: [supabase, dev-seed, improvement]
-keywords: [sentinel, fan-out, templates, scoping, link-sentinels]
 ---
 
 ## ⚠ Note added 2026-08-23 by Phase 144 (144-03 / 144-07) — this todo stays OPEN

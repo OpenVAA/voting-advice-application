@@ -7,8 +7,6 @@ files:
   - apps/frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.svelte
   - apps/frontend/src/lib/components/modal/timed/TimedModal.svelte
 source: Phase 143 (D-07)
-tags: [frontend, tooling, improvement]
-keywords: [svelte-motion, tweened, tween, eslint, runes]
 ---
 
 ## Problem

@@ -6,8 +6,6 @@ severity: minor
 source: Phase 147 (147-SCOUT-INVENTORY.md § 6 "Reachable-but-not-scanned states"; filed by 147-05)
 files:
   - tests/tests/specs/a11y/candidate-a11y.spec.ts
-tags: [contestant, tests, ui, improvement]
-keywords: [a11y, axe, prevent-navigation, modal, unsaved-changes]
 ---
 
 ## The gap

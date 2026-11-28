@@ -7,8 +7,6 @@ source: Phase 167 (origin/main vestige cleanup), 167-CONTEXT D-23 NOTE and D-28 
 files:
   - .planning/quick/260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se/gate-evidence/kxi-g-status.txt
   - .planning/quick/260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se/gate-evidence/pgtap-summary.txt
-tags: [tooling, improvement]
-keywords: [planning, gate-evidence, tracked-files, cleanup]
 ---
 
 ## Problem
@@ -29,7 +27,3 @@ Nothing. On the operator's binding NOTE under 167-E3 ("leave them alone unless y
 Whether to keep both files as committed evidence, or remove them in a reviewed commit. Either way,
 read them first for env values, as D-23 did for the untracked directory, and record the result as
 categories only.
-
-## Maintainer ruling (2026-11-28)
-
-Remove both files in a reviewed commit, after reading them for env values.

@@ -7,8 +7,6 @@ source: Phase 178 (plan 178-23; item N-8 of 178-UI-SPEC.md, raised and not fixed
 files:
   - apps/frontend/src/app.css
   - packages/app-shared/src/settings/staticSettings.ts
-tags: [contestant, frontend, ui, improvement]
-keywords: [a11y, contrast, wcag, form-controls, theme]
 ---
 
 ## Problem

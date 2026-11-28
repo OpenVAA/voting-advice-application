@@ -10,8 +10,6 @@ files:
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/+layout.server.ts
   - apps/frontend/src/lib/contexts/contestant/contestantContext.svelte.ts
   - apps/frontend/src/lib/contexts/contestant/contestantUserDataState.svelte.ts
-tags: [contestant, frontend, contexts, improvement]
-keywords: [stale-data, invalidate, nominations, entity-load, admin-change]
 ---
 
 ## What is so today

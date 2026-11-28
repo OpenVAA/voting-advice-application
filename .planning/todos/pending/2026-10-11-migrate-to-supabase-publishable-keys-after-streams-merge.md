@@ -4,8 +4,6 @@ title: Migrate to Supabase publishable keys, right after v2.16 and v2.17 are mer
 area: supabase / keys
 severity: major
 source: operator, 2026-10-11 (note under C5 of v2.17-DISCUSSION-POINTS.md, workstream deployment)
-tags: [frontend, supabase, infra, improvement]
-keywords: [supabase-keys, publishable-key, secret-key, legacy-keys, migration]
 ---
 
 ## Problem

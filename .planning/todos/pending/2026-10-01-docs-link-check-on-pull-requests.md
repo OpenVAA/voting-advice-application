@@ -6,11 +6,9 @@ severity: follow-up
 source: Phase 168 (docs-site rewrite), orchestrator ruling 4 (Q1), filed by plan 168-08 as residue (D-04)
 related_phase: 168
 files:
-  - '.github/workflows/docs.yml (`on: push: branches: [main], paths: ["apps/docs/**"]` and `workflow_dispatch`)'
-  - '.github/workflows/main.yaml (the `frontend-and-shared-module-validation` job runs `yarn lint:check`)'
-  - 'apps/docs/scripts/validate-links.ts (`--check`, `--only`, `--scope`; seven finding classes)'
-tags: [docs, ci, improvement]
-keywords: [docs, link-check, validate-links, pull-request]
+  - .github/workflows/docs.yml (`on: push: branches: [main], paths: ["apps/docs/**"]` and `workflow_dispatch`)
+  - .github/workflows/main.yaml (the `frontend-and-shared-module-validation` job runs `yarn lint:check`)
+  - apps/docs/scripts/validate-links.ts (`--check`, `--only`, `--scope`; seven finding classes)
 ---
 
 ## Problem

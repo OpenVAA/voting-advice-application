@@ -6,13 +6,12 @@ severity: low
 source: Phase 181.1 (agent-ready local stack), decisions D-05, D-06 and D-08
 related_phase: 181.1
 re_check_trigger: "after the 181-17 freeze, and not before 2026-10-21 (npmMinimalAgeGate 7d on CLI 2.121.0)"
+keywords: [supabase-cli, native-runtime, worktree, ports, e2e]
 files:
   - apps/supabase/supabase/config.toml
   - tests/scripts/e2e-run.sh
   - .github/workflows/main.yaml
   - .yarnrc.yml
-tags: [supabase, tests, tooling, improvement]
-keywords: [supabase-cli, native-runtime, worktree, ports, e2e, spike]
 ---
 
 ## Why

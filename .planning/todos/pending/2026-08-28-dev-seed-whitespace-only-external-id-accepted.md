@@ -4,8 +4,6 @@ source: Phase 154 (plan 154-02, whitespace boundary)
 resolves_phase: null
 severity: low
 area: packages/dev-seed template validation
-tags: [dev-seed, bug]
-keywords: [external-id, validation, whitespace, template-schema]
 ---
 
 # A whitespace-only `external_id` passes the dev-seed `fixed[]` row guard

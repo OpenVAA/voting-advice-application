@@ -9,8 +9,6 @@ files:
   - apps/frontend/src/lib/components/input/shared.ts
   - apps/frontend/src/lib/components/input/Input.svelte
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/settings/+page.svelte
-tags: [contestant, frontend, ui, improvement]
-keywords: [input-row, label-width, flex-shrink, phone-width, layout]
 ---
 
 ## 1. The row shrinks the label and the control in proportion

@@ -6,8 +6,6 @@ files:
   - packages/app-shared/src/data/customData.type.ts:66
   - packages/app-shared/src/data/extendedData.type.ts:40-50,64
   - apps/frontend/src/lib/components/questions/QuestionChoices.svelte:112
-tags: [frontend, app-shared, ui, improvement]
-keywords: [customdata, vertical, question-settings, display, cleanup]
 ---
 
 ## Problem

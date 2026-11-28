@@ -6,8 +6,21 @@ source_phase: 153-build-tooling-config-correctness
 source_plan: 07
 priority: low
 suggested_phase: future-build-tooling
-tags: [argument-condensation, docs, tooling, improvement]
-keywords: [import-path-policy, relative-specifier, extension, moduleResolution, bundler, deno, edge-functions, argument-condensation, allowImportingTsExtensions, REVIEW-CFG-07, criterion-wording, scan-scope, ts-extension, packages-readme]
+keywords:
+  [
+    import-path-policy,
+    relative-specifier,
+    extension,
+    moduleResolution,
+    bundler,
+    deno,
+    edge-functions,
+    argument-condensation,
+    allowImportingTsExtensions,
+    REVIEW-CFG-07,
+    criterion-wording,
+    scan-scope
+  ]
 ---
 
 # The extension-bearing specifier class is wider than `.js`

@@ -8,8 +8,6 @@ files:
   - apps/supabase/supabase/schema/107-feedback.sql
   - apps/supabase/supabase/migrations/00001_initial_schema.sql
 related_phase: 162
-tags: [voter, supabase, improvement]
-keywords: [feedback, rate-limit, ip-address, pii, salted-hash, privacy]
 ---
 
 ## Problem

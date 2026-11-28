@@ -10,9 +10,6 @@ files:
   - packages/matching (accepts `questionWeights`)
   - apps/docs/src/routes/(content)/about/features/+page.md
   - apps/docs/src/routes/(content)/publishers-guide/preparing/the-voter-see-when-using/+page.md
-tags: [voter, frontend, matching, docs, feat]
-keywords: [question-weights, live-results, matching, features, docs, submatches, subspace, category-matches]
-github_issues: [827]
 ---
 
 ## Finding
@@ -34,13 +31,3 @@ Is either feature still planned?
 - **If yes:** this todo becomes the feature request. For weights, the matching side is ready and the missing parts are a UI to set
   per-statement weights and passing them to `MatchingAlgorithm`.
 - **If no:** remove the two descriptions from the docs pages and close this todo.
-
-## Maintainer ruling (2026-11-28)
-
-Both features are implemented on the `deploy-luxemburg-vaa-2025` branch. Keep this todo and do it by importing them from there, as part of `2026-05-10-incorporate-luxembourg-and-danish-vaa-changes.md` (forward-port of features from the Luxembourg, DUF and other `deploy-*` branches).
-
-## From GitHub issue #827 (2026-11-28)
-
-[#827 feat: use questionWeights in subcategory matches](https://github.com/openvaa/voting-advice-application/issues/827)
-
-From GitHub #827: `@openvaa/matching` ignores `questionWeights` for `questionGroups` submatches: in `matchingAlgorithm.ts` the subspaces come from `createSubspace({ questions, subset })` without the weights, and `matchingAlgorithm.type.ts` documents that weights are disregarded for subgroups. If voter weights are implemented, pass the weights into the subspaces too so category matches agree with the overall match.

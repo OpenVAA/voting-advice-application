@@ -5,8 +5,6 @@ surfaced-in: phase 77 / SETTINGS-01 wave B (RESEARCH LANDMINE-4)
 target-milestone: v2.10+ (filter UX)
 status: pending
 created: 2026-05-13
-tags: [voter, frontend, filters, ui, feat]
-keywords: [filter-group, or-mode, logic-operator, entity-filters, product-gap]
 ---
 
 # FilterGroup OR-mode UI PRODUCT-GAP

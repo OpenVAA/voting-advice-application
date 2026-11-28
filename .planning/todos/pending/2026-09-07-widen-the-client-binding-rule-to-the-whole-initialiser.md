@@ -1,8 +1,3 @@
----
-tags: [tooling, bug]
-keywords: [project-scoped-queries, guard, client-binding, alias]
----
-
 # The binding rule reads only an initialiser that begins with the receiver — in both directions
 
 **Filed:** 2026-09-07

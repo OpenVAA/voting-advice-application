@@ -10,8 +10,6 @@ files:
   - apps/supabase/supabase/schema/011-validation-functions.sql
   - apps/supabase/supabase/tests/database/37-terms-of-use-acceptances.test.sql
   - apps/frontend/src/routes/admin/(protected)
-tags: [admin, frontend, supabase, feat]
-keywords: [terms-of-use, entity-confirmation, admin-app, tou-f01, grants]
 ---
 
 ## The rule

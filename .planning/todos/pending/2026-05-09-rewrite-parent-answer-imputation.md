@@ -1,9 +1,3 @@
----
-tags: [voter, frontend, data, matching, app-shared, contexts, improvement]
-keywords: [imputation, parent-matching, alliance, cascade, strategy-pattern, organizations, nominations, refactor]
-github_issues: [716]
----
-
 # Rewrite parent answer imputation logic — broader refactor
 
 **Captured:** 2026-05-09 (Phase 69 close)
@@ -58,9 +52,3 @@ This works for the alliance use case but the underlying imputation paradigm has 
 - `.planning/phases/69-alliance-card-lane-a/69-RESEARCH.md` "Risk Register" Risks #1 + #7
 - `apps/frontend/src/lib/utils/matching/imputeParentAnswers.ts` (post-Phase-69) JSDoc anchor "# Future refactor"
 - Phase 69 partial-step commits: `194e0a5aa` (impute generalisation) + `1f645683b` (matchStore cascade) + `727a9d551` (regression-guard test)
-
-## From GitHub issue #716 (2026-11-28)
-
-[#716 refactor: parent Entity matching](https://github.com/openvaa/voting-advice-application/issues/716)
-
-From GitHub #716 (and #683): design questions the rewrite must settle — (1) which children to impute from: child nominations vs members, and per constituency vs whole election (current: nominations, constituency; whole-election needs precomputed lists since only the selected constituency's nominations are loaded); (2) precomputed vs ad hoc child answer lists (current: ad hoc); (3) impute answers (displayable like real ones) vs positions in the matching space — consider showing only distributions of children's answers rather than an imputed value, and its effect on tie-breaking (e.g. average the matching scores of tied answers); (4) where imputation lives: a `Question.imputeAnswer(answers, options?)` method in @openvaa/data (preferred by the issue), the DataProvider (options not voter-changeable), or VoterContext (current). #683 also sketched an `Answer.childrensAnswers`/`imputed` flag and `Entity.imputedAnswers` approach and an admin-side precompute (mean/median/mode saved to party answers).

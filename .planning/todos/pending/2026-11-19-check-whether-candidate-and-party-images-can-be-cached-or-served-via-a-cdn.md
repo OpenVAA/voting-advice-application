@@ -9,8 +9,6 @@ files:
   - infra/modules/frontend-service/
   - infra/scripts/load-check/staging-journey.json
   - apps/frontend/src/lib/api/adapters/supabase/
-tags: [voter, frontend, infra, improvement]
-keywords: [images, cdn, storage-egress, cache-control, cloudfront]
 ---
 
 ## Problem

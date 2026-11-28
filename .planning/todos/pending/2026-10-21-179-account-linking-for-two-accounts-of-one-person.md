@@ -10,8 +10,6 @@ files:
   - apps/supabase/supabase/functions/account-access/addressConfirmation.ts
   - apps/supabase/supabase/schema/506-invitation-rpcs.sql (`claim_invitations`)
   - apps/frontend/src/lib/server/contestant/identityProviderRegistration.ts
-tags: [contestant, frontend, supabase, feat]
-keywords: [account-linking, identity-provider, auth, merge-accounts, grants]
 ---
 
 ## Problem

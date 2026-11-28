@@ -6,8 +6,6 @@ files:
   - apps/frontend/src/lib/utils/constants.ts
   - apps/frontend/src/lib/api/utils/auth/providers/index.ts
 blocked_on: Phase 157.1 - Fail-Loudly Parse Posture + Production Logging
-tags: [contestant, frontend, improvement]
-keywords: [identity-provider, default, fail-loudly, signicat, env]
 ---
 
 ## Status: filed, NOT implemented - the change the plan specified would have been a regression
@@ -113,7 +111,3 @@ does.
 (using `?? ''` to preserve the type, matching the object's other nine entries), decide what
 `getActiveProvider()` should do with an empty value beyond throwing an internal error at four server
 routes, and document that deployments must now set the variable.
-
-## Maintainer ruling (2026-11-28)
-
-No default provider. When identity provision is enabled and `PUBLIC_IDENTITY_PROVIDER_TYPE` is unset (or unknown), fail loudly at startup naming the variable. When identity provision is disabled, the variable is not read. Needs a deployment-guide note.

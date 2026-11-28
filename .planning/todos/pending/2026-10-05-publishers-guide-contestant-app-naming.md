@@ -6,8 +6,6 @@ severity: minor
 source: Phase 170 CONTEXT ("The publishers' guide's user-facing naming is left to Phase 171"); Phase 171 plan 04, Task 2 (deviation 9 of that plan)
 files:
   - apps/docs/src/routes/(content)/publishers-guide
-tags: [contestant, docs, translations, improvement]
-keywords: [publishers-guide, naming, contestant-app, docs-sweep, terminology]
 ---
 
 ## Problem
@@ -73,7 +71,3 @@ Whatever is chosen, the guide today spells the term five ways; one spelling shou
 After the operator's answer, sweep the 12 pages with the population command above, leaving the two quoted shown names on the settings page as they are. If option 2 or 3 is chosen, also check whether the naming guard's path scope for `publishers-guide` (`NOT_PUBLISHERS_GUIDE` in `scripts/assert-no-candidate-app-names.mjs`) should then be removed, so that the guide is held to the same rule as the rest of the docs.
 
 Passages that address the reader's candidates as candidates ("candidates can enter free-form explanation…") are about the entity type, not the app, and are Phase 175's kind of question, not this one.
-
-## Maintainer ruling (2026-11-28)
-
-Use "Contestant App" throughout the Publishers' Guide.

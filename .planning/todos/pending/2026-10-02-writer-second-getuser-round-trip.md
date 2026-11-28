@@ -7,8 +7,6 @@ source: Phase 167 (origin/main vestige cleanup), 167-CONTEXT D-01 fact 3, filed 
 files:
   - apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts (`protected async _getBasicUserData`)
   - apps/frontend/src/routes/candidate/(protected)/+layout.server.ts (`locals.safeGetSession()`, then `dataWriter.getCandidateUserData`)
-tags: [contestant, frontend, improvement]
-keywords: [get-user, round-trip, data-writer, safe-get-session, performance]
 ---
 
 ## Problem

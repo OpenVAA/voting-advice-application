@@ -7,8 +7,6 @@ source: Phase 190 handoff (operator chore) and deferred-items.md § From the pha
 owner: the operator (repository admin)
 files:
   - .github/workflows/infra-plan.yml
-tags: [infra, ci, improvement]
-keywords: [github-variables, aws-plan-role, deploy-staging, cleanup]
 ---
 
 ## Problem

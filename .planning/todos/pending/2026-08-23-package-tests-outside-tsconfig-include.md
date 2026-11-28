@@ -14,8 +14,6 @@ files:
 related:
   - 2026-08-22-frontend-lint-script-covers-only-src.md
 filed_by: Phase 144 (144-07), as residue RES-12
-tags: [data, matching, filters, core, app-shared, llm, argument-condensation, question-info, tooling, improvement]
-keywords: [typecheck, tsconfig, include, test-files, coverage]
 ---
 
 ## Measurement (taken at HEAD `47ee50054`, 2026-08-23 — not a description)

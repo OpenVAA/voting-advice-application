@@ -10,8 +10,6 @@ files:
   - apps/frontend/src/routes/admin/(protected)/+page.svelte
   - apps/frontend/src/lib/routes/routeConsistency.test.ts
 related_phase: 158
-tags: [admin, frontend, bug]
-keywords: [factor-analysis, admin-routes, broken-link, route-map]
 ---
 
 # Two admin ROUTE entries have no route behind them

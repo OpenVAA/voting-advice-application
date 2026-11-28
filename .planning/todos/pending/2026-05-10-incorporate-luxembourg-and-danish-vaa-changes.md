@@ -3,8 +3,6 @@ title: Forward-port relevant changes from Luxembourg + Danish VAA forks back int
 priority: medium
 created: 2026-05-10
 context: Captured at v2.8 milestone close. The Luxembourg and Danish VAA deployments have evolved with field-driven fixes and feature additions that have not yet been folded back into the upstream OpenVAA tree. Identify the deltas, classify them, and merge what's generally useful.
-tags: [frontend, improvement]
-keywords: [forks, luxembourg, danish, forward-port, upstream]
 ---
 
 # Incorporate changes from Luxembourg and Danish VAAs
@@ -61,7 +59,3 @@ v2.9 E2E coverage workstream — to reconcile.
 ## Cross-references
 
 - `.planning/milestones/v2.8-MILESTONE-AUDIT.md` — origin of this todo.
-
-## Features known to be on the deploy branches (2026-11-28)
-
-Remote branches to inventory include `deploy-luxemburg-vaa-2025`, `deploy-duf-vaa-2025`, `deploy-duf-vaa-2026`, `feat-improvements-from-duf-vaa-2026` and the other `deploy-*` branches. Known features to import: voter-set statement weights and live top results while answering (on `deploy-luxemburg-vaa-2025`; see `2026-10-02-voter-statement-weights-and-live-top-results-not-implemented.md`).

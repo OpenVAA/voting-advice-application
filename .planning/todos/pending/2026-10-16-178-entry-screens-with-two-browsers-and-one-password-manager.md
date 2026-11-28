@@ -10,8 +10,6 @@ files:
   - apps/frontend/src/routes/contestant/password-reset/+page.svelte
   - apps/frontend/src/routes/contestant/register/sign-in/+page.svelte
   - apps/frontend/src/lib/contestant/components/passwordSetter/PasswordSetter.svelte
-tags: [contestant, frontend, ui, improvement]
-keywords: [manual-check, password-manager, autofill, sign-in, set-password]
 ---
 
 ## What to do

@@ -1,8 +1,3 @@
----
-tags: [ci, improvement]
-keywords: [trufflehog, secret-scan, git-history, credentials]
----
-
 # Triage the ~21 trufflehog findings in `origin/main`'s history
 
 **Filed:** 2026-09-03 (Phase 163, from the first observed secret-scan run)

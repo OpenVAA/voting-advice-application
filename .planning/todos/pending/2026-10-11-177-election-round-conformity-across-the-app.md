@@ -12,8 +12,6 @@ files:
   - packages/data/src/objects/election/election.ts
   - apps/frontend/src/lib/contestant/nominations/editorFacts.ts
   - packages/dev-seed/src/templates/
-tags: [voter, contestant, admin, supabase, data, dev-seed, tests, improvement]
-keywords: [election-round, current-round, nominations, coverage, dev-seed]
 ---
 
 ## Problem

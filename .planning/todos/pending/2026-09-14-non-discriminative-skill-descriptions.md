@@ -11,8 +11,6 @@ files:
   - .claude/skills/README.md
 resolves_phase: null
 related_phase: null
-tags: [docs, tooling, improvement]
-keywords: [skills, descriptions, routing, skill-audit]
 ---
 
 ## Problem

@@ -9,9 +9,7 @@ files:
   - apps/supabase/supabase/functions/identity-callback/index.ts
   - apps/supabase/supabase/functions/identity-callback/ownEntity.ts
   - apps/frontend/src/routes/api/oidc/callback/+server.ts
-  - 'apps/supabase/supabase/schema/506-invitation-rpcs.sql (`claim_invitations`: `raw_app_meta_data ->> ''identity_provider'' IS NULL`)'
-tags: [contestant, supabase, feat]
-keywords: [identity-provider, invitations, duplicate-entity, bank-auth, account-linking]
+  - apps/supabase/supabase/schema/506-invitation-rpcs.sql (`claim_invitations`: `raw_app_meta_data ->> 'identity_provider' IS NULL`)
 ---
 
 ## Problem
@@ -41,7 +39,3 @@ Phase 179 took X2's option (a): an identity-provider registration matches no see
 - **The rest of the problem is unchanged.** A person who was seeded by an administrator and invited, and who registers through the identity provider, still gets an entity of their own, unlinked to the seeded one. The seeded entity keeps its open invitation.
 - **Re-anchored.** The route this todo named, `/api/contestant/preregister`, is deleted (179-21). The function is now called by the OIDC callback, `apps/frontend/src/routes/api/oidc/callback/+server.ts`, through `register(…)`. The function finds the identity's own entity through `resolveOwnEntity` (`identity-callback/ownEntity.ts`); `findExistingCandidate` is gone. The developers' docs state the limitation on the invitation page (`/developers-guide/contestant-app/pre-registration-and-invitation`), under the claim bullet and the closing section "Registration with a bank identity".
 - **What would close it.** A decision on how an identity is matched to a seeded entity: a code the person presents, an administrator, or an address they prove together with a claim from an identity-provider account. The last is a change to J3, and it reopens the takeover question that 2026-10-07-174-typed-address-of-an-identity-provider-user-must-stay-unconfirmed.md (now in done/) closed. Account linking is filed separately as 2026-10-21-179-account-linking-for-two-accounts-of-one-person.md.
-
-## Maintainer ruling (2026-11-28)
-
-Administrator-driven linking: an admin links an identity-provider registration to the seeded entity (fits the Admin UI work; J3 stays closed).

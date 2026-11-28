@@ -15,8 +15,6 @@ files:
   - packages/data/src/objects/entities/
   - packages/data/src/objects/questions/
   - packages/data/README.md
-tags: [supabase, data, docs, improvement]
-keywords: [data-model, db-constraints, comparison, validation]
 ---
 
 ## Problem

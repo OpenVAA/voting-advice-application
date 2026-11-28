@@ -5,9 +5,7 @@ source_phase: 90-tir5-permutations-missing-nominations-warning-localisation-n
 source_plan: 01
 priority: medium
 suggested_phase: future-i18n-stage-b
-tags: [voter, contestant, frontend, app-shared, translations, improvement]
-keywords: [paraglide, baseLocale, defaultLocale, supportedLocales, url-pattern, dynamicSettings, stage-b, i18n, multi-tenant, base-locale, default-locale, url-strategy, single-locale, url-prefix, baselocale]
-github_issues: [416]
+keywords: [paraglide, baseLocale, defaultLocale, supportedLocales, url-pattern, dynamicSettings, stage-b, i18n, multi-tenant]
 ---
 
 # Reconcile Paraglide compile-time `baseLocale` with runtime `defaultLocale`
@@ -90,9 +88,3 @@ Not urgent today — Phase 90 perms only exercise the safe subset.
 - `apps/frontend/src/lib/paraglide/runtime.js` — generated URL-pattern table where the prefix-less `en` mapping is baked in
 - `apps/frontend/src/lib/i18n/init.ts:53-62` — `applyDynamicOverride()`, the candidate site for the Option C validator
 - `packages/app-shared/src/settings/staticSettings.ts` — `supportedLocales` static fallback; `isDefault: true` precedent
-
-## From GitHub issue #416 (2026-11-28)
-
-[#416 feat: remove locale from url for single-language instances](https://github.com/openvaa/voting-advice-application/issues/416)
-
-From GitHub #416: a single-language instance should have URLs without any locale segment. Today that holds only when the one supported locale equals Paraglide's compile-time `baseLocale` (`en`); a Finnish-only deployment still serves `/fi/...` and `/` resolves to English. Whatever resolution is chosen (per-tenant baseLocale build or a custom URL strategy) should make the sole supported locale unprefixed.

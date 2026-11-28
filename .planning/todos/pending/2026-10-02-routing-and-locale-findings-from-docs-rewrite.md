@@ -9,8 +9,6 @@ files:
   - apps/frontend/src/lib/routes/params.ts
   - apps/frontend/paraglide.options.ts
   - apps/frontend/src/lib/dynamic-components/navigation/languages/LanguageSelection.svelte
-tags: [voter, frontend, translations, bug]
-keywords: [route-params, locale, paraglide, language-menu, query-string]
 ---
 
 All three items were read from the code and not exercised (UNCONFIRMED). The docs pages state only what the code shows.

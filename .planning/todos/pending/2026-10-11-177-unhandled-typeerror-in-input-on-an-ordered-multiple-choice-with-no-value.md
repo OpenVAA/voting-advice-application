@@ -8,8 +8,6 @@ owner: unassigned — the next plan that edits `Input` or the profile's question
 files:
   - apps/frontend/src/lib/components/input/Input.svelte
   - apps/frontend/src/lib/components/input/QuestionInput.svelte
-tags: [contestant, frontend, ui, bug]
-keywords: [input, select-multiple, ordered, typeerror, effect]
 ---
 
 ## Finding

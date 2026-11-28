@@ -12,8 +12,6 @@ files:
   - apps/supabase/supabase/tests/database/23-nominations-write.test.sql
   - apps/supabase/supabase/tests/database/43-set-entity-nominations.test.sql
   - apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts
-tags: [contestant, supabase, bug]
-keywords: [nomination-cap, rls, parent-nominations, placeholder, quota]
 ---
 
 ## What is built
@@ -52,7 +50,3 @@ One conjunct in `private.caller_unconfirmed_originated_count` and one in the cap
 ## Not established
 
 `tooManyPending` was never produced in a browser: it is asserted through the real API by the writer's integration test and shown by a component case with the write as a spy. The walk across contests was not run.
-
-## Maintainer ruling (2026-11-28)
-
-Exclude the editor's own organization's rows from the cap, and relax the cap further: a party can easily be nominated in every constituency, which may number in the hundreds. Do this together with `2026-11-28-constituency-selector-search-and-select-all.md` (search and select/deselect all in the constituency selector), since picking hundreds of constituencies one by one is the other half of the same problem. Also see `2026-10-11-177-several-constituencies-per-election-for-one-entity.md`.

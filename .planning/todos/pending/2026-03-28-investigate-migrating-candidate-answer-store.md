@@ -5,8 +5,6 @@ area: ui
 files:
   - apps/frontend/src/lib/contexts/candidate/candidateUserDataStore.ts
   - apps/frontend/src/lib/contexts/candidate/candidateUserDataStore.svelte.ts
-tags: [contestant, frontend, contexts, improvement]
-keywords: [answer-store, drafts, persistence, conflict-resolution, entity-user-data]
 ---
 
 ## Problem

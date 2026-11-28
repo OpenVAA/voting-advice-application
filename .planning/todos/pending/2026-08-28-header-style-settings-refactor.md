@@ -9,8 +9,6 @@ files:
   - apps/frontend/src/lib/layouts/main/Banner.svelte
   - packages/app-shared/src/settings/staticSettings.ts
 related_phase: 159
-tags: [voter, frontend, app-shared, ui, improvement]
-keywords: [header-style, settings, header, refactor, dark-mode]
 ---
 
 # Header style settings: refactor the derivation

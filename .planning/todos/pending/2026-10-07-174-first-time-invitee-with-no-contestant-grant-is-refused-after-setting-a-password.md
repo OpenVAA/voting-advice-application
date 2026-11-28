@@ -10,8 +10,6 @@ files:
   - apps/frontend/src/lib/auth/sessionAdmission.ts
   - apps/frontend/src/lib/auth/passwordLogin.ts
   - apps/frontend/src/routes/contestant/(protected)/+page.server.ts
-tags: [contestant, frontend, tests, bug]
-keywords: [invitations, set-password, login-gate, contestant-grants, nothing-to-edit]
 ---
 
 ## Problem

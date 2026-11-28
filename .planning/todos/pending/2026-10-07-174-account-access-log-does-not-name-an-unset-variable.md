@@ -9,8 +9,6 @@ files:
   - apps/supabase/supabase/functions/account-access/index.ts
   - apps/supabase/supabase/functions/account-access/envConfig.ts
   - tests/IDURA-TEST-RUNBOOK.md
-tags: [supabase, bug]
-keywords: [account-access, logging, env-variables, smtp, edge-functions]
 ---
 
 ## Problem

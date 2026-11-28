@@ -6,8 +6,6 @@ files:
   - apps/frontend/package.json
   - apps/frontend/eslint.config.mjs
 source: Phase 143 (D-08)
-tags: [frontend, dev-seed, tooling, improvement]
-keywords: [eslint, lint-scope, config-files, lint-script, coverage, dev-seed, tests-dir]
 ---
 
 ## Problem
@@ -73,9 +71,3 @@ the fallout, which is the actual work:
 - Related in kind to Phase 142.1's `format:check` finding — a gate whose reach is narrower than its name
   suggests stays green for reasons unrelated to the code being correct.
 - Not scheduled: no `resolves_phase`.
-
-## Merged from `2026-08-23-dev-seed-lint-script-covers-only-src.md` (2026-11-28)
-
-Extend the fix to packages/dev-seed (tests/ holds ~46 unlinted spec files), and the 8 packages whose lint is also 'eslint src/'. Caution: keep the negctl-*.ts fixtures under tests/fixtures out of autofix, or check git diff on them afterwards; expect the warning baseline to move.
-
-The merged todo is kept at `.planning/todos/completed/2026-08-23-dev-seed-lint-script-covers-only-src.md`.

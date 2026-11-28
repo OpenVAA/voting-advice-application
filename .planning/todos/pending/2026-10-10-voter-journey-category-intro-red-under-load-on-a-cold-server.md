@@ -9,8 +9,6 @@ files:
   - tests/scripts/e2e-run.sh
   - tests/tests/specs/voter/voter-journey.spec.ts
   - apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts
-tags: [voter, tests, contexts, bug]
-keywords: [e2e, host-sleep, vite-reload, category-selection, void-run]
 ---
 
 ## Diagnosis (2026-10-11) — this replaces the reading the item was filed with

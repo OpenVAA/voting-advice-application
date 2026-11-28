@@ -5,9 +5,8 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: medium
 suggested_phase: post-v2.15-ship (first push to main)
+keywords: [github-actions, release, changesets-action-v2, docs, pages, ci, unobservable, D-10]
 re_check_trigger: "the first push to main after the merge; then one manual workflow_dispatch of docs.yml"
-tags: [ci, improvement]
-keywords: [github-actions, release, changesets-action-v2, docs, pages, ci, unobservable, D-10, release-workflow, docs-workflow, changesets, post-merge]
 ---
 
 # Two workflows unobservable until merge (169-11)

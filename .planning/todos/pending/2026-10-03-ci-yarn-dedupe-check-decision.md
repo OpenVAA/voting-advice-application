@@ -5,9 +5,8 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: low
 suggested_phase: next CI-hardening phase
+keywords: [yarn, dedupe, lockfile, ci, gate, operator]
 re_check_trigger: "operator decision; any time"
-tags: [ci, tooling, improvement]
-keywords: [yarn, dedupe, lockfile, ci, gate, operator, ci-gate]
 ---
 
 # `yarn dedupe --check` is a phase-local gate, not a CI gate (169-01)
@@ -18,7 +17,3 @@ repository runs `yarn dedupe` (`grep -rn dedupe .github/ package.json` → nothi
 
 **Decision for the operator:** add `yarn dedupe --check` to the CI install/lint job (cheap; a failing check is fixed with
 `yarn dedupe` in the same PR), or leave it to dependency phases.
-
-## Maintainer ruling (2026-11-28)
-
-Add `yarn dedupe --check` to the CI lint job.

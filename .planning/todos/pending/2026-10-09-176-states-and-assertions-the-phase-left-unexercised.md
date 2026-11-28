@@ -11,8 +11,6 @@ files:
   - packages/dev-seed/src/templates/e2e/perm/perm-no-nomination.ts
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/questions/[questionId]/+page.svelte
   - apps/supabase/supabase/tests/database/42-entity-nominations.test.sql
-tags: [contestant, tests, improvement]
-keywords: [e2e-coverage, nomination-gate, component-tests, assertions]
 ---
 
 ## Finding

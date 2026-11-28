@@ -7,8 +7,6 @@ source: Phase 155 (edge-function-hardening) Plan 06 repo-wide port/loopback swee
 files:
   - packages/dev-seed/src/supabaseAdminClient.ts
   - packages/dev-seed/src/cli/seed.ts
-tags: [supabase, dev-seed, tooling, improvement]
-keywords: [supabase-url, silent-default, loopback, fail-loudly, env, database-url, lint-schema]
 ---
 
 ## Problem
@@ -85,9 +83,3 @@ exercise these modules and will need the corresponding boundary cases (unset, em
 - `.planning/REQUIREMENTS.md` REVIEW-EDGE-02 — the criterion this is the out-of-scope twin of
 - `apps/supabase/supabase/functions/invite-candidate/envConfig.ts` — the `requireEnv` shape route (a) would copy
 - [[2026-08-29-supabase-tooling-silent-database-url-defaults]] — the same class in `apps/supabase/scripts` and `apps/supabase/benchmarks`
-
-## Merged from `2026-08-29-supabase-tooling-silent-database-url-defaults.md` (2026-11-28)
-
-Add the site apps/supabase/scripts/lint-schema.mjs:28 (`process.env.DATABASE_URL || 'postgresql://...@127.0.0.1:54322/postgres'`). The two choices are throw or warn loudly. The embedded postgres:postgres credentials are the CLI defaults and are not a concern.
-
-The merged todo is kept at `.planning/todos/completed/2026-08-29-supabase-tooling-silent-database-url-defaults.md`.

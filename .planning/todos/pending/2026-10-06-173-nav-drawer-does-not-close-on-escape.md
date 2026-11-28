@@ -9,8 +9,6 @@ files:
   - apps/frontend/src/lib/dynamic-components/navigation
   - tests/tests/fixtures/shared/navMenu.fixture.ts
   - tests/tests/specs/contestant/contestant-journey.spec.ts
-tags: [voter, contestant, admin, frontend, ui, bug]
-keywords: [nav-drawer, escape-key, keyboard, a11y, focus]
 ---
 
 ## Problem

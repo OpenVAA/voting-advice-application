@@ -12,8 +12,6 @@ files:
   - tests/tests/specs/perm/perm-organization-editing.spec.ts
   - .planning/todos/pending/assets/2026-10-09-175-multiple-text-row-320px-1.png
   - .planning/todos/pending/assets/2026-10-09-175-multiple-text-row-320px-2.png
-tags: [contestant, frontend, ui, bug]
-keywords: [overflow, 320px, multiple-text, reflow, a11y]
 ---
 
 ## Finding

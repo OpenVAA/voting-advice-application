@@ -5,8 +5,6 @@ area: dev-seed
 files:
   - packages/dev-seed/src/templates/default.ts
   - packages/dev-seed/src/generators/ConstituenciesGenerator.ts
-tags: [dev-seed, bug]
-keywords: [external-id, namespace, collision, constituencies, templates]
 ---
 
 ## Problem

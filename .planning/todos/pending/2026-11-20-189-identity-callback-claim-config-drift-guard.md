@@ -10,8 +10,6 @@ files:
   - apps/frontend/src/lib/api/utils/auth/providers/signicat.ts
   - apps/frontend/src/lib/api/utils/auth/providers/idura.ts
   - apps/supabase/supabase/config.toml
-tags: [contestant, frontend, supabase, tests, improvement]
-keywords: [identity-callback, claim-config, drift-guard, oidc, duplication]
 ---
 
 ## Problem

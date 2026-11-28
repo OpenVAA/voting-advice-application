@@ -5,9 +5,8 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: medium
 suggested_phase: the next dependency pass (any run on or after 2026-10-09 can take every 7-day row at once)
+keywords: [age-rule, npmMinimalAgeGate, holds, D-03, D-06, version-table, re-check]
 re_check_trigger: "the dates in the table below; the earliest is 2026-10-04T03:28Z"
-tags: [tooling, improvement]
-keywords: [age-rule, npmMinimalAgeGate, holds, D-03, D-06, version-table, re-check, dependencies, version-holds, upgrade]
 ---
 
 # Releases held by the age rule at the end of Phase 169

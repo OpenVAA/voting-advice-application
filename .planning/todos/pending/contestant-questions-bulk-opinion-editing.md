@@ -7,8 +7,6 @@ milestone: v2.18 (the milestone after v2.17 Full Deployment)
 source: Operator request during Phase 179 UAT, 2026-10-25
 files:
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/questions
-tags: [contestant, frontend, feat]
-keywords: [questions, bulk-edit, opinion-answers, contestant-app]
 ---
 
 ## The request
