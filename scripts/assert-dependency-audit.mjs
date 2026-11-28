@@ -1,69 +1,38 @@
 #!/usr/bin/env node
 
 /**
- * DEPENDENCY-VULNERABILITY GATE (phase 163, requirement CIGATE-03, locked decision D-L3(a)).
+ * DEPENDENCY-VULNERABILITY GATE.
  *
- * The incident this file exists for: Dependabot is already enabled on this repository and has been
- * for some time -- it opens PRs, it maintains an alert list, and it has never once failed a build.
- * Roadmap criterion 4 asks for something Dependabot structurally cannot give: a job that runs on
- * every build and FAILS above a chosen severity threshold, with today's findings recorded as an
- * accepted baseline carrying severities. An alert nobody has to act on is not a gate. This script
- * is the gate.
+ * Runs `yarn npm audit` and fails on any advisory at or above the threshold that is not in the
+ * accepted baseline, `security/audit-baseline.json`, where each accepted advisory carries its
+ * severity, date and written rationale. Dependabot alerts never fail a build; this does.
  *
- * FOUR properties, each a distinct way the gate could go quietly wrong:
+ *   - The threshold is read from the baseline, so the file that documents the gate and the value it
+ *     runs at cannot disagree.
+ *   - Accepted findings are subtracted by advisory id only, never by package name, so a future
+ *     advisory against the same package is still reported.
+ *   - The accepted set is printed beside the new set, so a red is diagnosable from the CI log.
+ *   - An empty result is clean only when the audit exited 0: a network failure also prints nothing.
+ *     `scripts/lib/audit-run.mjs` holds that classification for the gate and for `--update-baseline`.
  *
- *   1 (D-L3(a)) -- The threshold is read from the baseline file, not hard-coded here, so the file
- *     that DOCUMENTS the gate and the value the gate RUNS AT cannot disagree. A baseline claiming
- *     `high` while the script ran at `moderate` would describe a gate that is not the gate running.
- *
- *   2 (D-L3(a)) -- The subtraction is keyed on the ADVISORY ID and on nothing else. Never on the
- *     package name, never on a glob. Silencing `tar` by name would also silence every future `tar`
- *     advisory, which is exactly the class of finding this gate exists to surface, and nine of the
- *     baseline's rows are already `tar` advisories against an ever-widening range.
- *
- *   3 -- The ACCEPTED set is printed alongside the NEW set. This is not decoration. It is what makes
- *     a red diagnosable from the Actions log alone, without a developer re-running the audit locally
- *     to work out which of the findings were already known.
- *
- *   4 -- An empty instrument is not a clean tree. Liveness is read from the audit's own exit
- *     status, so an empty result is clean only when the audit exited 0, whatever the baseline
- *     holds. A network failure prints nothing too, and exits non-zero; without the status it would
- *     read exactly like a clean bill of health. `scripts/lib/audit-run.mjs` holds the
- *     classification, and it serves both the gate and `--update-baseline`, so a baseline is never
- *     rewritten from an audit that did not run either.
- *
- * WHY THE SUBTRACTION IS IN THIS SCRIPT RATHER THAN IN THE AUDIT COMMAND'S OWN FLAGS. Yarn offers an
- * advisory-suppression flag and a matching `.yarnrc.yml` setting, and both were considered and
- * rejected. They carry bare IDs with no severity, no date and no rationale, which is the specific
- * thing D-L3(a) says does not satisfy the criterion; the config form additionally applies to every
- * LOCAL `yarn npm audit` too, so a developer running the command by hand would silently see a
- * filtered world. RESEARCH also measured two ways the CLI path goes wrong in a shell: a
- * space-joined list is rejected outright, and a read loop drops the final ID when its input has no
- * trailing newline -- shipping 67 suppressions out of 68 and looking exactly like a tool bug.
- *
- * WHY THE AUDIT COMMAND'S EXIT CODE IS NOT THE GATE. `yarn npm audit` exits non-zero whenever ANY
- * report is found, regardless of `--severity` and regardless of the baseline. Its exit code answers
- * "did you find anything at all", which is always yes here. This script decides instead, and reads
- * the exit status only to tell an empty clean audit from an empty failed one (property 4).
+ * The audit's own suppression flag and `.yarnrc.yml` setting are not used: they carry bare ids with
+ * no severity or rationale, and the setting would also filter every local audit. The audit's exit
+ * code is not the verdict, because it is non-zero whenever anything at all is found.
  *
  * Usage:
  *   node scripts/assert-dependency-audit.mjs                     # the gate
- *   node scripts/assert-dependency-audit.mjs --update-baseline   # REVIEWED action, see below
+ *   node scripts/assert-dependency-audit.mjs --update-baseline   # reviewed action, see below
  *
- * `--update-baseline` re-emits security/audit-baseline.json from the current findings with a fresh
- * `recorded` date and `recordedAtHead`, preserving the rationale already written for any advisory
- * ID that is already listed. USING IT IS A REVIEWED ACTION, NOT A WAY TO CLEAR A RED. It writes
- * newly-discovered advisories with a `REVIEW REQUIRED` rationale rather than inventing a reason to
- * accept them, and `packages/dev-seed/tests/auditBaselineShape.test.ts` fails while any such marker
- * is present -- so running it on a red tree moves the finding from this gate into the unit suite
- * and the tree stays red until a human writes down why the advisory is accepted.
+ * `--update-baseline` rewrites the baseline from the current findings with a fresh `recorded` date
+ * and `recordedAtHead`, keeping the rationale of every advisory already listed. It is a reviewed
+ * action, not a way to clear a red: new advisories get a `REVIEW REQUIRED` rationale, and
+ * `packages/dev-seed/tests/auditBaselineShape.test.ts` fails while that marker is present.
  *
  * Exit codes:
- *   0 - No advisories at or above the threshold outside the accepted baseline.
- *   1 - At least one NEW advisory at or above the threshold. The gate's red.
- *   2 - The gate could not run: the baseline is missing or malformed, or the audit printed no
- *       findings and exited non-zero (or was killed), so it never ran. Never reported as a pass,
- *       whatever the baseline holds, and in --update-baseline mode the baseline is left untouched.
+ *   0 - no advisory at or above the threshold outside the accepted baseline
+ *   1 - at least one new advisory at or above the threshold
+ *   2 - the gate could not run: the baseline is missing or malformed, or the audit printed no
+ *       findings and exited non-zero; in --update-baseline mode the baseline is left untouched
  */
 
 import { execFileSync } from 'node:child_process';
@@ -143,7 +112,7 @@ function readBaseline() {
     }
     if (!VALID_SEVERITIES.includes(row.severity)) {
       cannotRun(
-        `the accepted-advisory baseline ${BASELINE_LABEL} row ${row.id} carries severity ${JSON.stringify(row.severity)}. D-L3(a) requires a severity on every row.`
+        `the accepted-advisory baseline ${BASELINE_LABEL} row ${row.id} carries severity ${JSON.stringify(row.severity)}. Every row must carry a severity.`
       );
     }
   }
@@ -165,7 +134,7 @@ function auditRegistryLabel() {
 }
 
 /**
- * Run the audit and return its NDJSON findings. A non-zero exit WITH findings is expected: see the docblock, `yarn npm audit` exits non-zero whenever any report is found, so its status is not the verdict. The status is kept, though, because it is the only thing that tells an empty clean audit from an empty failed one (property 4).
+ * Run the audit and return its NDJSON findings. A non-zero exit WITH findings is expected: see the docblock, `yarn npm audit` exits non-zero whenever any report is found, so its status is not the verdict. The status is kept, though, because it is the only thing that tells an empty clean audit from an empty failed one.
  */
 function runAudit(threshold) {
   const args = ['npm', 'audit', '--all', '--recursive', '--severity', threshold, '--json'];
@@ -307,7 +276,7 @@ function main() {
   const accepted = findings.filter((finding) => acceptedIds.has(finding.id));
   const fresh = findings.filter((finding) => !acceptedIds.has(finding.id));
 
-  console.log(`=== Dependency audit (threshold ${threshold}+, D-L3(a)) ===\n`);
+  console.log(`=== Dependency audit (threshold ${threshold}+) ===\n`);
   console.log(
     `Baseline ${BASELINE_LABEL} recorded ${baseline.recorded} at ${String(baseline.recordedAtHead).slice(0, 9)}, ${baseline.accepted.length} accepted advisory(ies).\n`
   );

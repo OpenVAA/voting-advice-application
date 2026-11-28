@@ -5,11 +5,11 @@
 --
 --   1. 'entity.confirm' is misspelled as the near neighbour 'entity.confrim'. This is the class a
 --      cardinality check cannot see: the member count is unchanged.
---   2. 'nomination.create_parent' is DELETED. The canon-side direction of the comparison is what
+--   2. 'nomination.create_parent' is DELETED. The reference-side direction of the comparison is what
 --      reports it.
---   3. 'suggestion.review' is ADDED — a suggestion verb, which D-01 forbids because no suggestion
---      store is built.
---   4. 'owner' is ADDED to grant_role_type — the third role level D-02 refused.
+--   3. 'suggestion.review' is ADDED — a suggestion verb, which the guard forbids because no
+--      suggestions store is built.
+--   4. 'owner' is ADDED to grant_role_type — a third role level, which the guard forbids.
 --
 -- Defects 1 and 3 cancel out in a count, which is why the comparison reports both directions
 -- separately rather than a single "the sets differ".

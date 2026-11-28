@@ -1,49 +1,29 @@
 #!/usr/bin/env node
 
 /**
- * I18N CATALOG NAMESPACE-COVERAGE GUARD (phase 147, requirement CSCAN-04).
+ * I18N CATALOG NAMESPACE-COVERAGE GUARD.
  *
- * The incident this file exists for: `tests/tests/utils/rawKeyScan.ts`'s
- * `loadCatalogKeys()` guards its own non-vacuity with a single scalar floor,
- * `MIN_EXPECTED_KEYS = 400`. That floor is APPLICATION-WIDE, not per-namespace,
- * so it cannot tell "the catalog is healthy" from "one whole namespace vanished
- * and the rest happens to cover the gap". Concretely: the keys of
- * `apps/frontend/messages/en/` fall into three buckets, `contestantApp.*`,
- * `adminApp.*` and the voter/shared rest, and each run of this script prints
- * the size of each. The other two buckets together are far above 400, so
- * deleting the entire `adminApp` namespace leaves the scalar floor passing
- * silently while every raw `adminApp.*` key rendered on an admin surface
- * would go undetected by the very scanner CSCAN-04 claims covers it.
+ * The E2E raw-key scanner (`tests/tests/utils/rawKeyScan.ts`) guards its own non-vacuity with one
+ * application-wide floor, `MIN_EXPECTED_KEYS`, which cannot see a whole namespace vanishing while
+ * the others cover the gap. This guard reads `apps/frontend/messages/en/` and asserts:
  *
- * This guard is deliberately a SEPARATE, standalone read of the catalog
- * directory rather than an import of `rawKeyScan.ts` (which lives under
- * `tests/`, outside every workspace `vitest.config.ts` and outside
- * `scripts/assert-unit-test-coverage.mjs`'s scan roots — see
- * 147-VALIDATION gap G1's <constraints> — so nothing wires a TS import of it
- * into any standing command without a build step). The flattening rule
- * mirrors `flattenCatalog` in `tests/tests/utils/rawKeyScan.ts` byte-for-byte
- * (object recursion, arrays are leaves) so the two cannot silently diverge in
- * what counts as a "key".
+ *   1. each of the three buckets, `contestantApp.*`, `adminApp.*` and the voter/shared rest, clears
+ *      a floor set far below its printed count, so ordinary churn passes and losing a namespace
+ *      fails;
+ *   2. the keys `contestantApp.questions.editAnswer` and `common.required`, which the scanner's
+ *      negative controls use, still exist.
  *
- * The invariant, in both directions:
- *   1. Each of the three namespace buckets (`contestantApp.*`, `adminApp.*`,
- *      "everything else" = voter/shared) must clear a floor set FAR below its
- *      observed count, which each run prints, so ordinary catalog churn
- *      (renaming a handful of keys, adding a new question type) never trips
- *      it, but the wholesale loss of a namespace — which the scalar
- *      MIN_EXPECTED_KEYS floor cannot see — does.
- *   2. Two specific keys Phase 147's own negative controls exercised must
- *      still resolve: `contestantApp.questions.editAnswer` and
- *      `common.required`. Their disappearance is the exact shape of defect
- *      the phase's `RK1-OLD`/`RK2-OLD` rows measured the scanner catching.
+ * It reads the catalog itself rather than importing `rawKeyScan.ts`, which lives under `tests/` and
+ * would need a build step; `flattenCatalog` mirrors that file's rule (objects recurse, arrays are
+ * leaves), so the two agree on what a key is.
  *
  * Usage:
  *   node scripts/assert-i18n-catalog-namespaces.mjs
  *
  * Exit codes:
  *   0 - all floors and required keys present
- *   1 - a namespace floor was not cleared, a required key is missing, or the
- *       catalog directory could not be read
+ *   1 - a namespace floor was not cleared, a required key is missing, or the catalog directory
+ *       could not be read
  */
 
 import { readFileSync, readdirSync } from 'node:fs';
@@ -131,8 +111,7 @@ function main() {
         `[ERROR] ${SELF}: namespace '${label}' has only ${count} catalog key(s), below its floor of ` +
           `${floor}. The raw-key scanner's non-vacuity floor (MIN_EXPECTED_KEYS=400 in ` +
           `tests/tests/utils/rawKeyScan.ts) is application-wide and would NOT catch this namespace ` +
-          'being wholesale deleted or moved, because the other namespaces can cover the shortfall ' +
-          '(CSCAN-04).'
+          'being wholesale deleted or moved, because the other namespaces can cover the shortfall.'
       );
     }
   }
@@ -150,15 +129,15 @@ function main() {
     if (!keys.has(requiredKey)) {
       violations++;
       console.error(
-        `[ERROR] ${SELF}: required catalog key '${requiredKey}' is missing. Phase 147's negative ` +
-          "controls exercised the raw-key scanner against this exact key's disappearance " +
-          '(147-NEGATIVE-CONTROL.md); its absence here means that control can no longer be trusted.'
+        `[ERROR] ${SELF}: required catalog key '${requiredKey}' is missing. The raw-key scanner's ` +
+          'negative controls use this key, so they can no longer be trusted until it is restored or ' +
+          'the controls move to another key.'
       );
     }
   }
 
   console.log(
-    `I18n catalog namespace guard (phase 147: CSCAN-04) — total keys: ${keys.size}; ` +
+    `I18n catalog namespace guard — total keys: ${keys.size}; ` +
       NAMESPACE_FLOORS.map(
         ({ label, prefix }) => `${label}: ${[...keys].filter((k) => k.startsWith(prefix)).length}`
       ).join(', ') +

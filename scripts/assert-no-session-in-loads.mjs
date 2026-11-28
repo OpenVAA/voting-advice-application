@@ -1,110 +1,61 @@
 #!/usr/bin/env node
 
 /**
- * NO-SESSION-IN-SERVER-LOADS GUARD (phase 158, D10 criterion 13).
+ * NO-SESSION-IN-SERVER-LOADS GUARD.
  *
- * The incident this file exists for: everything a server load returns is serialised into the
- * hydration payload in the HTML body, and three of this application's server loads returned
- * `locals.safeGetSession()`'s whole `Session` — `access_token`, the long-lived REFRESH TOKEN,
- * `expires_at` and the full `user` record. The root loader's copy was removed by phase 157.2's
- * CR-02 fix, which wrote the projection rule into that file's own docstring; the two subtree
- * loaders' copies were removed by phase 158 plan 13, and those two were READ — by `authContext`'s
- * `isAuthenticated` derived flag and by `getUserData`'s ancestor pre-check — so removing them was
- * a behavioural change rather than a tidy-up. `158-ADMIN-BASELINE.md` flag (3) measured the
- * disclosure on a running server before it was removed: the authenticated admin SSR payload
- * carried a `session` object with both tokens in the clear.
+ * Everything a server load returns is serialised into the hydration payload in the HTML body, so a
+ * load that returns `locals.safeGetSession()`'s `Session` puts the access token and the long-lived
+ * refresh token into every page under its route. Nothing else in the tree objects to that: no type
+ * error, no failing test, no runtime symptom. The corpus is every `+layout.server.ts` and
+ * `+page.server.ts` under `apps/frontend/src/routes`, plus `EXTRA_MODULES`, the shared modules whose
+ * functions route files re-export as their `load`.
  *
- * That took the count to zero ONCE. A fourth load reintroducing the class is a one-line change
- * that nothing in the tree would object to — no type error, no failing test, no runtime symptom —
- * which is the roadmap's own stated reason for requiring a durable assertion rather than a
- * one-off grep.
+ *   Check 0 — the corpus is real: at least `CORPUS_FLOOR` route loads, the `ANCHOR_FILES` among
+ *     them, every extra module readable, and the fixture directory outside it. If it fails, nothing
+ *     else is reported, because a zero over an empty corpus is not evidence.
+ *   Check 1 — a binding taken from `safeGetSession()` and returned, in the same block, as a member or
+ *     spread of a load's returned object. Matched as a pair: destructuring a session for a guard, or
+ *     returning an unrelated `session` member, is legitimate on its own.
+ *   Check 2 — `access_token` or `refresh_token` named in code (comments are masked, since the root
+ *     loader's docstring names both in prose).
+ *   Check 3 — the root `lint:check` chain still contains this guard (membership, never position).
  *
- * FOUR checks, ordered so the vacuity precondition runs first:
+ * `scripts/fixtures/assert-no-session-in-loads.input.ts` is scanned on every run with the same
+ * scanner, and the run fails when its flagged lines differ from the committed
+ * `.expected.ts.violations` list. A session hidden behind an indirection the scanner cannot follow
+ * (a helper outside `EXTRA_MODULES`, a variable chain) is not caught;
+ * `apps/frontend/src/lib/server/auth/accountLoads.test.ts` pins the shared projection's key set.
  *
- *   Check 0 — the corpus is real. The route tree resolves, it yields at least CORPUS_FLOOR
- *     server-load modules, the three named anchors are among them, and every module of
- *     EXTRA_MODULES is readable. The corpus is the route tree's server loads PLUS that explicit
- *     list of modules outside it whose functions route files re-export as their `load`: the
- *     session projection the Admin App's and the Contestant App's outer layouts serve lives in
- *     `apps/frontend/src/lib/server/auth/accountLoads.ts`, not in either layout. A guard whose corpus is
- *     empty reports zero violations and looks green forever, and zero-from-an-inert-guard is
- *     indistinguishable from zero-from-a-clean-tree unless the guard proves its corpus first.
- *     The corpus size is printed on EVERY run, pass or fail, so a later reader can tell which
- *     kind of zero they are looking at. If check 0 fails, the whole script fails.
- *   Check 1 (the primary assertion) — the destructure-and-return PAIR. A binding taken from the
- *     verified-session call AND put into the load's returned object. It is matched as a pair, and
- *     never as two independent searches, because EITHER HALF ALONE IS LEGITIMATE: the protected
- *     contestant loader destructures a session for its own guard and returns none of it, and a
- *     load may legitimately return an unrelated member that happens to be spelled `session`.
- *     Two greps would flag both of those and be switched off within a week.
- *   Check 2 (the spelling backstop) — a credential field name appearing in CODE in any corpus
- *     module. IT IS COMMENT-BLIND, and that is not defensive tidiness. MEASURED at this phase's
- *     HEAD: `apps/frontend/src/routes/+layout.server.ts` — the file that is the ANALOG FOR
- *     CORRECT BEHAVIOUR, whose docstring explains at length why the session is not there — names
- *     `access_token` and `refresh_token` IN PROSE. An unfiltered scan reports one violation, and
- *     it reports it against that file. The guard would be self-invalidating on the day it landed,
- *     and a guard that fails on correct code gets weakened or removed rather than obeyed. Do not
- *     "simplify" the comment mask away; the control that proves both halves is recorded in
- *     `158-NEGATIVE-CONTROL-LEDGER.md` § C13-C.
- *   Check 3 — chain membership. The root manifest still defines this guard's npm entry and the
- *     `lint:check` chain still contains it. A guard nobody runs is a guard nobody has.
- *
- * MEMBERSHIP, NEVER POSITION. Check 3 splits `lint:check` on `&&` and looks for its own link in
- * the resulting token SET. It must never assert an index or a terminal position: every link after
- * a failing one is equally skipped, so position is incidental, and asserting it makes appending
- * the next guard a test failure. That is the phase-144 lesson recorded verbatim in commit
- * `b410d3a90`, and `scripts/assert-adapter-casts.mjs` states it for the same reason.
- *
- * THE SELF-TEST IS NOT A FLAG. `scripts/fixtures/assert-no-session-in-loads.input.ts` is a
- * synthetic module written in the token-bearing shape, and this guard scans it on EVERY
- * invocation, comparing the `path:line` list it produces against the committed
- * `.expected.ts.violations` sibling. The real corpus's clean zero is therefore never reported
- * except in a run where the same scanner has been seen to flag something — which is the only way
- * a zero is evidence. The fixture directory is asserted to be OUTSIDE the real corpus rather than
- * merely being outside it by path convention, because otherwise the guard reports its own control
- * as a production violation forever.
- *
- * WHY A TEXT READ RATHER THAN AN AST PARSE. Same house style as
- * `scripts/assert-adapter-casts.mjs` and `scripts/assert-cookie-names.mjs`: Node built-ins only,
- * no build step, so the guard can gate the build itself. The shapes it looks for are small and
- * local. Comment text is masked through the shared classifier in `scripts/lib/comment-spans.mjs`,
- * the same one the cookie-name and comment-hygiene guards use, so a tokenizer fix reaches all
- * three.
- *
- * WHAT THIS GUARD DOES NOT SEE, stated so its green is not read as more than it is. A load that
- * hides the session behind an indirection this scanner cannot follow — a helper in a module that
- * is not in EXTRA_MODULES, or a value assembled through a variable chain — is not caught. A new
- * shared module whose functions route files re-export as a `load` belongs in EXTRA_MODULES. The narrow
- * shapes it DOES catch are the ones the class actually took in this repository three times. The
- * unit spec `apps/frontend/src/lib/server/auth/accountLoads.test.ts` is the other half: it
- * enumerates the shared projection load's returned key set and fails an adjacent member by name.
+ * A text read rather than an AST parse, comments masked through `scripts/lib/comment-spans.mjs`.
+ * Node built-ins only, so it can gate the build.
  *
  * Usage:
  *   node scripts/assert-no-session-in-loads.mjs
  *
  * Exit codes:
  *   0 - the real corpus is clean, and the fixture was flagged exactly as committed
- *   1 - at least one violation, or a named precondition failure (an unreadable tree or file, an
- *       empty or anchor-less corpus, or a fixture whose flagged lines no longer match)
+ *   1 - a violation, or a precondition failure (an unreadable tree or file, an empty or anchor-less
+ *       corpus, or a fixture whose flagged lines no longer match)
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { commentSpans, familyFor } from './lib/comment-spans.mjs';
+import { commentMapOf, familyFor, lineNumberOf, maskComments } from './lib/comment-spans.mjs';
+import { listFiles } from './lib/source-files.mjs';
 
 const SELF = 'scripts/assert-no-session-in-loads.mjs';
-const REQUIREMENT = 'D10-C13';
 const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 
 /** The tree whose server-load modules are the guarded corpus. */
-const ROUTES_DIR_REL = path.join('apps', 'frontend', 'src', 'routes');
+const ROUTES_DIR_REL = 'apps/frontend/src/routes';
 
 /** The two SvelteKit filenames that make a module a SERVER load. Universal loads (`+layout.ts`, `+page.ts`) are out of scope: they have no `event` and so cannot reach `locals.safeGetSession` at all. */
 const SERVER_LOAD_FILENAMES = new Set(['+layout.server.ts', '+page.server.ts']);
 
 /**
- * Check 0's floor, DERIVED from the tree at authoring time rather than guessed: `find apps/frontend/src/routes -name '+layout.server.ts' -o -name '+page.server.ts'` returned exactly 10 on 2026-09-02, at the HEAD this guard landed on. Adding loads is expected and passes; a deliberate REMOVAL fails this guard, which is the intended fail-loud behaviour — lower the constant in the same commit that removes the load, so the reduction is visible in the diff rather than absorbed silently.
+ * Check 0's floor. Adding loads passes; removing one below the floor fails, so lower the constant in
+ * the same change that removes the load and the reduction shows in the diff.
  */
 const CORPUS_FLOOR = 10;
 
@@ -113,18 +64,14 @@ const CORPUS_FLOOR = 10;
  *
  * `accountLoads.ts` holds `sessionProjectionLoad`, the session projection the outer layouts of the Admin App and the Contestant App re-export as their `load`, and the password-reset load both apps share.
  */
-const EXTRA_MODULES = [path.join('apps', 'frontend', 'src', 'lib', 'server', 'auth', 'accountLoads.ts')];
+const EXTRA_MODULES = ['apps/frontend/src/lib/server/auth/accountLoads.ts'];
 
 /**
- * Check 0's anchors, relative to `ROUTES_DIR_REL`: the root server loader (which removed this class first) and the two subtree loaders phase 158 narrowed. If these are not in the corpus, this guard is scanning something other than the tree it was written for.
+ * Check 0's anchors, relative to `ROUTES_DIR_REL`: the root server loader and the Admin App's and Contestant App's outer layouts. If these are not in the corpus, this guard is scanning something other than the tree it was written for.
  *
  * The two subtree loaders are one-line re-exports of `sessionProjectionLoad`; the projection itself, the body this guard watches, is in `apps/frontend/src/lib/server/auth/accountLoads.ts`, which EXTRA_MODULES brings into the corpus and anchors.
  */
-const ANCHOR_FILES = [
-  '+layout.server.ts',
-  path.join('admin', '+layout.server.ts'),
-  path.join('contestant', '+layout.server.ts')
-];
+const ANCHOR_FILES = ['+layout.server.ts', 'admin/+layout.server.ts', 'contestant/+layout.server.ts'];
 
 /** The verified-session call. Both halves of check 1's pair are anchored on this identifier. */
 const SESSION_CALL = 'safeGetSession';
@@ -133,9 +80,9 @@ const SESSION_CALL = 'safeGetSession';
 const CREDENTIAL_FIELDS = ['access_token', 'refresh_token'];
 
 /** The self-test's fixture pair, and the directory that must stay outside the real corpus. */
-const FIXTURE_DIR_REL = path.join('scripts', 'fixtures');
-const FIXTURE_INPUT_REL = path.join(FIXTURE_DIR_REL, 'assert-no-session-in-loads.input.ts');
-const FIXTURE_EXPECTED_REL = path.join(FIXTURE_DIR_REL, 'assert-no-session-in-loads.expected.ts.violations');
+const FIXTURE_DIR_REL = 'scripts/fixtures';
+const FIXTURE_INPUT_REL = `${FIXTURE_DIR_REL}/assert-no-session-in-loads.input.ts`;
+const FIXTURE_EXPECTED_REL = `${FIXTURE_DIR_REL}/assert-no-session-in-loads.expected.ts.violations`;
 
 /** The root manifest, read for check 3's chain-membership assertion. */
 const ROOT_MANIFEST_REL = 'package.json';
@@ -147,7 +94,7 @@ const SCRIPT_NAME = 'assert:no-session-in-loads';
 /**
  * A named precondition failure, thrown rather than exited on.
  *
- * The immediate-exit call terminates without flushing queued writes, and writes to the standard streams are ASYNCHRONOUS when the target is a pipe, which is every real invocation of this guard. Setting the exit code and letting the event loop run out exits with the same status and the whole message. Copied deliberately from `scripts/assert-cookie-names.mjs`, which records the reasoning at length.
+ * The immediate-exit call does not flush queued writes, and writes to a pipe are asynchronous, so exiting right after printing can drop the message. Setting the exit code and letting the event loop run out exits with the same status and the whole message.
  */
 class GuardFailure extends Error {
   constructor(message) {
@@ -179,59 +126,19 @@ function readSource(relPath) {
   }
 }
 
-function readDirEntries(relDir) {
+/** Every server-load module under `ROUTES_DIR_REL`, sorted. */
+function collectServerLoads() {
   try {
-    return readdirSync(path.resolve(REPO_ROOT, relDir), { withFileTypes: true });
+    return listFiles(ROUTES_DIR_REL, {
+      include: (relPath) => SERVER_LOAD_FILENAMES.has(path.basename(relPath)),
+      prune: ['node_modules', '.svelte-kit']
+    });
   } catch (error) {
     fail(
-      `could not read directory '${relDir}' (${error.message}), so its server loads cannot be ` +
-        `scanned. An unreadable tree is never reported as clean — this fails closed.`
+      `${error.message}, so its server loads cannot be scanned. An unreadable tree is never reported ` +
+        'as clean — this fails closed.'
     );
   }
-}
-
-/** Every server-load module under `relDir`, in a deterministic order. Sorted before recursion so two runs over the same tree report in the same order. */
-function collectServerLoads(relDir) {
-  const found = [];
-  const entries = readDirEntries(relDir).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      if (entry.name === 'node_modules' || entry.name === '.svelte-kit') continue;
-      found.push(...collectServerLoads(path.join(relDir, entry.name)));
-      continue;
-    }
-    if (SERVER_LOAD_FILENAMES.has(entry.name)) found.push(path.join(relDir, entry.name));
-  }
-  return found;
-}
-
-/** Blank out comment text, preserving every character position and every line break, so a violation's line number is the line the reader will open. */
-function maskComments(source, relPath) {
-  const family = familyFor(relPath);
-  if (!family) return source;
-  const state = { inBlockC: false, inBlockHtml: false, inTemplate: false, lineIndex: 0 };
-  return source
-    .split('\n')
-    .map((line, index) => {
-      state.lineIndex = index;
-      const spans = commentSpans(line, family, state);
-      if (spans.length === 0) return line;
-      const chars = [...line];
-      for (const [start, end] of spans) {
-        for (let i = start; i < end && i < chars.length; i++) chars[i] = ' ';
-      }
-      return chars.join('');
-    })
-    .join('\n');
-}
-
-/** The 1-based line number of a character offset. */
-function lineOf(source, offset) {
-  let line = 1;
-  for (let i = 0; i < offset && i < source.length; i++) {
-    if (source[i] === '\n') line++;
-  }
-  return line;
 }
 
 /**
@@ -332,7 +239,7 @@ function mentionsIdentifier(text, identifier) {
 /**
  * The innermost `{ ... }` block enclosing `offset`, as `{ start, end }`, or `null` at module top level.
  *
- * This is what makes check 1 SCOPE-AWARE, and it is not an optimisation. A module holding several loads — or a fixture holding several — would otherwise let a binding destructured in one function make an unrelated `return { session }` in ANOTHER function look like the pair. That false positive was OBSERVED on this guard's own fixture before this function existed: the fixture's deliberate negative control, a `session` read off `url.searchParams` in a later function, was flagged because the binding set was file-scoped. A guard that flags correct code is a guard that gets removed.
+ * This is what makes check 1 scope-aware: without it, a binding destructured in one function would make an unrelated `return { session }` in another function of the same module look like the pair. The fixture's `url.searchParams` negative control covers that case.
  */
 function enclosingBlock(masked, offset) {
   const stack = [];
@@ -406,7 +313,10 @@ function sessionBindings(masked) {
  * The same function scans the real corpus and the fixture, so the self-test proves the scanner that actually runs rather than a second implementation of it.
  */
 function scanModule(relPath, rawSource) {
-  const masked = maskComments(rawSource, relPath);
+  const family = familyFor(relPath);
+  const masked = maskComments(rawSource, family);
+  const { lineStarts } = commentMapOf(rawSource, family ?? {});
+  const lineOf = (offset) => lineNumberOf(lineStarts, offset);
   const found = [];
   const { destructured, wholeResult } = sessionBindings(masked);
 
@@ -429,7 +339,7 @@ function scanModule(relPath, rawSource) {
         const colon = topLevelColon(part.text);
         const value = (colon === -1 ? text : part.text.slice(colon + 1)).trim();
         const key = colon === -1 ? text.replace(/^\.\.\./, '').trim() : part.text.slice(0, colon).trim();
-        const line = lineOf(masked, bodyStart + part.offset + (part.text.length - part.text.trimStart().length));
+        const line = lineOf(bodyStart + part.offset + (part.text.length - part.text.trimStart().length));
 
         for (const { name: binding } of destructured.filter((entry) => inScope(entry, match.index))) {
           const returnedDirectly = value === binding || value === `...${binding}`;
@@ -441,7 +351,7 @@ function scanModule(relPath, rawSource) {
               message:
                 `${relPath}:${line} returns the binding '${binding}', which this module took straight ` +
                 `out of '${SESSION_CALL}()', as the '${key || '...spread'}' member of a server load's ` +
-                `returned object (${REQUIREMENT}). Everything a server load returns is serialised into ` +
+                `returned object. Everything a server load returns is serialised into ` +
                 `the hydration payload in the HTML body, so this puts an access token and a long-lived ` +
                 `REFRESH TOKEN into the document of every page under this route, for every signed-in ` +
                 `user. Return the PROJECTION instead — '{ userId, expiresAt }', taking the identifier ` +
@@ -461,7 +371,7 @@ function scanModule(relPath, rawSource) {
               message:
                 `${relPath}:${line} returns '${binding}.session' — the whole result of '${SESSION_CALL}()' ` +
                 `or its session member — as the '${key || '...spread'}' member of a server load's returned ` +
-                `object (${REQUIREMENT}). It is serialised into the hydration payload in the HTML body, ` +
+                `object. It is serialised into the hydration payload in the HTML body, ` +
                 `credentials and all. Return the projection '{ userId, expiresAt }' instead.\n    ` +
                 `${text.split('\n')[0].trim()}`
             });
@@ -480,7 +390,7 @@ function scanModule(relPath, rawSource) {
         line: index + 1,
         message:
           `${relPath}:${index + 1} names the credential field '${field}' in CODE inside a server load ` +
-          `module (${REQUIREMENT}). A server load's return value is serialised into the HTML body; a ` +
+          `module. A server load's return value is serialised into the HTML body; a ` +
           `credential named here is one edit away from being in it. Naming it in a COMMENT is fine and ` +
           `is deliberately not flagged — the root server loader's docstring explains the whole class in ` +
           `prose. If a credential genuinely must be read server-side, read it somewhere that is not a ` +
@@ -494,14 +404,14 @@ function scanModule(relPath, rawSource) {
 
 function main() {
   // ── Check 0: the corpus is real, before any zero it produces is allowed to mean anything ──
-  const routeLoads = collectServerLoads(ROUTES_DIR_REL);
+  const routeLoads = collectServerLoads();
   const routeLoadCount = routeLoads.length;
   const corpus = [...routeLoads, ...EXTRA_MODULES];
   const corpusSize = corpus.length;
 
   // Printed FIRST and unconditionally, so a failing run says how much it looked at too.
   console.log(
-    `No-session-in-server-loads guard (phase 158: ${REQUIREMENT}) — corpus: ${routeLoadCount} server-load ` +
+    `No-session-in-server-loads guard — corpus: ${routeLoadCount} server-load ` +
       `module(s) under ${ROUTES_DIR_REL} (floor ${CORPUS_FLOOR}) and ${EXTRA_MODULES.length} shared ` +
       `load module(s): ${EXTRA_MODULES.join(', ')}.`
   );
@@ -525,12 +435,12 @@ function main() {
     );
   }
 
-  const corpusRelativeToRoutes = routeLoads.map((file) => path.relative(ROUTES_DIR_REL, file));
+  const corpusRelativeToRoutes = routeLoads.map((file) => file.slice(ROUTES_DIR_REL.length + 1));
   for (const anchor of ANCHOR_FILES) {
     if (!corpusRelativeToRoutes.includes(anchor)) {
       corpusIsReal = false;
       violate(
-        `the anchor '${path.join(ROUTES_DIR_REL, anchor)}' is not in the scanned corpus. This guard is ` +
+        `the anchor '${ROUTES_DIR_REL}/${anchor}' is not in the scanned corpus. This guard is ` +
           `therefore scanning something other than the route tree it was written for, and its zero would ` +
           `be vacuous. Update ANCHOR_FILES in this file when the route tree is deliberately restructured.`
       );
@@ -551,7 +461,7 @@ function main() {
   }
 
   // The fixture's exclusion is ASSERTED, not left to a path convention: a corpus that swallowed the control would report the control as a production violation forever.
-  const fixtureInCorpus = corpus.filter((file) => file.startsWith(`${FIXTURE_DIR_REL}${path.sep}`));
+  const fixtureInCorpus = corpus.filter((file) => file.startsWith(`${FIXTURE_DIR_REL}/`));
   if (fixtureInCorpus.length > 0) {
     corpusIsReal = false;
     violate(
@@ -650,7 +560,7 @@ function main() {
   }
 
   console.log(
-    `No-session-in-server-loads guard (phase 158: ${REQUIREMENT}) — ${corpusSize} module(s), ` +
+    `No-session-in-server-loads guard — ${corpusSize} module(s), ` +
       `${linesScanned} line(s) scanned; ${corpusViolations} violation(s) in the real corpus; ` +
       `self-test flagged ${observed.length} line(s) in ${FIXTURE_INPUT_REL} ` +
       `(${selfTestMatched ? 'matching the committed expectation' : 'NOT matching the committed expectation'}); ` +

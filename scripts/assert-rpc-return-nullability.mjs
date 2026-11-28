@@ -1,108 +1,33 @@
 #!/usr/bin/env node
 
 /**
- * RPC RETURN-NULLABILITY GUARD (phase 164, requirements CIGATE-04 / CIGATE-05).
+ * RPC RETURN-NULLABILITY GUARD.
  *
- * The incident this file exists for: PostgreSQL carries no nullability metadata on a
- * function's OUT parameters, so the Supabase type generator declares every output column
- * of a `RETURNS TABLE` function non-null. Several of those columns really can be null at
- * runtime — a LEFT JOIN that did not match, a UNION branch selecting a NULL literal, or a
- * nullable base-table column projected straight through. Phase 126 compensated for exactly
- * one of them with an ad-hoc `as string | null | undefined` cast at the consumer, and phase
- * 164 replaced that with a single override locus in `packages/supabase-types`. Both of those
- * are point-in-time fixes. Without a STANDING check, two things reopen silently: a fourth
- * `RETURNS TABLE` RPC (or a new column on an existing one) arrives with no disposition at
- * all, and the next pull request finds the per-site cast quicker than the override.
+ * PostgreSQL records no nullability on a function's OUT parameters, so the Supabase type generator
+ * declares every output column of a `RETURNS TABLE` function non-null, though some can be null (a
+ * LEFT JOIN miss, a NULL literal in a UNION branch, a nullable column projected through). The real
+ * nullability is restored in one place, `packages/supabase-types/src/database.overrides.ts`, with a
+ * per-column disposition in `packages/supabase-types/RPC-NULLABILITY.md`. This guard keeps that
+ * honest against `apps/supabase/supabase/schema` (the migrations restate and redefine the same
+ * functions, so they are not read):
  *
- * SIX checks, ordered so the vacuity preconditions run before any verdict:
+ *   Check 1 — the RPC/column map harvested from the schema equals the artifact's DERIVED region
+ *     (refreshed by `--write`), and every column has a hand-written disposition row (which `--write`
+ *     cannot supply, so a new column cannot reach a green gate undispositioned).
+ *   Check 2 — no function name is declared in two scanned files.
+ *   Check 3 — the harvest is not empty, and every scan root is readable.
+ *   Check 4 — no `.<rpc_column> as <string|number|boolean> | null` cast under `apps`, `packages` or
+ *     `tests` (not `scripts`, which holds the alternation itself). The column alternation is the
+ *     harvested snake_case set. A comment quoting the pattern counts as a hit.
+ *   Check 5 — every key in the overrides names a column the schema declares for that RPC.
+ *   Check 6 — the override is connected: `packages/supabase-types/src/index.ts` re-exports
+ *     `Database` from `./database.merged`, which declares it by applying `FunctionReturnOverrides`
+ *     imported from `./database.overrides`. Either link can be bypassed with one token and the whole
+ *     tree still typechecks.
  *
- *   Check 1 (CIGATE-04) — set equality, in two halves. 1a: the RPC/column map harvested
- *     from the schema tree equals the map recorded in the DERIVED region of
- *     `packages/supabase-types/RPC-NULLABILITY.md` (a stale artifact is a red gate, never an
- *     auto-fixed one). 1b: every harvested column also has a hand-written disposition row in
- *     that artifact's per-RPC tables. 1b is the half that actually delivers criterion 4's
- *     "so a future RPC is not missed" clause: `--write` can satisfy 1a on its own, but only a
- *     human can satisfy 1b, so a new column cannot reach a green gate undispositioned.
- *   Check 2 (the adjacency case) — duplicate function name. If the same function name is
- *     declared in two different scanned files, fail naming BOTH file:line pairs rather than
- *     merging them into one row or emitting two rows silently. That is the failure mode a
- *     scan of the wrong tree would produce invisibly: the migrations tree redefines
- *     `get_nominations` twice and restates all three declarations in the initial-schema file,
- *     so scanning `apps/supabase/supabase/migrations/**` yields five occurrences for three
- *     functions. This guard therefore reads the schema tree and only the schema tree.
- *   Check 3 (the empty case) — fail-closed harvest. A `.sql` file declaring no `RETURNS
- *     TABLE` function contributes zero rows and is NOT an error; most files in the tree are
- *     like that. But a TOTAL harvest of zero RPCs, or a scan root that does not exist or
- *     cannot be read, exits 1 naming the scanned root. A green "0 RPCs found" would be a gate
- *     that cannot fail, and zero-from-an-inert-guard is indistinguishable from
- *     zero-from-a-clean-tree unless the guard proves its corpus first.
- *   Check 4 (CIGATE-05) — the cast grep. No `.<rpc_column> as <string|number|boolean> | null`
- *     compensation anywhere under `apps`, `packages` or `tests`. The column alternation is
- *     the HARVESTED snake_case column set, never a hand-written list: that is what makes the
- *     gate self-maintaining when a fourth RPC arrives. Measured baseline: exactly 1 hit before
- *     phase 164 plan 01 removed the phase-126 cast, 0 after.
- *   Check 5 — override cross-check. Every column key declared in
- *     `packages/supabase-types/src/database.overrides.ts` names a column the schema actually
- *     declares for that RPC. This is belt-and-braces behind the type-level `K extends keyof
- *     ReturnsRow<F>` constraint, which is the primary instrument; it catches the case where
- *     the package somehow stops being typechecked.
- *   Check 6 — the delivery chain. Checks 1 to 5 all prove the override is CORRECT; none of
- *     them proves it is CONNECTED. Two links carry the widened type from the override locus
- *     to every consumer, and both are one-token edits away from being bypassed with the whole
- *     repository still green: `packages/supabase-types/src/index.ts` must export the public
- *     `Database` from `./database.merged` rather than straight from the generated
- *     `./database`, and `packages/supabase-types/src/database.merged.ts` must declare that
- *     `Database` by applying `FunctionReturnOverrides` imported from `./database.overrides`.
- *     This check is not hypothetical: phase 164 plan 04's negative control ran the barrel
- *     mutation and measured the entire tree staying green, EVEN WITH THE CONSUMER'S
- *     NULL-GUARD ALSO DELETED (`164-NEGATIVE-CONTROL.md` § 6, rows NC-3 and NC-3b). The other
- *     two gates of the phase are aimed elsewhere by construction — the drift job diffs only
- *     the generated `src/database.ts`, which a barrel edit does not touch, and the package
- *     typecheck compiles `database.merged.ts` happily when nothing imports it.
- *
- *     It reads the EXPORT STATEMENT, never the specifier as a bare string. A grep for
- *     `'./database.merged'` passes a barrel that keeps the import and stops exporting
- *     `Database` from it, which is the same bypass wearing a disguise. Zero `Database`
- *     exports, or more than one, is a violation for the same fail-closed reason check 3
- *     exists: a resolver that reads nothing reports clean forever.
- *
- * SCOPE IS HARD-CODED, NOT CONFIGURABLE. `SCHEMA_SCAN_ROOT` is a single named constant so
- * widening it is a deliberate, reviewable edit. The reader's copy of the schema under
- * `apps/supabase/supabase/schema/` is the sole authority for what the RPCs return; the
- * migration files are a historical record that restates and then redefines those same
- * functions, and counting both double-counts.
- *
- * WHY THE CAST GREP EXCLUDES `scripts/`. This file contains the column alternation as a
- * literal, so a scan that included its own directory would match itself and the gate would be
- * permanently red for a reason unrelated to any consumer. The roots are therefore `apps`,
- * `packages` and `tests` — which is also the whole of the product surface that imports the
- * generated types.
- *
- * A COMMENT QUOTING THE PATTERN COUNTS AS A HIT. The scan is a text read and makes no attempt
- * to skip comments. That is deliberate: a commented-out cast is a cast waiting to be
- * uncommented. Reword the comment; do not narrow the pattern to excuse it.
- *
- * WHY A REGEX READ RATHER THAN A SQL PARSE. No SQL parser is a repository dependency, and
- * adding one to read three uniformly-authored function signatures would be a worse trade —
- * the same reasoning `packages/dev-seed/tests/ciTypecheckGate.test.ts` records for not adding
- * a YAML parser, and the house style stated at length in
- * `scripts/assert-a11y-scan-wiring.mjs`: Node built-ins only, no build step, exit 1 naming the
- * specific problem.
- *
- * DETERMINISM. RPC records are emitted sorted by (file path, declaration line) and columns are
- * kept in RETURNS TABLE declaration order, because that order is the function's positional
- * contract and sorting it would destroy information. The same tree therefore produces
- * byte-identical output on every run, so `--write` followed by `git diff --exit-code` can only
- * ever be reporting a real change.
- *
- * `--write` MERGES, IT DOES NOT CLOBBER. The artifact has a machine-owned half and a
- * human-owned half. `--write` rewrites only the region between the DERIVED sentinels and
- * copies every other byte of the existing file through unchanged, so the hand-written
- * evidence and disposition cells survive a regeneration. If the artifact does not exist yet,
- * `--write` scaffolds one. The flag-membership read follows `scripts/assert-node-engine.mjs`.
- *
- * `--write` MUST NEVER RUN IN CI. The gate's value is that a stale artifact is a red build,
- * not an auto-fixed one.
+ * Output is deterministic (records sorted by file and line, columns in declaration order), so
+ * `--write` followed by `git diff --exit-code` reports only real changes. `--write` rewrites only the
+ * region between the DERIVED sentinels and must never run in CI. A regex read, Node built-ins only.
  *
  * Usage:
  *   node scripts/assert-rpc-return-nullability.mjs            (derive + all six checks)
@@ -110,14 +35,15 @@
  *
  * Exit codes:
  *   0 - all six checks clean, or `--write` completed
- *   1 - at least one violation, or a named precondition failure (an unreadable or empty scan
- *       root, an unreadable artifact, an unreadable override file, an unreadable barrel or
- *       merge module)
+ *   1 - a violation, or a precondition failure (an unreadable or empty scan root, an unreadable
+ *       artifact, override file, barrel or merge module)
  */
 
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { listFiles } from './lib/source-files.mjs';
 
 const SELF = 'scripts/assert-rpc-return-nullability.mjs';
 const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
@@ -142,7 +68,7 @@ const OVERRIDES_SPECIFIER = './database.overrides';
 const CAST_SCAN_ROOTS = ['apps', 'packages', 'tests'];
 const CAST_SCAN_EXTS = ['.ts', '.svelte'];
 /** Trees whose contents are installed, generated or built rather than authored. */
-const CAST_SKIP_DIRS = new Set(['node_modules', 'dist', 'build', '.svelte-kit', '.turbo', 'coverage']);
+const CAST_SKIP_DIRS = ['node_modules', 'dist', 'build', '.svelte-kit', '.turbo', 'coverage'];
 
 const DERIVED_BEGIN = '<!-- BEGIN DERIVED: node scripts/assert-rpc-return-nullability.mjs --write -->';
 const DERIVED_END = '<!-- END DERIVED -->';
@@ -161,25 +87,10 @@ function readOrNull(relPath) {
   }
 }
 
-/** Recursive walk yielding repo-relative paths of every `*.sql` file under `relRoot`, sorted. */
-function collectSqlFiles(relRoot) {
-  const absRoot = path.resolve(REPO_ROOT, relRoot);
-  const found = [];
-  const walk = (absDir) => {
-    for (const entry of readdirSync(absDir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
-      const abs = path.join(absDir, entry.name);
-      if (entry.isDirectory()) walk(abs);
-      else if (entry.isFile() && entry.name.endsWith('.sql')) found.push(path.relative(REPO_ROOT, abs));
-    }
-  };
-  walk(absRoot);
-  return found.sort();
-}
-
 // ── Harvest ───────────────────────────────────────────────────────────────
 
 const FUNCTION_DECL_RE = /^CREATE OR REPLACE FUNCTION\s+public\.([a-z0-9_]+)\s*\(/i;
-// The leading `)?` is phase 163 (CIGATE-02). Before prettier-plugin-sql, the parameter list's closing paren sat alone on its own line and `RETURNS TABLE (` opened the next one; the formatter fuses them into `) RETURNS TABLE (`. Without the optional paren this harvest silently drops to zero, which check 3 then correctly refuses to report as a clean tree.
+// The optional leading `)` accepts both `) RETURNS TABLE (` and a `RETURNS TABLE (` on its own line.
 const RETURNS_TABLE_RE = /^\)?\s*RETURNS TABLE\s*\(\s*$/i;
 const COLUMN_RE = /^([a-z_][a-z0-9_]*)\s+(.+?),?$/;
 
@@ -394,33 +305,6 @@ function namedReExports(source) {
 
 // ── The cast grep ─────────────────────────────────────────────────────────
 
-function collectScanFiles(relRoot) {
-  const absRoot = path.resolve(REPO_ROOT, relRoot);
-  const found = [];
-  const walk = (absDir) => {
-    let entries;
-    try {
-      entries = readdirSync(absDir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries.sort((a, b) => (a.name < b.name ? -1 : 1))) {
-      if (CAST_SKIP_DIRS.has(entry.name)) continue;
-      const abs = path.join(absDir, entry.name);
-      if (entry.isDirectory()) walk(abs);
-      else if (entry.isFile() && CAST_SCAN_EXTS.includes(path.extname(entry.name)))
-        found.push(path.relative(REPO_ROOT, abs));
-    }
-  };
-  try {
-    if (!statSync(absRoot).isDirectory()) return found;
-  } catch {
-    return found;
-  }
-  walk(absRoot);
-  return found.sort();
-}
-
 /**
  * Build the cast pattern from the HARVESTED snake_case column names.
  *
@@ -443,10 +327,10 @@ function buildCastPattern(records) {
 function main() {
   let sqlFiles;
   try {
-    sqlFiles = collectSqlFiles(SCHEMA_SCAN_ROOT);
+    sqlFiles = listFiles(SCHEMA_SCAN_ROOT, { include: (relPath) => relPath.endsWith('.sql') });
   } catch (error) {
     console.error(
-      `[ERROR] ${SELF}: could not read the scan root '${SCHEMA_SCAN_ROOT}' (${error.message}). A tree this ` +
+      `[ERROR] ${SELF}: ${error.message}, under the scan root '${SCHEMA_SCAN_ROOT}'. A tree this ` +
         'guard cannot read is an enumeration it cannot derive — this fails closed.'
     );
     process.exitCode = 1;
@@ -562,7 +446,7 @@ function main() {
       if (!recorded.has(rpc)) {
         violate(
           `the RPC '${rpc}' is declared in '${SCHEMA_SCAN_ROOT}' but has no ${label} in '${ARTIFACT}'. ` +
-            `Criterion CIGATE-04 requires a remedy recorded per RPC, including "no change needed" and why. ${hint}`
+            `Every RPC needs a recorded remedy, including "no change needed" and why. ${hint}`
         );
         continue;
       }
@@ -607,7 +491,21 @@ function main() {
   const { alternation, regex } = buildCastPattern(records);
   const castHits = [];
   for (const root of CAST_SCAN_ROOTS) {
-    for (const relFile of collectScanFiles(root)) {
+    let scanFiles;
+    try {
+      scanFiles = listFiles(root, {
+        include: (relPath) => CAST_SCAN_EXTS.includes(path.extname(relPath)),
+        prune: CAST_SKIP_DIRS
+      });
+    } catch (error) {
+      violate(
+        `${error.message}, under the cast-scan root '${root}'. A tree this guard cannot read is a cast it ` +
+          'cannot rule out — this fails closed.'
+      );
+      process.exitCode = 1;
+      return;
+    }
+    for (const relFile of scanFiles) {
       const source = readOrNull(relFile);
       if (source === null) {
         process.exitCode = 1;
@@ -688,8 +586,7 @@ function main() {
       `'${BARREL}' re-exports 'Database' from '${barrelSpecifiers[0]}' rather than from '${MERGED_SPECIFIER}'. ` +
         'That single token bypasses the whole override layer for every consumer in the monorepo: the generated ' +
         'type declares each RETURNS TABLE output column non-null, so a legitimate null-guard becomes dead code ' +
-        'to the compiler and deleting it compiles clean. Measured in phase 164 plan 04 (NC-3 / NC-3b): with the ' +
-        'barrel rewired, the frontend check stays exit 0 even with the guard deleted.'
+        'to the compiler and deleting it compiles clean.'
     );
   }
 
@@ -724,7 +621,7 @@ function main() {
 
   const census = records.map((r) => `${r.rpc} ${r.columns.length}`).join(', ');
   console.log(
-    `RPC return-nullability guard (phase 164: CIGATE-04, CIGATE-05) — ${records.length} RETURNS TABLE RPC(s) ` +
+    `RPC return-nullability guard — ${records.length} RETURNS TABLE RPC(s) ` +
       `derived from ${SCHEMA_SCAN_ROOT}: ${census}; ${alternation.split('|').length} snake_case column(s) in the ` +
       `cast alternation, ${castHits.length} cast hit(s); barrel exports Database from ${barrelVerdict}; ` +
       `${violations} violation(s).`

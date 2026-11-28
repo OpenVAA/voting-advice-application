@@ -1,165 +1,40 @@
 #!/usr/bin/env node
 
 /**
- * COMMENT HYGIENE GUARD (phase 152, requirement REVIEW-HYG-01).
+ * COMMENT HYGIENE GUARD.
  *
- * The incident this file exists for: a pre-ship review of PRs #865/#866/#869/#870 found
- * comments across `apps/**`, `packages/**` and `tests/**` that had stopped explaining the
- * code in front of them — prose broken across lines for no reason, and one docstring whose
- * punctuation had been written as a six-character source escape instead of the character it
- * encodes (`apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte:12`,
- * `– default: The contents to wrap.`). Fixing the instances closes nothing: the class
- * reopens on the next PR that writes a comment. Eleven further phases (153-164) were queued
- * to write new comments immediately after the sweep. So the sweep's durable half is THIS
- * FILE, wired into `yarn lint:check` — the one command every local run and CI pass through.
- * A convention that lives only in a review comment is a convention that reopens; a check is
- * a check. (D-A4, D-N1: "the enforcement, not the ordering, is what makes the sweep
- * durable".)
+ * Enforces the mechanical half of CLAUDE.md § Comment Hygiene over the tracked files under `apps/`,
+ * `packages/`, `tests/` and `infra/`, so a comment that stops explaining its code is caught at the
+ * next `yarn lint:check` rather than in review. Two rules:
  *
- * TWO rules, and only two — BOTH LIVE, neither flag-gated, neither warn-only:
+ *   Rule 1 — a literal `\uXXXX` escape inside a comment span: write the character itself. Comment
+ *     scoped, because string literals in the tree (the import-sort regexes in
+ *     `packages/shared-config/eslint.config.mjs`) carry escapes that must stay.
+ *   Rule 2 — a forced line break: a comment line ending without `.`, `!` or `?` whose next line
+ *     continues the same span at the same post-marker indent. Tables, fenced examples, tool
+ *     directives, headings, list items, JSDoc tags and hanging indents are excluded; the
+ *     exclusions are listed with the predicate below.
  *
- *   Rule 1 (D-A5) — A literal `\uXXXX` escape inside a comment span. The rule is
- *     comment-SCOPED, never a `git grep`: the scan roots carry six non-comment
- *     occurrences that must not be touched, five of them the import-sort regex strings in
- *     `packages/shared-config/eslint.config.mjs:164,171-174` whose corruption would break
- *     lint repo-wide, plus `apps/frontend/src/lib/components/select/Select.svelte:87`.
- *   Rule 2 (D-A4) — the forced-line-break predicate: a comment line ending without terminal
- *     punctuation whose next line continues the same span at the same post-marker indent.
- *     Added by plan 152-15, once plan 152-14's sweep had taken the tree to zero for it, and
- *     added to THIS already-wired guard rather than to a second one. One gate, two rules.
- *     D-N1(c) was rejected precisely because a guard that fails on N pre-existing violations
- *     cannot be enabled until the sweep runs — so the rule waited for the sweep instead of
- *     shipping disabled, which is no guard at all.
+ * There is deliberately no rule about dashes: double-hyphens are comment openers in SQL and rule
+ * separators in ESLint directives, where a rewrite changes the directive's parse.
  *
- * ── WHERE RULE 2 COMES FROM: A LIFT, NOT A RE-DERIVATION ──────────────────
- * Rule 2's predicate, its five ruled structural exclusions, its Amendment-1 paragraph-break
- * rule and its three eligibility preconditions are LIFTED VERBATIM from the phase instrument
- * `.planning/phases/152-comment-naming-hygiene-sweep/scripts/unwrap-comment-paragraphs.mjs`,
- * which is the predicate the operator-sanctioned sweep actually ran over 727 files. THE TWO
- * PREDICATES MUST NOT DIVERGE: the instrument is what took the tree to zero, so a guard that
- * disagrees with it either reddens on structure the sweep deliberately preserved, or passes
- * text the sweep would have joined. The instrument is a ONE-SHOT PHASE ARTEFACT and stops
- * being run once phase 152 closes; this file is the STANDING GATE and runs forever. If a
- * predicate bug is found here, fix it here and record the divergence — do not silently let
- * the two drift.
- *
- * The lift includes the four hardenings plan 152-14 measured against the real tree, each of
- * which was found by reading the sweep's own diff before it was spent: column-aligned tables
- * (42 junctions in 4 files), fenced `@example` blocks (903 junctions across ~140 files, the
- * largest and worst class), tool directives (9 junctions — one of which had already silently
- * re-enabled an ESLint error), and ATX / box-drawn section headers (43 junctions), plus the
- * unfenced indented shell recipes in `HANGING_INDENT`'s row (135 junctions). A guard carrying
- * the NAIVE predicate instead of the hardened one would redden on all of them.
- *
- * ⚠ STANDING PROHIBITION — this guard has NO rule about dashes of any kind, and one must
- * never be added "while we're in there". 212 comment lines in these trees use a
- * double-hyphen as a dash, and two of those — `apps/frontend/src/hooks.server.ts:1` and
- * `apps/frontend/src/hooks.ts:1` — are ESLint disable-directive rule-description
- * separators, where a rewrite changes the DIRECTIVE'S PARSE and could silently disable
- * `func-style` across the whole frontend. A further 3,025 comment lines already use real
- * em/en dash characters and are correct as they stand. A third rule of that shape fails on
- * 3,237 lines on its first run. D-A5 option (b) (normalise the double-hyphens) and option
- * (c) (flatten every dash to a plain hyphen) were both explicitly considered and REJECTED.
- * Per D-A5 and 152-CONTEXT.md <open> item 6.
- *
- * THE PROHIBITION EXTENDS TO RULE 2, and rule 2 does not weaken it. Rule 2 operates on LINE
- * BREAKS and TERMINAL PUNCTUATION only: it decides whether two adjacent comment lines are one
- * broken sentence, and if they are it says so. It never rewrites punctuation, never normalises
- * a character to another character, and never inspects a double-hyphen except through the SQL
- * comment marker in the shared classifier — which is the point: in a `.sql` file the double
- * hyphen IS the comment opener, so a rule of that shape could not even be expressed here
- * without breaking the tokenizer it depends on. Plan 152-14 found the SAME threat (T-152-03,
- * an edit that changes a directive's parse) reachable by a route the prohibition does not
- * cover — a JOIN that absorbs an `eslint-disable-next-line` — which is why `TOOL_DIRECTIVE`
- * below is an eligibility precondition and not a nicety.
- *
- * ⚠ COPY RELATIONSHIP — the comment-span classifier (`commentSpans`, `inSpans`,
- * `FAMILY_BY_EXT`, `OPENER_RE`/`openerEnd`) NO LONGER LIVES IN THIS FILE. Phase 155 plan 05
- * extracted it verbatim to `scripts/lib/comment-spans.mjs`, which this file now imports,
- * because a second guard under `scripts/` needed the same answer to the same question:
- * `assert-edge-env-defaults.mjs` must tell a forbidden environment default apart from the
- * four docstrings that describe one. A third hand-rolled copy would have been a third
- * opinion about what a comment is. Nothing about this guard's behaviour changed in the
- * move: `--self-test` and a whole-tree run were diffed across it and were byte-identical.
- *
- * The `.claude/skills/ship-review-stack/sources/hygiene-codemod.mjs` copy the classifier
- * originally came from STAYS a copy. That module declares no `export` at all and
- * self-executes its whole enumeration on import, so importing it would run a codemod; and
- * editing it means editing `.claude/`, a D-15 exempt tree phase 152 recorded as one it may
- * not touch. THAT COPY AND `scripts/lib/comment-spans.mjs` MUST STILL BE CHANGED TOGETHER.
- * If you fix a tokenizer bug in one, fix it in the other. The one deliberate divergence is
- * marked NET-NEW in the extracted module (the line-1 shebang rule, which rule 2 needs and
- * the source classifier does not have).
- *
- * COST STATEMENT, in the terms `scripts/assert-unit-test-coverage.mjs:33-38` uses for its
- * own: this guard shells out once, to `execFileSync('git', ['ls-files', ...])`, which
- * forfeits the no-subprocess bootstrapping purity the rest of the family keeps. It is paid
- * knowingly. `globSync` sees the working tree, not the index, so without the intersection
- * the guard would read gitignored build output — generated paraglide sources, the
- * `tests/e2e-runs/**` evidence directories — and report violations in files nobody can fix
- * because they are regenerated. `SKIP_PATH_RE` is the cheap belt and the tracked-set
- * intersection is the structural one; BOTH are kept, because the source module records that
- * either alone has been wrong before. The rest of the family's bootstrapping properties
- * hold: no build step, no transpiler, no workspace import, no new dependency.
- *
- * SANCTIONED EXCEPTION, quoted from `scripts/assert-unit-test-coverage.mjs:39-41` so a later
- * reader does not "improve" this file into a `.ts` one against CLAUDE.md's strict-TypeScript
- * directive: "This file is deliberately OUTSIDE TypeScript, against CLAUDE.md's 'use
- * TypeScript strictly', for that same bootstrapping reason: a guard that must run before
- * anything is built cannot itself require a build."
- *
- * ── THE EXTENSION SET, AND THE ONE FAMILY DELIBERATELY LEFT OUT ───────────
- * Plan 152-01 shipped this guard scanning eleven extension families and RECORDED THE GAP for
- * 152-15 to dispose of: the source codemod also classifies `.css`, `.scss`, `.html`, `.xml`,
- * `.toml`, `.zsh`, `.mts`, `.cts`, `.jsx` and `.md`, and RESEARCH § 1.5 counted 6 `.css` and 4
- * `.html` comment-bearing files in the scan roots that this guard could not see. 152-15
- * measured the gap rather than inheriting it, by widening this map and reading the result:
- *
- *   `.html` — 4 tracked files, **0 violations under either rule**. ADDED. Free to close, and
- *     closing it means the four files are gated from now on instead of merely clean today.
- *   `.css` / `.scss` — ADDED by plan 153-11 under operator ruling D7b, in the order that
- *     ruling fixed. 152-15 measured 4 comment-bearing files carrying 19 live rule-2 violations
- *     (`app.css` 14, `inter.css` 3, `prism-vs.css` 2) and DECLINED to add the family, because
- *     enabling a rule against N pre-existing violations is exactly the D-N1(c) shape this phase
- *     rejected: such a guard must ship red or ship disabled, and a disabled guard is no guard.
- *     It registered the question for the operator instead. The operator ruled on 2026-08-29:
- *     sweep the one first-party file, exclude the two vendored ones by name, THEN add the
- *     family. 153-11 did exactly that — `app.css` swept to zero in commit `58be1b985`, proven
- *     comment-only with zero allow entries over a range bounded at that commit, and the family
- *     added afterwards with the guard green on arrival. The two exclusions are
- *     `VENDORED_EXCLUSIONS` below. One inherited figure did not survive re-measurement: six
- *     `.css` files are tracked under the scan roots and FIVE of them carry comments, not four
- *     — `packages/argument-condensation/tools/visualization/styles.css` (23 comment openers)
- *     and `apps/docs/src/routes/layout.css` (1) both carry comments and both were already at
- *     zero violations, so the 19-violation total 152-15 recorded was right even though its
- *     file count was one low. No `.scss` file is tracked anywhere in the scan roots; the
- *     extension is registered so that the first one added is covered on arrival rather than
- *     entering a blind spot.
- *
- * `.md` stays out for a different and stronger reason: the shared classifier maps `md` to an
- * empty comment family, so a Markdown file has no comment spans at all and both rules would be
- * silently inert on it. That question is also the operator's.
- *
- * INPUT SURFACE: the tracked files under `apps/`, `packages/`, `tests/` and `infra/` — four
- * HARD-CODED scan roots. There is deliberately no `--files` glob, no ignore file, no
- * per-path exception roster and no warn-only tier. That is what makes the D-15 exemption
- * (`.planning/`, `.claude/`, `.agents/`, `CLAUDE.md`, and root `scripts/` itself, all of
- * which are agent-facing planning infrastructure rather than shipped source) unbypassable BY
- * CONSTRUCTION rather than by a check somebody can argue with: those paths are not under a
- * scan root, so no argument can steer the guard into them. Excusing a file requires editing
- * this script, which is then reviewed as the decision it is.
+ * Comment spans come from `scripts/lib/comment-spans.mjs`. Files are listed with `globSync` and
+ * intersected with `git ls-files`, so generated build output is never read. Markdown is not scanned:
+ * the classifier gives it no comment family. `VENDORED_EXCLUSIONS` and the applied-migrations prefix
+ * are the only exclusions, both reported in the summary; there is no flag or ignore file that
+ * narrows the scan. Every run first runs the self-test over the committed fixtures and inline edge
+ * cases (which exercise every comment family of the shared classifier), and withholds the scan
+ * result when it fails. Node built-ins only, no build step.
  *
  * Usage:
- *   node scripts/assert-comment-hygiene.mjs                 # scan the tree
- *   node scripts/assert-comment-hygiene.mjs --self-test     # run the committed fixtures
+ *   node scripts/assert-comment-hygiene.mjs                 # self-test, then scan the tree
+ *   node scripts/assert-comment-hygiene.mjs --self-test     # run the self-test only
  *   node scripts/assert-comment-hygiene.mjs --emit-fixtures # regenerate expected files
  *
  * Exit codes:
- *   0 - clean, or --self-test passed
- *   1 - at least one violation, or a named precondition failure (a file, a directory or the
- *       tracked-file set this guard could not read). An input this guard cannot read is
- *       hygiene it cannot verify, and is never read as "everything is accounted for" — this
- *       fails closed.
+ *   0 - the self-test passed and the tree is clean, or `--self-test` passed
+ *   1 - a self-test failure, a violation, or a file, directory or tracked-file set this guard could
+ *       not read
  */
 
 import { execFileSync } from 'node:child_process';
@@ -182,26 +57,24 @@ const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 // ── CLI args ──────────────────────────────────────────────────────────────
-// Membership tests over `process.argv`, no dependency — the shape used by
-// `.claude/skills/ship-review-stack/sources/hygiene-codemod.mjs:132-186`, minus every flag
-// that could narrow or widen the scan (see INPUT SURFACE above).
+// Membership tests over `process.argv`. No flag narrows or widens the scan.
 const argv = process.argv.slice(2);
 const KNOWN_FLAGS = new Set(['--self-test', '--emit-fixtures', '-h', '--help']);
 const SELF_TEST = argv.includes('--self-test');
 const EMIT_FIXTURES = argv.includes('--emit-fixtures');
 
 const SCAN_EXTS = Object.keys(FAMILY_BY_EXT);
-/** Hard-coded. Not configurable, not overridable — see INPUT SURFACE in the docblock. */
+/** Hard-coded. Not configurable, not overridable. */
 const SCAN_ROOTS = ['apps', 'packages', 'tests', 'infra'];
 const GLOBS = SCAN_ROOTS.map((root) => `${root}/**/*.{${SCAN_EXTS.join(',')}}`);
 
 // Generated / vendored trees. Reading these would report violations in files nobody can fix,
-// because they are regenerated. Copied verbatim from hygiene-codemod.mjs:201-202.
+// because they are regenerated. The tracked-file intersection in `enumerateFiles` is the second belt.
 const SKIP_PATH_RE =
   /(^|\/)(node_modules|\.svelte-kit|\.turbo|\.yarn|\.git|dist|build|coverage|playwright-report|playwright-results[\w-]*|test-results|e2e-runs|paraglide|project\.inlang|snippets)\//;
 
 /**
- * VENDORED THIRD-PARTY TEXT, EXCLUDED BY NAME. Operator ruling D7b, 2026-08-29.
+ * VENDORED THIRD-PARTY TEXT, EXCLUDED BY NAME.
  *
  * Two files under the scan roots are not this project's prose. Their rule-2 junctions sit
  * inside licence and attribution text that arrived verbatim from upstream, and rewrapping such
@@ -249,7 +122,7 @@ function isFrozenMigration(rel) {
   return rel.replaceAll('\\', '/').startsWith(FROZEN_MIGRATIONS_PREFIX);
 }
 
-// ── Rule 1 (D-A5): a literal unicode escape inside a comment span ─────────
+// ── Rule 1: a literal unicode escape inside a comment span ────────────────
 const UNICODE_ESCAPE_RE = /\\u[0-9a-fA-F]{4}/g;
 const QUOTE_LIMIT = 120;
 
@@ -261,8 +134,8 @@ function quoteComment(line, spans, idx) {
   return body.length > QUOTE_LIMIT ? `${body.slice(0, QUOTE_LIMIT)}…` : body;
 }
 
-// ── Rule 2 (D-A4): a forced line break inside a comment paragraph ─────────
-// THE PREDICATE, D-A4 VERBATIM: "a comment line that ends without terminal punctuation AND
+// ── Rule 2: a forced line break inside a comment paragraph ────────────────
+// THE PREDICATE: "a comment line that ends without terminal punctuation AND
 // whose next line continues the same comment span at the same indent."
 //
 //   terminal punctuation : `.` `!` `?` — the STRICT reading. A line ending in a comma is
@@ -273,9 +146,9 @@ function quoteComment(line, spans, idx) {
 //   the same span        : physical adjacency AND the same comment span. A trailing comment on
 //                          a code line is its own span and never joins with the line below.
 //
-// A line-1 `#!` shebang is never a comment-span start — the classifier's one NET-NEW rule,
-// which exists for THIS rule and is exercised by the fixtures and the inline edge cases below.
-/** D-A4's "terminal punctuation", strict reading: a comma-ended line IS a forced break. */
+// A line-1 `#!` shebang is never a comment-span start; the classifier's shebang rule exists for
+// this rule and is exercised by the fixtures and the inline edge cases below.
+/** "Terminal punctuation", strict reading: a comma-ended line IS a forced break. */
 const TERMINAL_PUNCTUATION = /[.!?][)\]`"'*]*\s*$/;
 
 // ── The five ruled structural exclusions. CONSTANTS, never flags. ─────────
@@ -355,7 +228,7 @@ const BLOCK_DELIMITER = /\/\*|\*\/|<!--|-->/;
 /**
  * A second eligibility precondition. A fenced code block inside a comment — the ```` ```tsx ````
  * of a JSDoc `@example` — is CODE, not wrapped prose, and its line breaks are the program's
- * own. D-A4's class is *wrapped prose*. The fence state is tracked PER COMMENT SPAN and reset
+ * own; this rule is about wrapped prose. The fence state is tracked PER COMMENT SPAN and reset
  * at every span boundary, so an unterminated fence cannot leak into the next comment.
  */
 const CODE_FENCE = /^\s*(```|~~~)/;
@@ -364,7 +237,7 @@ const CODE_FENCE = /^\s*(```|~~~)/;
  * prose: it is read by ESLint, TypeScript, Prettier, Svelte or a coverage tool, and every one
  * of them requires the directive to be the FIRST thing in its comment. Join a line of prose
  * onto `eslint-disable-next-line @typescript-eslint/no-unused-expressions` and the directive
- * silently stops applying. Plan 152-14 hit exactly that, live, on its first apply.
+ * silently stops applying.
  */
 const TOOL_DIRECTIVE =
   /^\s*(eslint-disable|eslint-enable|eslint-env|globals\s|@ts-(expect-error|ignore|nocheck)|prettier-ignore|svelte-ignore|c8\s+ignore|istanbul\s+ignore|v8\s+ignore|biome-ignore|noqa|deno-lint-ignore|@vitest-environment|sourceMappingURL)/;
@@ -489,7 +362,7 @@ function scanText(label, text, fam) {
         line: i + 1,
         rule: 1,
         message:
-          `rule 1 (D-A5) — the literal escape '${match[0]}' appears inside a comment. Write the ` +
+          `rule 1 — the literal escape '${match[0]}' appears inside a comment. Write the ` +
           `character it encodes instead. Comment: "${quoteComment(line, spans, match.index)}"`
       });
     }
@@ -502,7 +375,7 @@ function scanText(label, text, fam) {
       line: cur.i + 1,
       rule: 2,
       message:
-        'rule 2 (D-A4) — this comment line ends without terminal punctuation and the line under ' +
+        'rule 2 — this comment line ends without terminal punctuation and the line under ' +
         'it continues the same comment at the same indent. Join them into one line. Comment: ' +
         `"${body.length > QUOTE_LIMIT ? `${body.slice(0, QUOTE_LIMIT)}…` : body}"`
     });
@@ -554,8 +427,7 @@ const EDGE_CASES = [
     expected: ['edge:2']
   },
 
-  // ── Rule 2 (D-A4). Ported from the phase instrument's own edge cases so the two predicates
-  // are provably the same predicate rather than two that merely agree today. Each ruled
+  // ── Rule 2. Each ruled
   // exclusion has a case proving it FIRES, and the three whose boundary is arguable have a
   // second case proving the boundary — an exclusion that never stops firing is an exclusion
   // that has silently switched the rule off.
@@ -578,7 +450,7 @@ const EDGE_CASES = [
     expected: ['edge:1']
   },
   {
-    name: 'rule 2, PARAGRAPH_BREAK — a blank comment line ends the paragraph (Amendment 1)',
+    name: 'rule 2, PARAGRAPH_BREAK — a blank comment line ends the paragraph ',
     ext: 'ts',
     text: '// first paragraph ends here\n//\n// second paragraph starts here.\n',
     expected: []
@@ -706,7 +578,7 @@ const EDGE_CASES = [
     expected: []
   },
   {
-    // Load-bearing for rule 2, not for rule 1: WITHOUT the classifier's NET-NEW shebang rule
+    // Load-bearing for rule 2, not for rule 1: without the classifier's shebang rule
     // the interpreter directive would open the span and line 1 would be reported too.
     name: 'rule 2 — a line-1 #! shebang never opens a paragraph the line below continues',
     ext: 'sh',
@@ -724,9 +596,16 @@ function serialise(locations) {
   return locations.length === 0 ? '' : `${locations.join('\n')}\n`;
 }
 
-function selfTest() {
+/**
+ * Run the committed fixtures and the inline edge cases; returns the exit code. Failures are always
+ * printed; passes only when `verbose`, which the scan run turns off to keep its output to a summary.
+ */
+function selfTest({ verbose = true } = {}) {
   let failures = 0;
-  console.log('PHASE 152 — comment hygiene guard (SELF-TEST)\n');
+  const log = (line) => {
+    if (verbose) console.log(line);
+  };
+  log('Comment hygiene guard (SELF-TEST)\n');
 
   for (const [inRel, expRel] of FIXTURES) {
     const inPath = path.resolve(SCRIPT_DIR, inRel);
@@ -759,7 +638,7 @@ function selfTest() {
     }
 
     if (actual === expected) {
-      console.log(`  ✓ ${inRel}  (violations: ${actual === '' ? 0 : actual.trimEnd().split('\n').length})`);
+      log(`  ✓ ${inRel}  (violations: ${actual === '' ? 0 : actual.trimEnd().split('\n').length})`);
       continue;
     }
 
@@ -780,11 +659,11 @@ function selfTest() {
     return 0;
   }
 
-  console.log('');
+  log('');
   for (const edge of EDGE_CASES) {
     const actual = locationsOf(scanText('edge', edge.text, FAMILY_BY_EXT[edge.ext]));
     if (serialise(actual) === serialise(edge.expected)) {
-      console.log(`  ✓ edge case: ${edge.name}`);
+      log(`  ✓ edge case: ${edge.name}`);
       continue;
     }
     failures++;
@@ -793,11 +672,13 @@ function selfTest() {
     console.log(`        expected: ${JSON.stringify(edge.expected)}`);
   }
 
-  console.log(
-    `\n── Summary ──\n  Fixtures: ${FIXTURES.length}\n  Edge cases: ${EDGE_CASES.length}\n  Failures: ${failures}`
-  );
-  console.log(`\n${failures === 0 ? '✓ Self-test PASSED. No file on disk was touched.' : '✗ Self-test FAILED.'}`);
-  console.log('\nMODE: self-test (no files written).');
+  if (verbose || failures > 0) {
+    console.log(
+      `\n── Summary ──\n  Fixtures: ${FIXTURES.length}\n  Edge cases: ${EDGE_CASES.length}\n  Failures: ${failures}`
+    );
+    console.log(`\n${failures === 0 ? '✓ Self-test PASSED. No file on disk was touched.' : '✗ Self-test FAILED.'}`);
+    console.log('\nMODE: self-test (no files written).');
+  }
   return failures === 0 ? 0 : 1;
 }
 
@@ -878,11 +759,11 @@ function enumerateFiles(violate) {
 function printUsage() {
   console.log(
     [
-      'COMMENT HYGIENE GUARD (phase 152, requirement REVIEW-HYG-01)',
+      'COMMENT HYGIENE GUARD',
       '',
       'Usage:',
-      '  node scripts/assert-comment-hygiene.mjs                 scan apps/, packages/, tests/, infra/',
-      '  node scripts/assert-comment-hygiene.mjs --self-test     run the committed fixtures',
+      '  node scripts/assert-comment-hygiene.mjs                 self-test, then scan apps/, packages/, tests/, infra/',
+      '  node scripts/assert-comment-hygiene.mjs --self-test     run the self-test only',
       '  node scripts/assert-comment-hygiene.mjs --emit-fixtures regenerate expected files',
       '',
       'There is no flag that narrows, widens or waives the scan. See this file for why.'
@@ -909,6 +790,17 @@ function main() {
 
   if (SELF_TEST || EMIT_FIXTURES) {
     process.exitCode = selfTest();
+    return;
+  }
+
+  // The fixtures are the only proof of the shared classifier's non-C comment families, so they run
+  // on every invocation, and a scan result from a classifier that failed them is not reported.
+  if (selfTest({ verbose: false }) !== 0) {
+    console.error(
+      `[ERROR] ${SELF}: the self-test failed (above), so the corpus result is withheld. Run ` +
+        '`node scripts/assert-comment-hygiene.mjs --self-test` for the full report.'
+    );
+    process.exitCode = 1;
     return;
   }
 
@@ -945,12 +837,13 @@ function main() {
   }
 
   console.log(
-    `Comment hygiene guard (phase 152: REVIEW-HYG-01) — files scanned: ${scanned}; ` +
+    `Comment hygiene guard — files scanned: ${scanned}; ` +
       `vendored files excluded by name: ${VENDORED_EXCLUSIONS.size} ` +
       `(${[...VENDORED_EXCLUSIONS.keys()].join(', ')}); ` +
       `applied migrations excluded by prefix: ${frozenMigrationCount} (${FROZEN_MIGRATIONS_PREFIX}); ` +
       `rules live: 2 of 2 (unicode-escape-in-comment; forced-line-break). ` +
-      `${violations} violation(s).`
+      `${violations} violation(s); self-test: ${FIXTURES.length} fixture(s) and ${EDGE_CASES.length} edge ` +
+      'case(s) passed.'
   );
 
   process.exitCode = violations > 0 ? 1 : 0;

@@ -23,7 +23,7 @@
  *
  * NON-DISCLOSURE. This checker reports variable NAMES and line numbers only. It never prints a
  * value, a prefix, a length or a hash, from the template or from an operator env file, because
- * those files hold private signing and decryption keys. `assert-env-pairs-agree.mjs` holds the
+ * those files hold private signing and decryption keys. `check-env-pairs-agree.mjs` holds the
  * same rule.
  *
  * USAGE
@@ -47,21 +47,15 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  DENO_EXTENSIONS,
-  DENO_ROOT,
-  commentMapOf,
-  enumerateFiles,
-  parseEnvAssignments
-} from './assert-env-pair-registry.mjs';
+import { maskComments } from './lib/comment-spans.mjs';
+import { DENO_EXTENSIONS, DENO_ROOT, parseEnvAssignments } from './lib/env-pairs.mjs';
+import { listFiles } from './lib/source-files.mjs';
 
 const SELF = 'scripts/assert-edge-function-env.mjs';
+const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 
 /** The functions' own committed template — the file this check exists to keep honest. */
 const TEMPLATE = path.join('apps', 'supabase', 'supabase', 'functions', '.env.example');
-
-/** `.env.example` has no extension the shared classifier knows; its comments are `#` to EOL. */
-const ENV_FAMILY = { hash: true };
 
 /**
  * TypeScript sources: the shared classifier's `c` family, which blanks `//` line comments and
@@ -107,17 +101,7 @@ function fail(message) {
 }
 
 /** Replace every comment span with spaces, preserving offsets so line numbers stay true. */
-export function blankComments(text, family) {
-  const map = commentMapOf(text, family);
-  if (map.spans.length === 0) return text;
-  const chars = [...text];
-  for (const [start, end] of map.spans) {
-    for (let i = start; i < end && i < chars.length; i++) {
-      if (chars[i] !== '\n') chars[i] = ' ';
-    }
-  }
-  return chars.join('');
-}
+export { maskComments as blankComments };
 
 /**
  * Derive the required variable names from the function sources.
@@ -125,8 +109,13 @@ export function blankComments(text, family) {
  * Returns `{ required: Map<name, sites[]>, filesScanned }`, or `null` on an unreadable root.
  */
 function deriveRequired() {
-  const files = enumerateFiles(DENO_ROOT, DENO_EXTENSIONS);
-  if (files === null) return null;
+  let files;
+  try {
+    files = listFiles(DENO_ROOT, { include: (relPath) => DENO_EXTENSIONS.some((ext) => relPath.endsWith(ext)) });
+  } catch (error) {
+    fail(`${error.message}. A tree this checker cannot enumerate is a tree it cannot verify — this fails closed.`);
+    return null;
+  }
 
   // Test files are excluded: a test legitimately wraps a name it is asserting ABOUT (for example
   // `requireEnv('X', undefined)` to observe the throw), and such a name is not a deployment
@@ -142,20 +131,19 @@ function deriveRequired() {
   for (const file of sources) {
     let text;
     try {
-      text = readFileSync(path.resolve(process.cwd(), file), 'utf8');
+      text = readFileSync(path.resolve(REPO_ROOT, file), 'utf8');
     } catch (error) {
       fail(`could not read the function source '${file}' (${error.message}).`);
       return null;
     }
-    const code = blankComments(text, TS_FAMILY);
-    const rel = file.split(path.sep).join('/');
+    const code = maskComments(text, TS_FAMILY);
 
     for (const match of code.matchAll(REQUIRE_ENV_RE)) {
-      note(match[1], `${rel} (requireEnv)`);
+      note(match[1], `${file} (requireEnv)`);
     }
     for (const call of code.matchAll(CLAIM_BINDING_CALL_RE)) {
       for (const read of call[1].matchAll(DENO_READ_RE)) {
-        note(read[1], `${rel} (requireVerifyClaimBinding)`);
+        note(read[1], `${file} (requireVerifyClaimBinding)`);
       }
     }
   }
@@ -202,7 +190,7 @@ function main() {
   if (required.size === 0) {
     fail(
       `derived ZERO required variables from ${filesScanned} function source file(s) under ` +
-        `${DENO_ROOT.split(path.sep).join('/')}. That is not a pass: this check anchors on ` +
+        `${DENO_ROOT}. That is not a pass: this check anchors on ` +
         '`requireEnv(` and `requireVerifyClaimBinding(`, so an empty result means those primitives ' +
         'were renamed, removed, or moved out of the scanned root — and the check is now blind. ' +
         'Re-anchor it on whatever replaced them.'
@@ -281,7 +269,7 @@ function main() {
 
   console.log(
     `Edge Function required-env guard — sources scanned: ${filesScanned} file(s) under ` +
-      `${DENO_ROOT.split(path.sep).join('/')}; required names derived: ${required.size} ` +
+      `${DENO_ROOT}; required names derived: ${required.size} ` +
       `(${names.join(', ')}); template: ${TEMPLATE.split(path.sep).join('/')}` +
       (envFile ? `; env file '${envFile}': ${envChecked} checked, ${envMissing} missing` : '') +
       `; violations: ${violations}. Names only — no value, prefix, length or hash is ever printed. ` +

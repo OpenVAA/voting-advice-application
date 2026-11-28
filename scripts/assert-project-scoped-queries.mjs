@@ -137,10 +137,11 @@
  *   1 - at least one violation, a named precondition failure, or a failed self-test
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { commentSpans, familyFor, inSpans } from './lib/comment-spans.mjs';
+import { commentMapOf, familyFor, inSpans, lineNumberOf } from './lib/comment-spans.mjs';
+import { listFiles } from './lib/source-files.mjs';
 
 const SELF = 'scripts/assert-project-scoped-queries.mjs';
 const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
@@ -384,52 +385,6 @@ function readSource(relPath) {
     );
     return null;
   }
-}
-
-/**
- * The comment spans of `text`, as absolute character ranges, plus the line-start offsets.
- *
- * The family is a parameter because the boundary corpus contains `.svelte` files, whose prose can
- * sit in an HTML comment as well as a slash one. A TypeScript-only reading of such a file would take
- * a shape quoted inside `<!-- -->` for live code.
- * @param text - The whole file.
- * @param family - The comment family, defaulting to the slash-slash and slash-star pair.
- * @returns The comment spans and the line starts.
- */
-function commentMapOf(text, family = TS_FAMILY) {
-  const state = { inBlockC: false, inBlockHtml: false, inTemplate: false, lineIndex: 0 };
-  const lines = text.split('\n');
-  const spans = [];
-  const lineStarts = [];
-  let offset = 0;
-
-  for (let i = 0; i < lines.length; i++) {
-    lineStarts.push(offset);
-    state.lineIndex = i;
-    for (const [start, end] of commentSpans(lines[i], family, state)) {
-      spans.push([offset + start, offset + end]);
-    }
-    offset += lines[i].length + 1;
-  }
-
-  return { spans, lineStarts };
-}
-
-/**
- * The 1-based line number containing absolute character index `idx`.
- * @param lineStarts - The line-start offsets from `commentMapOf`.
- * @param idx - The absolute character index.
- * @returns The 1-based line number.
- */
-function lineNumberOf(lineStarts, idx) {
-  let lo = 0;
-  let hi = lineStarts.length - 1;
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2);
-    if (lineStarts[mid] <= idx) lo = mid;
-    else hi = mid - 1;
-  }
-  return lo + 1;
 }
 
 /**
@@ -767,7 +722,7 @@ const BOUNDARY_ACCESS_RE =
  * @returns One record per access, with its method, argument text, line and literal (if any).
  */
 function collectAccesses(text) {
-  const map = commentMapOf(text);
+  const map = commentMapOf(text, TS_FAMILY);
   const accesses = [];
   ACCESS_RE.lastIndex = 0;
   let match;
@@ -803,7 +758,7 @@ function collectAccesses(text) {
  * @returns How many escape-hatch sites were found.
  */
 function checkEscapeHatches(relPath, text, violate) {
-  const map = commentMapOf(text);
+  const map = commentMapOf(text, TS_FAMILY);
   let found = 0;
 
   CLIENT_BINDING_RE.lastIndex = 0;
@@ -871,7 +826,7 @@ function checkEscapeHatches(relPath, text, violate) {
  * @returns How many schema-hop sites were found.
  */
 function checkSchemaHop(relPath, text, violate) {
-  const map = commentMapOf(text);
+  const map = commentMapOf(text, TS_FAMILY);
   let found = 0;
 
   SCHEMA_HOP_RE.lastIndex = 0;
@@ -1456,21 +1411,12 @@ function selfTest() {
  * @returns The relative paths, sorted.
  */
 function enumerateAdapterSources() {
-  const found = [];
-  const walk = (relDir) => {
-    for (const entry of readdirSync(path.resolve(REPO_ROOT, relDir)).sort()) {
-      const relPath = `${relDir}/${entry}`;
-      if (statSync(path.resolve(REPO_ROOT, relPath)).isDirectory()) {
-        walk(relPath);
-        continue;
-      }
-      if (!entry.endsWith('.ts')) continue;
-      if (entry.endsWith('.test.ts') || entry.endsWith('.type.ts') || entry === 'index.ts') continue;
-      found.push(relPath);
+  return listFiles(ADAPTER_DIR, {
+    include: (relPath) => {
+      const name = path.basename(relPath);
+      return name.endsWith('.ts') && !name.endsWith('.test.ts') && !name.endsWith('.type.ts') && name !== 'index.ts';
     }
-  };
-  walk(ADAPTER_DIR);
-  return found.sort();
+  });
 }
 
 /**
@@ -1488,22 +1434,11 @@ function enumerateAdapterSources() {
  * @returns The relative paths, sorted.
  */
 function enumerateFrontendSourcesOutsideAdapter() {
-  const found = [];
-  const walk = (relDir) => {
-    for (const entry of readdirSync(path.resolve(REPO_ROOT, relDir)).sort()) {
-      const relPath = `${relDir}/${entry}`;
-      if (statSync(path.resolve(REPO_ROOT, relPath)).isDirectory()) {
-        if (relPath !== ADAPTER_DIR && !relPath.startsWith(`${ADAPTER_DIR}/`)) walk(relPath);
-        continue;
-      }
-      if (!entry.endsWith('.ts') && !entry.endsWith('.svelte')) continue;
-      if (entry.endsWith('.test.ts') || entry.endsWith('.spec.ts')) continue;
-      if (entry.endsWith('.type.ts') || entry.endsWith('.d.ts')) continue;
-      found.push(relPath);
-    }
-  };
-  walk(FRONTEND_SRC_DIR);
-  return found.sort();
+  return listFiles(FRONTEND_SRC_DIR, {
+    include: (relPath) =>
+      (relPath.endsWith('.ts') || relPath.endsWith('.svelte')) && !/\.(test|spec|type|d)\.ts$/.test(relPath),
+    prune: [ADAPTER_DIR]
+  });
 }
 
 function main() {

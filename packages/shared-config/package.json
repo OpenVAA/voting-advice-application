@@ -16,7 +16,6 @@
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "catalog:",
     "prettier": "catalog:",
-    "prettier-plugin-sql": "catalog:",
     "typescript": "catalog:"
   },
   "exports": {

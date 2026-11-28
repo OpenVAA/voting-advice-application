@@ -42,7 +42,7 @@
     "assert:cookie-names": "node scripts/assert-cookie-names.mjs",
     "assert:no-session-in-loads": "node scripts/assert-no-session-in-loads.mjs",
     "assert:grant-permission-enum": "node scripts/assert-grant-permission-enum.mjs",
-    "check:env-pairs-agree": "node scripts/assert-env-pairs-agree.mjs",
+    "check:env-pairs-agree": "node scripts/check-env-pairs-agree.mjs",
     "check:schema-equivalence": "bash apps/supabase/scripts/check-schema-equivalence.sh",
     "check:migration-drift": "bash infra/scripts/check-drift.sh",
     "check:seed": "psql -X -f infra/scripts/check-seed.sql",

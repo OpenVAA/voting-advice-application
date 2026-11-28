@@ -1,0 +1,6 @@
+# The `path:line` list `node scripts/assert-edge-env-defaults.mjs` must report against
+# `assert-edge-env-defaults.input.ts`, in line order.
+scripts/fixtures/assert-edge-env-defaults.input.ts:5
+scripts/fixtures/assert-edge-env-defaults.input.ts:8
+scripts/fixtures/assert-edge-env-defaults.input.ts:11
+scripts/fixtures/assert-edge-env-defaults.input.ts:14

@@ -1,86 +1,47 @@
 #!/usr/bin/env node
 
 /**
- * ADAPTER-BOUNDARY CAST GUARD (phase 157, requirement REVIEW-ADP-01).
+ * ADAPTER-BOUNDARY CAST GUARD.
  *
- * The incident this file exists for: the Supabase adapter read typed JSONB columns by
- * asserting the opaque generated `Json` type straight into an application shape — fifteen
- * occurrences of the exact spelling `as Json as unknown as X`, spread across
- * `supabaseDataProvider.ts` and `supabaseDataWriter.ts`. A triple cast through `unknown` is
- * the one form TypeScript cannot object to, so a malformed row reached domain constructors
- * with the compiler reporting nothing. Phase 157 plan 07 replaced all fifteen with a zod
- * `safeParse` that validates the stored shape and derives the application value from the
- * validated result. That took the count to zero, ONCE. Without a standing check, criterion 1's
- * "a grep for casts on adapter reads returns empty" closes by inspection, and the class is
- * free to reopen on the next pull request that finds the cast quicker than the schema.
+ * The Supabase adapter reads typed JSONB columns through zod `safeParse`, deriving the application
+ * value from the validated result. Asserting the generated `Json` type straight into an application
+ * shape instead lets a malformed row reach the domain constructors with the compiler silent, because
+ * a triple cast through `unknown` is the one assertion TypeScript cannot object to. Over every `.ts`
+ * file under `apps/frontend/src/lib/api/adapters/supabase`:
  *
- * FOUR checks, ordered so that the vacuity precondition runs first:
+ *   Check 0 — the corpus is real: the directory yields at least one file and contains the three
+ *     `ANCHOR_FILES`, so a zero cannot come from scanning nothing.
+ *   Check 1 — no line matches `as Json as unknown as`.
+ *   Check 2 — none of the literal casts in `REMOVED_CASTS` appears; each was replaced by a parse.
+ *   Check 3 — the root `lint:check` chain still contains this guard (membership, never position).
  *
- *   Check 0 — the corpus is real. The scan directory resolves, it yields at least one
- *     TypeScript file, and it contains the three named anchor files the whole guard is about.
- *     This check exists because of a defect this very phase hit twice: an acceptance criterion
- *     grepping for a string that occurs nowhere in the repository measured nothing and reported
- *     a pass. A guard whose corpus is empty reports zero violations and looks green forever, and
- *     zero-from-an-inert-guard is indistinguishable from zero-from-a-clean-tree unless the guard
- *     proves its corpus first.
- *   Check 1 (the primary assertion) — no line under the adapter directory matches
- *     `as\s+Json\s+as\s+unknown\s+as`. That is the exact spelling of the smell, its measured
- *     baseline was 15 before plan 07 and 0 after, and it cannot fire on the phase-164 nullability
- *     compensations or on the internal type assertions, none of which use the triple form.
- *   Check 2 (the literal-spelling assertion) — none of four literal cast strings the phase
- *     removed reappears. Each had a measured non-zero baseline before plan 07
- *     (`as Partial<DynamicSettings>` 2, `as AppCustomization` 1, `as LocalizedAnswers` 4,
- *     `as StoredImage` 14) and each is zero after it, so all four are regression guards over
- *     real history rather than patterns invented to be satisfiable.
- *   Check 3 — chain membership. The root `lint:check` script still contains this guard as one
- *     of its `&&` links. A guard nobody runs is a guard nobody has, so the guard makes its own
- *     absence from the chain a failure.
- *
- * MEMBERSHIP, NEVER POSITION. Check 3 splits `lint:check` on `&&` and looks for its own link in
- * the resulting token set. It must never assert an index or a terminal position: every link after
- * a failing one is equally skipped, so position is incidental, and asserting it makes appending
- * the next guard a test failure. That is the phase-144 lesson recorded verbatim in commit
- * `b410d3a90`, "assert typecheck's chain MEMBERSHIP in lint:check, not its position".
- *
- * WHY NOT AN ESLINT RULE. A `no-restricted-syntax` selector on `TSAsExpression` cannot tell the
- * in-scope boundary casts from the phase-164 nullability compensations, the `as const` literal
- * narrowings and the `toDataObject` argument widenings that legitimately share the file. It would
- * fire on dozens of accepted lines, and a guard that noisy gets disabled rather than obeyed.
- *
- * WHY A REGEX READ RATHER THAN AN AST PARSE. The assertion is about an exact source spelling, in
- * one hand-authored directory, and a regex read is the cheapest thing that can name the offending
- * line. This matches the house style of `scripts/assert-a11y-scan-wiring.mjs` and
- * `scripts/assert-unit-test-coverage.mjs`: Node built-ins only, no build step, exit 1 naming the
- * specific problem.
- *
- * ON `.mjs` RATHER THAN TYPESCRIPT. The assert-script family is deliberately plain ESM so it runs
- * with no build step and can therefore gate the build itself; `scripts/assert-unit-test-coverage.mjs`
- * states the bootstrapping reason at length. CLAUDE.md's "use TypeScript strictly" rule is not
- * violated by following that established precedent.
+ * Not an ESLint rule, because a `TSAsExpression` selector cannot tell these casts from the
+ * legitimate `as const` narrowings and argument widenings in the same files. A regex read, Node
+ * built-ins only, so it can gate the build.
  *
  * Usage:
  *   node scripts/assert-adapter-casts.mjs
  *
  * Exit codes:
  *   0 - all four checks clean
- *   1 - at least one violation, or a named precondition failure (the scan directory or a file
- *       missing or unreadable, or the corpus missing an anchor)
+ *   1 - a violation, or a precondition failure (the scan directory or a file missing or
+ *       unreadable, or the corpus missing an anchor)
  */
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { listFiles } from './lib/source-files.mjs';
+
 const SELF = 'scripts/assert-adapter-casts.mjs';
-const REQUIREMENT = 'REVIEW-ADP-01';
 const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 
 /** The directory whose every `.ts` file is the guarded corpus. */
-const ADAPTER_DIR_REL = path.join('apps', 'frontend', 'src', 'lib', 'api', 'adapters', 'supabase');
-const ADAPTER_DIR = path.resolve(REPO_ROOT, ADAPTER_DIR_REL);
+const ADAPTER_DIR_REL = 'apps/frontend/src/lib/api/adapters/supabase';
 
 /** The root manifest, read for check 3's chain-membership assertion. */
-const ROOT_MANIFEST = path.resolve(REPO_ROOT, 'package.json');
+const ROOT_MANIFEST = 'package.json';
 
 /** This guard's own `&&` link, as it must appear in the `lint:check` chain. */
 const CHAIN_LINK = 'yarn assert:adapter-casts';
@@ -95,9 +56,9 @@ const SCRIPT_NAME = 'assert:adapter-casts';
  * failure mode check 0 exists to prevent.
  */
 const ANCHOR_FILES = [
-  path.join('dataProvider', 'supabaseDataProvider.ts'),
-  path.join('dataWriter', 'supabaseDataWriter.ts'),
-  path.join('adminWriter', 'supabaseAdminWriter.ts')
+  'dataProvider/supabaseDataProvider.ts',
+  'dataWriter/supabaseDataWriter.ts',
+  'adminWriter/supabaseAdminWriter.ts'
 ];
 
 /**
@@ -106,17 +67,8 @@ const ANCHOR_FILES = [
  */
 const TRIPLE_CAST = /as\s+Json\s+as\s+unknown\s+as/;
 
-/**
- * Check 2's literal cast strings, each with the baseline it carried before phase 157 plan 07
- * removed it. The baseline is recorded beside the pattern so a later reader can tell a
- * regression guard over real history from a pattern that never matched anything.
- */
-const REMOVED_CASTS = [
-  { literal: 'as Partial<DynamicSettings>', baselineBeforePlan07: 2 },
-  { literal: 'as AppCustomization', baselineBeforePlan07: 1 },
-  { literal: 'as LocalizedAnswers', baselineBeforePlan07: 4 },
-  { literal: 'as StoredImage', baselineBeforePlan07: 14 }
-];
+/** Check 2's literal cast strings, each of which the adapter now replaces with a parse of the column. */
+const REMOVED_CASTS = ['as Partial<DynamicSettings>', 'as AppCustomization', 'as LocalizedAnswers', 'as StoredImage'];
 
 let violations = 0;
 
@@ -130,12 +82,12 @@ function violate(message) {
  * Read one file, failing closed. A file this guard cannot read is a file it cannot verify, so an
  * unreadable path is a violation rather than a skip.
  */
-function readSource(filePath) {
+function readSource(relPath) {
   try {
-    return readFileSync(filePath, 'utf8');
+    return readFileSync(path.resolve(REPO_ROOT, relPath), 'utf8');
   } catch (error) {
     violate(
-      `${SELF}: could not read '${path.relative(REPO_ROOT, filePath)}' (${error.message}). ` +
+      `${SELF}: could not read '${relPath}' (${error.message}). ` +
         'A file this guard cannot read is a boundary cast it cannot rule out — this fails closed.'
     );
     return null;
@@ -143,40 +95,26 @@ function readSource(filePath) {
 }
 
 /**
- * Collect every `.ts` file under the adapter directory, recursively. Returns `null` when the walk
- * itself fails, which check 0 then reports as a precondition failure.
+ * Every `.ts` file under the adapter directory, repo-relative and sorted, or `null` when the walk
+ * fails, which check 0 then reports as a precondition failure.
  */
-function collectTypeScriptFiles(dir) {
-  let entries;
+function collectTypeScriptFiles() {
   try {
-    entries = readdirSync(dir, { withFileTypes: true });
+    return listFiles(ADAPTER_DIR_REL, { include: (relPath) => relPath.endsWith('.ts') });
   } catch (error) {
     violate(
-      `${SELF}: could not enumerate '${path.relative(REPO_ROOT, dir)}' (${error.message}). ` +
-        'A directory this guard cannot walk is a corpus it cannot scan — this fails closed.'
+      `${SELF}: ${error.message}. A directory this guard cannot walk is a corpus it cannot scan — ` +
+        'this fails closed.'
     );
     return null;
   }
-
-  const files = [];
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      const nested = collectTypeScriptFiles(full);
-      if (nested === null) return null;
-      files.push(...nested);
-    } else if (entry.isFile() && entry.name.endsWith('.ts')) {
-      files.push(full);
-    }
-  }
-  return files;
 }
 
 function main() {
   // Check 0: the corpus is real before any zero it produces is allowed to mean anything.
-  const files = collectTypeScriptFiles(ADAPTER_DIR);
+  const files = collectTypeScriptFiles();
   if (files === null) {
-    console.log(`Adapter-boundary cast guard (phase 157: ${REQUIREMENT}) — ${violations} violation(s).`);
+    console.log(`Adapter-boundary cast guard — ${violations} violation(s).`);
     process.exitCode = 1;
     return;
   }
@@ -189,11 +127,11 @@ function main() {
     );
   }
 
-  const relativeFiles = files.map((file) => path.relative(ADAPTER_DIR, file));
+  const relativeFiles = files.map((file) => file.slice(ADAPTER_DIR_REL.length + 1));
   for (const anchor of ANCHOR_FILES) {
     if (!relativeFiles.includes(anchor)) {
       violate(
-        `${SELF}: the anchor file '${path.join(ADAPTER_DIR_REL, anchor)}' is not in the scanned ` +
+        `${SELF}: the anchor file '${ADAPTER_DIR_REL}/${anchor}' is not in the scanned ` +
           'corpus. This guard is therefore scanning something other than the adapter it was written ' +
           'for, and its zero would be vacuous. Update ANCHOR_FILES in this file when the adapter is ' +
           'deliberately restructured.'
@@ -209,7 +147,6 @@ function main() {
     if (source === null) continue;
     filesRead += 1;
 
-    const relative = path.relative(REPO_ROOT, file);
     const lines = source.split('\n');
     linesScanned += lines.length;
 
@@ -218,19 +155,18 @@ function main() {
 
       if (TRIPLE_CAST.test(line)) {
         violate(
-          `${relative}:${lineNumber} — a triple cast through 'unknown' asserts an unvalidated JSONB ` +
-            `value into an application shape (${REQUIREMENT}). Parse the stored shape with its zod ` +
+          `${file}:${lineNumber} — a triple cast through 'unknown' asserts an unvalidated JSONB ` +
+            `value into an application shape. Parse the stored shape with its zod ` +
             "schema and derive the value from the parse result instead; see 'parseJsonbColumn.ts'.\n" +
             `    ${line.trim()}`
         );
       }
 
-      for (const { literal, baselineBeforePlan07 } of REMOVED_CASTS) {
+      for (const literal of REMOVED_CASTS) {
         if (line.includes(literal)) {
           violate(
-            `${relative}:${lineNumber} — the cast '${literal}' is back. Phase 157 plan 07 removed ` +
-              `its ${baselineBeforePlan07} occurrence${baselineBeforePlan07 === 1 ? '' : 's'} by ` +
-              `validating the column at the boundary (${REQUIREMENT}). Parse, then derive — do not assert.\n` +
+            `${file}:${lineNumber} — the cast '${literal}' asserts a column the adapter validates ` +
+              'at the boundary instead. Parse, then derive — do not assert.\n' +
               `    ${line.trim()}`
           );
         }
@@ -278,7 +214,7 @@ function main() {
   }
 
   console.log(
-    `Adapter-boundary cast guard (phase 157: ${REQUIREMENT}) — ${filesRead} file(s), ` +
+    `Adapter-boundary cast guard — ${filesRead} file(s), ` +
       `${linesScanned} line(s) scanned under ${ADAPTER_DIR_REL}; ${violations} violation(s).`
   );
   process.exitCode = violations > 0 ? 1 : 0;

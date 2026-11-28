@@ -1,8 +1,8 @@
 -- FIXTURE — the CLEAN half of the self-test pair for scripts/assert-grant-permission-enum.mjs.
--- A miniature enums file whose three grant declarations match the guard's canon exactly, including
--- order. The guard must report ZERO findings over it. Without this leg a comparator that reports
--- nothing would pass the seeded fixture's "expected but not produced" check by producing nothing at
--- all, so the clean leg is what makes the seeded leg mean something.
+-- A miniature enums file: the reference both legs of the self-test are compared against. The guard
+-- must parse a full population from it and report ZERO findings over it. Without this leg a
+-- comparator that reports nothing would pass the seeded fixture's "expected but not produced" check
+-- by producing nothing at all, so the clean leg is what makes the seeded leg mean something.
 --
 -- It carries an unrelated declaration ahead of the grant types on purpose: the parser must find the
 -- three it is looking for by name rather than by position.

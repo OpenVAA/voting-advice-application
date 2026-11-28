@@ -1,71 +1,32 @@
 #!/usr/bin/env node
 
 /**
- * DECLARED-BINARIES GUARD (phase 153, requirement REVIEW-CFG-01).
+ * DECLARED-BINARIES GUARD.
  *
- * The incident this file exists for: eight workspaces —
- * `packages/{app-shared,argument-condensation,core,data,filters,llm,matching,question-info}`
- * — each open their `build` script with `tsup`, and not one of them declares
- * `tsup` in any of its dependency blocks. The only declaration in the repo is
- * the root manifest's. Those builds pass today for one reason and one reason
- * only: `.yarnrc.yml:1` sets `nodeLinker: node-modules`, so the root's copy is
- * hoisted into the top-level `node_modules/.bin` and every workspace picks it
- * up off PATH by accident. Nothing states the dependency, so nothing protects
- * it: a change of install topology (Plug'n'Play, `nmHoistingLimits`, a
- * `packageExtensions` narrowing), or simply extracting one of these packages
- * to its own repository, breaks the build of eight workspaces at once with an
- * error that names PATH rather than the missing declaration.
+ * A workspace that runs a binary it does not declare builds only because `nodeLinker:
+ * node-modules` hoists another workspace's copy onto PATH. A change of install topology, or moving
+ * the package to its own repository, then breaks its build with an error that names PATH rather
+ * than the missing declaration. This guard asserts, for every workspace including the root, that
+ * every binary invoked from a script in `SCRIPT_SCOPE` is provided by the `bin` field of a package
+ * that workspace itself declares in `dependencies`, `devDependencies`, `peerDependencies` or
+ * `optionalDependencies`.
  *
- * This is a class, not an instance, which is why it is a guard rather than
- * eight edits. A workspace that does not declare what it runs is one topology
- * change away from a broken build, and the failure is silent until then —
- * `yarn build` is green in exactly the state the defect is live in. Adding the
- * eight declarations without a standing check would leave the ninth
- * undeclared invocation to be discovered the same way the first eight were.
+ * Each binary is resolved against the `bin` field a declared dependency publishes, not matched by
+ * name (`tsc` comes from `typescript`, `svelte-kit` from `@sveltejs/kit`), so a declared invocation
+ * is never reported. Not treated as declarable: a token containing `/` (an explicit path), a token
+ * in the `AMBIENT` list (package managers, interpreters, POSIX utilities and builtins), and a token
+ * naming one of the workspace's own scripts. `SCRIPT_SCOPE` is `['build']`; widening it to every
+ * script surfaces `eslint` invocations that reach the binary through `@openvaa/shared-config`.
  *
- * THE INVARIANT, in both directions:
- *
- *   1. For every workspace (the root included), every binary invoked from a
- *      script in `SCRIPT_SCOPE` must be provided by the `bin` field of a
- *      package that workspace itself declares in `dependencies`,
- *      `devDependencies`, `peerDependencies` or `optionalDependencies`.
- *   2. Conversely, an invocation that IS so declared must not be reported.
- *      This is why the check resolves each candidate against the `bin` field
- *      a declared dependency actually publishes, rather than matching names:
- *      `tsc` comes from `typescript`, `svelte-kit` from `@sveltejs/kit`,
- *      `playwright` from `@playwright/test`, `changeset` from
- *      `@changesets/cli`. A hard-coded alias table would rot the first time a
- *      package renamed a bin; reading `bin` cannot.
- *
- * Three classes of token are deliberately NOT treated as declarable binaries,
- * because in each case the workspace is not claiming a PATH lookup at all:
- * a token containing `/` (an explicit path invocation such as
- * `node_modules/.bin/tsc`); a token in the AMBIENT allowlist below (package
- * managers, interpreters, and the POSIX coreutils/builtins any developer
- * machine and any CI image already provides); and a token equal to one of the
- * same workspace's own `scripts` keys (a bare self-reference).
- *
- * `SCRIPT_SCOPE` is `['build']` — the literal wording of REVIEW-CFG-01. A
- * measured wider class exists and is filed rather than hidden: widening this
- * constant to every script key surfaces eight further violations, all
- * `eslint`, in the same eight packages. Those eight reach `eslint` through
- * `@openvaa/shared-config`, which they DO declare and which lists `eslint` in
- * its own `dependencies` — genuine under a strict reading, defensible as
- * excluded under a looser one. See
- * `.planning/todos/pending/2026-08-28-153-undeclared-eslint-in-lint-scripts.md`.
- *
- * Report order is workspace location ascending in byte order, then binary
- * name, then script name, so two runs over an unchanged tree emit
- * byte-identical stderr and a diff of two captures is evidence rather than
- * noise.
+ * Reports are ordered by workspace location, binary and script, so two runs over an unchanged tree
+ * print the same output. Node built-ins only.
  *
  * Usage:
  *   node scripts/assert-declared-binaries.mjs
  *
  * Exit codes:
  *   0 - every in-scope binary invocation is backed by a declaration
- *   1 - at least one undeclared invocation, or a named precondition failure
- *       (a manifest that exists but could not be read or parsed)
+ *   1 - at least one undeclared invocation, or a manifest that exists but could not be read or parsed
  */
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -76,9 +37,8 @@ const SELF = 'scripts/assert-declared-binaries.mjs';
 const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 
 /**
- * The scripts whose invocations are checked. REVIEW-CFG-01 says "a binary in
- * its `build` script"; widening this to `Object.keys(scripts)` is the one-line
- * change that surfaces the wider `eslint` class described in the docblock.
+ * The scripts whose invocations are checked. Widening this to
+ * `Object.keys(scripts)` surfaces the `eslint` invocations described in the docblock.
  */
 const SCRIPT_SCOPE = ['build'];
 
@@ -313,7 +273,7 @@ function main() {
   }
 
   console.log(
-    `Declared-binaries guard (phase 153: REVIEW-CFG-01) — ${locations.length} workspace(s) scanned, ` +
+    `Declared-binaries guard — ${locations.length} workspace(s) scanned, ` +
       `${invocations} ${SCRIPT_SCOPE.join('/')}-script binary invocation(s). ${violations} violation(s).`
   );
 

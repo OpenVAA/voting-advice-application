@@ -59,7 +59,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { builtinModules } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { commentSpans, familyFor } from './lib/comment-spans.mjs';
+import { familyFor, maskComments } from './lib/comment-spans.mjs';
 
 const SELF = 'scripts/assert-declared-imports.mjs';
 const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
@@ -132,23 +132,6 @@ function sourceFiles(dir) {
     .sort();
 }
 
-/** `text` with the text of every comment replaced by spaces, line structure kept. */
-function maskComments(text, relPath) {
-  const fam = familyFor(relPath);
-  const state = { inBlockC: false, inBlockHtml: false, inTemplate: false, lineIndex: 0 };
-  return text
-    .split('\n')
-    .map((line, lineIndex) => {
-      state.lineIndex = lineIndex;
-      let masked = line;
-      for (const [start, end] of commentSpans(line, fam, state)) {
-        masked = masked.slice(0, start) + ' '.repeat(end - start) + masked.slice(end);
-      }
-      return masked;
-    })
-    .join('\n');
-}
-
 /** The package a specifier names, or `null` when it names a path, a subpath import or a built-in. */
 function packageName(specifier) {
   if (/^[./#]/.test(specifier) || specifier.startsWith('node:')) return null;
@@ -178,7 +161,7 @@ function checkWorkspace(location) {
   const findings = [];
   for (const file of files) {
     const relPath = path.relative(REPO_ROOT, file);
-    const text = maskComments(readFileSync(file, 'utf8'), relPath);
+    const text = maskComments(readFileSync(file, 'utf8'), familyFor(relPath));
     const undeclared = new Set();
     for (const form of SPECIFIER_FORMS) {
       for (const match of text.matchAll(form)) {
