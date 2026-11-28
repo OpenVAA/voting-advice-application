@@ -86,9 +86,7 @@
   <nav
     class="toc sticky top-xl max-h-[calc(100vh-8rem)] overflow-y-auto border-l-2 border-l-base-300 pl-16 text-sm"
     aria-label="Table of contents">
-    <h2 class="mt-0 mb-16 text-sm font-semibold tracking-wider text-base-content uppercase">
-      On this page
-    </h2>
+    <h2 class="mt-0 mb-16 text-sm font-semibold tracking-wider text-base-content uppercase">On this page</h2>
     <ul class="not-prose">
       {#each filteredHeadings as heading (heading.id)}
         <li class={LEVEL_INDENT[heading.level]}>
