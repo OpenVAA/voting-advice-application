@@ -76,6 +76,7 @@
     "confirmed": "Vahvistettu",
     "constituency": "Vaalipiiri",
     "continue": "Jatka",
+    "documentTitle": "{pageTitle} – {appName}",
     "election": "Vaali",
     "electionList": "Vaalilista",
     "electionSymbol": {

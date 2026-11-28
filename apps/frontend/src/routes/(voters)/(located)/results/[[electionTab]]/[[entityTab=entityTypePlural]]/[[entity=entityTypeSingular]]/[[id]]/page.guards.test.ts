@@ -1,7 +1,7 @@
 /**
  * The results leaf's two load guards, pinned as pure functions of the params and the URL.
  *
- * Both guards exist because all four params are optional: both malformed shapes stay routable, so SvelteKit's own 404 never answers them. The guards are also the second layer of input validation over the route params: the `etPl` / `etSg` matchers are the first layer, and the matcher-fallthrough 404 below is what catches the segment that slips past them. The 307 drops the drawer segments and nothing else, because a redirect that force-filled the plural would be a navigation loop (invariant 2).
+ * Both guards exist because all four params are optional: both malformed shapes stay routable, so SvelteKit's own 404 never answers them. The guards are also the second layer of input validation over the route params: the `entityTypePlural` / `entityTypeSingular` matchers are the first layer, and the matcher-fallthrough 404 below is what catches the segment that slips past them. The 307 drops the drawer segments and nothing else, because a redirect that force-filled the plural would be a navigation loop (invariant 2).
  *
  * The guards read nothing but `params` and `url`, so driving `load` directly is the cheapest instrument that actually exercises them — no browser, no data layer, no context.
  *
@@ -14,17 +14,47 @@
  * 5. **The search string must survive both guards.** A guard that dropped `?electionId=…` would strand the voter's AVAILABLE-array selection, and the resulting URL would then be bounced again by the election-tab loader's GUARD 1. Asserted on the redirect rows.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { load } from './+page';
+
+const locale = vi.hoisted(() => ({ current: 'en', base: 'en' }));
+
+// The shared `$app/paths` stub only substitutes required `[name]` params. The results route is all optional, matcher-gated params under route groups, so this mirrors SvelteKit's own resolution: groups drop out, and an optional param without a value drops its segment.
+vi.mock('$app/paths', () => ({
+  resolveRoute: (id: string, params: Record<string, string | undefined>) =>
+    '/' +
+    id
+      .slice(1)
+      .split('/')
+      .filter((segment) => segment !== '' && !/^\([^)]+\)$/.test(segment))
+      .map((segment) =>
+        segment.replace(/\[(\[)?(\w+?)(?:=\w+)?\]\]?/g, (_, _optional, name: string) => params[name] ?? '')
+      )
+      .filter(Boolean)
+      .join('/')
+}));
+
+// Paraglide's `url` strategy prefixes every non-base locale and leaves the base locale bare.
+vi.mock('$lib/paraglide/runtime', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  localizeHref: (href: string, options?: { locale?: string }) => {
+    const target = options?.locale ?? locale.current;
+    return target === locale.base ? href : `/${target}${href}`;
+  }
+}));
+
+afterEach(() => {
+  locale.current = locale.base;
+});
 
 /** The persistent search params a real results URL always carries. Non-empty on purpose: invariant 5 cannot be observed against an empty search string. */
 const SEARCH = '?electionId=el-1&constituencyId=c-1';
 
 /** Drive `load` with the minimum SvelteKit surface the guards touch. They read `params` and `url` and nothing else. */
-function runLoad(params: Record<string, string | undefined>) {
+function runLoad(params: Record<string, string | undefined>, path = '/results') {
   return load({
     params,
-    url: new URL(`https://vaa.test/results${SEARCH}`)
+    url: new URL(`https://vaa.test${path}${SEARCH}`)
   } as unknown as Parameters<typeof load>[0]);
 }
 
@@ -38,9 +68,9 @@ type ThrownError = { status: number; body?: unknown };
  *
  * Returning rather than asserting keeps invariant 1 enforceable at the call site: each row decides for itself what the throw had to BE.
  */
-async function capture(params: Record<string, string | undefined>): Promise<unknown> {
+async function capture(params: Record<string, string | undefined>, path?: string): Promise<unknown> {
   try {
-    await runLoad(params);
+    await runLoad(params, path);
   } catch (thrown) {
     return thrown;
   }
@@ -137,6 +167,17 @@ describe('results leaf +page.ts — the entity-type and id guards', () => {
     expect(location, 'the guard force-filled a plural the incoming URL did not carry').not.toMatch(
       /\/(candidates|organizations|alliances)/
     );
+  });
+
+  it('the redirect keeps the locale prefix of a non-base locale', async () => {
+    locale.current = 'fi';
+    const thrown = await capture(
+      { electionTab: 'el-1', entityTab: 'candidates', entity: 'candidate', id: undefined },
+      '/fi/results/el-1/candidates/candidate'
+    );
+    const { status, location } = asRedirect(thrown);
+    expect(status).toBe(307);
+    expect(location).toBe(`/fi/results/el-1/candidates${SEARCH}`);
   });
 
   it('the well-formed full entity shape passes both guards untouched', async () => {

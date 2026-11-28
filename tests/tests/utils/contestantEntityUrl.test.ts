@@ -330,8 +330,8 @@ describe('dropEntitySegments', () => {
     expect(dropEntitySegments('/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]')).toBe(
       '/contestant/(protected)'
     );
-    expect(dropEntitySegments('/(voters)/(located)/results/[[electionTab]]/[[entity=etSg]]/[[id]]')).toBe(
-      '/(voters)/(located)/results/[[electionTab]]/[[entity=etSg]]/[[id]]'
+    expect(dropEntitySegments('/(voters)/(located)/results/[[electionTab]]/[[entity=entityTypeSingular]]/[[id]]')).toBe(
+      '/(voters)/(located)/results/[[electionTab]]/[[entity=entityTypeSingular]]/[[id]]'
     );
   });
 });

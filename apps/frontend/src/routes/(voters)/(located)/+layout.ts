@@ -27,7 +27,7 @@ import type { Id } from '@openvaa/core';
 /**
  * Whether an id parameter names an actual selection.
  *
- * An EMPTY ARRAY is not a selection, and a bare truthiness test says it is. Both producers of these values emit one: `parseParams` filters empty values out of an array param, so the degenerate `?electionId=` yields `[]`, and `getImpliedConstituencyIds` returns `[]` rather than `undefined` when it is handed no elections to imply from. Either one used to satisfy `if (!electionId)`, skip the redirect, and reach the adapter as a present-but-empty filter — which fanned out to zero RPC calls and produced a blank voter app with no error, no redirect and no log line. The predicate is used at all three guards so neither producer can reopen the hole.
+ * An EMPTY ARRAY is not a selection, and a bare truthiness test says it is. Both producers of these values emit one: `parseParams` filters empty values out of an array param, so the degenerate `?electionId=` yields `[]`, and `getImpliedConstituencyIds` returns `[]` rather than `undefined` when it is handed no elections to imply from. The predicate keeps either one from passing a guard as a selection and reaching the adapter as an empty filter, which would render a blank voter app with no error, no redirect and no log line. It is used at all three guards.
  *
  * @param value - A parsed or implied id parameter.
  * @returns `true` when the value names at least one id.
@@ -47,13 +47,7 @@ export async function load({ data, fetch, parent, untrack, url }) {
   // The `next=` redirect target is allowlisted to same-origin Voter App paths to prevent open redirects; anything else is dropped and the redirect goes to the selector without it.
   // The path + search are read untracked too: they only feed the `next=` target. Read tracked, they defeat the `untrack` above — every results tab / drawer navigation reruns this load, re-streams the question + nomination data and blanks the whole subtree via `+layout.svelte`'s `ready` flag (see spike 031). Guarded by `layout.tracking.test.ts`.
   const { pathname, search } = untrack(() => ({ pathname: url.pathname, search: url.search }));
-  const nextKv = isVoterAppPath(pathname) ? `next=${encodeURIComponent(pathname + search)}` : '';
-  /**
-   * Append `next=…` to a redirect target with the correct separator. `buildRoute` may emit a base URL that already carries `?electionId=…` (Constituencies branch below), in which case the next-param must join with `&`, not `?`. Concatenating a leading-`?` next directly produced `…?electionId=…?next=…` — a malformed URL that SvelteKit's URL parser 500s on (test 3 reproducer).
-   */
-  function withNext(base: string): string {
-    return nextKv ? `${base}${base.includes('?') ? '&' : '?'}${nextKv}` : base;
-  }
+  const nextParam = isVoterAppPath(pathname) ? { next: pathname + search } : {};
 
   // Try to imply ids if not provided
   if (!hasSelection(electionId) || !hasSelection(constituencyId)) {
@@ -74,15 +68,7 @@ export async function load({ data, fetch, parent, untrack, url }) {
         selectedConstituencyIds: hasSelection(constituencyId) ? [constituencyId].flat() : undefined
       });
       if (!hasSelection(electionId)) {
-        redirect(
-          307,
-          withNext(
-            buildRoute({
-              route: 'Elections',
-              locale: lang
-            })
-          )
-        );
+        redirect(307, buildRoute({ route: 'Elections', locale: lang, ...nextParam }));
       }
     }
 
@@ -92,21 +78,12 @@ export async function load({ data, fetch, parent, untrack, url }) {
         selectedElectionIds: [electionId].flat()
       });
       if (!hasSelection(constituencyId)) {
-        redirect(
-          307,
-          withNext(
-            buildRoute({
-              route: 'Constituencies',
-              electionId,
-              locale: lang
-            })
-          )
-        );
+        redirect(307, buildRoute({ route: 'Constituencies', electionId, locale: lang, ...nextParam }));
       }
     }
   }
 
-  // Get data. The client is built from this route's OWN server-load data rather than taken from `await parent()` on purpose: `parent()` does not resolve until the root load's four Supabase round-trips have finished, and the two calls below used to run in parallel with them. Blocking them behind the root measurably broke `afterNavigate`'s single-`requestAnimationFrame` focus reset, which finds no question heading yet and never retries. See this route's `+layout.server.ts` for the full reasoning and for the cost the operator accepted.
+  // Get data. The client is built from this route's own server-load data, not from `await parent()`; `+layout.server.ts` says why.
   const supabaseClient = createSupabaseUniversalClient({ fetch, cookies: data.supabaseCookies });
   const dataProvider = createDataProvider({ fetch, client: supabaseClient });
   return {

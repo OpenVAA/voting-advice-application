@@ -19,8 +19,8 @@ The cross-type shape `/results/[electionTab]/organizations/candidate/[id]` stays
 
 Route params:
 - `electionTab`   (optional, freeform)              — SELECTED election id for the active results tab
-- `entityTab`     (optional, matcher-gated by etPl) — `candidates` | `organizations` | `alliances`
-- `entity`        (optional, matcher-gated by etSg) — `candidate` | `organization` | `alliance`
+- `entityTab`     (optional, matcher-gated by entityTypePlural) — `candidates` | `organizations` | `alliances`
+- `entity`        (optional, matcher-gated by entityTypeSingular) — `candidate` | `organization` | `alliance`
 - `id`            (optional)                        — entity id for the drawer
 
 Name-disjoint dissociation: `electionTab` (route key, SELECTED singular) and `electionId` (search key, AVAILABLE array; PERSISTENT_SEARCH_PARAMS member at `$lib/routes/params.ts`) are literally different identifiers throughout the codebase. `constituencyId` continues to travel as a persistent search param.

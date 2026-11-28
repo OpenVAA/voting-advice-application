@@ -7,13 +7,13 @@
  *
  * ## The payload shape
  *
- * `createServerClient`'s cookie adapter reads `getAll()` and uses only `name` and `value`, so only `name` and `value` cross — the options a cookie was WRITTEN with (`httpOnly`, `secure`, `sameSite`, `maxAge`) are meaningless on the read side and are dropped rather than serialised.
+ * `supabaseCookiesOf` (`$lib/server/supabaseCookies`) filters the request's cookies to the Supabase auth cookies and keeps only `name` and `value`. The key is `supabaseCookies` and not `cookies`: it says WHICH cookies, so a reader cannot mistake it for the request's whole jar.
  *
- * The key is `supabaseCookies` and not `cookies` on purpose: it says WHICH cookies, so a reader cannot mistake it for the request's whole jar, and it keeps the payload's name honest about the filter below.
+ * Those cookies hold a signed-in user's access and refresh tokens, so the tokens do reach the payload of every route. That is accepted, for the reasons and on the cache condition written at `supabaseCookiesOf`.
  *
  * ## ⚠ Why there is NO `session` here, and why there must not be
  *
- * This load returns no `Session`. Everything a server load returns is serialised into the hydration payload in the HTML body, so a session returned here would sit in the document of every route in the application, for every authenticated user, carrying `access_token`, **`refresh_token`**, `expires_at` and the full `user` record. The refresh token is the higher-value credential of the pair: it is long-lived, and a document body exposes it to HTML/page caches, to `view-source` sharing, and to DOM-snapshot error reporters.
+ * This load returns no `Session`. Everything a server load returns is serialised into the hydration payload in the HTML body, so a session returned here would put the full `user` record, and a second copy of the tokens, into the document of every route for every authenticated user.
  *
  * Nothing needs it here either. `routes/+layout.ts` shadows this load and does not forward a session, and `authContext`'s `page.data.session` is supplied by `routes/admin/+layout.server.ts` and `routes/contestant/+layout.server.ts`. Computing it would also cost a `getUser()` round-trip to Supabase Auth on every authenticated request.
  *
@@ -28,16 +28,9 @@
  * `routes/+layout.ts` EXISTS, so it shadows this file: a missing layout module behaves as `({ data }) => data`, but a present one forwards only what it explicitly returns. Anything a descendant needs from here must appear in that file's return object. Its symptom when forgotten is an app that works on client-side navigation and 403s on refresh.
  */
 
-import { SUPABASE_COOKIE_PREFIX } from '$lib/api/dataProvider';
 import { analyticsProjection } from '$lib/server/analytics/env';
-import type { UniversalCookie } from '$lib/api/dataProvider';
+import { supabaseCookiesOf } from '$lib/server/supabaseCookies';
 
 export function load({ cookies }) {
-  // ⚠ THE FILTER BELOW IS A DATA-PROTECTION BOUNDARY, NOT A TIDINESS MEASURE. Everything a server load returns is serialised into the HTML and is therefore readable by client JavaScript. `@supabase/ssr` writes its own auth cookies with `httpOnly: false`, so those are already JS-readable and passing them discloses nothing new — but the unfiltered read on the next line also yields this application's genuinely `httpOnly` cookies: the OIDC `oidc_state` and `oidc_nonce` replay/CSRF guards, the `oidc_code_verifier` PKCE companion, the `oidc_entity_type` selector and the `oidc_locale` selector (`api/oidc/authorize/+server.ts`), and the `identity_provider_arrival` marker (`api/oidc/callback/+server.ts`). Serialising ANY of those into the payload defeats the `httpOnly` flag outright, because the whole point of that flag is that client-side JavaScript cannot read the value and an SSR payload is readable by exactly that. `requestCookies` is therefore a LOCAL and never a return value; only `supabaseCookies` leaves this function. The prefix is imported rather than spelled here so that a future `cookieOptions.name` cannot silently empty the array; see `SUPABASE_COOKIE_PREFIX`.
-  const requestCookies = cookies.getAll();
-  const supabaseCookies: Array<UniversalCookie> = requestCookies
-    .filter(({ name }) => name.startsWith(SUPABASE_COOKIE_PREFIX))
-    .map(({ name, value }) => ({ name, value }));
-
-  return { supabaseCookies, analytics: analyticsProjection };
+  return { supabaseCookies: supabaseCookiesOf(cookies), analytics: analyticsProjection };
 }

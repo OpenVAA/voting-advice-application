@@ -361,7 +361,8 @@ describe('the two admin form actions refuse an authenticated non-admin THEMSELVE
   }
 
   it('argument-condensation refuses a verified non-admin with 403 and never reaches the job-start endpoint', async () => {
-    const { actions } = await import('../../../routes/admin/(protected)/argument-condensation/+page.server');
+    const { actions } =
+      await import('../../../routes/admin/(protected)/(questions)/argument-condensation/+page.server');
     const { result, fetch } = await post(actions.default, verifiedLocals({ grants: [CONTESTANT_GRANTS[0]] }), {
       electionId: 'election-1',
       questionIds: 'q1'
@@ -374,7 +375,7 @@ describe('the two admin form actions refuse an authenticated non-admin THEMSELVE
   });
 
   it('question-info refuses a verified non-admin with 403 and never reaches the job-start endpoint', async () => {
-    const { actions } = await import('../../../routes/admin/(protected)/question-info/+page.server');
+    const { actions } = await import('../../../routes/admin/(protected)/(questions)/question-info/+page.server');
     const { result, fetch } = await post(actions.default, verifiedLocals({ grants: [CONTESTANT_GRANTS[0]] }), {
       electionId: 'election-1',
       questionIds: 'q1',
@@ -388,7 +389,8 @@ describe('the two admin form actions refuse an authenticated non-admin THEMSELVE
   });
 
   it('argument-condensation ADMITS a verified admin — the control that makes the refusal discriminating', async () => {
-    const { actions } = await import('../../../routes/admin/(protected)/argument-condensation/+page.server');
+    const { actions } =
+      await import('../../../routes/admin/(protected)/(questions)/argument-condensation/+page.server');
     const { result, fetch } = await post(actions.default, verifiedLocals({ grants: [ADMIN_GRANTS[0]] }), {
       electionId: 'election-1',
       questionIds: 'q1'
@@ -400,7 +402,7 @@ describe('the two admin form actions refuse an authenticated non-admin THEMSELVE
   });
 
   it('question-info ADMITS a verified admin — the control that makes the refusal discriminating', async () => {
-    const { actions } = await import('../../../routes/admin/(protected)/question-info/+page.server');
+    const { actions } = await import('../../../routes/admin/(protected)/(questions)/question-info/+page.server');
     const { result, fetch } = await post(actions.default, verifiedLocals({ grants: [ADMIN_GRANTS[0]] }), {
       electionId: 'election-1',
       questionIds: 'q1',
@@ -455,8 +457,8 @@ describe('the two admin form actions answer an upstream failure with ONE shape, 
         : { electionId: 'election-1', questionIds: 'q1', operations: 'terms' };
     const { actions } =
       which === 'argument-condensation'
-        ? await import('../../../routes/admin/(protected)/argument-condensation/+page.server')
-        : await import('../../../routes/admin/(protected)/question-info/+page.server');
+        ? await import('../../../routes/admin/(protected)/(questions)/argument-condensation/+page.server')
+        : await import('../../../routes/admin/(protected)/(questions)/question-info/+page.server');
     // reason: serialised with `.toString()` because undici's `Request` validates `init.body` with `instanceof URLSearchParams` against its own realm and vitest's global comes from a different one, so whether the object form throws depends on the Node release; the wire form is identical and the content-type is set explicitly below rather than inferred from the body type.
     const body = new URLSearchParams(Object.entries(fields)).toString();
     return actions.default({

@@ -3,7 +3,7 @@ import { SupabaseDataProvider } from './adapters/supabase/dataProvider/supabaseD
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { SupabaseAdapterConfig, SupabaseDatabase } from './adapters/supabase/supabaseAdapter.type';
 
-// Routes may not import `$lib/supabase/universal` (the adapter-boundary lint rule bans it outside its allowlist), so the root `+layout.server.ts` and `+layout.ts` reach the cookie prefix and the universal client factory through these re-exports.
+// Routes may not import `$lib/supabase/universal` (the adapter-boundary lint rule bans it outside its allowlist), so `$lib/server/supabaseCookies` reaches the cookie prefix, and the universal `+layout.ts` loads the client factory, through these re-exports.
 export type { UniversalCookie } from '$lib/supabase/universal';
 export { createSupabaseUniversalClient, SUPABASE_COOKIE_PREFIX } from '$lib/supabase/universal';
 

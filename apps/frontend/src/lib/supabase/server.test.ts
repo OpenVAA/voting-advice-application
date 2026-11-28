@@ -6,7 +6,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 /**
  * The two halves of the SSR-payload safety property (CR-03).
  *
- * `routes/+layout.server.ts` and `routes/(voters)/(located)/+layout.server.ts` publish the request's Supabase auth cookies into the HTML of EVERY page in the application, public voter routes included. Two claims make that acceptable, and until this spec neither was checked anywhere:
+ * The server loads that return `supabaseCookiesOf` (`lib/server/supabaseCookies.ts`), the root's among them, publish the request's Supabase auth cookies into the HTML of EVERY page in the application, public voter routes included. Two claims make that acceptable, and until this spec neither was checked anywhere:
  *
  * 1. **The forwarded cookies are already readable by client JavaScript.** That was a transitive dependency on `@supabase/ssr`'s `DEFAULT_COOKIE_OPTIONS`; `createSupabaseCookieAdapter` now pins `httpOnly: false` after the spread, and the first case below writes a cookie whose incoming options say `httpOnly: true` to prove the pin overrides rather than merges.
  * 2. **The filter forwards ONLY those cookies.** A bare `sb-` prefix match would sweep in any future application cookie whose name happens to start with those three characters; the second group asserts the prefix is the whole storage key the client actually uses.
@@ -34,7 +34,7 @@ describe('createSupabaseCookieAdapter — the payload safety property is pinned,
     const [name, value, options] = set.mock.calls[0];
     expect(name).toBe('sb-127-auth-token');
     expect(value).toBe('the-session');
-    // The load-bearing assertion: if this ever reads `true`, the two payload filters are disclosing a credential the `httpOnly` flag was meant to hide.
+    // The load-bearing assertion: if this ever reads `true`, the payload filter is disclosing a credential the `httpOnly` flag was meant to hide.
     expect(options.httpOnly).toBe(false);
     // The pin must not eat the library's other options, nor the path the client depends on.
     expect(options.sameSite).toBe('lax');

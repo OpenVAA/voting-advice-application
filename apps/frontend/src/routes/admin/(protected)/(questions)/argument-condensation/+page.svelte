@@ -21,16 +21,13 @@ Page for controlling the argument condensation feature.
 
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
   const ctx = getAdminContext();
-  const {
-    t,
-    jobs: { activeJobsByFeature }
-  } = ctx;
+  const { t } = ctx;
 
   ////////////////////////////////////////////////////////////////////////
   // Get active job
   ////////////////////////////////////////////////////////////////////////
 
-  let argumentCondensationJob = $derived<JobInfo | undefined>(activeJobsByFeature.get('ArgumentCondensation'));
+  let argumentCondensationJob = $derived<JobInfo | undefined>(ctx.jobs.activeJobsByFeature.get('ArgumentCondensation'));
 
   ////////////////////////////////////////////////////////////////////////
   // Starting the job
@@ -113,7 +110,7 @@ Page for controlling the argument condensation feature.
   }
 </script>
 
-<MainContent title={t('adminApp.argumentCondensation.title')}>
+<MainContent title={t('adminApp.argumentCondensation.title')} data-testid="admin-argument-condensation">
   <div class="flex flex-col items-center">
     <p class="mb-lg max-w-xl text-center">{t('adminApp.argumentCondensation.description')}</p>
 
@@ -126,6 +123,7 @@ Page for controlling the argument condensation feature.
           </label>
           <select
             id="election-select"
+            data-testid="admin-argument-condensation-election"
             name="electionId"
             class="select w-full"
             bind:value={selectedElectionId}

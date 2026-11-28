@@ -60,7 +60,7 @@ Sibling tracking concerns:
   //   - SEARCH side: `?electionId=…` / `electionId[N]=…` (zero-or-more) — the AVAILABLE elections (voter scope set at `/elections`), surfaced via `voterContext.selectedElections`.
   // The two share NO key name (electionTab vs electionId) — different identifiers throughout the codebase. The server-side guard at `[[electionTab]]/+layout.ts` validates that `params.electionTab` is a member of the AVAILABLE array.
   //
-  // entityTab + entity + id are route params, gated by the etPl / etSg short-name matchers. They are read at the levels that own them (the entity-tab layout and the innermost page), not here.
+  // entityTab + entity + id are route params, gated by the entityTypePlural / entityTypeSingular short-name matchers. They are read at the levels that own them (the entity-tab layout and the innermost page), not here.
   //
   // Single-election fallback: when the route segment is absent AND there's exactly one available election, auto-select it. The server guard in `[[electionTab]]/+layout.ts` is expected to redirect-and-canonicalize this case, so this fallback is the client-side safety net.
 

@@ -59,7 +59,7 @@ The layout varies slightly based on the presence of a video player.
 </script>
 
 <svelte:head>
-  <title>{title} – {t('dynamic.appName')}</title>
+  <title>{t('common.documentTitle', { pageTitle: title, appName: t('dynamic.appName') })}</title>
 </svelte:head>
 
 <div

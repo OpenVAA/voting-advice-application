@@ -104,12 +104,12 @@
   // `appSettings` is read through the existing `$derived` alias and is never destructured (CLAUDE.md's Context Destructuring Rule). The alias is safe for this member because `appSettings` is value-replacing — its reference is replaced on every re-merge — so the identity-stable `dataRoot` carve-out does not apply here.
   const underMaintenance = $derived(!('error' in validity) && appSettings.access?.underMaintenance === true);
 
-  // Document title: application name ALWAYS, with the maintenance state appended as a suffix rather than replacing the name (a maintenance window should not make the tab stop identifying the application).
-  //
-  // Built here as a string rather than inline in the markup because Svelte 5 rejects a block inside `<title>`: `<title> can only contain text and {tags}` (error code `title_invalid_content`). A template literal also pins the spacing exactly, which markup cannot — whitespace around a tag inside `<title>` is emitted into the rendered title, so the suffix owns its single leading space and there is no trailing one.
-  //
-  // The separator is an en dash character, written literally and never as an HTML entity.
-  const documentTitle = $derived(`${t('dynamic.appName')}${underMaintenance ? ` – ${t('maintenance.title')}` : ''}`);
+  // Document title: the application name, or during maintenance the maintenance title in the same `common.documentTitle` form as every page title. Built as a string because Svelte rejects a block inside `<title>`.
+  const documentTitle = $derived(
+    underMaintenance
+      ? t('common.documentTitle', { pageTitle: t('maintenance.title'), appName: t('dynamic.appName') })
+      : t('dynamic.appName')
+  );
 
   // Side effect — applies resolved data to `dataRoot`. Reads `$derived` validity; NEVER calls `.then()` or `await`. Runs after the first `$derived` evaluation on mount and re-runs on any `data` prop change (client-side navigation).
   // Valid data needs nothing else here: its consumers read it from `page.data`.

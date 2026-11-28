@@ -10,7 +10,7 @@ import { buildRoute, fillRouteId, parseParamSegment } from './buildRoute';
 const LOCAL_ROUTE = {
   Localized: '/[[lang=locale]]/(group)/page',
   Matched: '/shop/[itemId=uuid]',
-  OptionalPair: '/list/[[tab]]/[[kind=etSg]]',
+  OptionalPair: '/list/[[tab]]/[[kind=entityTypeSingular]]',
   Rest: '/files/[...path]',
   RestMatched: '/files/[...path=filePath]'
 } as const;
@@ -24,7 +24,7 @@ describe('parseParamSegment', () => {
     ['[questionId]', { name: 'questionId', kind: 'required' }],
     ['[entityId=uuid]', { name: 'entityId', kind: 'required' }],
     ['[[electionTab]]', { name: 'electionTab', kind: 'optional' }],
-    ['[[entity=etSg]]', { name: 'entity', kind: 'optional' }],
+    ['[[entity=entityTypeSingular]]', { name: 'entity', kind: 'optional' }],
     ['[...path]', { name: 'path', kind: 'rest' }],
     ['[...path=filePath]', { name: 'path', kind: 'rest' }]
   ])('reads %s', (segment, expected) => {

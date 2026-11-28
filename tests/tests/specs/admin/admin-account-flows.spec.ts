@@ -15,6 +15,7 @@ import { ADMIN_ENTRY_SCAN_ADDRESS_PREFIX, ADMIN_FLOWS_CANDIDATE_EXTERNAL_ID } fr
 import { openMailedLink } from '../../utils/mailedLink';
 import { E2E_PROJECT_ID, SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
+import type { Page } from '@playwright/test';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
 
 /**
@@ -40,7 +41,7 @@ import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
  *
  * ## What it scans
  *
- * Five states, each in the light theme and in a browser context created dark, through `declareEntryScans`: the login page with both of its links to the forgot-password page, the forgot-password page as it opens, the "email sent" page after a request for an address nobody holds (which is mailed nothing), the set-password view an invited admin is shown on the Admin home, and the password-reset page a signed-in admin opens.
+ * Nine states, each in the light theme and in a browser context created dark, through `declareEntryScans`: the login page with both of its links to the forgot-password page, the forgot-password page as it opens, the "email sent" page after a request for an address nobody holds (which is mailed nothing), the set-password view an invited admin is shown on the Admin home, the password-reset page a signed-in admin opens, and, for a signed-in admin with a password, the Admin home's list of tools, the Jobs page, and the Argument condensation and Question info pages with their forms.
  *
  * ## What it writes
  *
@@ -57,6 +58,20 @@ const CHOSEN_PASSWORD = 'Adm1n!Path-Qx7v';
 
 /** The password an admin with an account holds before a recovery. A credential: it is typed and never asserted on. */
 const OLD_PASSWORD = 'Old-Adm1n!Path-Rk4m';
+
+/**
+ * Sign a new admin with a password in to the Admin App, for a scan's reach, and wait for the Admin home.
+ *
+ * @param page - The page the reach was handed.
+ */
+async function signInAsAdminWithPassword(page: Page): Promise<void> {
+  const email = scanFlow.freshAddress();
+  await new SupabaseAdminClient().forceRegisterAdmin(email, OLD_PASSWORD);
+  const loginPage = createAdminLoginPage(page);
+  await loginPage.goToPage();
+  await loginPage.login(email, OLD_PASSWORD);
+  await loginPage.expectAdminHome();
+}
 
 /** The project `seed.sql` creates on every stack, which is not the suite's project. */
 const OTHER_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
@@ -510,17 +525,53 @@ test.describe("the Admin App's entry screens", () => {
       name: 'admin-password-reset',
       routeId: 'AdminAppResetPassword',
       reach: async (page) => {
-        const email = scanFlow.freshAddress();
-        await new SupabaseAdminClient().forceRegisterAdmin(email, OLD_PASSWORD);
-        const loginPage = createAdminLoginPage(page);
-        await loginPage.goToPage();
-        await loginPage.login(email, OLD_PASSWORD);
-        await loginPage.expectAdminHome();
+        await signInAsAdminWithPassword(page);
         const passwordResetPage = createAdminPasswordResetPage(page);
         await passwordResetPage.openDirectly();
         await passwordResetPage.expectShown();
       },
       marker: { testId: testIds.admin.passwordReset.page }
+    },
+    {
+      // The Admin home's list of tools, opened by a signed-in admin with a password.
+      name: 'admin-home-tools',
+      routeId: 'AdminAppHome',
+      reach: async (page) => {
+        await signInAsAdminWithPassword(page);
+      },
+      marker: { testId: testIds.admin.home }
+    },
+    {
+      // The Jobs page, opened by a signed-in admin.
+      name: 'admin-jobs',
+      routeId: 'AdminAppJobs',
+      reach: async (page) => {
+        await signInAsAdminWithPassword(page);
+        await page.goto(buildRoute({ route: 'AdminAppJobs', locale: 'en' }));
+      },
+      marker: { testId: testIds.admin.jobs }
+    },
+    {
+      // The Argument condensation page, with its form, opened by a signed-in admin.
+      name: 'admin-argument-condensation',
+      routeId: 'AdminAppArgumentCondensation',
+      reach: async (page) => {
+        await signInAsAdminWithPassword(page);
+        await page.goto(buildRoute({ route: 'AdminAppArgumentCondensation', locale: 'en' }));
+      },
+      marker: { testId: testIds.admin.argumentCondensation.page },
+      alsoShown: [{ testId: testIds.admin.argumentCondensation.election }]
+    },
+    {
+      // The Question info page, with its form, opened by a signed-in admin.
+      name: 'admin-question-info',
+      routeId: 'AdminAppQuestionInfo',
+      reach: async (page) => {
+        await signInAsAdminWithPassword(page);
+        await page.goto(buildRoute({ route: 'AdminAppQuestionInfo', locale: 'en' }));
+      },
+      marker: { testId: testIds.admin.questionInfo.page },
+      alsoShown: [{ testId: testIds.admin.questionInfo.election }]
     }
   ]);
 });

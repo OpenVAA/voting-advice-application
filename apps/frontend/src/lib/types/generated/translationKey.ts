@@ -186,6 +186,7 @@ export type TranslationKey =
   | 'common.confirmed'
   | 'common.constituency'
   | 'common.continue'
+  | 'common.documentTitle'
   | 'common.election'
   | 'common.electionList'
   | 'common.electionSymbol.alliance'

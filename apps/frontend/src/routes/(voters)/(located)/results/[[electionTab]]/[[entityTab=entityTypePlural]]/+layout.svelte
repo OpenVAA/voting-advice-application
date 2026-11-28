@@ -6,7 +6,7 @@ The middle of the three results route levels. It owns the entity-type tab strip,
 
 ## Why the param is optional, and why there is no `+page.svelte` beside this file
 
-`entityTab` is optional and matcher-gated (`etPl`), like the three params around it. Keeping it optional is what lets a bare `/results/{election}` URL — with no plural segment at all — render this layout and everything below it, with the active tab IMPLIED from the voter context rather than forced into the URL. An implied tab is never written into the URL: a force-filled plural makes the leaf's load guards and `buildListRoute` bounce navigation between the implied and the explicit shape, so `buildListRoute` never defaults it.
+`entityTab` is optional and matcher-gated (`entityTypePlural`), like the three params around it. Keeping it optional is what lets a bare `/results/{election}` URL — with no plural segment at all — render this layout and everything below it, with the active tab IMPLIED from the voter context rather than forced into the URL. An implied tab is never written into the URL: a force-filled plural makes the leaf's load guards and `buildListRoute` bounce navigation between the implied and the explicit shape, so `buildListRoute` never defaults it.
 
 There is deliberately NO `+page.svelte` at this level. The list lives on the single innermost page node, so every URL shape resolves to the SAME page component instance and a tab switch updates it rather than remounting it. A page file at this level would serve the implied shape and the explicit shape through different component instances in different route files, so the first switch away from the implied tab would remount the list (see spike 033).
 

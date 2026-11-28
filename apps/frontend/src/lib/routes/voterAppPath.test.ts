@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isVoterAppPath } from './voterAppPath';
+import { forwardedNext, isVoterAppPath } from './voterAppPath';
 
 describe('isVoterAppPath', () => {
   it.each([
@@ -41,5 +41,17 @@ describe('isVoterAppPath', () => {
     ['an unknown locale-like prefix', '/xx/results']
   ])('rejects %s: %s', (_label, path) => {
     expect(isVoterAppPath(path)).toBe(false);
+  });
+});
+
+describe('forwardedNext', () => {
+  it('returns the decoded next target', () => {
+    expect(forwardedNext(new URL('http://localhost/elections?next=%2Fresults%3FelectionId%3Del-1'))).toEqual({
+      next: '/results?electionId=el-1'
+    });
+  });
+
+  it.each(['http://localhost/elections', 'http://localhost/elections?next='])('returns {} for %s', (href) => {
+    expect(forwardedNext(new URL(href))).toEqual({});
   });
 });

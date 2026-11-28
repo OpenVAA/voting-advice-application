@@ -121,16 +121,16 @@ export const ROUTE = {
   Question: `${VOTER_LOCATED}/questions/[questionId]`,
   QuestionCategory: `${VOTER_LOCATED}/questions/category/[categoryId]`,
   Questions: `${VOTER_LOCATED}/questions`,
-  // Results routes — 4-segment optional shape (see `src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`).
+  // Results routes — 4-segment optional shape (see `src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=entityTypePlural]]/[[entity=entityTypeSingular]]/[[id]]`).
   // Route params:
-  //   - electionTab   (freeform)              — SELECTED election (singular) whose results are being rendered.
-  //   - entityTab     (matcher etPl)          — `candidates` | `organizations` | `alliances` (list tab).
-  //   - entity        (matcher etSg)          — `candidate`  | `organization`  | `alliance`  (drawer entity type).
-  //   - id            (any)                   — entity id for the drawer.
+  //   - electionTab   (freeform)                    — SELECTED election (singular) whose results are being rendered.
+  //   - entityTab     (matcher entityTypePlural)    — `candidates` | `organizations` | `alliances` (list tab).
+  //   - entity        (matcher entityTypeSingular)  — `candidate`  | `organization`  | `alliance`  (drawer entity type).
+  //   - id            (any)                         — entity id for the drawer.
   // Name-disjoint dissociation: `electionTab` (route key, SELECTED singular) and `electionId` (search key, AVAILABLE array; PERSISTENT_SEARCH_PARAMS member at `params.ts`) are literally different identifiers throughout the codebase — they never alias. `constituencyId` continues to travel as a persistent search param.
-  ResultCandidate: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
-  ResultEntity: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
-  ResultParty: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
+  ResultCandidate: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=entityTypePlural]]/[[entity=entityTypeSingular]]/[[id]]`,
+  ResultEntity: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=entityTypePlural]]/[[entity=entityTypeSingular]]/[[id]]`,
+  ResultParty: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=entityTypePlural]]/[[entity=entityTypeSingular]]/[[id]]`,
   Results: `${VOTER_LOCATED}/results`,
   // The statistics page sits BESIDE the election-tab segment rather than under it. Under it, the page would inherit the results layout chain, and those layouts render the results hero, ingress and election picker around their children, which would put the results chrome and a second `<h1>` on the statistics page.
   // This constant and the directory move together or the route 404s.
@@ -188,8 +188,8 @@ export const ROUTE = {
   AdminAppJob: `${ADMIN_PROT}/jobs/[jobId]`,
   AdminAppJobs: `${ADMIN_PROT}/jobs`,
   AdminAppFactorAnalysis: `${ADMIN_PROT}/factor-analysis`,
-  AdminAppQuestionInfo: `${ADMIN_PROT}/question-info`,
-  AdminAppArgumentCondensation: `${ADMIN_PROT}/argument-condensation`,
+  AdminAppQuestionInfo: `${ADMIN_PROT}/(questions)/question-info`,
+  AdminAppArgumentCondensation: `${ADMIN_PROT}/(questions)/argument-condensation`,
   AdminAppLogin: `${ADMIN}/login`,
   AdminAppForgotPassword: `${ADMIN}/forgot-password`,
   AdminAppEmailSent: `${ADMIN}/email-sent`,

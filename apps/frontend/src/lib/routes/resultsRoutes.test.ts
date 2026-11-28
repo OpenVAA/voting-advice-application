@@ -30,7 +30,9 @@ vi.mock('$lib/paraglide/runtime', () => ({
 function current(path: string, params: Record<string, string> = {}): BuildRouteCurrent {
   return {
     params,
-    route: { id: '/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]' },
+    route: {
+      id: '/(voters)/(located)/results/[[electionTab]]/[[entityTab=entityTypePlural]]/[[entity=entityTypeSingular]]/[[id]]'
+    },
     url: new URL(`http://localhost${path}`)
   };
 }

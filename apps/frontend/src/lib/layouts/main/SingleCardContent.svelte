@@ -49,7 +49,7 @@ Defines the layout of the content of the `main` element (following the possible 
 </script>
 
 <svelte:head>
-  <title>{title} – {t('dynamic.appName')}</title>
+  <title>{t('common.documentTitle', { pageTitle: title, appName: t('dynamic.appName') })}</title>
 </svelte:head>
 
 <div

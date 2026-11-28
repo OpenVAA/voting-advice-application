@@ -19,7 +19,7 @@
   // Get jobs
   ////////////////////////////////////////////////////////////////////////
 
-  // `activeJobsByFeature` and `pastJobs` are read-only PROTOTYPE GETTERS over `$derived`/`$derived.by` (`jobStates.svelte.ts`), and both return a NEW collection on every recompute. Destructuring them — as this file did — bound the initial empty `Map`/array at component init, so the polling service updated the registry while every tile below stayed frozen at zero: the page rendered perfectly and showed nothing. Read them through `ctx.jobs.X` inside the tracking scope instead, per CLAUDE.md § Context Destructuring Rule. That includes the template reads further down; a local alias would reintroduce the same freeze.
+  // `activeJobsByFeature` and `pastJobs` are read-only PROTOTYPE GETTERS over `$derived`/`$derived.by` (`jobStates.svelte.ts`), and both return a NEW collection on every recompute. Destructuring them would bind the initial empty `Map`/array at component init, and every tile below would stay frozen at zero while the polling service updated the registry. Read them through `ctx.jobs.X` inside the tracking scope instead, per CLAUDE.md § Context Destructuring Rule. That includes the template reads further down; a local alias would reintroduce the same freeze.
   let activeJobsCount = $derived([...ctx.jobs.activeJobsByFeature.values()].filter((j) => !!j).length);
 
   ////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@
   }
 </script>
 
-<MainContent title={t('adminApp.jobs.title')}>
+<MainContent title={t('adminApp.jobs.title')} data-testid="admin-jobs">
   {#snippet primaryActions()}
     <div class="flex gap-2">
       <ButtonWithConfirmation

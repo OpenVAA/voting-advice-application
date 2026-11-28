@@ -8,13 +8,13 @@ import { buildRoute } from './buildRoute';
 import type { EntityType } from '@openvaa/data';
 import type { BuildRouteCurrent } from './buildRoute';
 
-/** The three plural route segments the `etPl` matcher admits on the `entityTab` param. */
+/** The three plural route segments the `entityTypePlural` matcher admits on the `entityTab` param. */
 export type EntityPlural = 'candidates' | 'organizations' | 'alliances';
 
 /**
  * Narrow a raw `entityTab` route param to {@link EntityPlural}, or `undefined` when it is absent or is not one of the three.
  *
- * The `etPl` matcher already guards the route, but this narrowing does not trust a URL string on the strength of that. An absent and an invalid param both mean "no explicit plural in the URL".
+ * The `entityTypePlural` matcher already guards the route, but this narrowing does not trust a URL string on the strength of that. An absent and an invalid param both mean "no explicit plural in the URL".
  *
  * @param raw - `page.params.entityTab`, or any candidate string.
  * @returns The narrowed plural, or `undefined`.

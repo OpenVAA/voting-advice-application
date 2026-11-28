@@ -128,8 +128,8 @@ reads everything tracked.
   each level remounted the list on the first switch away from an implied tab,
   because the implied shape and the explicit shape were served by different
   component instances in different route files. The shipped tree is
-  `[[electionTab]]/+layout.svelte` → `[[entityTab=etPl]]/+layout.svelte` →
-  `[[entity=etSg]]/[[id]]/+page.svelte`, with the list on the innermost page and
+  `[[electionTab]]/+layout.svelte` → `[[entityTab=entityTypePlural]]/+layout.svelte` →
+  `[[entity=entityTypeSingular]]/[[id]]/+page.svelte`, with the list on the innermost page and
   a layout whose param is missing-and-unimplied rendering the picker instead of
   its children. No redirect anywhere.
 - **Scroll asymmetry is deliberate and must stay commented.** Entity open,

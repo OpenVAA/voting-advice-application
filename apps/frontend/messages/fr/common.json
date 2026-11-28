@@ -76,6 +76,7 @@
     "confirmed": "Confirmé",
     "constituency": "Circonscription",
     "continue": "Continuer",
+    "documentTitle": "{pageTitle} – {appName}",
     "election": "Élection",
     "electionList": "Liste",
     "electionSymbol": {

@@ -1,12 +1,13 @@
 /**
  * The error page, mounted for real against the English error catalogue.
  *
- * `t` reads `messages/en/error.json` and answers any other key with the key itself, as the real wrapper does for a key with no message. Assertions are on the rendered heading and the document title.
+ * `t` reads `messages/en/error.json` and the document-title message of `messages/en/common.json`, and answers any other key with the key itself, as the real wrapper does for a key with no message. Assertions are on the rendered heading and the document title.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import commonMessages from '../../messages/en/common.json';
 import errorMessages from '../../messages/en/error.json';
 
 const { t } = vi.hoisted(() => ({ t: vi.fn() }));
@@ -45,10 +46,18 @@ const ErrorPage = (await import('./+error.svelte')).default;
 
 const catalogue: Record<string, string> = errorMessages.error;
 
-/** The English message of an `error.*` key, or the key itself when the catalogue has none. */
-function translate(key: string): string {
+/** The English message of an `error.*` key or of `common.documentTitle`, with its params filled in, or the key itself when the catalogue has none. */
+function translate(key: string, params: Record<string, unknown> = {}): string {
   const [namespace, name] = key.split('.', 2);
-  return namespace === 'error' && name in catalogue ? catalogue[name] : key;
+  const message =
+    key === 'common.documentTitle'
+      ? commonMessages.common.documentTitle
+      : namespace === 'error' && name in catalogue
+        ? catalogue[name]
+        : key;
+  return message.replace(/\{(\w+)\}/g, (placeholder, param: string) =>
+    param in params ? String(params[param]) : placeholder
+  );
 }
 
 let teardown: Array<() => void> = [];

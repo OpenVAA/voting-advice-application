@@ -1,4 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
+import { t } from '$lib/i18n';
+import { buildRoute } from '$lib/routes';
 import type { PageLoad } from './$types';
 
 /**
@@ -13,7 +15,7 @@ import type { PageLoad } from './$types';
  *
  * Name-disjoint dissociation:
  *   - ROUTE side: `params.electionTab` = SELECTED singular.
- *   - SEARCH side: `?electionId=…` / `electionId[N]=…` = AVAILABLE array (existing PERSISTENT_SEARCH_PARAMS; preserved on redirect via `url.search`).
+ *   - SEARCH side: `?electionId=…` / `electionId[N]=…` = AVAILABLE array (existing PERSISTENT_SEARCH_PARAMS; carried over on redirect by `buildRoute`).
  *
  * Coupling rule: `entity` and `id` must both be present OR both absent. Exactly-one-present URLs (e.g.
  * `/results/test-el-reg/candidates/candidate` with no id) are invalid drawer states and redirect 307 back to the parent list route.
@@ -24,16 +26,17 @@ import type { PageLoad } from './$types';
 export const load: PageLoad = async ({ params, url }) => {
   const { entity, id, entityTab, electionTab } = params;
 
-  // Matcher-fallthrough: id is the only thing set under the etPl/etSg pair → URL like /results/[electionTab]/invalidplural
+  // Matcher-fallthrough: id is the only thing set under the entityTypePlural/entityTypeSingular pair → URL like /results/[electionTab]/invalidplural
   if (id && !entity && !entityTab) {
-    throw error(404, 'Not Found');
+    error(404, { message: t('error.404') });
   }
 
   if ((entity && !id) || (!entity && id)) {
-    const electionSegment = electionTab ? `/${electionTab}` : '';
-    // Post-88-02 loop fix: no `/candidates` fallback when entityTab is absent. `/results/{electionTab}` is a valid render shape — voterContext.currentResultsEntityType implies the active tab and the layout selector picks up the user's next interaction.
-    const listSuffix = entityTab ? `/${entityTab}` : '';
-    throw redirect(307, `/results${electionSegment}${listSuffix}${url.search}`);
+    // No `/candidates` fallback when entityTab is absent: `/results/{electionTab}` is a valid render shape — voterContext.currentResultsEntityType implies the active tab and the layout selector picks up the user's next interaction.
+    throw redirect(
+      307,
+      buildRoute({ route: 'ResultEntity', electionTab, entityTab, entity: undefined, id: undefined }, { url })
+    );
   }
 
   return {};

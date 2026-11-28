@@ -19,7 +19,7 @@ See `+page.ts` for possible redirects.
   import { ElectionSelector } from '$lib/components/electionSelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { electionsHeldIn } from '$lib/routes';
+  import { electionsHeldIn, forwardedNext } from '$lib/routes';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////
@@ -60,8 +60,7 @@ See `+page.ts` for possible redirects.
     if (!canSubmit) return;
     const electionId = Array.from(selected);
     // Deferred-target handling: forward the `?next=` target parameter through to the constituency selector so the final selector step can resume the originally-requested route. `next` is NOT a persistent search param (see params.ts PERSISTENT_SEARCH_PARAMS), so buildRoute drops it unless we pass it explicitly. No whitelist re-check here — the entry-point check in `(located)/+layout.ts` already filtered before this point.
-    const next = page.url.searchParams.get('next');
-    const nextForward: { next?: string } = next ? { next } : {};
+    const nextForward = forwardedNext(page.url);
     await goto(
       appSettings.elections?.startFromConstituencyGroup
         ? getRoute.current({ route: 'Questions', electionId, ...nextForward })

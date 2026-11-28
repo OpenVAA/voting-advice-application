@@ -81,7 +81,7 @@ Displays a warning if the selected constituency does not have nominations in all
       dataRoot.provideEntityData(nominationData.entities);
       dataRoot.provideNominationData(nominationData.nominations);
     });
-    // Wait for the reactive chain (VoterContext.selectedElections + nominationsAvailable, both $derived/$effect over dataRoot + URL params) to propagate before reading nomination status. The original sync read raced the $effect that recomputes selectedElections — without the wait, matches[activeElectionId] would still be undefined when the layout first paints, locking the results page in a "Loading…" state until the user manually navigated. The spec that originally caught that regression no longer exists; its assertions were absorbed into the voter specs under `tests/tests/specs/voter/`, which is where a reintroduced sync read surfaces today.
+    // Wait for `selectedElections` and the nomination status to recompute from the data just provided: read synchronously, `matches[activeElectionId]` is still undefined at first paint and the results page stays on Loading until the next navigation.
     const nomStatus = await awaitNominationsSettled();
     hasNominations = nomStatus;
     // Compose the dataset key from the current nomination status + the selection that produced it. Open the modal only when this key differs from the one we last opened the modal for — see the `modalShownForKey` doc-comment above for the reopen-race motivation.

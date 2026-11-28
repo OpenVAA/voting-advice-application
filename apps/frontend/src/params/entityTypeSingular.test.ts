@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { match } from './etSg';
+import { match } from './entityTypeSingular';
 
 /**
- * Unit test for the `etSg` SvelteKit param matcher (short-name alias of `entityTypeSingular`).
+ * Unit test for the `entityTypeSingular` SvelteKit param matcher.
  *
  * Accept-set (American spelling):
  *   `candidate` | `organization` | `alliance`
  *
  * Rejects plural forms, British spellings, legacy `party`, empty strings and case variants.
  */
-describe('etSg matcher', () => {
+describe('entityTypeSingular matcher', () => {
   it.each([
     ['candidate', true],
     ['organization', true],

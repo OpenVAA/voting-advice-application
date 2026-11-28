@@ -31,6 +31,17 @@ export function isVoterAppPath(path: string): boolean {
   return root != null && VOTER_ROOT_SEGMENTS.has(root);
 }
 
+/**
+ * The `next=` target of `url`, ready to spread into `buildRoute` options. `next` is not a persistent search param, so a step of the voter selection flow that redirects onward forwards it explicitly with this.
+ *
+ * @param url - The current URL.
+ * @returns `{ next }` when `url` carries a non-empty `next` search param, otherwise `{}`.
+ */
+export function forwardedNext(url: URL): { next?: string } {
+  const next = url.searchParams.get('next');
+  return next ? { next } : {};
+}
+
 /** An empty or dot segment, including the percent-encoded dots URL resolution also treats as dots. */
 function isUnsafeSegment(segment: string): boolean {
   const dots = segment.replace(/%2e/gi, '.');

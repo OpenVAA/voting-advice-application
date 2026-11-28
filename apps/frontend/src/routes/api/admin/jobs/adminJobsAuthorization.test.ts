@@ -3,13 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET } from './active/+server';
 
 /**
- * The `/api/admin/jobs/**` authorization gate, exercised END TO END through a real endpoint (CR-01).
+ * The `/api/admin/jobs/**` authorization gate, exercised END TO END through a real endpoint.
  *
  * ## What this spec is a control for
  *
- * The endpoints used to gate on `getUserData(...)?.role !== 'admin'` alone. That role is decoded from the access token in the request's `sb-*` cookies, and `supabase.auth.getSession()` returns that token WITHOUT checking its signature — it validates only the session's self-reported `expires_at`. An unauthenticated caller could therefore mint their own JWT carrying a global admin grant, park it in an `sb-*` cookie with a future expiry, and pass the check: starting LLM jobs, aborting running ones and reading the in-memory job store (author e-mail addresses, inputs, pipeline messages).
+ * `supabase.auth.getSession()` returns the access token in the request's `sb-*` cookies without checking its signature, so the endpoints must gate on a verified identity. The forged-cookie case checks that a self-minted admin token, which would otherwise start LLM jobs, abort running ones and read the in-memory job store, is rejected.
  *
- * The forged-cookie case below is that attack, expressed at the only layer where it is observable: `locals.safeGetSession` is implemented here BYTE FOR BYTE as `hooks.server.ts` implements it, over a client stub that behaves as the real one does against a forged token — `getSession()` hands the blob back happily, `getUser()` rejects it. The rest of the spec is the discrimination that makes the rejection meaningful: a genuine admin still gets 200, and a genuine NON-admin still gets the unchanged 403.
+ * The forged-cookie case is expressed at the only layer where it is observable: `locals.safeGetSession` is implemented here BYTE FOR BYTE as `hooks.server.ts` implements it, over a client stub that behaves as the real one does against a forged token — `getSession()` hands the blob back happily, `getUser()` rejects it. The rest of the spec is the discrimination that makes the rejection meaningful: a genuine admin still gets 200, and a genuine NON-admin still gets the unchanged 403.
  *
  * `active` is the endpoint under test because it is a plain GET with no body and no path parameters, so nothing but the gate stands between the request and the job store. All six endpoints route through the same `requireVerifiedAdmin`, which is why one endpoint is enough to hold the property and why the helper exists rather than six transcriptions.
  */
@@ -102,7 +102,7 @@ function callActive(locals: App.Locals): Promise<Response> {
   } as unknown as Parameters<typeof GET>[0]) as Promise<Response>;
 }
 
-describe('/api/admin/jobs authorization — a VERIFIED identity, then user_can (CR-01)', () => {
+describe('/api/admin/jobs authorization — a VERIFIED identity, then user_can', () => {
   beforeEach(() => {
     // `getUserData` swallows the adapter's throw into a structured `error` record; keep the suite's stdout clean without silencing the assertions.
     configureLogger({ level: 'silent' });

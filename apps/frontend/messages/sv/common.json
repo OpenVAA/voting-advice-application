@@ -76,6 +76,7 @@
     "confirmed": "Bekräftat",
     "constituency": "Valkrets",
     "continue": "Fortsätt",
+    "documentTitle": "{pageTitle} – {appName}",
     "election": "Val",
     "electionList": "Lista",
     "electionSymbol": {

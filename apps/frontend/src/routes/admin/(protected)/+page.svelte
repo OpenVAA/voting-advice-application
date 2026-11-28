@@ -12,7 +12,7 @@ Main landing page for admin section showing available tools
   const { t, getRoute } = getAppContext();
 </script>
 
-<MainContent title={t('adminApp.common.home')}>
+<MainContent title={t('adminApp.common.home')} data-testid="admin-home">
   <p class="text-center">{t('adminApp.common.description')}</p>
 
   <!-- Could also be dynamic based on the available features -->

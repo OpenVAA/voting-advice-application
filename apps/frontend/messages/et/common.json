@@ -76,6 +76,7 @@
     "confirmed": "Kinnitatud",
     "constituency": "Valimisringkond",
     "continue": "Jätka",
+    "documentTitle": "{pageTitle} – {appName}",
     "election": "Valimised",
     "electionList": "Valimiste nimekiri",
     "electionSymbol": {

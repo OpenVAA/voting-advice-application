@@ -1,46 +1,51 @@
 /**
- * The two admin feature subtrees' own cookie-array server loaders (see phase 158).
- *
- * ## What these loads are for
- *
- * `routes/admin/(protected)/argument-condensation/+layout.ts` and its `question-info` sibling build their Supabase client from data they have SYNCHRONOUSLY, with no `parent()` await for the client. `parent()` does not resolve until the ROOT load has finished, and the root load makes four Supabase round-trips, so a client taken from it would SERIALISE both feature loads behind them. Each subtree's own `+layout.server.ts` — this spec's subject — is what supplies that data. `routes/(voters)/(located)/+layout.server.ts` is the in-tree analog of the shape.
+ * The Supabase cookie filter every server load that hands a universal load its `supabaseCookies` goes through: `supabaseCookiesOf` and the `supabaseCookiesLoad` the subtree server loads re-export.
  *
  * ## Why this spec exists, and what it would catch
  *
  * Everything a server load returns is serialised into the hydration payload in the HTML body. `cookies.getAll()` yields the request's WHOLE jar, which includes every cookie this application sets `httpOnly: true` — the two OIDC replay/CSRF guards, the PKCE companion, the identity provider's entity-type cookie, the identity provider's locale cookie and its arrival marker. Serialising any of those defeats the flag outright. The filter is therefore a data-protection boundary, and this spec is what makes it a checked one.
  *
- * ⚠ AN ABSENCE-ONLY ASSERTION PASSES TRIVIALLY AGAINST AN EMPTY ARRAY, and an empty array is exactly what a broken filter produces — a spelled prefix literal that stopped matching would empty it, `createServerClient` would find no session, and the server-rendered pass would silently go anonymous with no throw, no log and no failing test. Every case below therefore carries its POSITIVE CONTROL inside the same `expect`: the absences and the forwarded array are compared as one object, so a load that returned `[]` fails on the presence half. A stub load returning `{ supabaseCookies: [] }` passes every absence and fails every presence.
+ * ⚠ AN ABSENCE-ONLY ASSERTION PASSES TRIVIALLY AGAINST AN EMPTY ARRAY, and an empty array is exactly what a broken filter produces — a spelled prefix literal that stopped matching would empty it, `createServerClient` would find no session, and the server-rendered pass would silently go anonymous with no throw, no log and no failing test. Every case below therefore carries its POSITIVE CONTROL inside the same `expect`: the absences and the forwarded array are compared as one object, so a filter that returned `[]` fails on the presence half.
  *
  * ## ⚠ Why the prefix is INJECTED rather than read from the real constant
  *
- * Under this workspace's vitest configuration `SUPABASE_COOKIE_PREFIX` resolves to the three-character `'sb-'` FALLBACK, because `$env/dynamic/public` supplies no `PUBLIC_SUPABASE_URL` in a unit run and `resolveSupabaseCookiePrefix` degrades rather than throwing (it is evaluated at module scope, and a throw there would take the SSR process down at server start). Against that fallback the decoy below — a name that begins with the vendor prefix but is NOT the storage key — genuinely matches, so a spec written against the ambient constant would pass in production and fail here, i.e. it would be environment-dependent. This project treats an intermittently-failing test as a defect, not as a flake to annotate.
+ * Under this workspace's vitest configuration `SUPABASE_COOKIE_PREFIX` resolves to the three-character `'sb-'` FALLBACK, because `$env/dynamic/public` supplies no `PUBLIC_SUPABASE_URL` in a unit run and `resolveSupabaseCookiePrefix` degrades rather than throwing (it is evaluated at module scope, and a throw there would take the SSR process down at server start). Against that fallback the decoy below — a name that begins with the vendor prefix but is NOT the storage key — genuinely matches, so a spec written against the ambient constant would pass in production and fail here, i.e. it would be environment-dependent.
  *
- * Mocking the module the loads import the constant FROM removes the environment from the question and makes a strictly STRONGER claim: the decoy case now fails unless the load actually reads `SUPABASE_COOKIE_PREFIX` at request time. A load that spelled `'sb-'` as a literal would ignore the injected storage key, forward the decoy, and be caught here: that is the fail-open shape this spec exists for.
+ * Mocking the module the helper imports the constant FROM removes the environment from the question and makes a strictly STRONGER claim: the decoy case now fails unless the filter actually reads `SUPABASE_COOKIE_PREFIX` at request time. A filter that spelled `'sb-'` as a literal would ignore the injected storage key, forward the decoy, and be caught here.
  *
- * ## Both loads, from one file
+ * ## The routes that use it
  *
- * The two loads are byte-identical, and a spec that pinned only one would let the other drift into a second idiom for one problem. Every case runs against both.
+ * The subtree server loads are one-line re-exports of `supabaseCookiesLoad`; the last block checks that each one still is.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 import { COOKIE } from '$lib/cookies';
-import { load as argumentCondensationLoad } from './argument-condensation/+layout.server';
-import { load as questionInfoLoad } from './question-info/+layout.server';
+import { supabaseCookiesLoad } from './supabaseCookies';
+import { load as locatedVoterLoad } from '../../routes/(voters)/(located)/+layout.server';
+import { load as adminQuestionsLoad } from '../../routes/admin/(protected)/(questions)/+layout.server';
 
 /**
  * The storage key injected in place of the real constant, in the production shape `@supabase/supabase-js` computes (`sb-${hostname.split('.')[0]}-auth-token`). Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
  */
 const { STORAGE_KEY } = vi.hoisted(() => ({ STORAGE_KEY: 'sb-testproject-auth-token' }));
 
-// The seam the two loads import the prefix through — `$lib/api/dataProvider`, never `$lib/supabase/universal`, because the adapter-boundary guard bans the direct module path at every route. Replacing the module here is what makes the decoy case below deterministic AND load-bearing; see the docstring's fourth section for the measurement behind it.
+// The seam the helper imports the prefix through. Replacing the module here is what makes the decoy case below deterministic AND load-bearing; see the docstring's third section.
 vi.mock('$lib/api/dataProvider', () => ({ SUPABASE_COOKIE_PREFIX: STORAGE_KEY }));
 
 /** One cookie as the request jar carries it. The real jar also carries `path` and friends; they are present here so the projection has something to drop. */
 type RequestCookie = { name: string; value: string; path: string };
 
-/** The shape either load is driven with. The two loads' generated event types are typed against DIFFERENT route ids, so neither is assignable to the other; this is the surface they genuinely share. */
+/** The surface of the request event the filter reads. */
 type FakeEvent = { cookies: { getAll: () => Array<RequestCookie> } };
-type LoadFn = (event: FakeEvent) => Promise<{ supabaseCookies: Array<{ name: string; value: string }> }>;
+
+/**
+ * Run the load the subtree routes re-export against a fake event.
+ * @param event - The fake request event.
+ * @returns What the load returned.
+ */
+function load(event: FakeEvent): { supabaseCookies: Array<{ name: string; value: string }> } {
+  return supabaseCookiesLoad(event as unknown as Parameters<typeof supabaseCookiesLoad>[0]);
+}
 
 /**
  * Every cookie name this application CHOOSES, taken from the one registry that declares them rather than spelled here. A newly registered cookie fails the set assertion below instead of silently escaping the fixture jar.
@@ -69,7 +74,7 @@ const SENTINEL: RequestCookie = { name: STORAGE_KEY, value: 'the-session-blob', 
 const DECOY: RequestCookie = { name: 'sb-feature-flags', value: 'decoy-value', path: '/' };
 
 /**
- * A request context exposing only the surface either load touches. Every call builds its own jar and its own object, so nothing is shared between invocations — which is what the concurrency case leans on.
+ * A request context exposing only the surface the filter touches. Every call builds its own jar and its own object, so nothing is shared between invocations — which is what the concurrency case leans on.
  * @param jar - The cookies this request arrives with.
  * @returns The fake event.
  */
@@ -89,11 +94,6 @@ function report(supabaseCookies: Array<{ name: string; value: string }>) {
     forwarded: supabaseCookies
   };
 }
-
-const LOADS: Array<[string, LoadFn]> = [
-  ['argument-condensation', argumentCondensationLoad as unknown as LoadFn],
-  ['question-info', questionInfoLoad as unknown as LoadFn]
-];
 
 describe('the registry this spec derives its forbidden set from', () => {
   it('declares exactly the cookies the fixture jar carries', () => {
@@ -118,9 +118,9 @@ describe('the registry this spec derives its forbidden set from', () => {
   });
 });
 
-describe.each(LOADS)('%s subtree server load — the payload filter', (_feature, load) => {
-  it('forwards exactly the auth-storage cookie, with the httpOnly values absent and the sentinel present in one expectation', async () => {
-    const { supabaseCookies } = await load(eventWithJar([...httpOnlyJarEntries, SENTINEL, DECOY]));
+describe('supabaseCookiesLoad — the payload filter', () => {
+  it('forwards exactly the auth-storage cookie, with the httpOnly values absent and the sentinel present in one expectation', () => {
+    const { supabaseCookies } = load(eventWithJar([...httpOnlyJarEntries, SENTINEL, DECOY]));
 
     // ONE expectation, both halves. `leaked: []` alone would pass against `supabaseCookies: []`; `forwarded` is the positive control that makes the empty array fail. `toEqual` is exact on keys, so a forwarded `path` or `httpOnly` also fails here.
     expect(report(supabaseCookies)).toEqual({
@@ -129,14 +129,14 @@ describe.each(LOADS)('%s subtree server load — the payload filter', (_feature,
     });
   });
 
-  it('forwards the chunked and PKCE companion cookies the client writes, and still nothing else', async () => {
+  it('forwards the chunked and PKCE companion cookies the client writes, and still nothing else', () => {
     const chunked: Array<RequestCookie> = [
       { name: `${STORAGE_KEY}.0`, value: 'chunk-0', path: '/' },
       { name: `${STORAGE_KEY}.1`, value: 'chunk-1', path: '/' },
       { name: `${STORAGE_KEY}-code-verifier`, value: 'pkce', path: '/' }
     ];
 
-    const { supabaseCookies } = await load(eventWithJar([...httpOnlyJarEntries, ...chunked, DECOY]));
+    const { supabaseCookies } = load(eventWithJar([...httpOnlyJarEntries, ...chunked, DECOY]));
 
     expect(report(supabaseCookies)).toEqual({
       leaked: [],
@@ -148,29 +148,29 @@ describe.each(LOADS)('%s subtree server load — the payload filter', (_feature,
     });
   });
 
-  it('excludes a decoy that begins with the vendor prefix but is not the storage key', async () => {
+  it('excludes a decoy that begins with the vendor prefix but is not the storage key', () => {
     // Non-vacuous by construction: the storage-key cookie is in the same jar, so an empty return fails this case too. A load that spelled `'sb-'` rather than reading the constant forwards the decoy and fails here.
-    const { supabaseCookies } = await load(eventWithJar([DECOY, SENTINEL]));
+    const { supabaseCookies } = load(eventWithJar([DECOY, SENTINEL]));
 
     expect(supabaseCookies).toEqual([{ name: STORAGE_KEY, value: 'the-session-blob' }]);
   });
 
-  it('returns an empty array, and does not throw, on an empty jar', async () => {
-    await expect(load(eventWithJar([]))).resolves.toEqual({ supabaseCookies: [] });
+  it('returns an empty array, and does not throw, on an empty jar', () => {
+    expect(load(eventWithJar([]))).toEqual({ supabaseCookies: [] });
   });
 
-  it('returns an empty array when the jar carries only httpOnly cookies', async () => {
-    const { supabaseCookies } = await load(eventWithJar(httpOnlyJarEntries));
+  it('returns an empty array when the jar carries only httpOnly cookies', () => {
+    const { supabaseCookies } = load(eventWithJar(httpOnlyJarEntries));
 
     expect(supabaseCookies).toEqual([]);
   });
 
-  it('keeps two concurrent requests independent — neither jar contributes to the other payload', async () => {
+  it('keeps two concurrent requests independent — neither jar contributes to the other payload', () => {
     const jarA: Array<RequestCookie> = [{ name: STORAGE_KEY, value: 'request-a-session', path: '/' }];
     const jarB: Array<RequestCookie> = [{ name: STORAGE_KEY, value: 'request-b-session', path: '/' }];
 
-    // Issued together rather than in sequence: the load holds no module-level state, and a load that did would be visible as one request's value appearing in the other's array.
-    const [a, b] = await Promise.all([load(eventWithJar(jarA)), load(eventWithJar(jarB))]);
+    // The load holds no module-level state; one that did would be visible as one request's value appearing in the other's array.
+    const [a, b] = [load(eventWithJar(jarA)), load(eventWithJar(jarB))];
 
     expect({ a: a.supabaseCookies, b: b.supabaseCookies }).toEqual({
       a: [{ name: STORAGE_KEY, value: 'request-a-session' }],
@@ -179,17 +179,11 @@ describe.each(LOADS)('%s subtree server load — the payload filter', (_feature,
   });
 });
 
-describe('the two subtree loads do not diverge', () => {
-  it('returns deep-equal payloads for the same jar', async () => {
-    const jar = [...httpOnlyJarEntries, SENTINEL, DECOY];
-
-    const [argumentCondensation, questionInfo] = await Promise.all([
-      (argumentCondensationLoad as unknown as LoadFn)(eventWithJar(jar)),
-      (questionInfoLoad as unknown as LoadFn)(eventWithJar(jar))
-    ]);
-
-    // The byte-level half of this claim is a `diff` in the plan's verify block; this is the behavioural half, and it fails if one file is edited without the other.
-    expect(argumentCondensation).toEqual(questionInfo);
-    expect(argumentCondensation.supabaseCookies).toEqual([{ name: STORAGE_KEY, value: 'the-session-blob' }]);
+describe('the subtree server loads', () => {
+  it.each([
+    ['(voters)/(located)', locatedVoterLoad],
+    ['admin/(protected)/(questions)', adminQuestionsLoad]
+  ])('%s re-exports supabaseCookiesLoad', (_route, routeLoad) => {
+    expect(routeLoad).toBe(supabaseCookiesLoad);
   });
 });

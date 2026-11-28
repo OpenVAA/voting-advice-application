@@ -22,16 +22,13 @@ Page for controlling the question info generation feature.
 
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
   const ctx = getAdminContext();
-  const {
-    t,
-    jobs: { activeJobsByFeature }
-  } = ctx;
+  const { t } = ctx;
 
   ////////////////////////////////////////////////////////////////////////
   // Get active job
   ////////////////////////////////////////////////////////////////////////
 
-  let questionInfoJob = $derived<JobInfo | undefined>(activeJobsByFeature.get('QuestionInfoGeneration'));
+  let questionInfoJob = $derived<JobInfo | undefined>(ctx.jobs.activeJobsByFeature.get('QuestionInfoGeneration'));
 
   ////////////////////////////////////////////////////////////////////////
   // Form state
@@ -134,7 +131,7 @@ Page for controlling the question info generation feature.
   }
 </script>
 
-<MainContent title={t('adminApp.questionInfo.title')}>
+<MainContent title={t('adminApp.questionInfo.title')} data-testid="admin-question-info">
   <div class="flex flex-col items-center">
     <p class="mb-lg max-w-xl text-center">{t('adminApp.questionInfo.description')}</p>
 
@@ -150,7 +147,12 @@ Page for controlling the question info generation feature.
         <label for="electionId" class="label">
           <span class="">{t('adminApp.questionInfo.selectElection')}</span>
         </label>
-        <select id="electionId" name="electionId" class="select w-full" bind:value={selectedElectionId}>
+        <select
+          id="electionId"
+          name="electionId"
+          class="select w-full"
+          data-testid="admin-question-info-election"
+          bind:value={selectedElectionId}>
           <option value="" disabled selected>{t('adminApp.questionInfo.selectElection')}</option>
           {#each ctx.dataRoot.elections as election}
             <option value={election.id}>{election.name}</option>

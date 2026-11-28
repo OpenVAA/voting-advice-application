@@ -1,9 +1,7 @@
 /**
  * The admin jobs page's system-health tiles.
  *
- * REGRESSION (157 review, Lot C CR-03). The page nested-destructured `jobs: { activeJobsByFeature, pastJobs }` out of the admin context. Both are read-only PROTOTYPE GETTERS over `$derived`/`$derived.by` (`jobStates.svelte.ts`), which return a NEW collection on every recompute, so the destructure bound the initial empty `Map`/array at component init and every tile was frozen: `activeJobsCount` always `0`, and all three past-job tiles filtering a permanently empty array. The page renders perfectly while showing nothing, which is why nothing caught it.
- *
- * The test mounts the real page against a fake context with the same reactive shape and updates the registry AFTER mount.
+ * `jobs.activeJobsByFeature` and `jobs.pastJobs` are getters over `$derived` values that return a new collection on every recompute, so the page must read them off the context; a destructure would freeze every tile at its initial empty value. The test mounts the page and adds jobs after mount.
  */
 
 import { flushSync, mount, unmount } from 'svelte';

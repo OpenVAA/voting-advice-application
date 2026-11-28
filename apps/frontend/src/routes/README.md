@@ -12,7 +12,7 @@ Locale handling is managed by Paraglide JS via the reroute hook in `src/hooks.ts
 - Server endpoints are in `api/` — `api/admin/jobs/**` (job control, each open only to a verified user with an admin grant that reaches the project), `api/auth/**`, `api/oidc/**` (the identity provider's authorize endpoint and its callback, which registers or finds the account), `api/contestant/identity-provider` (the save, resend and acknowledge of the identity provider's gate), plus `api/data/[collection]`, `api/feedback`, `api/health`, `api/diagnostics` and `api/usage`
 
 The only non-route file left directly in this directory is `+error.svelte`. The app
-shell components that used to sit here now live outside the router's namespace, at
+shell components live outside the router's namespace, at
 `$lib/layouts/main/`, behind the `$layouts` alias and a two-level barrel: `Layout.svelte`
 (skip link, `<main>` landmark, drawer and menu), `Header.svelte`, `MainContent.svelte` /
 `SingleCardContent.svelte` (the `<h1>` and the `[data-focus-on-nav]` post-navigation focus

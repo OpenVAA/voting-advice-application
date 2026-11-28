@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { match } from './etPl';
+import { match } from './entityTypePlural';
 
 /**
- * Unit test for the `etPl` SvelteKit param matcher (short-name alias of `entityTypePlural`).
+ * Unit test for the `entityTypePlural` SvelteKit param matcher.
  *
  * Accept-set (American spelling):
  *   `candidates` | `organizations` | `alliances`
  *
  * Rejects singular forms, British spellings, legacy `party`/`parties`, empty strings and case variants.
  */
-describe('etPl matcher', () => {
+describe('entityTypePlural matcher', () => {
   it.each([
     ['candidates', true],
     ['organizations', true],

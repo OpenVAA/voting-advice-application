@@ -7,7 +7,7 @@ import type { SupabaseDatabase } from '$lib/api/adapters/supabase/supabaseAdapte
 /**
  * The cookie adapter `createSupabaseServerClient` writes this request's auth cookies through.
  *
- * `httpOnly: false` is set here rather than inherited from `@supabase/ssr`'s defaults. `routes/+layout.server.ts` and `routes/(voters)/(located)/+layout.server.ts` forward these cookies into the SSR payload, which is safe only because client JavaScript can already read them. Setting the flag after the spread keeps that contract in this file: making the cookies `httpOnly` means editing this line, whose test then fails, and revisiting both payload filters.
+ * `httpOnly: false` is set here rather than inherited from `@supabase/ssr`'s defaults. The server loads that return `supabaseCookiesOf` (`lib/server/supabaseCookies.ts`) forward these cookies into the SSR payload, which is safe only because client JavaScript can already read them. Setting the flag after the spread keeps that contract in this file: making the cookies `httpOnly` means editing this line, whose test then fails, and revisiting that filter.
  *
  * `setAll` also forwards the headers `@supabase/ssr` passes with the cookies. It passes `Cache-Control`, `Expires` and `Pragma` values that mark a response writing auth cookies as uncacheable, so no CDN or proxy serves one user's session to another. SvelteKit's `setHeaders` throws when a header is set twice in one request, so a header name is forwarded at most once per adapter, and an adapter belongs to one request.
  *

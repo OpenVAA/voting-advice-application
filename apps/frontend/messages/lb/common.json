@@ -76,6 +76,7 @@
     "confirmed": "Confirméiert",
     "constituency": "Walbezierk",
     "continue": "Weider",
+    "documentTitle": "{pageTitle} – {appName}",
     "election": "Wahl",
     "electionList": "Lëscht",
     "electionSymbol": {

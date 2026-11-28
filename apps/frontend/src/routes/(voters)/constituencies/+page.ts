@@ -19,7 +19,7 @@
 import { staticSettings } from '@openvaa/app-shared';
 import { error, redirect } from '@sveltejs/kit';
 import { t } from '$lib/i18n';
-import { buildRoute, constituenciesStepOutcome, parseParams, selectionDataOf } from '$lib/routes';
+import { buildRoute, constituenciesStepOutcome, forwardedNext, parseParams, selectionDataOf } from '$lib/routes';
 import { mergeAppSettings } from '$lib/utils/settings';
 import type { Route } from '$lib/routes';
 
@@ -47,8 +47,7 @@ export async function load({ parent, params, route, url }) {
   });
 
   // Deferred-target handling: forward the `?next=` target past auto-redirects on this page. `next` is not a persistent search param, so buildRoute strips it unless passed through `extraParams`.
-  const nextSearch = url.searchParams.get('next');
-  const nextForward: { next?: string } = nextSearch ? { next: nextSearch } : {};
+  const nextForward = forwardedNext(url);
 
   if (outcome.action === 'done') _redirect('Questions', nextForward);
   if (outcome.action === 'goto') _redirect('Elections', nextForward);

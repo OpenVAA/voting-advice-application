@@ -40,7 +40,7 @@ A route uses route parameters and search parameters:
 - Route parameters are path segments, such as `questionId` in `/questions/[questionId]`, or `electionTab`, `entityTab`, `entity` and `id` in the results route. They are listed in `ROUTE_PARAMS`.
 - Search parameters are in the query string. `electionId` and `constituencyId` are `PERSISTENT_SEARCH_PARAMS`: the route builder carries them over from the current page. They are also `ARRAY_PARAMS`, which accept several values and a single value alike. They can be left out when they can be implied, for example when there is only one election or the `elections.disallowSelection` setting is `true`.
 
-The results route's `entityTab` and `entity` segments use the param matchers `etPl` and `etSg` in `src/params`, which accept only the plural and singular entity type names.
+The results route's `entityTab` and `entity` segments use the param matchers `entityTypePlural` and `entityTypeSingular` in `src/params`, which accept only the plural and singular entity type names.
 
 ## Building routes
 

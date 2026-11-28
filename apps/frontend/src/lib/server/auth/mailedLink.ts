@@ -110,7 +110,7 @@ const REGISTERED_COOKIE_VALUE = '1';
  *
  * On a failed verification of any type but `email_change`, a missing token or type or a refused type, redirects to the login page of the app the link's `next` names, with the auth error, and claims nothing. The `email_change` link is the Contestant App's alone, so its failures land there whatever `next` says.
  *
- * Uses `locals.supabase`, the per-request server client the request hook attaches, so session cookies are set automatically by the Supabase SSR package. A client constructed here instead would verify the token and then drop the session, because only the hook's client carries the `setAll` callback that writes the httpOnly cookies back onto the response. The claim runs on that same client, as the user the token signed in.
+ * Uses `locals.supabase`, the per-request server client the request hook attaches, so session cookies are set automatically by the Supabase SSR package. A client constructed here instead would verify the token and then drop the session, because only the hook's client carries the `setAll` callback that writes the session cookies back onto the response. The claim runs on that same client, as the user the token signed in.
  *
  * Locale. Every target below is emitted through the route builder carrying the locale Paraglide resolved for the request, so a recipient who opened a mail link in a non-base locale is returned to that locale's pages.
  *

@@ -13,8 +13,8 @@ This is an automatically generated map of the route directories under `apps/fron
     │   │   └── results/
     │   │       ├── statistics/
     │   │       └── [[electionTab]]/
-    │   │           └── [[entityTab=etPl]]/
-    │   │               └── [[entity=etSg]]/
+    │   │           └── [[entityTab=entityTypePlural]]/
+    │   │               └── [[entity=entityTypeSingular]]/
     │   │                   └── [[id]]/
     │   ├── about/
     │   ├── constituencies/
@@ -25,9 +25,10 @@ This is an automatically generated map of the route directories under `apps/fron
     │   └── privacy/
     ├── admin/
     │   ├── (protected)/
-    │   │   ├── argument-condensation/
-    │   │   ├── jobs/
-    │   │   └── question-info/
+    │   │   ├── (questions)/
+    │   │   │   ├── argument-condensation/
+    │   │   │   └── question-info/
+    │   │   └── jobs/
     │   ├── email-sent/
     │   ├── forgot-password/
     │   ├── login/

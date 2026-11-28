@@ -76,6 +76,7 @@
     "confirmed": "Confirmed",
     "constituency": "Constituency",
     "continue": "Continue",
+    "documentTitle": "{pageTitle} – {appName}",
     "election": "Election",
     "electionList": "List",
     "electionSymbol": {

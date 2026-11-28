@@ -5,8 +5,8 @@
  */
 import { ADMIN_PROT, CONTESTANT_PROT, ROUTE } from '$lib/routes/route';
 import { ID_PATTERN } from './constants';
-import { match as isEntityTypePlural } from '../../params/etPl';
-import { match as isEntityTypeSingular } from '../../params/etSg';
+import { match as isEntityTypePlural } from '../../params/entityTypePlural';
+import { match as isEntityTypeSingular } from '../../params/entityTypeSingular';
 import { match as isServedEntityType } from '../../params/servedEntityType';
 
 /** A check on the value of one route parameter. */

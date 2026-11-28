@@ -76,6 +76,7 @@
     "confirmed": "Bekræftet",
     "constituency": "Valgkreds",
     "continue": "Fortsæt",
+    "documentTitle": "{pageTitle} – {appName}",
     "election": "Valg",
     "electionList": "Liste",
     "electionSymbol": {

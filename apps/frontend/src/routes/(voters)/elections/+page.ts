@@ -20,7 +20,7 @@
 import { staticSettings } from '@openvaa/app-shared';
 import { error, redirect } from '@sveltejs/kit';
 import { t } from '$lib/i18n';
-import { buildRoute, electionsStepOutcome, parseParams, selectionDataOf } from '$lib/routes';
+import { buildRoute, electionsStepOutcome, forwardedNext, parseParams, selectionDataOf } from '$lib/routes';
 import { mergeAppSettings } from '$lib/utils/settings';
 import type { Route } from '$lib/routes';
 
@@ -48,8 +48,7 @@ export async function load({ parent, params, route, url }) {
   });
 
   // Deferred-target handling: a `?next=` target from `(voters)/(located)/+layout.ts` is NOT a persistent search param, so it gets dropped by buildRoute's `filterPersistent` pass. Forward it explicitly so an auto-implied election still chains the deferred target through to /constituencies.
-  const nextSearch = url.searchParams.get('next');
-  const nextForward: { next?: string } = nextSearch ? { next: nextSearch } : {};
+  const nextForward = forwardedNext(url);
 
   if (outcome.action === 'done') _redirect('Questions', nextForward);
   // The implied `electionId` is passed forward so that /constituencies and the voter context's `selectedElections` see it without implying it again.

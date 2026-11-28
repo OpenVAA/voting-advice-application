@@ -90,7 +90,7 @@
         ? voterCtx.selectedQuestionBlocks.blocks[0]?.[0]
         : voterCtx.dataRoot.getQuestion(questionId);
     } catch {
-      error(404, `Question with id ${questionId} not found.`);
+      error(404, { message: t('error.404') });
     }
   });
 
