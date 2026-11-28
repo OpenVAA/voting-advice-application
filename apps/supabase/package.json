@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "deno": "2.9.6",
-    "jose": "^6.2.1",
+    "jose": "6.2.12",
     "supabase": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

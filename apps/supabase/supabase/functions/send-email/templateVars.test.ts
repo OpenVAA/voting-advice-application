@@ -1,9 +1,9 @@
 /**
- * Template placeholder substitution tests (REVIEW-EDGE-03).
+ * Template placeholder substitution tests.
  *
- * The criterion is one sentence wide -- a placeholder written `{{ varname }}` with surrounding spaces must render -- but the risk in satisfying it is wider than the criterion: the pattern also has to keep resolving every placeholder the product already uses, and those are produced by SQL rather than written by hand.
+ * A placeholder written `{{ varname }}` with surrounding spaces must render, and the pattern must also keep resolving every placeholder the product uses, which are produced by SQL rather than written by hand.
  *
- * SO THE FIXTURE IS ENUMERATED FROM THE TREE, NOT FROM THE EXAMPLES. `REAL_VARS` below is the complete set of keys `public.resolve_email_variables` can emit, read off `apps/supabase/supabase/schema/502-email-helpers.sql` rather than paraphrased: two candidate keys, one organization key and two nomination keys. Two of the five are THREE segments deep (`nomination.constituency.name`, `nomination.election.name`), which no example in the plan or the research covers -- a pattern written against two-segment examples alone would reject a live production key and no gate in this phase would catch it.
+ * SO THE FIXTURE IS ENUMERATED FROM THE TREE, NOT FROM THE EXAMPLES. `REAL_VARS` below is the complete set of keys `public.resolve_email_variables` can emit, read off `apps/supabase/supabase/schema/502-email-helpers.sql` rather than paraphrased: two candidate keys, one organization key and two nomination keys. Two of the five are THREE segments deep (`nomination.constituency.name`, `nomination.election.name`), so a pattern written against two-segment examples alone would reject a live production key.
  *
  * No mocks and no network: `renderTemplate` is a pure string function.
  */
@@ -14,7 +14,7 @@ import { escapeHtml, renderTemplate, renderTemplateHtml } from './templateVars';
 /**
  * Every key `resolve_email_variables` can put in the `variables` JSONB, verbatim from the SQL that builds it.
  *
- * Source lines, so a future reader can re-derive rather than trust: `502-email-helpers.sql` builds `'candidate.first_name'` and `'candidate.last_name'` together, `'organization.name'` at two separate sites (the CANDIDATE branch, which since 162-07b reaches it through the parent nomination on the same `nominations` join that supplies the two keys below rather than off a column on the candidate, and the organization role's own branch), `'nomination.constituency.name'` and `'nomination.election.name'` from that nomination join. The five keys are unchanged: only the provenance of one of them moved.
+ * Source lines, so a future reader can re-derive rather than trust: `502-email-helpers.sql` builds `'candidate.first_name'` and `'candidate.last_name'` together, `'organization.name'` at two separate sites (the candidate branch, which reaches it through the parent nomination on the same `nominations` join that supplies the two keys below, and the organization role's own branch), and `'nomination.constituency.name'` and `'nomination.election.name'` from that nomination join.
  */
 const REAL_VARS: Record<string, string> = {
   'candidate.first_name': 'Ada',
@@ -24,10 +24,10 @@ const REAL_VARS: Record<string, string> = {
   'nomination.election.name': 'Parliamentary Election 2027'
 };
 
-/** The plan's own worked example, kept alongside the real keys so both the undotted and the dotted shape are exercised by every whitespace case. */
+/** An undotted key, kept alongside the real keys so both the undotted and the dotted shape are exercised by every whitespace case. */
 const VARS: Record<string, string> = { name: 'Ada', 'candidate.first_name': 'Ada' };
 
-describe('renderTemplate (REVIEW-EDGE-03)', () => {
+describe('renderTemplate', () => {
   it('substitutes a placeholder written with no inner spaces', () => {
     // Today's behaviour, pinned first: whatever the whitespace tolerance adds, the existing shape must keep working.
     expect(renderTemplate('Hei {{name}}!', VARS)).toBe('Hei Ada!');
@@ -50,7 +50,7 @@ describe('renderTemplate (REVIEW-EDGE-03)', () => {
   });
 
   it('resolves a dotted key through the flat lookup, with and without surrounding spaces', () => {
-    // The D-D4 contract as behaviour: `candidate.first_name` is ONE key whose text contains a dot, so the value comes from `vars['candidate.first_name']` and never from a walk into `vars.candidate`.
+    // The flat-lookup contract as behaviour: `candidate.first_name` is ONE key whose text contains a dot, so the value comes from `vars['candidate.first_name']` and never from a walk into `vars.candidate`.
     expect(renderTemplate('Hei {{candidate.first_name}}!', VARS)).toBe('Hei Ada!');
     expect(renderTemplate('Hei {{ candidate.first_name }}!', VARS)).toBe('Hei Ada!');
   });
@@ -64,7 +64,7 @@ describe('renderTemplate (REVIEW-EDGE-03)', () => {
   });
 
   it('proves the flat lookup is flat, by resolving a dotted key from a map with no nested object at all', () => {
-    // The negative control for D-D4. `REAL_VARS` has no `nomination` property, so if the dotted group were resolved as a path this would render the pass-through instead of the value. It cannot pass under a traversal implementation.
+    // The negative control for the flat lookup. `REAL_VARS` has no `nomination` property, so if the dotted group were resolved as a path this would render the pass-through instead of the value. It cannot pass under a traversal implementation.
     expect('nomination' in REAL_VARS, 'the map must be flat for this control to mean anything').toBe(false);
     expect(renderTemplate('{{nomination.election.name}}', REAL_VARS)).toBe('Parliamentary Election 2027');
   });
@@ -97,13 +97,13 @@ describe('renderTemplate (REVIEW-EDGE-03)', () => {
   });
 
   it('substitutes a key that is present with an empty value, rather than passing it through', () => {
-    // CHARACTERISATION, NOT A RULING. The plan's flagged assumption records that no source artefact decided the present-but-empty case. This asserts what the code has ALWAYS done -- `??` falls back only on null and undefined, so an empty string is a value and is substituted -- so that the behaviour is documented and any future change to it is deliberate. It does not settle whether that behaviour is the desired one.
+    // CHARACTERISATION, NOT A RULING. Nothing specifies the present-but-empty case. This asserts what the code does -- `??` falls back only on null and undefined, so an empty string is a value and is substituted -- so that the behaviour is documented and any change to it is deliberate. It does not settle whether that behaviour is the desired one.
     expect(renderTemplate('Hei {{name}}!', { name: '' })).toBe('Hei !');
     expect(renderTemplate('Hei {{ name }}!', { name: '' })).toBe('Hei !');
   });
 });
 
-describe('renderTemplateHtml (162-REVIEW WR-02)', () => {
+describe('renderTemplateHtml', () => {
   it('escapes every substituted value, so an entity name cannot inject markup', () => {
     expect(
       renderTemplateHtml('<p>Hei {{ candidate.first_name }}</p>', {

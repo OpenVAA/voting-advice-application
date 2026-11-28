@@ -333,7 +333,7 @@ $$;
 --------------------------------------------------------------------------------
 -- set_test_retired_claim: build a token that carries a `user_roles` key and no `grants` key
 --
--- The ONE place in the estate that constructs such a token, and it exists for a single question: does that shape confer anything? 24-legacy-removal.test.sql answers it as an EQUALITY with the view of an authenticated caller carrying no authority claim at all, rather than as an assertion about zero rows — several policies admit publicly visible rows to any authenticated caller, so a zero assertion would be false for a reason that has nothing to do with authority.
+-- The ONE place in the estate that constructs such a token, and it exists for a single question: does that shape confer anything? 24-access-token-hook-reach.test.sql answers it as an EQUALITY with the view of an authenticated caller carrying no authority claim at all, rather than as an assertion about zero rows — several policies admit publicly visible rows to any authenticated caller, so a zero assertion would be false for a reason that has nothing to do with authority.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION set_test_retired_claim (p_user_id uuid, p_user_roles jsonb) RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
@@ -399,7 +399,7 @@ $$;
 --------------------------------------------------------------------------------
 -- test_rls_digest: the caller's own view of every row-level-security table, as one digest per table
 --
--- The instrument behind the policy-level row-set differential of 24-legacy-removal.test.sql: did any identity's view of any table move. Written generically over the catalogue for that reason.
+-- The instrument behind the policy-level row-set differential of 24-access-token-hook-reach.test.sql: did any identity's view of any table move. Written generically over the catalogue for that reason.
 --
 -- The table list is DERIVED, never written down: every public table with row-level security enabled, plus storage.objects. A hardcoded list would stop measuring the moment row-level security is enabled on a new table, and it would do so silently and green.
 --

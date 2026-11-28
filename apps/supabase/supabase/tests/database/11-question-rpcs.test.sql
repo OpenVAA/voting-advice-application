@@ -840,7 +840,7 @@ SELECT
 -- =====================================================================
 -- Section 12: a non-array filter column raises rather than falling back
 -- =====================================================================
--- These two assertions PIN CURRENT BEHAVIOUR, not desired behaviour. The three filter columns are JSONB with no CHECK constraint, and jsonb_array_length raises on a value that is not an array, so a hand-authored or imported row storing an object there makes get_questions error instead of treating the row as "applies to all". This matches the client-side predicate the RPC transcribes, which mishandles the same value, so 157-03 implemented it as specified rather than hardening it unilaterally. Pinning it here means the day someone adds a CHECK constraint or a jsonb_typeof guard, this file fails loudly and the change is made deliberately rather than discovered in production.
+-- These two assertions PIN CURRENT BEHAVIOUR, not desired behaviour. The three filter columns are JSONB with no CHECK constraint, and jsonb_array_length raises on a value that is not an array, so a hand-authored or imported row storing an object there makes get_questions error instead of treating the row as "applies to all". This matches the client-side predicate the RPC transcribes, which mishandles the same value, so the RPC keeps the two in agreement rather than hardening one side alone. Pinning it here means the day someone adds a CHECK constraint or a jsonb_typeof guard, this file fails loudly and the change is made deliberately rather than discovered in production.
 INSERT INTO
   question_categories (id, project_id, name, election_rounds)
 VALUES

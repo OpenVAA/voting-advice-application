@@ -4,7 +4,7 @@
 --
 -- The anonymous public read is the one policy that cannot route through `user_can`: an anonymous caller carries no `grants` claim, which `user_can` denies, so an authority-routed public read would make every public asset unfetchable.
 --
--- Reach is transitive: no storage policy names `user_can` in its own `pg_policies` expression. The fourteen authority policies call `public.storage_path_can(grant_scope_type, text, text, text, storage_verb)`, which calls `user_can`, and `anon_select_public_assets` calls `public.storage_path_is_public`, so reach is computed as a recursive closure over `pg_proc.prosrc` rather than as a text match on the policy expression.
+-- Reach is transitive: no storage policy names `user_can` in its own `pg_policies` expression. The five authority policies call `public.storage_path_can(grant_scope_type, text, text, text, storage_verb)`, which calls `user_can`, and `anon_select_public_assets` calls `public.storage_path_is_public`, so reach is computed as a recursive closure over `pg_proc.prosrc` rather than as a text match on the policy expression.
 --
 -- Neither half of any pair is an authority-predicate call. A pair whose two halves call the same function asserts that the function equals itself and cannot detect storage and tables disagreeing, so both halves are real operations whose row counts or affected-row counts are read.
 --
@@ -117,8 +117,8 @@ SELECT
       FROM
         m17_storage_reach
     ),
-    15,
-    'storage partition: the estate carries exactly 15 storage policies'
+    6,
+    'storage partition: the estate carries exactly 6 storage policies'
   );
 
 SELECT
@@ -131,8 +131,8 @@ SELECT
       WHERE
         reaches_authority
     ),
-    14,
-    'storage partition: 14 policies reach the AUTHORITY mechanism (user_can, transitively through storage_path_can)'
+    5,
+    'storage partition: 5 policies reach the AUTHORITY mechanism (user_can, transitively through storage_path_can)'
   );
 
 SELECT

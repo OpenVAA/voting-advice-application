@@ -1,10 +1,10 @@
 -- 31-storage-cleanup.test.sql: what the storage cleanup triggers ENQUEUE, measured on `net.http_request_queue`
 --
--- THE ESTATE'S FIRST ASSERTIONS ON THE pg_net QUEUE, and why the queue and not the object. `net.http_*` INSERTs one row into `net.http_request_queue` inside the calling transaction, and the pg_net worker sends it only after COMMIT. Every pgTAP file ends in ROLLBACK, so no request asserted here is ever sent: this file proves what the triggers ASK Storage to do, exactly (method, URL, headers), and the committed-state Playwright spec `tests/tests/specs/storage/storage-cleanup.spec.ts` proves that Storage then does it. From `11f877913` (2026-08-17) until 162.1 the delete POSTed to a DELETE-only route and nothing checked either half, which is how every replaced photo stayed stored and public without a single red test (spike 029 F4).
+-- ASSERTIONS ON THE pg_net QUEUE, and why the queue and not the object. `net.http_*` INSERTs one row into `net.http_request_queue` inside the calling transaction, and the pg_net worker sends it only after COMMIT. Every pgTAP file ends in ROLLBACK, so no request asserted here is ever sent: this file proves what the triggers ASK Storage to do, exactly (method, URL, headers), and the committed-state Playwright spec `tests/tests/specs/storage/storage-cleanup.spec.ts` proves that Storage then does it. Both halves are needed: a request to the wrong route or with the wrong method leaves every replaced photo stored and public, and only the second half sees that.
 --
 -- EACH CASE MEASURES AGAINST ITS OWN BASELINE, never a global count. `q_base` records `max(id)` of the queue immediately before the action, and the assertions count only rows with a larger id. Rows another session committed earlier may be consumed by the worker at any moment, but rows enqueued inside this transaction are invisible to it until COMMIT, which never comes, so they cannot disappear mid-test.
 --
--- THE PATH IS UNTRUSTED (162.1 D-20). A stored image path is written by the entity's own editor and ends up in a URL sent with the service-role key. The accepted shape is `<uuid>/<one of the ten cleanup tables>/<uuid>/<uuid>.<jpg|jpeg|png|webp|gif|avif>`, lowercase, and a trigger deletes only inside the row's own folder and only a path the new row no longer references. Every uuid below is a lowercase literal for that reason: an uppercase one is one of the refused shapes.
+-- THE PATH IS UNTRUSTED. A stored image path is written by the entity's own editor and ends up in a URL sent with the service-role key. The accepted shape is `<uuid>/<one of the ten cleanup tables>/<uuid>/<uuid>.<jpg|jpeg|png|webp|gif|avif>`, lowercase, and a trigger deletes only inside the row's own folder and only a path the new row no longer references. Every uuid below is a lowercase literal for that reason: an uppercase one is one of the refused shapes.
 --
 -- Depends on: 00-helpers.test.sql (create_test_data, test_id)
 BEGIN;
@@ -44,7 +44,7 @@ VALUES
 CREATE TEMP TABLE q_base (label text PRIMARY KEY, id bigint NOT NULL);
 
 -- =====================================================================
--- D-11: replacing an own-folder image enqueues ONE DELETE of the old object
+-- REPLACE: replacing an own-folder image enqueues ONE DELETE of the old object
 -- =====================================================================
 INSERT INTO
   q_base (label, id)
@@ -90,7 +90,7 @@ SELECT
         ) || '/storage/v1/object/public-assets/' || test_id ('project_a')::text || '/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000a1.jpg'
     ),
     1,
-    'D-11: replacing an own-folder image enqueues exactly one DELETE to <supabase_url>/storage/v1/object/public-assets/<old path>'
+    'REPLACE: replacing an own-folder image enqueues exactly one DELETE to <supabase_url>/storage/v1/object/public-assets/<old path>'
   );
 
 SELECT
@@ -112,7 +112,7 @@ SELECT
         AND q.method::text <> 'DELETE'
     ),
     0,
-    'D-11: replacing an image enqueues no non-DELETE request (the bulk-route POST is gone)'
+    'REPLACE: replacing an image enqueues no non-DELETE request, so no bulk-route POST'
   );
 
 SELECT
@@ -152,7 +152,7 @@ SELECT
       ),
       FALSE
     ),
-    'D-11: the DELETE carries exactly one header, Authorization: Bearer <storage_config.service_role_key>'
+    'REPLACE: the DELETE carries exactly one header, Authorization: Bearer <storage_config.service_role_key>'
   );
 
 -- =====================================================================
@@ -224,7 +224,7 @@ SELECT
   );
 
 -- =====================================================================
--- D-20 AT THE EDGES: what must enqueue NOTHING, and the two cases that must enqueue exactly what they name
+-- PATH AT THE EDGES: what must enqueue NOTHING, and the two cases that must enqueue exactly what they name
 -- =====================================================================
 -- The helpers below are temporary (pg_temp, gone at ROLLBACK). `own_folder` is our candidate's folder; `q_mark` captures a case's baseline; `q_since` counts every request enqueued after it, whatever its method, so a refused path that still reached pg_net by any route counts.
 CREATE FUNCTION pg_temp.own_folder () RETURNS text LANGUAGE sql AS $$
@@ -253,7 +253,7 @@ BEGIN
 END;
 $$;
 
--- D-20(a): shapes that START WITH the own folder, so confinement admits them and only the whitelist in delete_storage_object stands between them and a service-role URL.
+-- PATH (whitelist): shapes that START WITH the own folder, so confinement admits them and only the whitelist in delete_storage_object stands between them and a service-role URL.
 SELECT
   is (
     pg_temp.replace_crafted (
@@ -261,7 +261,7 @@ SELECT
       pg_temp.own_folder () || '../../../' || test_id ('project_b')::text || '/candidates/' || test_id ('candidate_b')::text || '/31310000-0000-4000-8000-0000000000c1.jpg'
     ),
     0,
-    'D-20(a): an old path with a `..` segment inside the own folder enqueues nothing (pg_net would resolve it out of the folder)'
+    'PATH (whitelist): an old path with a `..` segment inside the own folder enqueues nothing (pg_net would resolve it out of the folder)'
   );
 
 SELECT
@@ -271,7 +271,7 @@ SELECT
       pg_temp.own_folder () || '31310000-0000-4000-8000-0000000000c2.jpg?x=1'
     ),
     0,
-    'D-20(a): an old path with a `?` query suffix enqueues nothing'
+    'PATH (whitelist): an old path with a `?` query suffix enqueues nothing'
   );
 
 SELECT
@@ -281,7 +281,7 @@ SELECT
       pg_temp.own_folder () || '31310000-0000-4000-8000-0000000000c3.jpg#x'
     ),
     0,
-    'D-20(a): an old path with a `#` fragment suffix enqueues nothing'
+    'PATH (whitelist): an old path with a `#` fragment suffix enqueues nothing'
   );
 
 SELECT
@@ -291,7 +291,7 @@ SELECT
       pg_temp.own_folder () || '%2e%2e/31310000-0000-4000-8000-0000000000c4.jpg'
     ),
     0,
-    'D-20(a): an old path with a `%` escape (%2e%2e) enqueues nothing'
+    'PATH (whitelist): an old path with a `%` escape (%2e%2e) enqueues nothing'
   );
 
 SELECT
@@ -301,7 +301,7 @@ SELECT
       pg_temp.own_folder () || '..\31310000-0000-4000-8000-0000000000c5.jpg'
     ),
     0,
-    'D-20(a): an old path with a backslash enqueues nothing'
+    'PATH (whitelist): an old path with a backslash enqueues nothing'
   );
 
 SELECT
@@ -311,7 +311,7 @@ SELECT
       pg_temp.own_folder () || '31310000-0000-4000-8000-0000000000c6 copy.jpg'
     ),
     0,
-    'D-20(a): an old path with a space enqueues nothing'
+    'PATH (whitelist): an old path with a space enqueues nothing'
   );
 
 SELECT
@@ -321,7 +321,7 @@ SELECT
       pg_temp.own_folder () || '31310000-0000-4000-8000-0000000000C7.jpg'
     ),
     0,
-    'D-20(a): an old path whose file uuid is uppercase enqueues nothing (canonical lowercase only)'
+    'PATH (whitelist): an old path whose file uuid is uppercase enqueues nothing (canonical lowercase only)'
   );
 
 SELECT
@@ -331,7 +331,7 @@ SELECT
       pg_temp.own_folder () || '31310000-0000-4000-8000-0000000000c8.jpg/'
     ),
     0,
-    'D-20(a): an old path with a trailing slash enqueues nothing'
+    'PATH (whitelist): an old path with a trailing slash enqueues nothing'
   );
 
 SELECT
@@ -341,10 +341,10 @@ SELECT
       pg_temp.own_folder () || 'seed-portrait.jpg'
     ),
     0,
-    'D-20(a): an old path with a non-uuid file name (seed-portrait.jpg) enqueues nothing'
+    'PATH (whitelist): an old path with a non-uuid file name (seed-portrait.jpg) enqueues nothing'
   );
 
--- D-20(b): well-formed paths OUTSIDE the row's own folder. Each passes the whitelist, so only own-folder confinement in cleanup_old_image_file stops a candidate from deleting someone else's public photo.
+-- PATH (own folder): well-formed paths OUTSIDE the row's own folder. Each passes the whitelist, so only own-folder confinement in cleanup_old_image_file stops a candidate from deleting someone else's public photo.
 SELECT
   is (
     pg_temp.replace_crafted (
@@ -352,7 +352,7 @@ SELECT
       test_id ('project_b')::text || '/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000d1.jpg'
     ),
     0,
-    'D-20(b): an old path in another project''s folder enqueues nothing'
+    'PATH (own folder): an old path in another project''s folder enqueues nothing'
   );
 
 SELECT
@@ -362,7 +362,7 @@ SELECT
       test_id ('project_a')::text || '/candidates/' || test_id ('candidate_a')::text || '/31310000-0000-4000-8000-0000000000d2.jpg'
     ),
     0,
-    'D-20(b): an old path in another entity''s folder (candidate_a) enqueues nothing'
+    'PATH (own folder): an old path in another entity''s folder (candidate_a) enqueues nothing'
   );
 
 SELECT
@@ -372,10 +372,10 @@ SELECT
       test_id ('project_a')::text || '/organizations/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000d3.jpg'
     ),
     0,
-    'D-20(b): an old path in another table''s folder (organizations) enqueues nothing'
+    'PATH (own folder): an old path in another table''s folder (organizations) enqueues nothing'
   );
 
--- D-20(c): paths the NEW row still references are never deleted. X, Y, Z and W are legitimate own-folder objects.
+-- PATH (still referenced): paths the NEW row still references are never deleted. X, Y, Z and W are legitimate own-folder objects.
 SELECT
   pg_temp.set_image (
     jsonb_build_object(
@@ -403,7 +403,7 @@ SELECT
   is (
     pg_temp.q_since ('swap'),
     0,
-    'D-20(c): a path/pathDark swap enqueues nothing (both objects are still referenced)'
+    'PATH (still referenced): a path/pathDark swap enqueues nothing (both objects are still referenced)'
   );
 
 SELECT
@@ -425,7 +425,7 @@ SELECT
   is (
     pg_temp.q_since ('alt'),
     0,
-    'D-20(c): an alt-only change enqueues nothing'
+    'PATH (still referenced): an alt-only change enqueues nothing'
   );
 
 SELECT
@@ -443,7 +443,7 @@ SELECT
   is (
     pg_temp.q_since ('two-delete'),
     2,
-    'D-20(c): a two-DELETE replacement ({path: X, pathDark: Y} -> {path: Z}) enqueues exactly two requests'
+    'PATH (still referenced): a two-DELETE replacement ({path: X, pathDark: Y} -> {path: Z}) enqueues exactly two requests'
   );
 
 SELECT
@@ -483,7 +483,7 @@ SELECT
         )
     ),
     2,
-    'D-20(c): the two-DELETE replacement deletes exactly X and Y, one DELETE each'
+    'PATH (still referenced): the two-DELETE replacement deletes exactly X and Y, one DELETE each'
   );
 
 -- An image-type question in project A, so an answer may hold a stored photo in the shape validate_answers_jsonb accepts.
@@ -524,7 +524,7 @@ SELECT
   is (
     pg_temp.q_since ('into-answer'),
     0,
-    'D-20(c): a path moved into an answer (image Z -> W while an answer now holds Z) enqueues nothing'
+    'PATH (still referenced): a path moved into an answer (image Z -> W while an answer now holds Z) enqueues nothing'
   );
 
 -- Direct calls as the owner: the whitelist lives in delete_storage_object itself, so it holds for any caller, not only for the triggers.
@@ -541,7 +541,7 @@ SELECT
   is (
     pg_temp.q_since ('direct-crafted'),
     0,
-    'D-20(a): a direct owner call with a crafted `..` path enqueues nothing'
+    'PATH (whitelist): a direct owner call with a crafted `..` path enqueues nothing'
   );
 
 SELECT
@@ -557,7 +557,7 @@ SELECT
   is (
     pg_temp.q_since ('direct-bucket'),
     0,
-    'D-20(a): a direct owner call on bucket other-bucket enqueues nothing, even with a whitelisted path'
+    'PATH (whitelist): a direct owner call on bucket other-bucket enqueues nothing, even with a whitelisted path'
   );
 
 SELECT
@@ -596,11 +596,11 @@ SELECT
         ) || '/storage/v1/object/private-assets/' || pg_temp.own_folder () || '31310000-0000-4000-8000-0000000000f6.avif'
     ),
     1,
-    'D-11: a direct owner call on private-assets with a whitelisted path enqueues exactly one DELETE to /storage/v1/object/private-assets/<path>'
+    'REPLACE: a direct owner call on private-assets with a whitelisted path enqueues exactly one DELETE to /storage/v1/object/private-assets/<path>'
   );
 
 -- =====================================================================
--- D-12: deleting an entity deletes every object in its OWN folder, one DELETE per object
+-- ENTITY DELETE: deleting an entity deletes every object in its OWN folder, one DELETE per object
 -- =====================================================================
 -- Storage never expands a folder prefix, so the AFTER DELETE trigger must enumerate the folder from `storage.objects` and send one single-object DELETE per name. The objects below are INSERTed straight into `storage.objects` as the owner (INSERT is allowed; only DELETE is blocked by `storage.protect_delete`), so no blob exists and none is needed: this file asserts the enqueued request, never the disappearance.
 --
@@ -671,7 +671,7 @@ SELECT
   is (
     pg_temp.q_since ('folder-delete'),
     3,
-    'D-12: deleting a candidate enqueues exactly three requests for its folder of two public objects, one private object and one stray name'
+    'ENTITY DELETE: deleting a candidate enqueues exactly three requests for its folder of two public objects, one private object and one stray name'
   );
 
 SELECT
@@ -707,14 +707,14 @@ SELECT
         )
     ),
     3,
-    'D-12: the three requests are one DELETE each of the two public-assets objects and the private-assets object, at their exact single-object URLs'
+    'ENTITY DELETE: the three requests are one DELETE each of the two public-assets objects and the private-assets object, at their exact single-object URLs'
   );
 
 SELECT
   is (
     pg_temp.q_url_count ('folder-delete', '%/notes.txt'),
     0,
-    'D-12 + D-20: a non-whitelisted name inside the deleted folder (notes.txt) enqueues nothing (a leak, never a destroy)'
+    'ENTITY DELETE + PATH: a non-whitelisted name inside the deleted folder (notes.txt) enqueues nothing (a leak, never a destroy)'
   );
 
 SELECT
@@ -724,7 +724,7 @@ SELECT
       '%/candidates/' || test_id ('candidate_a')::text || '/%'
     ),
     0,
-    'D-12: an object in another candidate''s folder enqueues nothing when a candidate is deleted'
+    'ENTITY DELETE: an object in another candidate''s folder enqueues nothing when a candidate is deleted'
   );
 
 -- A constituency group whose table name carries `_`, a LIKE wildcard: `constituencyXgroups` would match `constituency_groups` under LIKE. The lookalike object must not be enumerated.
@@ -761,7 +761,7 @@ SELECT
   is (
     pg_temp.q_since ('group-delete'),
     1,
-    'D-12: deleting a constituency group enqueues exactly one request'
+    'ENTITY DELETE: deleting a constituency group enqueues exactly one request'
   );
 
 SELECT
@@ -787,7 +787,7 @@ SELECT
         )
     ),
     1,
-    'D-12: that one request is the DELETE of the object in the group''s real folder, not of the constituencyXgroups lookalike'
+    'ENTITY DELETE: that one request is the DELETE of the object in the group''s real folder, not of the constituencyXgroups lookalike'
   );
 
 -- The lookalike name is also outside the whitelist, so the count above cannot tell `starts_with` from LIKE on its own; this reads the enumeration itself.
@@ -805,7 +805,7 @@ SELECT
       ),
       FALSE
     ),
-    'D-12: cleanup_entity_storage_files enumerates with starts_with (name, path_prefix) and uses no LIKE (`_` in constituency_groups and question_categories is a LIKE wildcard)'
+    'ENTITY DELETE: cleanup_entity_storage_files enumerates with starts_with (name, path_prefix) and uses no LIKE (`_` in constituency_groups and question_categories is a LIKE wildcard)'
   );
 
 SELECT
@@ -819,11 +819,11 @@ SELECT
   is (
     pg_temp.q_since ('empty-delete'),
     0,
-    'D-12: deleting a candidate that owns no object enqueues nothing'
+    'ENTITY DELETE: deleting a candidate that owns no object enqueues nothing'
   );
 
 -- =====================================================================
--- D-13: an answer photo the row stops referencing is deleted, on replace, on key removal and on the question-delete cascade strip
+-- ANSWER PHOTO: an answer photo the row stops referencing is deleted, on replace, on key removal and on the question-delete cascade strip
 -- =====================================================================
 -- Only `candidates` and `organizations` carry `answers`. An answer holds a photo when its `value` is an object with `path` (and optionally `pathDark`), the StoredImage shape `validate_image` accepts. The trigger detects that SHAPE and never joins `questions`, because `cascade_question_delete_to_jsonb_answers` strips the key after the question row is already gone.
 --
@@ -911,14 +911,14 @@ SELECT
       pg_temp.own_folder () || '31310000-0000-4000-8000-0000000002a1.jpg'
     ),
     1,
-    'D-13: replacing a candidate''s answer photo X with Y enqueues one DELETE of X at its exact single-object URL'
+    'ANSWER PHOTO: replacing a candidate''s answer photo X with Y enqueues one DELETE of X at its exact single-object URL'
   );
 
 SELECT
   is (
     pg_temp.q_since ('ans-replace'),
     1,
-    'D-13: the answer-photo replace enqueues nothing else'
+    'ANSWER PHOTO: the answer-photo replace enqueues nothing else'
   );
 
 SELECT
@@ -938,14 +938,14 @@ SELECT
       pg_temp.own_folder () || '31310000-0000-4000-8000-0000000002a2.jpg'
     ),
     1,
-    'D-13: removing the answer key enqueues one DELETE of the removed photo'
+    'ANSWER PHOTO: removing the answer key enqueues one DELETE of the removed photo'
   );
 
 SELECT
   is (
     pg_temp.q_since ('ans-remove'),
     1,
-    'D-13: the answer-key removal enqueues nothing else'
+    'ANSWER PHOTO: the answer-key removal enqueues nothing else'
   );
 
 SELECT
@@ -963,14 +963,14 @@ SELECT
       pg_temp.own_folder () || '31310000-0000-4000-8000-0000000002c1.jpg'
     ),
     1,
-    'D-13: deleting the image question, whose cascade strips the answer key after the question row is gone, enqueues one DELETE of the stripped photo'
+    'ANSWER PHOTO: deleting the image question, whose cascade strips the answer key after the question row is gone, enqueues one DELETE of the stripped photo'
   );
 
 SELECT
   is (
     pg_temp.q_since ('ans-cascade'),
     1,
-    'D-13: the question-delete cascade enqueues nothing else (the question''s own folder is empty)'
+    'ANSWER PHOTO: the question-delete cascade enqueues nothing else (the question''s own folder is empty)'
   );
 
 SELECT
@@ -986,7 +986,7 @@ SELECT
   is (
     pg_temp.q_since ('ans-unchanged'),
     0,
-    'D-13: an UPDATE of another column that leaves answers unchanged enqueues nothing'
+    'ANSWER PHOTO: an UPDATE of another column that leaves answers unchanged enqueues nothing'
   );
 
 -- The answer photo f3.webp moves into NEW `image` as the answer is removed, and the old image f4.gif stays referenced as pathDark: nothing is unreferenced.
@@ -1009,7 +1009,7 @@ SELECT
   is (
     pg_temp.q_since ('ans-into-image'),
     0,
-    'D-13: an old answer photo that NEW image now holds enqueues nothing'
+    'ANSWER PHOTO: an old answer photo that NEW image now holds enqueues nothing'
   );
 
 -- A foreign-folder OLD answer path, two steps as for the image: store it, re-baseline, replace it with an own-folder path.
@@ -1040,7 +1040,7 @@ SELECT
   is (
     pg_temp.q_since ('ans-foreign'),
     0,
-    'D-13 + D-20(b): an old answer path in another entity''s folder (candidate_a) enqueues nothing'
+    'ANSWER PHOTO + PATH (own folder): an old answer path in another entity''s folder (candidate_a) enqueues nothing'
   );
 
 -- An organization behaves as a candidate: its own folder is `<project>/organizations/<id>/`.
@@ -1080,14 +1080,14 @@ SELECT
       test_id ('project_a')::text || '/organizations/31310000-0000-4000-8000-000000000031/31310000-0000-4000-8000-0000000002e1.jpg'
     ),
     1,
-    'D-13: replacing an organization''s answer photo enqueues one DELETE under <project>/organizations/<id>/'
+    'ANSWER PHOTO: replacing an organization''s answer photo enqueues one DELETE under <project>/organizations/<id>/'
   );
 
 SELECT
   is (
     pg_temp.q_since ('ans-org'),
     1,
-    'D-13: the organization answer-photo replace enqueues nothing else'
+    'ANSWER PHOTO: the organization answer-photo replace enqueues nothing else'
   );
 
 SELECT
@@ -1103,7 +1103,7 @@ SELECT
       ),
       FALSE
     ),
-    'D-13: cleanup_old_answer_files exists and never reads questions (detection is by value shape)'
+    'ANSWER PHOTO: cleanup_old_answer_files exists and never reads questions (detection is by value shape)'
   );
 
 SELECT

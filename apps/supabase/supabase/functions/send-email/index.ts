@@ -93,7 +93,7 @@ async function handleRequest(req: Request): Promise<Response> {
       return jsonAnswer({ error: 'Invalid or expired authentication token' }, 401);
     }
 
-    // THE PERMISSION BULK SEND ASKS FOR IS `project.edit_entities`, ON THE PROJECT NAMED IN THE REQUEST. That is the operator's ruling of 2026-09-16, and it is an existing member of the permission vocabulary, so nothing is widened to accommodate this gate. No entity grant holds it, which is what keeps a candidate or an organization editor from mailing every recipient in the project.
+    // THE PERMISSION BULK SEND ASKS FOR IS `project.edit_entities`, ON THE PROJECT NAMED IN THE REQUEST. It is an existing member of the permission vocabulary, so nothing is widened to accommodate this gate. No entity grant holds it, which is what keeps a candidate or an organization editor from mailing every recipient in the project.
     //
     // THE DECISION IS THE DATABASE'S, asked through the caller's own token. A TypeScript copy of the matrix over the raw `grants` claim cannot make it: resolving which account owns the project is a reach rule only `user_can` holds, so a copy's account arm admits an account admin of ANY account.
     //
@@ -118,7 +118,7 @@ async function handleRequest(req: Request): Promise<Response> {
       return jsonAnswer({ error: 'Invalid project_id' }, 400);
     }
 
-    // A caller-supplied sender is refused unless it IS the configured sender (162-REVIEW WR-02): the deployment's SMTP identity is not the caller's to spoof. Checked after the authority gate so an unauthenticated caller cannot probe the configured address, and answered with a fixed string that echoes neither value.
+    // A caller-supplied sender is refused unless it IS the configured sender: the deployment's SMTP identity is not the caller's to spoof. Checked after the authority gate so an unauthenticated caller cannot probe the configured address, and answered with a fixed string that echoes neither value.
     if (from !== undefined && from !== null) {
       const sender = configuredSender(smtpEnv());
       if (typeof from !== 'string' || from.trim().toLowerCase() !== sender.trim().toLowerCase()) {
@@ -163,13 +163,13 @@ async function handleRequest(req: Request): Promise<Response> {
       const template = templates[locale];
       const vars: Record<string, string> = recipient.variables || {};
 
-      // Render this recipient's subject and body, substituting `{{ key }}` placeholders with the variables the RPC resolved above; surrounding spaces are tolerated (REVIEW-EDGE-03). The key-lookup contract, including why a dotted key is a flat key rather than a path, lives with the pattern in `templateVars.ts`.
+      // Render this recipient's subject and body, substituting `{{ key }}` placeholders with the variables the RPC resolved above; surrounding spaces are tolerated. The key-lookup contract, including why a dotted key is a flat key rather than a path, lives with the pattern in `templateVars.ts`.
       renderedEmails.push({
         user_id: recipient.user_id,
         email: recipient.email,
         subject: renderTemplate(template.subject, vars),
         body: renderTemplate(template.body, vars),
-        // The HTML part escapes every substituted value; the template markup itself is the operator's and is left as written (162-REVIEW WR-02).
+        // The HTML part escapes every substituted value; the template markup itself is the operator's and is left as written.
         html: renderTemplateHtml(template.body, vars)
       });
     }
@@ -262,7 +262,7 @@ async function handleRequest(req: Request): Promise<Response> {
       200
     );
   } catch (err) {
-    // The real error goes to the log and a FIXED LITERAL goes to the caller, with nothing interpolated. This arm now receives the three `requireEnv` throws above, whose messages name environment variables; echoing `err.message` here -- which is what this arm did until Phase 155 -- would have turned an unconfigured deployment into a configuration-disclosure primitive for anyone who can reach this endpoint. The property that matters is the absence of a template, so the same guarantee holds for throws added later.
+    // The real error goes to the log and a FIXED LITERAL goes to the caller, with nothing interpolated. This arm receives the three `requireEnv` throws above, whose messages name environment variables; echoing `err.message` here would turn an unconfigured deployment into a configuration-disclosure primitive for anyone who can reach this endpoint. The property that matters is the absence of a template, so the same guarantee holds for throws added later.
     console.error('send-email error:', err);
     return jsonAnswer({ error: 'Internal server error' }, 500);
   }

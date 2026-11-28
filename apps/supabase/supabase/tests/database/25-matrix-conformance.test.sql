@@ -183,7 +183,7 @@ VALUES
 --
 -- The unenforced list, with the reason no policy reads each member:
 --   - entity.invite_children: grant administration at entity scope (000-enums.sql names it as project.manage_editors' entity-scope equivalent). public.grants carries no user-facing policy at all, and no policy of public.invitations asks it.
---   - entity.edit_immutable: enforced by the trigger enforce_entity_immutability (OLD vs NEW).
+--   - entity.edit_confirmed_names: enforced by the trigger enforce_entity_immutability (OLD vs NEW).
 --   - entity.confirm: the same trigger, plus 303-column-grants.sql.
 --   - nomination.confirm: enforced by the trigger enforce_nomination_confirmation.
 CREATE TEMP TABLE m17_unenforced_ratified (m text) ON
@@ -194,7 +194,7 @@ INSERT INTO
   m17_unenforced_ratified
 VALUES
   ('entity.invite_children'),
-  ('entity.edit_immutable'),
+  ('entity.edit_confirmed_names'),
   ('entity.confirm'),
   ('nomination.confirm');
 
@@ -274,7 +274,7 @@ DECLARE
     ARRAY['project.read_entities', 'project', 'project_a', ''],
     ARRAY['entity.edit_answers', 'entity', 'alliance_a', 'alliance'],
     ARRAY['entity.read_answers', 'entity', 'alliance_a', 'alliance'],
-    ARRAY['entity.edit_immutable', 'entity', 'candidate_a', 'candidate'],
+    ARRAY['entity.edit_confirmed_names', 'entity', 'candidate_a', 'candidate'],
     ARRAY['entity.invite_children', 'entity', 'org_a', 'organization'],
     ARRAY['entity.confirm', 'entity', 'candidate_a', 'candidate'],
     ARRAY['nomination.edit', 'entity', 'alliance_a', 'alliance'],
@@ -671,10 +671,10 @@ SELECT
       FROM
         m17_grid
       WHERE
-        member = 'entity.edit_immutable'
+        member = 'entity.edit_confirmed_names'
     ),
     'TTTTffffff',
-    'matrix row entity.edit_immutable'
+    'matrix row entity.edit_confirmed_names'
   );
 
 SELECT

@@ -8,7 +8,7 @@ const INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8'
  *
  * ## The defect this is a control for
  *
- * `console.error('[identity-callback] token verification failed:', e)` passed the whole error, and Deno serialises an error's own enumerable properties. jose's `JWTClaimValidationFailed` carries `payload` — the ENTIRE DECODED ID TOKEN. On a Finnish bank-auth deployment that meant a single `aud`/`iss` misconfiguration wrote the holder's `hetu` (a national identity number), full name and date of birth into the edge runtime's container log in plaintext, durably, on a path that fires for an ordinary configuration error rather than for anything exceptional. Observed 2026-09-21 while debugging exactly such a misconfiguration (`.planning/debug/idura-bank-auth-empty-client.md`).
+ * `console.error('[identity-callback] token verification failed:', e)` would pass the whole error, and Deno serialises an error's own enumerable properties. jose's `JWTClaimValidationFailed` carries `payload` — the ENTIRE DECODED ID TOKEN. On a Finnish bank-auth deployment a single `aud`/`iss` misconfiguration would write the holder's `hetu` (a national identity number), full name and date of birth into the edge runtime's container log in plaintext, durably, on a path that fires for an ordinary configuration error rather than for anything exceptional.
  *
  * ## Why the assertion is shaped this way
  *

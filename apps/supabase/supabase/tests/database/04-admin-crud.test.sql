@@ -5,9 +5,9 @@
 -- Scoping rules:
 --   a project-scope admin grant -> its own project; an account-scope admin grant -> every project in that account; a global admin grant -> every project. The reach rule is user_can's, and the predicate every converted policy delegates to.
 --
--- Note: DELETE tests use app_settings and accounts, not entity tables like elections. The original reason, that an entity delete's cleanup_entity_storage_files() AFTER DELETE trigger calls delete_storage_object() via pg_net and so needs network access, never held: pg_net only ENQUEUES a request inside the test transaction and sends it after COMMIT, and this file's ROLLBACK discards it (31-storage-cleanup.test.sql asserts exactly those enqueued rows). The tests keep app_settings and accounts because they are what the assertions below were written against.
+-- Note: DELETE tests use app_settings and accounts, not entity tables like elections. An entity delete would also work here: its cleanup_entity_storage_files() trigger only ENQUEUES a pg_net request inside the test transaction, which this file's ROLLBACK discards (31-storage-cleanup.test.sql asserts those enqueued rows).
 --
--- THE DELETE PREDICATE IS NO LONGER IDENTICAL ACROSS PROJECT-SCOPED TABLES, and that is the point of phase 162 rather than a regression. This header used to claim one `can_access_project` pattern covered them all; as of 162-11 the delete predicates on these tables name four DIFFERENT permissions -- `project.edit_structure` on the structure tables, `project.edit_questions` on questions, question_categories and admin_jobs, `project.edit_app_settings` on app_settings, `feedback.manage` on feedback, `account.manage_projects` on projects. A delete test on one table therefore says nothing about the next, and the per-table paired assertions live in 17-project-structure-authority.test.sql, 18-entity-policies.test.sql and 22-content-policies.test.sql.
+-- THE DELETE PREDICATE DIFFERS ACROSS PROJECT-SCOPED TABLES. The delete predicates on these tables name DIFFERENT permissions -- `project.edit_structure` on the structure tables, `project.edit_questions` on questions, question_categories and admin_jobs, `project.edit_app_settings` on app_settings, `feedback.manage` on feedback, `account.manage_projects` on projects. A delete test on one table therefore says nothing about the next, and the per-table paired assertions live in 17-project-structure-authority.test.sql, 18-entity-policies.test.sql and 22-content-policies.test.sql.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
 BEGIN;
@@ -393,7 +393,7 @@ SELECT
 
 -- Account admin: SELECT on accounts for own account
 --
--- The projects assertion further down reads through authenticated_select_projects, which 162-04 converted to a single user_can call. 162-04 wrote a grant row here by hand to keep that assertion meaning what it meant before the conversion; 162-06 removed it, because set_test_user now derives every identity's claim from public.grants and the backfill produces that exact row from this identity's role row. Re-inserting it would violate grants_user_scope_target_role_key and error the file. The assertion keeps its meaning: the claim still arrives, through the production projection rather than beside it.
+-- The projects assertion further down reads through authenticated_select_projects, a single user_can call. set_test_user derives every identity's claim from its rows of public.grants, so the fixture's grant row is what that assertion reads; inserting a second copy here would violate grants_user_scope_target_role_key and error the file.
 SELECT
   reset_role ();
 
@@ -447,9 +447,9 @@ SELECT
 
 -- Project admin: reads EXACTLY its own account, and no other
 --
--- THE ONE ASSERTION IN THIS ESTATE 162-09 IS SANCTIONED TO REWRITE, and only this one. It asserted `count(*) FROM accounts = 0` because the legacy predicate was has_role('account_admin','account',id), which a project admin matched no branch of. 162-CHECKPOINT-DECISIONS.md section 1's NOTE under S-3 rules "account read = any role on account OR ITS PROJECTS", and admin_a holds a grant on project_a, whose account_id is account_a -- so under the ruling it necessarily reads that row. The executor halted on this rather than flipping the expectation, and the operator sanctioned the rewrite on 2026-09-17.
+-- The account read admits any grant on the account OR ON ONE OF ITS PROJECTS (user_has_account_grant), and admin_a holds a grant on project_a, whose account_id is account_a -- so it reads that row.
 --
--- It is INVERTED rather than flipped, and is strictly stronger than what it asserted before: not "sees one account" -- which would pass if the cross-account boundary broke and it saw one of two for the wrong reason -- but "sees exactly one AND that one is its own". The boundary is proven, not assumed.
+-- The assertion is not "sees one account" -- which would pass if the cross-account boundary broke and it saw one of two for the wrong reason -- but "sees exactly one AND that one is its own". The boundary is proven, not assumed.
 -- 17-project-structure-authority.test.sql carries the paired negative against account_b by name.
 SELECT
   set_test_user (

@@ -44,7 +44,7 @@ WHERE
 --------------------------------------------------------------------------------
 ALTER TABLE public.grants ENABLE ROW LEVEL SECURITY;
 
--- The only statement in the schema that gives the access-token hook its schema access. Without it every token is issued with no authority, an outage that looks like a permission problem; 24-legacy-removal.test.sql asserts it with has_schema_privilege.
+-- The only statement in the schema that gives the access-token hook its schema access. Without it every token is issued with no authority, an outage that looks like a permission problem; 24-access-token-hook-reach.test.sql asserts it with has_schema_privilege.
 GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
 
 -- SELECT only: the hook only reads the grant map to build the claim, and its one policy here is a SELECT policy.

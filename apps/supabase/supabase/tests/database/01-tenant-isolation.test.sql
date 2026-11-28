@@ -2,7 +2,7 @@
 --
 -- Verifies that users scoped to Project B cannot access admin-level data from Project A, cannot modify any Project A data, and that public visibility correctly limits cross-project visibility.
 --
--- Key principle: a project that is OPEN FOR VOTERS is readable by all authenticated users (by design) exactly as it is by anonymous ones -- 162-09 re-expressed the structure tables' read term against project_open_for_voters() rather than dropping it, because an authenticated caller must never see strictly less than a logged-out one. Admin-level access (INSERT/UPDATE/DELETE, and anything in a project that is not open) is scoped by a NAMED PERMISSION asked of user_can(): project.read_structure for the read half and project.edit_structure for the write half, which is the separation ROADMAP criterion 2 asks for. The fixture's polarity is unchanged -- project A is open and its rows are confirmed, project B is neither -- so every assertion below measures what its description says it does.
+-- Key principle: a project that is OPEN FOR VOTERS is readable by all authenticated users (by design) exactly as it is by anonymous ones: the structure tables' authenticated read carries the project_open_for_voters() term, because an authenticated caller must never see strictly less than a logged-out one. Admin-level access (INSERT/UPDATE/DELETE, and anything in a project that is not open) is scoped by a NAMED PERMISSION asked of user_can(): project.read_structure for the read half and project.edit_structure for the write half, so read and write are separate permissions. The fixture's polarity: project A is open and its rows are confirmed, project B is neither.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
 BEGIN;
@@ -22,7 +22,7 @@ SELECT
   create_test_data ();
 
 -- =====================================================================
--- Section 1: An OPEN PROJECT's data IS visible cross-project (correct behavior) This verifies the RLS design: a project open for voters is readable by every authenticated caller, through the same project_open_for_voters() term its anon policy carries. The descriptions below said `published` until 162-16 deleted that column and renamed them; the row set they were written against has not moved, and the GATE they pass through is the project flag.
+-- Section 1: An OPEN PROJECT's data IS visible cross-project (correct behavior) This verifies the RLS design: a project open for voters is readable by every authenticated caller, through the same project_open_for_voters() term its anon policy carries.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -44,7 +44,7 @@ SELECT
     'admin_b CAN see elections of an OPEN Project A (by design)'
   );
 
--- app_settings is no longer readable because its policy is ungated -- 162-11 replaced `USING (true)` with the same two-term disjunction the structure tables carry. This assertion passes because PROJECT A IS OPEN FOR VOTERS, through the project-open arm, and NOT because the table admits everyone: the description string is kept, the reason it holds has changed. Removing that arm reddens this very assertion, which is how the arm was measured load-bearing.
+-- app_settings carries the same two-term disjunction the structure tables carry. This assertion passes because PROJECT A IS OPEN FOR VOTERS, through the project-open arm, and NOT because the table admits everyone: removing that arm reddens this assertion.
 SELECT
   ok (
     (
@@ -59,7 +59,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 3: Admin A cannot see Project B data Project B is not open for voters and admin_a holds no grant reaching it, so both terms of every structure read predicate are false. As of 162-11 that is now true of the CONTENT and CONFIGURATION tables too -- questions, question_categories and app_settings carry the same two-term disjunction and no longer fall back on the retired per-row `published` column or on an ungated policy -- so there is no table left on which admin_a sees a Project B row.
+-- Section 3: Admin A cannot see Project B data Project B is not open for voters and admin_a holds no grant reaching it, so both terms of every structure read predicate are false. The same holds of the CONTENT and CONFIGURATION tables -- questions, question_categories and app_settings carry the same two-term disjunction -- so there is no table on which admin_a sees a Project B row.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -276,7 +276,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 5: Cross-project UPDATE isolation Admin B cannot update Project A data -- an open project is READABLE by everyone and writable by nobody without the permission, which is exactly the read/write separation criterion 2 asks for
+-- Section 5: Cross-project UPDATE isolation Admin B cannot update Project A data -- an open project is READABLE by everyone and writable by nobody without the permission, which is the read/write separation of the permissions
 -- =====================================================================
 SELECT
   set_test_user (

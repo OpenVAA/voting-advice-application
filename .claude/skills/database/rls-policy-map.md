@@ -7,7 +7,7 @@ previous author's reading. Every policy named below exists in `pg_policies`, and
 directions by `162-17-PLAN.md` Task 8, because a document that invents a policy misleads as badly as one
 that omits one.
 
-**108 policies: 93 in `public`, 15 in `storage`** (measured 2026-10-11; `select schemaname, count(*) from pg_policies where schemaname in ('public','storage') group by 1`). Declared in
+**99 policies: 93 in `public`, 6 in `storage`** (measured 2026-10-11; `select schemaname, count(*) from pg_policies where schemaname in ('public','storage') group by 1`). Declared in
 `apps/supabase/supabase/schema/302-rls.sql`, `300-auth-tables.sql`, `303-column-grants.sql`,
 `304-terms-of-use-acceptances.sql`, `305-invitations.sql` and `400-storage.sql`. The CLI applies `migrations/`, never `schema/`
 (`config.toml` sets `[db.migrations] schema_paths = []`), so the applied database is the authority and this
@@ -162,7 +162,7 @@ permission member.
 | `project.read_entities` | ✓ | ✓ | ✓ | ✓ | — | — | — |
 | `entity.edit_answers` | ✓ | ✓ | ✓ | ✓ | own, unless locked | own, unless locked | own, unless locked |
 | `entity.read_answers` | ✓ | ✓ | ✓ | ✓ | own | own | own |
-| `entity.edit_immutable` | ✓ | ✓ | ✓ | ✓ | — | — | — |
+| `entity.edit_confirmed_names` | ✓ | ✓ | ✓ | ✓ | — | — | — |
 | `entity.invite_children` | ✓ | ✓ | ✓ | ✓ | — | own (org→cand) | — |
 | `entity.confirm` | ✓ | ✓ | ✓ | ✓ | — | — | — |
 | `nomination.edit` | ✓ | ✓ | ✓ | ✓ | own, unless locked | own, unless locked | own, unless locked |
@@ -171,10 +171,10 @@ permission member.
 | `nomination.create_parent` | ✓ | ✓ | ✓ | ✓ | own, unless locked | own, unless locked | own, unless locked |
 
 **Four of the 23 members are read by no policy**, and that is a ratified list rather than a gap:
-`entity.invite_children`, `entity.edit_immutable`, `entity.confirm` and `nomination.confirm`.
+`entity.invite_children`, `entity.edit_confirmed_names`, `entity.confirm` and `nomination.confirm`.
 `entity.invite_children` is grant administration at entity scope: `public.grants` carries no user-facing
 policy at all — only `auth_admin_read_grants` (`TO supabase_auth_admin`) and `service_role_manage_grants`
-(`TO service_role`) — and no policy of `public.invitations` asks it. `entity.edit_immutable`
+(`TO service_role`) — and no policy of `public.invitations` asks it. `entity.edit_confirmed_names`
 and `entity.confirm` are enforced by the `enforce_entity_immutability` trigger and `nomination.confirm` by
 `enforce_nomination_confirmation`, because all three compare OLD against NEW and a row predicate cannot see
 OLD. The list is `m17_unenforced_ratified`, asserted two-directionally in `25-matrix-conformance.test.sql`.
@@ -191,7 +191,7 @@ only. `private.project_contestant_editing(project_id)` reads it as `'open'` (the
   `'nominationsLocked'`, and with `OV002` and `... editing is locked in this project` under `'locked'`.
 - **Everything of the entity, under `'locked'`.** The four self-update policies
   `entity_update_own_candidates`, `_organizations`, `_factions` and `_alliances` ask `<> 'locked'` (USING and
-  WITH CHECK); `storage_path_can` refuses an entity-scope write (the six `entity_*_assets` write policies)
+  WITH CHECK); `storage_path_can` refuses an entity-scope write (asked by the three storage write policies)
   and reads the key through the invoker helper `private.contestant_editing_in`, so no second definer call is nested in it; `upsert_answers` refuses a caller
   without `project.edit_entities` on the project with `OV002` and `upsert_answers: answers are locked in this
   project`, so the app can tell the lock from a row it may not write by the code; and no registration mode is
@@ -349,9 +349,9 @@ project (`entity_has_confirmed_nomination`). The four anon policies are one expr
 name and the entity-type literal, and so are the four authenticated ones; no table carries a condition of
 its own. `confirmed` is therefore the single entity-side lever: a confirmed, nominated entity of an open
 project is public whether or not anyone has registered for it, signed in or accepted the terms of use.
-`private.nomination_entities_confirmed` and `public.storage_path_is_public` restate the same three
-conditions for a nomination row and for a file in `public-assets`, so a row, its files and its
-`get_nominations` row become public together.
+`private.nomination_entities_confirmed` restates the same three conditions for a nomination row, and
+`public.storage_path_is_public` (SECURITY INVOKER) asks the table's own policies for a file in
+`public-assets`, so a row, its files and its `get_nominations` row become public together.
 
 That duplication is guarded mechanically, not by convention: `25-matrix-conformance.test.sql` § 5 derives
 the eight from `pg_policies` — so a ninth cannot appear un-guarded — and asserts them BOTH **relatively**
@@ -373,30 +373,24 @@ derives the population from `pg_policies`, pins it to the five tables, and fails
 
 ---
 
-## Storage policies (15)
+## Storage policies (6)
 
 | Policy | Command | Role |
 |---|---|---|
 | `anon_select_public_assets` | SELECT | anon |
 | `authenticated_select_private_assets` | SELECT | authenticated |
 | `authenticated_select_public_assets` | SELECT | authenticated |
-| `entity_insert_private_assets` | INSERT | authenticated |
-| `entity_insert_public_assets` | INSERT | authenticated |
-| `project_insert_private_assets` | INSERT | authenticated |
-| `project_insert_public_assets` | INSERT | authenticated |
-| `entity_update_private_assets` | UPDATE | authenticated |
-| `entity_update_public_assets` | UPDATE | authenticated |
-| `project_update_private_assets` | UPDATE | authenticated |
-| `project_update_public_assets` | UPDATE | authenticated |
-| `entity_delete_private_assets` | DELETE | authenticated |
-| `entity_delete_public_assets` | DELETE | authenticated |
-| `project_delete_private_assets` | DELETE | authenticated |
-| `project_delete_public_assets` | DELETE | authenticated |
+| `authenticated_insert_assets` | INSERT | authenticated |
+| `authenticated_update_assets` | UPDATE | authenticated |
+| `authenticated_delete_assets` | DELETE | authenticated |
+
+Each write policy covers both buckets and asks `storage_path_can` for the write verb at entity scope and
+at project scope.
 
 **Two buckets**: `public-assets` and `private-assets`. **Object paths are
 `<project id>/<type segment>/<entity id>/<file>`**, and the type segment is the table name.
 
-**Two mechanisms, one per question, and the partition is exact.** Fourteen policies reach the AUTHORITY
+**Two mechanisms, one per question, and the partition is exact.** Five policies reach the AUTHORITY
 mechanism — `public.storage_path_can(scope, project, type, id, verb)`, which maps the type segment and the
 verb to a permission and hands it to `user_can`. One, `anon_select_public_assets`, reaches the VISIBILITY
 mechanism, `public.storage_path_is_public`, instead: anon has no `auth.uid()` and so holds no grant row,
@@ -469,7 +463,7 @@ assigns.
 The name columns and `short_name` are in the grant lists and guarded the same way: once the row is
 confirmed, `enforce_entity_immutability` refuses a change to `first_name`, `last_name` or `short_name` on
 `candidates`, and to `name` or `short_name` on `organizations`, `factions` and `alliances`, unless the
-caller holds `entity.edit_immutable` on the entity. On an unconfirmed row the entity's editor may set them.
+caller holds `entity.edit_confirmed_names` on the entity. On an unconfirmed row the entity's editor may set them.
 The trigger binds the `authenticated` role alone. `19-entity-immutability.test.sql` asserts each protected
 column on each table. `color` is in every entity table's list and is held to a hex-colour shape for every
 writer by `validate_entity_color` (`41-entity-color.test.sql`).
@@ -491,7 +485,7 @@ a role name:
 - **object**: the plural table name, or the bucket for storage
 
 Examples: `anon_select_elections`, `admin_insert_elections`, `entity_update_own_candidates`,
-`entity_insert_parent_nominations`, `project_update_private_assets`.
+`entity_insert_parent_nominations`, `authenticated_update_assets`.
 
 **Exceptions:** the two `public.grants` policies name a database ROLE rather than an actor scope, because
 they serve system roles and not users: `auth_admin_read_grants` (`TO supabase_auth_admin`) and
@@ -565,5 +559,5 @@ These apply to every policy in the schema.
 | `get_nomination_parent_options`: the options for a candidate and for an organization, the exact key set, `nominated` for the asked contests, `NULL` for every caller without the entity's editor grant and for a malformed argument, and `anon` refused by privilege | `44-nomination-parent-options.test.sql` |
 | the nomination-shape rule cell by cell, and the end-of-transaction rule for a candidate that needs a parent | `08-triggers.test.sql` |
 | `entity_delete_nominations` conjunct by conjunct, the widened parent policy with its pairing by caller type, and the order of `private.nomination_id_in_contest` | `23-nominations-write.test.sql` |
-| the retired model is GONE | `24-legacy-removal.test.sql` |
+| the access-token hook keeps its reach; a retired-shape token confers nothing | `24-access-token-hook-reach.test.sql` |
 | read/write non-collapse, permanently, on every build | `apps/supabase/scripts/lint-schema.mjs` check 9001 |

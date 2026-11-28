@@ -1,10 +1,10 @@
 -- 27-parent-nomination-queue.test.sql: the admin queue, and the two nominations nothing else distinguishes
 --
--- SECTION 11.5 MAKES A CLAIM ABOUT THE SCHEMA and this file MEASURES it rather than quoting it. The free-text branch ("my party is not in the system yet") and the independent branch ("I am independent") are said to be byte-identical in every column, so the admin queue "keys off that presence, not off a status column". The first half of that sentence is what makes the second half meaningful: the queue assertion below is discriminating precisely because NOTHING ELSE discriminates, and if some other column quietly came to differ, the queue could be keying off that instead and nobody would notice.
+-- THE CLAIM ABOUT THE SCHEMA IS MEASURED HERE. The free-text branch ("my party is not in the system yet") and the independent branch ("I am independent") are byte-identical in every column but the requested-parent key, so the admin queue keys off that key's presence, not off a status column. The identity is what makes the queue meaningful: the queue assertion below is discriminating precisely because NOTHING ELSE discriminates, and if some other column quietly came to differ, the queue could be keying off that instead and nobody would notice.
 --
--- THE ONE COLUMN THAT MUST DIFFER, and why excluding it is not a weakening. Two nominations of the SAME candidate in the SAME contest with the SAME parent are forbidden by `nominations_entity_parent_contest_key` -- 162-12's key, asserted by name in 26-uniqueness-keys.test.sql -- so the entity pointer is necessarily different between the two rows. It is excluded by name, with this reason, alongside the identity, the two timestamps and the custom-data column itself. Every other column is compared, and the column list is DERIVED from information_schema.columns at run time so a column added later cannot silently escape the comparison.
+-- THE ONE COLUMN THAT MUST DIFFER, and why excluding it is not a weakening. Two nominations of the SAME candidate in the SAME contest with the SAME parent are forbidden by `nominations_entity_parent_contest_key` -- asserted by name in 26-uniqueness-keys.test.sql -- so the entity pointer is necessarily different between the two rows. It is excluded by name, with this reason, alongside the identity, the two timestamps and the custom-data column itself. Every other column is compared, and the column list is DERIVED from information_schema.columns at run time so a column added later cannot silently escape the comparison.
 --
--- 162-12 IMPLEMENTS AND ASSERTS THE CONFIRMATION GUARD; this file adds the queue behaviour AROUND it, which is the split that plan recorded. The refusal is matched by its stable message prefix, taken verbatim from the trigger source rather than invented (D-23), and it is widened from the candidate 162-12 proved it on to every child-nominee entity type the key admits.
+-- 23-nominations-write.test.sql ASSERTS THE CONFIRMATION GUARD on the candidate; this file adds the queue behaviour AROUND it. The refusal is matched by its stable message prefix, taken verbatim from the trigger source rather than invented, and it is widened to every child-nominee entity type the key admits.
 --
 -- Depends on: 00-helpers.test.sql (create_test_data, test_id, test_user_id, set_test_user,
 --             test_seed_fixture_grants)
@@ -131,7 +131,7 @@ SELECT
     FROM cols, a, b
     WHERE (a.j -> cols.column_name) IS DISTINCT FROM (b.j -> cols.column_name)
     $$,
-    'section 11.5 measured: the requested-parent row and the independent row are equal in every compared column'
+    'the requested-parent row and the independent row are equal in every compared column'
   );
 
 -- And the one column they DO differ in is the one the queue keys off.
@@ -164,7 +164,7 @@ SELECT
 -- =====================================================================
 -- Not as postgres. A queue query run as the owner bypasses row-level security and would pass against an estate in which no administrator could read the rows at all.
 --
--- `jsonb_exists(custom_data, '<key>')` rather than the question-mark operator (M8): the operator is a parameter placeholder in several of the clients that will later read these files, and the function form is unambiguous in all of them.
+-- `jsonb_exists(custom_data, '<key>')` rather than the question-mark operator: the operator is a parameter placeholder in several of the clients that will later read these files, and the function form is unambiguous in all of them.
 SELECT
   set_test_user (
     'authenticated',
@@ -215,9 +215,9 @@ SELECT
 -- =====================================================================
 -- Section 3: the confirmation refusal, widened across the child-nominee entity types
 -- =====================================================================
--- Section 11.5's guard, as 162-12 implemented it: a row carrying the requested-parent key can never be confirmed, on either verb, because confirming it would publish as an INDEPENDENT a candidate who asked for a party. 162-12 proved it on the candidate. Every entity type the key admits is proved here, each with its paired opposite -- the SAME row with the key absent IS confirmed -- so the guard is shown to be the key's presence and not some other property of the row.
+-- The guard: a row carrying the requested-parent key can never be confirmed, on either verb, because confirming it would publish as an INDEPENDENT a candidate who asked for a party. 23-nominations-write.test.sql proves it on the candidate. Every entity type the key admits is proved here, each with its paired opposite -- the SAME row with the key absent IS confirmed -- so the guard is shown to be the key's presence and not some other property of the row.
 --
--- The message prefix is taken verbatim from `enforce_nomination_confirmation`'s source (D-23).
+-- The message prefix is taken verbatim from `enforce_nomination_confirmation`'s source.
 SELECT
   throws_like (
     $$UPDATE public.nominations SET confirmed = true WHERE id = 'eeeeeeee-2222-0000-0000-000000000001'$$,

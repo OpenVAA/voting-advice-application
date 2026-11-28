@@ -2594,7 +2594,7 @@ describe('SupabaseDataWriter', () => {
     const CANDIDATE = { type: 'candidate', id: 'cand-1' } as const;
     /** How the database's refusal of a changed name on a confirmed row begins. */
     const NAME_REFUSAL =
-      'Entity name is immutable once confirmed: column public.organizations.name on row org-1 cannot be changed (current: {"en": "Old"}, attempted: {"en": "New"}); changing it requires the entity.edit_immutable permission';
+      'Entity name is immutable once confirmed: column public.organizations.name on row org-1 cannot be changed (current: {"en": "Old"}, attempted: {"en": "New"}); changing it requires the entity.edit_confirmed_names permission';
 
     /**
      * Answer the Storage upload the image write makes.

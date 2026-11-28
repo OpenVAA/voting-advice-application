@@ -19,13 +19,12 @@ extra_search_path = ["public", "extensions"]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
 # for accidental or malicious requests.
 #
-# Raised from Supabase's default 1000: the frontend adapter reads each collection in ONE request and does
-# not paginate, so a response over the cap was silently truncated (a Helsinki-sized constituency returned
-# 1000 of 1510 nominations with HTTP 200; spike 026, finding F1). 50000 holds the largest Finnish election
-# (municipal, ~39k nominations) in a single response.
-# ⚠ This file configures the LOCAL stack only. A hosted Supabase project sets the same limit in its
-# dashboard (Project Settings -> Data API -> Max rows) and keeps 1000 until someone changes it. See
-# .planning/todos/pending/2026-09-18-document-supabase-api-limits-for-deployments.md.
+# Above Supabase's default 1000: the frontend adapter reads each collection in ONE request and does
+# not paginate, so a response over the cap is silently truncated with HTTP 200 (a Helsinki-sized
+# constituency holds about 1500 nominations). 50000 holds the largest Finnish election (municipal,
+# ~39k nominations) in a single response.
+# ⚠ This file configures the LOCAL stack only. A hosted project's limit is `api.max_rows` in
+# infra/modules/supabase/hosted-settings.json.
 max_rows = 50000
 
 [api.tls]

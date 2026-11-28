@@ -24,6 +24,18 @@
     {
       "file": "00005_drop_invitation_caller_take.sql",
       "sha256": "0598f3bccac3e89c52e529d49208b5392cf9ead05aeac2165cc1652ab5cd57ec"
+    },
+    {
+      "file": "00006_storage_visibility_invoker.sql",
+      "sha256": "f4ccf048dc5b17fe7c1240581ed27c9cb58626d36cda63c81c333c8055d0f6bc"
+    },
+    {
+      "file": "00007_rename_edit_confirmed_names.sql",
+      "sha256": "d70d7a23e2beac840d71db46fbdcfb33801d01746e8011f4ec0e8b174b0e56b7"
+    },
+    {
+      "file": "00008_storage_write_policies.sql",
+      "sha256": "7a8045e6385bfd2ca2f18d997473a3ca6e722d2ab5c1ae57564fe4d56df907cb"
     }
   ]
 }

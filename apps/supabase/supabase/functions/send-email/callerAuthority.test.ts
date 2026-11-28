@@ -1,17 +1,18 @@
 /**
- * `callerMayOnProject` and `callerMayOnEntity` are the Edge Functions' authority gates, so their fail-closed edges are asserted by IMPORT rather than by source text.
+ * `callerMayOnProject` is the Edge Functions' authority gate, so its fail-closed edges are asserted by IMPORT rather than by source text.
  *
- * What these pin: the question is put to `public.user_can` at the named scope with the permission the caller names -- the matrix lives in the database, not here -- and every answer other than a literal `true` is a denial, including an RPC error, a thrown client and a missing target id. At entity scope the entity type is always passed.
+ * What these pin: the question is put to `public.user_can` at project scope with the permission the caller names -- the matrix lives in the database, not here -- and every answer other than a literal `true` is a denial, including an RPC error, a thrown client and a missing project id. The permission type's members are the enum's, read from `schema/000-enums.sql`.
  */
 
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { callerMayOnEntity, callerMayOnProject } from './callerAuthority.ts';
-import type { EntityType, RpcClient } from './callerAuthority.ts';
+import { callerMayOnProject, GRANT_PERMISSIONS } from './callerAuthority.ts';
+import type { RpcClient, UserCanArgs } from './callerAuthority.ts';
 
 const PROJECT = '00000000-0000-0000-0000-000000000001';
 
 function fakeClient(answer: { data: unknown; error: unknown }) {
-  const calls: Array<{ fn: string; args: Record<string, unknown> }> = [];
+  const calls: Array<{ fn: string; args: UserCanArgs }> = [];
   const client: RpcClient = {
     rpc: (fn, args) => {
       calls.push({ fn, args });
@@ -55,61 +56,23 @@ describe('callerMayOnProject', () => {
     expect(await callerMayOnProject(client, PROJECT, 'project.edit_entities')).toBe(false);
   });
 
-  it.each([undefined, null, '', '   ', 42])('denies without a round trip for project id %j', async (projectId) => {
-    const { client, calls } = fakeClient({ data: true, error: null });
-    expect(await callerMayOnProject(client, projectId, 'project.edit_entities')).toBe(false);
-    expect(calls).toHaveLength(0);
-  });
-});
-
-describe('callerMayOnEntity', () => {
-  const ENTITY = '00000000-0000-0000-0000-0000000000aa';
-
-  it('asks user_can at entity scope, with the entity type, id and permission', async () => {
-    const { client, calls } = fakeClient({ data: true, error: null });
-    expect(await callerMayOnEntity(client, 'organization', ENTITY, 'entity.edit_answers')).toBe(true);
-    expect(calls).toEqual([
-      {
-        fn: 'user_can',
-        args: {
-          p_scope: 'entity',
-          p_target_id: ENTITY,
-          p_permission: 'entity.edit_answers',
-          p_target_type: 'organization'
-        }
-      }
-    ]);
-  });
-
-  it('denies when user_can answers false', async () => {
-    const { client } = fakeClient({ data: false, error: null });
-    expect(await callerMayOnEntity(client, 'candidate', ENTITY, 'entity.edit_answers')).toBe(false);
-  });
-
-  it('denies on an RPC error even if data looks truthy', async () => {
-    const { client } = fakeClient({ data: true, error: { message: 'boom' } });
-    expect(await callerMayOnEntity(client, 'candidate', ENTITY, 'entity.edit_answers')).toBe(false);
-  });
-
-  it('denies when the client throws', async () => {
-    const client: RpcClient = {
-      rpc: () => Promise.reject(new Error('network'))
-    };
-    expect(await callerMayOnEntity(client, 'candidate', ENTITY, 'entity.edit_answers')).toBe(false);
-  });
-
-  it.each([undefined, null, '', '   ', 42])('denies without a round trip for entity id %j', async (entityId) => {
-    const { client, calls } = fakeClient({ data: true, error: null });
-    expect(await callerMayOnEntity(client, 'candidate', entityId, 'entity.edit_answers')).toBe(false);
-    expect(calls).toHaveLength(0);
-  });
-
-  it.each(['', 'candidates', 'CANDIDATE', 'project'])(
-    'denies without a round trip for entity type %j, which is not a public.entity_type',
-    async (entityType) => {
+  it.each([undefined, null, '', '   ', 42 as unknown as string])(
+    'denies without a round trip for project id %j',
+    async (projectId) => {
       const { client, calls } = fakeClient({ data: true, error: null });
-      expect(await callerMayOnEntity(client, entityType as EntityType, ENTITY, 'entity.edit_answers')).toBe(false);
+      expect(await callerMayOnProject(client, projectId, 'project.edit_entities')).toBe(false);
       expect(calls).toHaveLength(0);
     }
   );
+});
+
+describe('GRANT_PERMISSIONS', () => {
+  it('lists the members of public.grant_permission, in the order schema/000-enums.sql declares them', () => {
+    const enumSource = readFileSync(new URL('../../schema/000-enums.sql', import.meta.url), 'utf8');
+    const block = enumSource.match(/CREATE TYPE public\.grant_permission AS ENUM\s*\(([\s\S]*?)\);/);
+    expect(block).not.toBeNull();
+    const declared = Array.from(block![1].matchAll(/'([^']+)'/g)).map((m) => m[1]);
+    expect(declared.length).toBeGreaterThan(0);
+    expect([...GRANT_PERMISSIONS]).toEqual(declared);
+  });
 });

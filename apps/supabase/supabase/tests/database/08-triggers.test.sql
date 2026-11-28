@@ -161,7 +161,7 @@ SELECT
 -- =====================================================================
 -- An alliance nomination with no parent, to hang the two assertions below off.
 --
--- ⚠ IT IS THE SHARED FIXTURE'S ROW, NOT A SECOND ONE. This block used to INSERT its own top-level `alliance_a` nomination at (election_a, constituency_a, round 1). 162-08 later added `nomination_alliance_a` to `create_test_data ()` at exactly that contest, and the two have been duplicates ever since -- invisibly, because nothing forbade it. 162-12's `nominations_entity_parent_contest_key UNIQUE NULLS NOT DISTINCT` does forbid it, and MEASURED: installing that key turned this file red here, at the insert. Reusing the fixture's row asserts the same three things with one fewer row and no duplicate; every description string below is unchanged.
+-- ⚠ IT IS THE SHARED FIXTURE'S ROW, NOT A SECOND ONE: `create_test_data ()` already holds `nomination_alliance_a` at (election_a, constituency_a, round 1), and `nominations_entity_parent_contest_key UNIQUE NULLS NOT DISTINCT` refuses a second top-level nomination of `alliance_a` at that contest.
 -- Organization nomination under alliance -> should work
 SELECT
   lives_ok (
@@ -213,14 +213,13 @@ SELECT
   );
 
 -- =====================================================================
--- Section 6b: section 11.8's tightening -- *THE* organization, not *an* organization (162-12)
+-- Section 6b: *THE* organization, not *an* organization
 --
--- `validate_nomination` has always required a faction's parent to be AN organization nomination. Section
--- 11.8 tightens that to THE organization the faction itself belongs to, which became expressible only when 162-07b made `factions.organization_id` a NOT NULL column.
+-- `validate_nomination` requires a faction's parent to be a nomination of THE organization the faction itself belongs to (`factions.organization_id`, NOT NULL), not merely of AN organization.
 --
--- ⚠ THIS RULE IS EXERCISED BY THE pgTAP ESTATE AND BY NOTHING ELSE. 162-07b measured that NO seed template and NO E2E fixture emits a faction row at all, so a green E2E suite says nothing whatever about it. That is stated here rather than implied, because the natural reading of a green suite is the opposite.
+-- ⚠ THIS RULE IS EXERCISED BY THE pgTAP ESTATE AND BY NOTHING ELSE. No seed template and no E2E fixture emits a faction row, so a green E2E suite says nothing whatever about it. That is stated here rather than implied, because the natural reading of a green suite is the opposite.
 --
--- Three assertions, and the third is what makes the first two a TIGHTENING rather than a REPLACEMENT: the pre-existing parent-type rule still fires, with its original message, for a faction under a non-organization.
+-- Three assertions, and the third shows the two rules coexist: the parent-type rule still fires, with its own message, for a faction under a non-organization.
 -- =====================================================================
 -- Fixture for the pair, as plain top-level statements: a second nomination of the faction's OWN organization at round 4, and a DIFFERENT organization with its own nomination at round 5. The rounds differ because `nominations_entity_parent_contest_key` forbids two nominations of one entity at one contest under one parent.
 INSERT INTO
@@ -286,7 +285,7 @@ SELECT
   );
 
 -- A DIFFERENT organization in the same project -> rejected, and the message names BOTH organizations.
--- D-23: in a seed log a message naming one is indistinguishable from the parent-type error above it.
+-- Naming both keeps the message distinguishable, in a seed log, from the parent-type error above it.
 SELECT
   throws_like (
     format(

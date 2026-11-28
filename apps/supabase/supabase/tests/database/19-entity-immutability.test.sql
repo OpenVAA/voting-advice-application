@@ -4,7 +4,7 @@
 --
 --   cell 1  entity grantee, CONFIRMED row               -> refused, naming the column
 --   cell 2  entity grantee, UNCONFIRMED row             -> ALLOWED, and the new value is read back
---   cell 3  entity.edit_immutable holder, CONFIRMED row -> allowed, and the new value is read back
+--   cell 3  entity.edit_confirmed_names holder, CONFIRMED row -> allowed, and the new value is read back
 --
 -- Cell 1 alone is satisfied by a rule that simply denies the entity user, and cell 3 alone by a rule that denies nobody. Cell 2 is the only cell that observes the conditionality: an absolute freeze, the trigger body with its OLD-flag guard removed, fails it on every table.
 --
@@ -178,7 +178,7 @@ SELECT
           public.user_can (
             'entity',
             t.id,
-            'entity.edit_immutable',
+            'entity.edit_confirmed_names',
             'candidate'
           )
         )
@@ -188,7 +188,7 @@ SELECT
             test_id ('candidate_a') AS id
         ) t
     ),
-    'the grantee this file impersonates first holds NO entity.edit_immutable, checked through user_can rather than assumed, so cell 1''s refusal is the rule and not a missing grant'
+    'the grantee this file impersonates first holds NO entity.edit_confirmed_names, checked through user_can rather than assumed, so cell 1''s refusal is the rule and not a missing grant'
   );
 
 -- =====================================================================
@@ -257,7 +257,7 @@ SELECT
       $$UPDATE candidates SET first_name = 'Corrected' WHERE id = '%s'$$,
       test_id ('candidate_a')
     ),
-    'candidates cell 3 (first_name): a holder of entity.edit_immutable renames the CONFIRMED entity the grantee was just refused'
+    'candidates cell 3 (first_name): a holder of entity.edit_confirmed_names renames the CONFIRMED entity the grantee was just refused'
   );
 
 SELECT
@@ -275,7 +275,7 @@ SELECT
       $$UPDATE candidates SET short_name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
       test_id ('candidate_a')
     ),
-    'candidates cell 3 (short_name): a holder of entity.edit_immutable changes the short name of the CONFIRMED entity'
+    'candidates cell 3 (short_name): a holder of entity.edit_confirmed_names changes the short name of the CONFIRMED entity'
   );
 
 SELECT
@@ -459,7 +459,7 @@ SELECT
       $$UPDATE organizations SET name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
       test_id ('org_a')
     ),
-    'organizations cell 3: a holder of entity.edit_immutable renames the CONFIRMED entity'
+    'organizations cell 3: a holder of entity.edit_confirmed_names renames the CONFIRMED entity'
   );
 
 SELECT
@@ -468,7 +468,7 @@ SELECT
       $$UPDATE organizations SET short_name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
       test_id ('org_a')
     ),
-    'organizations cell 3 (short_name): a holder of entity.edit_immutable changes the short name of the CONFIRMED entity'
+    'organizations cell 3 (short_name): a holder of entity.edit_confirmed_names changes the short name of the CONFIRMED entity'
   );
 
 SELECT
@@ -615,7 +615,7 @@ SELECT
       $$UPDATE factions SET name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
       test_id ('faction_a')
     ),
-    'factions cell 3: a holder of entity.edit_immutable renames the CONFIRMED entity'
+    'factions cell 3: a holder of entity.edit_confirmed_names renames the CONFIRMED entity'
   );
 
 SELECT
@@ -624,7 +624,7 @@ SELECT
       $$UPDATE factions SET short_name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
       test_id ('faction_a')
     ),
-    'factions cell 3 (short_name): a holder of entity.edit_immutable changes the short name of the CONFIRMED entity'
+    'factions cell 3 (short_name): a holder of entity.edit_confirmed_names changes the short name of the CONFIRMED entity'
   );
 
 SELECT
@@ -771,7 +771,7 @@ SELECT
       $$UPDATE alliances SET name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
       test_id ('alliance_a')
     ),
-    'alliances cell 3: a holder of entity.edit_immutable renames the CONFIRMED entity'
+    'alliances cell 3: a holder of entity.edit_confirmed_names renames the CONFIRMED entity'
   );
 
 SELECT
@@ -780,7 +780,7 @@ SELECT
       $$UPDATE alliances SET short_name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
       test_id ('alliance_a')
     ),
-    'alliances cell 3 (short_name): a holder of entity.edit_immutable changes the short name of the CONFIRMED entity'
+    'alliances cell 3 (short_name): a holder of entity.edit_confirmed_names changes the short name of the CONFIRMED entity'
   );
 
 SELECT
@@ -1183,7 +1183,7 @@ SELECT
 -- =====================================================================
 -- Section 6: the rule ORDER, and the OLD flag rule 2 reads
 -- =====================================================================
--- No caller holds `entity.confirm` without `entity.edit_immutable`, so the two rules cannot be separated by caller. `user_can` does not read a permission list out of the token: it reads a scope, a role and a target and asks `grant_role_permissions` for the verbs, and in that matrix the two permissions appear in exactly the same four rows (global admin, account admin, project admin, project editor).
+-- No caller holds `entity.confirm` without `entity.edit_confirmed_names`, so the two rules cannot be separated by caller. `user_can` does not read a permission list out of the token: it reads a scope, a role and a target and asks `grant_role_permissions` for the verbs, and in that matrix the two permissions appear in exactly the same four rows (global admin, account admin, project admin, project editor).
 --
 -- What is observable is the ORDER of the two rules, exactly where it matters: a caller who tries to unfreeze AND rename in one statement. Rule 1 runs first, so that caller is stopped at the confirmation gate and the refusal carries the CONFIRMATION prefix. Were the freeze evaluated first, the same statement would be refused with the IMMUTABILITY prefix instead. Both are asserted, one positively and one negatively, so the pair distinguishes the two orders.
 --
@@ -1611,7 +1611,7 @@ SELECT
       $$UPDATE candidates SET answers = '{}'::jsonb WHERE id = '%s'$$,
       test_id ('candidate_a')
     ),
-    'candidates hot path: an answers write on a CONFIRMED row by a caller holding no entity.edit_immutable succeeds, because the statement names no restricted column'
+    'candidates hot path: an answers write on a CONFIRMED row by a caller holding no entity.edit_confirmed_names succeeds, because the statement names no restricted column'
   );
 
 SELECT

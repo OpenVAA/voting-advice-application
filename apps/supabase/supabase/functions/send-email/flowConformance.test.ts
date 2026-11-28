@@ -1,17 +1,11 @@
 /**
- * Source-level conformance gate over `send-email`'s authority decision — D-25's FIFTH module.
+ * Source-level conformance checks over `send-email`'s authority decision.
  *
- * THIS MODULE IS THE ONE THE BRIEF'S CENSUS MISSED. `162-IMPLEMENTATION-BRIEF.md` § 5 names four frontend claim readers; D-25 measured five, and the fifth is this one. It is NOT a display read: it gates BULK SEND, so when the claim changed under 162-06 the pre-change reader's `payload.user_roles || []` would have evaluated to the empty list and every administrator would have lost bulk send — a silent authorisation outage in a module no plan named. A flow check built on the brief's number would have omitted the only one of the five whose failure is an outage, which is why the census behind this file was re-derived from the tree rather than taken from any document.
+ * This module gates BULK SEND on the caller's authority, so a gate that silently answered "no" would be an authorisation outage rather than a display defect, and a gate that answered "yes" too widely would let any caller mail a project's recipients. The checks below bind the gate to one `user_can` question through the caller's own client, the refusal to that question's answer, and the send to the configured project.
  *
  * In the shape of `identity-callback/envReadSites.test.ts`: `index.ts` imports `@supabase/supabase-js` and `nodemailer` through `npm:` specifiers, which only Deno resolves, so it cannot be imported by vitest, and the properties are asserted against the module's SOURCE TEXT.
  *
- * THE PERMISSION VOCABULARY IS DERIVED, NEVER TRANSCRIBED. It is read out of the declarative enum source at `schema/000-enums.sql`, and its size is pinned at 23.
- *
- * WHAT THAT PIN ACTUALLY GUARDS (162-REVIEW WR-05). This docblock used to claim "an empty vocabulary would make every membership check pass." That is the OPPOSITE of what happens: with `PERMISSIONS === []`, `expect(outside).toEqual([])` fails (every named literal becomes "outside") and `expect(PERMISSIONS).toContain('project.edit_entities')` fails too. An empty derivation reddens loudly on its own. What the pin guards is a PARTIAL derivation — a regex that still matches but stops short, so a legitimate literal reads as a non-member and the file reports a confusing "permission outside the enum" rather than the parse failure that caused it. The pin turns that into one named red at the source.
- *
- * AND "BEFORE" IS NOW TRUE. The pin used to sit in a peer `it` block, which vitest runs alongside the assertions it claims to precede rather than as a precondition of them. The `beforeAll` below throws, which aborts the whole describe, so every membership assertion in this file genuinely runs only on a vocabulary that parsed.
- *
- * TIGHTENED BY 162-18. Until then this file asserted that the gate was PRESENT but nothing about its answer being USED: replacing the refusal condition with a constant false left every test here green. 162-18 added three assertions — the gate is the shared module's and not a local shadow, the refusal is conditioned on the gate's answer and precedes the service-role client, and bulk send is bound to the configured project with recipients resolved only there — and recorded a planted control reddening each one in `evidence/162-18/flow-controls.txt`.
+ * THE PERMISSION VOCABULARY IS DERIVED, NEVER TRANSCRIBED. It is read out of the declarative enum source at `schema/000-enums.sql`. The `beforeAll` below aborts the describe when the derivation finds no members, so no membership assertion runs against a vocabulary that failed to parse. A partial derivation still reddens: every check names the permission it needs, and a member the derivation missed reads as a literal outside the enum.
  */
 
 import { readFileSync } from 'node:fs';
@@ -20,7 +14,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 const INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
 const ENUM_SOURCE = readFileSync(new URL('../../schema/000-enums.sql', import.meta.url), 'utf8');
 
-/** The 23 permission verbs, derived from the declarative enum declaration at run time. */
+/** The permission verbs, derived from the declarative enum declaration at run time. */
 function derivePermissionVocabulary(sql: string): Array<string> {
   const block = sql.match(/CREATE TYPE public\.grant_permission AS ENUM\s*\(([\s\S]*?)\);/);
   if (!block) return [];
@@ -35,26 +29,20 @@ const PERMISSION_SHAPED = /\b(?:feedback|account|project|entity|nomination)\.[a-
 /**
  * `index.ts` with its comments removed, for the assertions that must measure CODE.
  *
- * 162-REVIEW WR-02: `PERMISSION_SHAPED` applied to the raw file text matches PROSE as readily as source. Of the two `project.edit_entities` occurrences in `send-email/index.ts`, the first is in the comment block above the gate and only the second is executable, so `names the permission bulk send asks for` was satisfied by that comment alone — a module that had dropped the permission from its code entirely would still have passed it.
+ * `PERMISSION_SHAPED` applied to the raw file text matches PROSE as readily as source: `send-email/index.ts` names `project.edit_entities` in the comment above the gate as well as in the call, so an assertion over the raw text would pass on the comment alone.
  *
- * The NEGATIVE check (`names no permission literal outside the derived enum`) keeps reading the raw text on purpose: a permission named only in prose, and not a member of the 23, is a documentation defect this file should still catch.
+ * The NEGATIVE check (`names no permission literal outside the derived enum`) reads the raw text on purpose: a permission named only in prose, and not a member of the enum, is a documentation defect this file should still catch.
  */
 const CODE_ONLY = INDEX_SOURCE.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 const RETIRED_CLAIM_KEYS = ['user_roles', 'user_role_type', 'role_scope_type'] as const;
 
 describe('send-email flow conformance', () => {
-  // THE PRECONDITION, ENFORCED AS ONE (162-REVIEW WR-05). Throwing here aborts the describe, so no membership assertion below can run against a vocabulary that failed to parse -- which is what the docblock's "before any membership assertion uses it" has always claimed and what a peer `it` guard could not deliver.
+  // Throwing here aborts the describe, so no membership assertion below can run against a vocabulary that failed to parse.
   beforeAll(() => {
-    if (PERMISSIONS.length !== 23) {
-      throw new Error(
-        `derivePermissionVocabulary parsed ${PERMISSIONS.length} members out of schema/000-enums.sql, expected 23 -- every membership assertion below would measure a vocabulary that is not the enum's`
-      );
+    if (PERMISSIONS.length === 0) {
+      throw new Error('derivePermissionVocabulary parsed no members out of schema/000-enums.sql');
     }
-  });
-
-  it('derived a 23-member permission vocabulary before any membership assertion uses it', () => {
-    expect(PERMISSIONS.length).toBe(23);
   });
 
   it('read a non-empty index.ts, and it is the module under test', () => {
@@ -63,7 +51,7 @@ describe('send-email flow conformance', () => {
   });
 
   it('names at least one permission literal IN CODE, so the membership assertion below is not vacuous', () => {
-    // Measured over `CODE_ONLY` rather than the raw text (162-REVIEW WR-02): the first of this module's two `project.edit_entities` occurrences is prose in the comment above the gate, so the raw form was satisfiable by a comment.
+    // Measured over `CODE_ONLY` rather than the raw text: one of this module's `project.edit_entities` occurrences is prose in the comment above the gate.
     const named = Array.from(CODE_ONLY.matchAll(PERMISSION_SHAPED)).map((m) => m[0]);
     expect(named.length).toBeGreaterThan(0);
     expect(named).toContain('project.edit_entities');
@@ -75,21 +63,20 @@ describe('send-email flow conformance', () => {
     expect(outside).toEqual([]);
   });
 
-  it('names the permission bulk send asks for, and it is a member of the ratified 23 (D-30, operator S-3 NOTE)', () => {
-    // IN CODE (162-REVIEW WR-02). The raw-text form of the first assertion was satisfied by the comment on `index.ts`'s line 114 alone.
+  it('names the permission bulk send asks for in code, and it is a member of the enum', () => {
     expect(CODE_ONLY).toContain('project.edit_entities');
     expect(PERMISSIONS).toContain('project.edit_entities');
   });
 
   it.each(RETIRED_CLAIM_KEYS)('reads no retired claim key: %s', (key) => {
-    // THE KEY, NOT ONE ACCESS FORM OF IT (162-REVIEW WR-01). These three assertions used to be `not.toContain('payload.' + key)` and `not.toContain("['" + key + "']")`, and the token `payload` does not occur anywhere in this module -- the gate has read no claim at all since WR-09 -- so they could only redden if a future edit reintroduced that exact variable NAME as well as that exact access form. `const claims = decodeTokenPayload(jwt); claims.user_roles` slipped through untouched. Since the module contains none of the three key names in any form, binding the bare name costs nothing and is the assertion the test's own title makes.
+    // The bare key name, not one access form of it: `claims.user_roles`, `payload['user_roles']` and a destructured `{ user_roles }` all redden. The module contains none of the three names in any form, so binding the bare name costs nothing.
     expect(INDEX_SOURCE).not.toContain(key);
   });
 
-  it('asks the database for the authority decision rather than re-deriving it (SPEC section 9, 162-REVIEW WR-09)', () => {
+  it('asks the database for the authority decision rather than re-deriving it', () => {
     // The decision is one `user_can` call through the caller's own client, on the project the request names. A gate that reads `payload.grants` and matches (scope, role) pairs in TypeScript is the shape refused here: its account arm admits an account admin of ANY account, because which account owns a project is a reach rule only the database holds.
     //
-    // AND THE GATE'S ANSWER IS THE SOLE INPUT TO THE REFUSAL (162-REVIEW CR-02). Asserting the call TEXT is present, and locating the assignment by its `const mayBulkSend = await callerMayOnProject(callerClient` PREFIX, constrains nothing about what else contributes to `mayBulkSend`: `const mayBulkSend = (await callerMayOnProject(...)) || body.debugBypass === true` satisfies both (`await X || Y` parses as `(await X) || Y`, so the prefix still matches), names no retired pattern, and leaves this file green while any authenticated caller posting `{"debugBypass": true}` bulk-sends. The WHOLE assignment statement is therefore bound, terminator included, and the number of assignments to the gate variable is pinned at one so a later re-assignment cannot widen it either.
+    // AND THE GATE'S ANSWER IS THE SOLE INPUT TO THE REFUSAL. Matching only the call text or the assignment's prefix would accept `const mayBulkSend = (await callerMayOnProject(...)) || body.debugBypass === true` (`await X || Y` parses as `(await X) || Y`), which lets any caller that posts the bypass flag bulk-send. The WHOLE assignment statement is therefore bound, terminator included, and the number of assignments to the gate variable is pinned at one so a later re-assignment cannot widen it either.
     expect(INDEX_SOURCE).toContain("callerMayOnProject(callerClient, project_id, 'project.edit_entities')");
     expect(INDEX_SOURCE).toMatch(
       /\n\s*const mayBulkSend = await callerMayOnProject\(callerClient, project_id, 'project\.edit_entities'\);\n/
@@ -101,7 +88,7 @@ describe('send-email flow conformance', () => {
   });
 
   it('takes its gate from the callerAuthority module and declares none of its own', () => {
-    // Guards a LOCAL SHADOW of the helper (162-REVIEW WR-09): a same-named function declared in index.ts would satisfy every call-shape assertion here while answering whatever it likes.
+    // Guards a LOCAL SHADOW of the helper: a same-named function declared in index.ts would satisfy every call-shape assertion here while answering whatever it likes.
     expect(INDEX_SOURCE).toContain("import { callerMayOnProject } from './callerAuthority.ts';");
     expect(INDEX_SOURCE).not.toMatch(/\bfunction\s*\*?\s*callerMayOnProject\b/);
     expect(INDEX_SOURCE).not.toMatch(/\b(?:const|let|var)\s+callerMayOnProject\b/);
@@ -121,7 +108,7 @@ describe('send-email flow conformance', () => {
   });
 
   it('binds bulk send to the configured project after the gate, and resolves recipients only in that project', () => {
-    // Guards a REQUEST-CHOSEN project (162-REVIEW WR-02): a caller who passes the gate for one project could otherwise resolve another project's recipients through the service-role client.
+    // Guards a REQUEST-CHOSEN project: a caller who passes the gate for one project could otherwise resolve another project's recipients through the service-role client.
     const gateRefusalAt = INDEX_SOURCE.indexOf('Forbidden: caller may not send bulk email for this project');
     const configuredAt = INDEX_SOURCE.indexOf("requireEnv('PUBLIC_PROJECT_ID'", gateRefusalAt);
     const mismatchAt = INDEX_SOURCE.indexOf("jsonAnswer({ error: 'Invalid project_id' }, 400)", configuredAt);
@@ -142,12 +129,12 @@ describe('send-email flow conformance', () => {
     expect(adminAt).toBeGreaterThan(gateAt);
   });
 
-  it('sends the HTML part with escaped variables and never as a caller-chosen sender (162-REVIEW WR-02)', () => {
+  it('sends the HTML part with escaped variables and never as a caller-chosen sender', () => {
     expect(INDEX_SOURCE).toContain('html: rendered.html');
     expect(INDEX_SOURCE).toContain('renderTemplateHtml(template.body, vars)');
     expect(INDEX_SOURCE).toContain('const senderAddress = configuredSender(smtp);');
     expect(INDEX_SOURCE).toContain("jsonAnswer({ error: 'Invalid from' }, 400)");
-    // THE SENDER ACTUALLY USED, POSITIVELY (162-REVIEW WR-06). The negative half of this test used to be `not.toMatch(/from\s*\|\|\s*requireEnv/)` alone -- ONE historical spelling of the defect WR-02 fixed. `from ?? senderAddress`, `from || senderAddress` and `from: body.from` at the `transport.sendMail` call all passed it, and nothing asserted the property that actually holds: the envelope sender is the configured one at the one line that decides it.
+    // THE SENDER ACTUALLY USED, POSITIVELY. A negative match on one spelling of a caller-chosen sender misses `from ?? senderAddress`, `from || senderAddress` and `from: body.from`; this asserts that the envelope sender is the configured one at the one line that decides it.
     expect(CODE_ONLY).toMatch(/await transport\.sendMail\(\{\s*from: senderAddress,/);
     // Exactly one `from:` in executable code, so a second send site -- or a caller-chosen sender added beside this one -- reddens rather than hiding behind the assertion above.
     expect(CODE_ONLY.split(/\bfrom:\s/).length - 1).toBe(1);

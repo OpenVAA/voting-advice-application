@@ -1,13 +1,12 @@
--- 26-uniqueness-keys.test.sql: both of the phase's uniqueness keys, BY NAME and in BOTH directions
+-- 26-uniqueness-keys.test.sql: the grant key and the nomination key, BY NAME and in BOTH directions
 --
--- 162-03's RECORDED SEAM, closed here. That plan names all three of its constraints explicitly in source and records, in its own flagged assumptions, that NOTHING permanently guards them by name until 162-17.
--- A renamed constraint passes a catalogue existence check and breaks every consumer that matched its message, which is why every rejection below is a `throws_ok` against the constraint's OWN NAME, following the `nominations_election_round_check` precedent whose source comment states that being named is what gives a throws_ok a handle.
+-- The constraints are named explicitly in source, and this file guards them by name. A renamed constraint passes a catalogue existence check and breaks every consumer that matched its message, which is why every rejection below is a `throws_ok` against the constraint's OWN NAME, following the `nominations_election_round_check` precedent whose source comment states that being named is what gives a throws_ok a handle.
 --
--- D-24, AND WHY THE THREE NULL-BEARING SCOPES ARE ASSERTED ONE BY ONE. `UNIQUE NULLS NOT DISTINCT` is the phase-wide rule because a plain UNIQUE enforces NOTHING on a row with a NULL keyed column: two byte-identical global-scope grants differ in no column that a plain key can compare, and this tree was MEASURED admitting exactly that on the retired role table. Three of the four grant scopes carry a NULL `target_type`, and one carries a NULL `target_id` as well, so those three are the whole reason the rule exists and each is asserted on its own rather than folded into one case.
+-- WHY THE THREE NULL-BEARING SCOPES ARE ASSERTED ONE BY ONE. Both keys are `UNIQUE NULLS NOT DISTINCT` because a plain UNIQUE enforces NOTHING on a row with a NULL keyed column: two byte-identical global-scope grants differ in no column that a plain key can compare. Three of the four grant scopes carry a NULL `target_type`, and one carries a NULL `target_id` as well, so those three are the whole reason the rule exists and each is asserted on its own rather than folded into one case.
 --
--- BOTH DIRECTIONS, ALWAYS. A suite that only checks rejection stays green when somebody later "simplifies" a key by dropping a column from it -- the key still rejects the duplicates it used to reject, and silently starts rejecting rows it should admit. Control K2 plants exactly that and the admitting assertions are what redden.
+-- BOTH DIRECTIONS, ALWAYS. A suite that only checks rejection stays green when somebody later "simplifies" a key by dropping a column from it -- the key still rejects the duplicates it rejected before, and silently starts rejecting rows it should admit. The admitting assertions are what redden then.
 --
--- 162-12 ESTABLISHED THE NOMINATION KEY ON THE CANDIDATE; this file is the POPULATION. That plan's SUMMARY records the split in those words, so nothing here re-establishes the property: it widens it to all four entity types the key admits, including the NULL-parent case, which is the case default NULLS-DISTINCT semantics admits silently.
+-- THE NOMINATION KEY ACROSS THE POPULATION. 23-nominations-write.test.sql asserts it on the candidate; this file widens it to all four entity types the key admits, including the NULL-parent case, which is the case default NULLS-DISTINCT semantics admits silently.
 --
 -- Depends on: 00-helpers.test.sql (create_test_data, test_id, test_user_id)
 BEGIN;
@@ -28,7 +27,7 @@ SELECT
 -- =====================================================================
 -- Section 1: the grant key -- REJECTING, at each of the four scopes
 -- =====================================================================
--- `grants_user_scope_target_role_key` is UNIQUE NULLS NOT DISTINCT (user_id, scope, target_type, target_id, role). Names taken from `162-03-SUMMARY.md` and re-read off pg_constraint below, never guessed.
+-- `grants_user_scope_target_role_key` is UNIQUE NULLS NOT DISTINCT (user_id, scope, target_type, target_id, role). The name is re-read off pg_constraint below, never guessed.
 SELECT
   lives_ok (
     $$INSERT INTO public.grants (user_id, scope, target_type, target_id, role)
@@ -143,7 +142,7 @@ SELECT
         c.relname = 'grants_user_scope_target_role_key'
     ),
     'user_id,scope,target_type,target_id,role',
-    'grant key shape: the column list is the five section 3.1 columns, in order, read from pg_index'
+    'grant key shape: the column list is the five keyed columns, in order, read from pg_index'
   );
 
 -- =====================================================================
@@ -204,7 +203,7 @@ SELECT
 -- =====================================================================
 -- Section 5: the nomination key, all four entity types, both directions
 -- =====================================================================
--- `nominations_entity_parent_contest_key` is UNIQUE NULLS NOT DISTINCT over the four entity columns, the parent, the election, the constituency and the round. 162-12 established it on the candidate; the assertions below are the population.
+-- `nominations_entity_parent_contest_key` is UNIQUE NULLS NOT DISTINCT over the four entity columns, the parent, the election, the constituency and the round. 23-nominations-write.test.sql asserts it on the candidate; the assertions below are the population.
 --
 -- `validate_nomination()` CONSTRAINS WHICH SHAPES ARE LEGAL AT ALL, and the cases below are chosen to sit inside those rules rather than to fight them: an alliance nomination may carry no parent, an organization nomination's parent must be an alliance nomination, a faction nomination's parent must be the nomination of its OWN organization, and a candidate nomination's parent must be an organization or faction nomination. A "both directions" assertion written outside those rules would measure the validator, not the key.
 --
@@ -314,7 +313,7 @@ SELECT
 -- =====================================================================
 -- Section 6: the nomination key's SHAPE, read from pg_index
 -- =====================================================================
--- Section 11.7's own reason for including the parent column, asserted from the catalogue so a later "simplification" that drops it reddens here as well as in 162-12.
+-- The key includes the parent column so that one candidate can stand in one contest under two different parents; asserted from the catalogue so a later "simplification" that drops it reddens here as well as in 23-nominations-write.test.sql.
 SELECT
   is (
     (

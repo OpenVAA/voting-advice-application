@@ -55,7 +55,7 @@ CREATE TYPE public.grant_permission AS ENUM(
   'project.read_entities',
   'entity.edit_answers',
   'entity.read_answers',
-  'entity.edit_immutable',
+  'entity.edit_confirmed_names',
   'entity.invite_children',
   'entity.confirm',
   'nomination.edit',

@@ -1,6 +1,6 @@
 -- 16-anon-visibility.test.sql: the anon visibility grid
 --
--- 162-08 moved public read off ten per-row publication flags and onto one project flag and two confirmation states; 162-16 then deleted those ten columns and their five partial indexes from the schema. The two failure modes of that move are opposite and only one of them is visible: too strict and the voter application renders empty, which the E2E suite reports at the first spec; too loose and unconfirmed or closed-project rows become world-readable, which NOTHING reports, because a passing read test cannot tell "correctly visible" from "should have been hidden".
+-- Public read rests on one project flag and two confirmation states. Its two failure modes are opposite and only one of them is visible: too strict and the voter application renders empty, which the E2E suite reports at the first spec; too loose and unconfirmed or closed-project rows become world-readable, which NOTHING reports, because a passing read test cannot tell "correctly visible" from "should have been hidden".
 --
 -- So this file is not a read test. Every case below is a PAIR: a row the anon caller must see and a row it must not, differing in EXACTLY ONE CONJUNCT, with every other conjunct held true. A policy in which two conjuncts are accidentally the same predicate passes a visibility-only test set and reddens here.
 --
@@ -76,9 +76,9 @@ VALUES
 
 -- One standalone nomination per candidate above, except T NoNomination, which is the absence case. Every `confirmed` value is stated explicitly.
 --
--- ⚠ FLIPPED BY 162-12 (D-11c): the column was `unconfirmed boolean DEFAULT false` and is now `confirmed boolean NOT NULL DEFAULT false`, so every value here is the negation of what it was. Row a7 used to carry a literal NULL, because the old column was nullable and the whole point of that row was that a NULL read as "not unconfirmed"; `NOT NULL` makes that row UNREPRESENTABLE, so it now carries `confirmed = true` -- the same visibility it always had -- and the assertion that used to read it has been TRANSFORMED into a structural one stating that the NULL case can no longer occur at all. See section 2.
+-- ⚠ THE COLUMN IS `confirmed boolean NOT NULL DEFAULT false`, so a NULL confirmation is unrepresentable. Row a7 carries `confirmed = true`, and section 2 asserts structurally that the NULL case cannot occur.
 --
--- ⚠ ROW a9 MOVED FROM election_round 1 TO 2, AND THE REASON IS THE UNIQUENESS KEY 162-12 ADDS. a1 and a9 are the same candidate at the same (election, constituency, round) with no parent, differing only in the confirmation flag -- which is precisely what `nominations_entity_parent_contest_key UNIQUE NULLS NOT DISTINCT` forbids. MEASURED: installing that key turned this file red at this INSERT. The round is read by NO anon predicate, so a9 still differs from a1 in the confirmation flag ALONE as far as the rule under test is concerned, and the denial below is still un-over-determined. The collision itself is 162-08's: it added `nomination_faction_a` / `nomination_alliance_a` to the shared fixture, duplicating rows three files already created locally.
+-- ⚠ ROW a9 IS AT election_round 2, BECAUSE OF THE UNIQUENESS KEY. a1 and a9 are the same candidate in the same (election, constituency) with no parent, differing in the confirmation flag; at one round `nominations_entity_parent_contest_key UNIQUE NULLS NOT DISTINCT` would refuse the pair. The round is read by NO anon predicate, so a9 differs from a1 in the confirmation flag ALONE as far as the rule under test is concerned, and the denial below is not over-determined.
 --
 -- The last rows exist because the obvious spellings of the nomination-side denials are OVER-DETERMINED and were measured to be so. A nomination in a closed project linking a candidate in that same closed project is hidden by TWO conjuncts -- its own project term and the transitive one, which reads the same flag through the entity -- so flipping open_for_voters flips both and the assertion isolates nothing; it reddened under no wrong-predicate variant at all. Likewise a nomination whose only linked candidate has no OTHER confirmed nomination is hidden both by its own `confirmed` and by the transitive term. Both denials therefore point at a nomination whose linked candidate is the fully visible one, so exactly one conjunct is false in each.
 INSERT INTO
@@ -401,7 +401,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 2: the nomination pairs -- including the transitive conjunct, which is the one new shape in 162-08
+-- Section 2: the nomination pairs -- including the transitive conjunct over the nomination's entities
 -- =====================================================================
 SELECT
   is (
@@ -470,16 +470,16 @@ SELECT
         id = 'eeeeeeee-eeee-eeee-eeee-0000000000a7'::uuid
     )::integer,
     1,
-    'anon CAN see a confirmed nomination whose linked candidate is fully anon-readable -- row a7, kept from the NULL case this assertion used to carry'
+    'anon CAN see a confirmed nomination whose linked candidate is fully anon-readable -- row a7'
   );
 
--- ⚠ TRANSFORMED BY 162-12, NOT DELETED, and the replacement is STRICTLY STRONGER. This assertion used to read: "anon CAN see a nomination whose unconfirmed is NULL rather than false -- the NULL-safe reading, which the `unconfirmed = false` spelling would drop". It proved that the predicate TOLERATED a NULL that COULD occur. D-11c makes the column `NOT NULL`, so the NULL can no longer occur at all and the old claim is not merely false, it is UNSTATABLE -- the fixture row it rested on cannot be inserted. The assertion below proves the better guarantee that replaces it: the hazard is gone by CONSTRUCTION rather than handled by a wrapper. One claim became another and the file's assertion count did not drop.
+-- ⚠ A NULL CONFIRMATION IS UNREPRESENTABLE. Rather than proving that the predicate tolerates a NULL, the assertion below proves the column is `NOT NULL`, so the hazard is gone by CONSTRUCTION rather than handled by a null-coalescing wrapper.
 SELECT
   col_not_null (
     'public',
     'nominations',
     'confirmed',
-    'the confirmation column is NOT NULL, so the NULL a null-coalescing reader used to compensate for is unrepresentable by construction -- strictly stronger than the tolerated-NULL assertion this replaces'
+    'the confirmation column is NOT NULL, so a NULL a null-coalescing reader would have to compensate for is unrepresentable by construction'
   );
 
 -- =====================================================================
@@ -509,7 +509,7 @@ SELECT
     'zero nominations are visible to anon whose linked candidate that same anon caller cannot see -- the nomination policy and the candidate policy agree exactly'
   );
 
--- An anon read of `candidates` raises NOTHING. Written inline, the entity policy referencing `nominations` and the nomination policy referencing `candidates` produce `infinite recursion detected in policy for relation "candidates"` at plan time -- reproduced deliberately before this design was chosen. This assertion is that failure pinned absent as a standing property, and it reddens the moment a later plan inlines either lookup back into a policy.
+-- An anon read of `candidates` raises NOTHING. Written inline, the entity policy referencing `nominations` and the nomination policy referencing `candidates` produce `infinite recursion detected in policy for relation "candidates"` at plan time. This assertion pins that failure absent as a standing property, and it reddens the moment either lookup is inlined into a policy.
 SELECT
   lives_ok (
     $$
@@ -928,7 +928,7 @@ SELECT
 -- =====================================================================
 -- Section 8: the closed-project settings case, and the transitive conjunct on an entity table other than candidates
 -- =====================================================================
--- The behaviour the operator was asked to accept at task 2 Q4 and did, stated as its own assertion because NOTHING ELSE IN THE TREE IS IN THIS STATE: every project in every seed is open for voters, so no other gate can catch it. A closed project returns the anon caller no settings row at all, and the voter application has to be able to render that.
+-- A closed project's settings are invisible to anon, stated as its own assertion because NOTHING ELSE IN THE TREE IS IN THIS STATE: every project in every seed is open for voters, so no other gate can catch it. A closed project returns the anon caller no settings row at all, and the voter application has to be able to render that.
 SELECT
   is (
     (
@@ -940,7 +940,7 @@ SELECT
         project_id = test_id ('project_b')
     )::integer,
     0,
-    'anon reading app_settings for a project that is not open for voters sees ZERO rows -- the frontend consequence ratified at task 2 Q4'
+    'anon reading app_settings for a project that is not open for voters sees ZERO rows, which the voter application has to render'
   );
 
 -- The transitive conjunct on an entity table other than `candidates`, so the helper is shown to resolve the organization FK and not only the one the tracer exercised.
@@ -994,18 +994,18 @@ SELECT
 -- =====================================================================
 -- Section 10: the structural absences and the invariant, read from the applied database rather than from the schema file
 --
--- These are the assertions 162-17 generalises into `lint-schema.mjs`; this file proves them for its own thirteen. Each count is floored or pinned so that a clean answer cannot come from an empty result set -- the way a structural assertion lies.
+-- `lint-schema.mjs` check 9001 generalises these assertions; this file proves them for its own thirteen. Each count is floored or pinned so that a clean answer cannot come from an empty result set -- the way a structural assertion lies.
 -- =====================================================================
 SELECT
   reset_role ();
 
--- ⚠ THE ONE ASSERTION IN THIS FILE THAT HAS BEEN RE-POINTED, AND IT HAS NOW BEEN RE-POINTED TWICE. The prohibition on this file was lifted for this assertion alone, by 162-10 and again by D-36 (2026-09-17). Its original form pinned the TEXT of `anon_select_candidates` -- `qual LIKE '%project_open_for_voters%'`. V-6(A) made that unsatisfiable by moving the project conjunct INSIDE a `entity_is_anon_visible` composition, so 162-10 re-pointed it at the composition's body. D-36 then REMOVED that composition -- the nesting cost 271.9 ms anon against 39.4 for the direct calls -- which makes 162-10's form unsatisfiable by construction in its turn: there is no function left whose `pg_get_functiondef` could carry the term.
+-- ⚠ THE ENTITY SELECT POLICIES CALL THE TWO SUB-RULE HELPERS DIRECTLY, with no composition function between them: nesting the calls inside one composition cost about seven times as much per anon read. So this assertion reads the policies themselves.
 --
--- THE REPLACEMENT IS STRICTLY STRONGER THAN EITHER FORM IT REPLACES, which is the whole justification for touching this file a second time. Three ways stronger. (1) It is DERIVED from `pg_policies` -- every `TO anon` SELECT policy on the four entity tables -- rather than naming one policy or two, so a fifth entity table, or a renamed policy, is judged by it automatically instead of escaping it. (2) It requires each of those quals to name BOTH sub-rule helpers DIRECTLY, where the old form accepted a single delegating call, so a qual that kept the project term and quietly lost the nomination term now reddens. (3) It pins the POPULATION as well as the pass count -- `4/4`, not `4` -- so the clean answer cannot come from an empty result set, which is the way a structural assertion lies.
+-- It is strong in three ways. (1) It is DERIVED from `pg_policies` -- every `TO anon` SELECT policy on the four entity tables -- rather than naming one policy or two, so a fifth entity table, or a renamed policy, is judged by it automatically instead of escaping it. (2) It requires each of those quals to name BOTH sub-rule helpers DIRECTLY, so a qual that kept the project term and quietly lost the nomination term reddens. (3) It pins the POPULATION as well as the pass count -- `4/4`, not `4` -- so the clean answer cannot come from an empty result set, which is the way a structural assertion lies.
 --
--- IT ALSO KEEPS THE NOMINATIONS HALF AND THE FUNCTION-BODY HALF. `anon_select_nominations` still names `project_open_for_voters` directly, and `nomination_entities_confirmed` -- which D-36 restored to its pre-162-10 four-arm body -- must still require BOTH helpers in its own definition, read from `pg_get_functiondef` and not from the schema file, so a term dropped from that function cannot hide behind a policy that merely calls it. That was the sharpest clause of the 162-10 form and it survives, pointed at the function that now holds the rule.
+-- IT ALSO KEEPS THE NOMINATIONS HALF AND THE FUNCTION-BODY HALF. `anon_select_nominations` names `project_open_for_voters` directly, and `nomination_entities_confirmed` must require BOTH helpers in its own definition, read from `pg_get_functiondef` and not from the schema file, so a term dropped from that function cannot hide behind a policy that merely calls it.
 --
--- WHAT IT DELIBERATELY DOES NOT DO is assert that the eight entity SELECT quals are identical to each other. That is D-36's accepted cost and 162-17's commissioned guard, and writing half of it here, in a fenced file, by a different hand, is what the D-35 investigation stopped rather than do.
+-- WHAT IT DELIBERATELY DOES NOT DO is assert that the eight entity SELECT quals are identical to each other. That guard is `25-matrix-conformance.test.sql`'s.
 SELECT
   is (
     (
@@ -1071,7 +1071,7 @@ SELECT
         AND COALESCE(qual, '') LIKE '%published%'
     )::integer,
     0,
-    'no TO anon SELECT policy in schema public mentions published -- D-11b, so 162-16 found nothing left to strip in the policy layer and deleted the columns alone'
+    'no TO anon SELECT policy in schema public mentions published'
   );
 
 -- The regex is deliberately NOT the literal `FROM public.nominations`. `pg_get_expr` renders a policy predicate against the CURRENT search_path, so a genuine inline sub-select over either table renders SCHEMA-UNQUALIFIED and a literal match on the qualified spelling is a check that cannot fail -- measured, in a rolled-back transaction, against exactly the construction it is meant to catch.
@@ -1088,7 +1088,7 @@ SELECT
         AND COALESCE(qual, '') ~ 'FROM[[:space:]]+(public\.)?(nominations|projects)[[:space:]]'
     )::integer,
     0,
-    'no anon policy holds an inline sub-select over nominations or projects -- those lookups live in the three helpers, and a policy that re-derives one is a plan away from the recursion this design exists to avoid'
+    'no anon policy holds an inline sub-select over nominations or projects -- those lookups live in the three helpers, and a policy that re-derives one risks the recursion this design exists to avoid'
   );
 
 SELECT

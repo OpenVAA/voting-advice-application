@@ -3,7 +3,7 @@
 -- The lock is the value `locked` of the app setting `access.contestantEditing`, stored in the project's `app_settings` row and read by `private.project_contestant_editing`, whose answer `nominationsLocked` is the nominations lock 23-nominations-write.test.sql asserts. It binds the entity-scope write rules only:
 --   - the self-update policies `entity_update_own_candidates`, `_organizations`, `_factions` and `_alliances`;
 --   - the entity-scope nomination policies `entity_insert_nominations`, `entity_insert_parent_nominations`, `entity_update_nominations` and `entity_delete_nominations`;
---   - the entity-scope write of `storage_path_can`, which the `entity_*_assets` storage policies ask;
+--   - the entity-scope write of `storage_path_can`, which the storage write policies ask;
 --   - `upsert_answers` and `set_entity_nominations`, which refuse an entity's editor with SQLSTATE OV002 and `upsert_answers: answers are locked in this project` or `set_entity_nominations: editing is locked in this project`; OV002 is raised for the lock alone, so the lock is told apart from a row the caller may not write.
 -- The project-scope policies do not read it, so a project editor and a project admin write the same rows, store the same objects and call the same functions while answers are locked.
 --

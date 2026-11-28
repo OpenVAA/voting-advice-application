@@ -2,9 +2,9 @@
 --
 -- Verifies that storage.objects RLS policies enforce: - Anon can only SELECT from public-assets for anon-visible entities - Anon cannot SELECT from private-assets - Anon cannot INSERT/UPDATE/DELETE storage objects - Entity grantees can SELECT own files in both buckets - Entity grantees can INSERT into their OWN entity folder only, whatever the entity type - Project grantees can access all project files but not cross-project
 --
--- ⚠ 162-14 CONVERTED EVERY POLICY THIS FILE EXERCISES, and two of the assertions below kept their green while losing their REASON. Both reasons are re-expressed in place; neither assertion's claim or direction moved, and none was deleted.
---   - the organizations-folder refusal used to hold because the type path segment was hardcoded to `candidates`. It now holds because org_a is not that caller's entity -- so it is PAIRED with the positive the generalisation creates, an organization grantee writing into that same folder and succeeding, which no policy in this file has ever permitted.
---   - the project-level file used to be "always accessible". It is now gated on the project being open for voters, which project A is. 20-storage-authority.test.sql asserts the closed direction.
+-- ⚠ TWO ASSERTIONS HOLD FOR A REASON THAT IS EASY TO MISREAD.
+--   - the organizations-folder refusal holds because org_a is not that caller's entity, not because of the type path segment -- so it is PAIRED with the positive, an organization grantee writing into that same folder and succeeding.
+--   - the project-level file is readable because the project is open for voters, which project A is. 20-storage-authority.test.sql asserts the closed direction.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
 --             400-storage.sql (RLS policies, storage_path_can, storage_path_is_public)
@@ -82,7 +82,7 @@ VALUES
     NULL
   );
 
--- Added by 162-14: the two entity types this file never covered, and one project-structure path.
+-- The other two entity types, and one project-structure path.
 -- The six entity-owner policies hardcoded `candidates`, so factions, alliances and every structure family were reachable at project scope only; the conversion makes the type segment an argument and these rows are what makes that observable rather than merely claimed. faction_a and alliance_a are confirmed and carry confirmed nominations in project A, which is open for voters.
 INSERT INTO
   storage.objects (id, bucket_id, name, owner)
@@ -370,7 +370,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 7: the path families this file never covered (162-14)
+-- Section 7: the remaining path families
 --
 -- Anon coverage for the two entity types with no fixture user and for one project-structure family.
 -- The behavioural half of the entity-scope grid is asserted on candidates and organizations, which are the only types create_test_data() gives users; factions and alliances are covered here on the READ side and structurally in 20-storage-authority.test.sql, whose normalised-identity assertion proves their policies are the same expression as the two that are exercised.

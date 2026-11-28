@@ -82,7 +82,7 @@ column grant nor a policy can state them:
   registered on all four entity tables with the columns it protects: `first_name`, `last_name` and
   `short_name` on `candidates`, and `name` and `short_name` on `organizations`, `factions` and
   `alliances`. Once the row is confirmed, a change to any of them by the `authenticated` role needs
-  `entity.edit_immutable`; a change to `confirmed` itself needs `entity.confirm`. Held by
+  `entity.edit_confirmed_names`; a change to `confirmed` itself needs `entity.confirm`. Held by
   `19-entity-immutability.test.sql`.
 - **A question's entity types are a list of entity types.** `validate_entity_type_list()` binds
   `entity_type` on `questions` and `question_categories` to null or a JSON array whose members name
@@ -162,22 +162,16 @@ removes orphaned keys, and the type-change guard.
 
 **Where the apparatus went.** The suite that produced these numbers — the pgbench and k6 drivers,
 the data generators, the helper scripts, the runbook and the 36 parsed result files, 62 files in
-all — has been removed from the tree. Only this conclusion is kept. Nothing was destroyed: the tree
-is intact at commit `714d1e1885b091af95b86d2b497b3e2bff76f031`, the last commit before the removal.
+all — has been removed from the tree. Only this conclusion is kept. Nothing was destroyed: the
+suite can be recovered from the parent of the commit that deleted it.
 
 ```bash
-# Read one file back:
-git show 714d1e1885b091af95b86d2b497b3e2bff76f031:apps/supabase/benchmarks/README.md
+# Print the commit that deleted the suite:
+git log --diff-filter=D --format=%H -1 -- apps/supabase/benchmarks
 
-# Restore the whole tree into the working directory:
-git checkout 714d1e1885b091af95b86d2b497b3e2bff76f031 -- apps/supabase/benchmarks
-
-# Find the removal commit again without knowing either SHA:
-git log --diff-filter=D -- apps/supabase/benchmarks
+# Restore the tree from that commit's parent into the working directory:
+git checkout <that commit>^ -- apps/supabase/benchmarks
 ```
-
-The removal itself is commit `0c1b876f6721d18457dccdff44941284b7c51e5e`, whose message repeats these
-commands. Both SHAs are given in full because abbreviations collide as history grows.
 
 ## Commands
 

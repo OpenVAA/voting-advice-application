@@ -1,8 +1,8 @@
 -- 30-closed-project.test.sql: a project that is not open for voters, measured where the estate had gaps
 --
--- WHAT IS ALREADY PINNED, AND IS NOT REPEATED HERE. 16-anon-visibility.test.sql Section 5 pairs every project-scoped structure table (app_settings, elections, questions and the rest) across the open project A and the closed project B for the anon caller, so anon's direct table reads of a closed project are covered. This file adds nothing to that file or to 25-matrix-conformance.test.sql, whose failing assertion numbers are recorded positionally by 162-17's G8A/G8B guard replay.
+-- WHAT IS ALREADY PINNED, AND IS NOT REPEATED HERE. 16-anon-visibility.test.sql Section 5 pairs every project-scoped structure table (app_settings, elections, questions and the rest) across the open project A and the closed project B for the anon caller, so anon's direct table reads of a closed project are covered. This file adds nothing to that file or to 25-matrix-conformance.test.sql.
 --
--- THE GAPS THIS FILE CLOSES (162.1 D-21 as amended after research, D-16, D-17). First, the two RPCs the voter app calls, get_nominations and get_questions: both are SECURITY INVOKER, so a closed project is decided by the tables' RLS underneath them, and nothing asserted what they return to anon for a project that is not open. Second, the EXECUTE right on project_open_for_voters that the frontend adapter has depended on since 162.1-07 to tell a closed project from an open project with no settings row. Third, the grant-holder reads that make the closed-project preview possible (D-17) and let candidates work before a project opens (D-16).
+-- WHAT THIS FILE ADDS. First, the two RPCs the voter app calls, get_nominations and get_questions: both are SECURITY INVOKER, so a closed project is decided by the tables' RLS underneath them, so this file asserts what they return to anon for a project that is not open. Second, the EXECUTE right on project_open_for_voters that the frontend adapter depends on to tell a closed project from an open project with no settings row. Third, the grant-holder reads that make the closed-project preview possible and let candidates work before a project opens.
 --
 -- WHY EVERY ZERO BELOW IS NON-VACUOUS. The RPC zeroes are measured as a before/after pair on the SAME project: project A is read while open (the control, at least one nomination and a non-empty question list), then closed inside this transaction and read again, so the closure is the only variable. Project B is deliberately NOT opened here, unlike 07-rpc-security.test.sql Section 9. The no-grant caller's zeroes on project B sit beside a project admin's and an entity editor's non-zero counts of the same rows, so the rows exist and only the grant separates the callers.
 --
@@ -154,7 +154,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 5: grant holders read the closed project B (D-17, D-16)
+-- Section 5: grant holders read the closed project B
 -- =====================================================================
 -- The preview is decided by what RLS returns to the caller, never by a client-side role check: a project admin and an entity editor each read the closed project's settings, elections and questions, and a signed-in caller with no grants reads none of them.
 SELECT
@@ -226,7 +226,7 @@ SELECT
       WHERE
         project_id = test_id ('project_b')
     )::integer >= 1,
-    'candidate_b, an entity editor, reads the app_settings of the closed project B (D-16: candidates work before a project opens)'
+    'candidate_b, an entity editor, reads the app_settings of the closed project B (candidates work before a project opens)'
   );
 
 SELECT

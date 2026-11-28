@@ -246,7 +246,7 @@ Column grants in [`303-column-grants.sql`](https://github.com/OpenVAA/voting-adv
 Rules that depend on the row's state are enforced by the trigger function `enforce_entity_immutability()`, which is registered on all four entity tables:
 
 - **Who may confirm.** A change to `confirmed`, in either direction, needs `entity.confirm` on the entity.
-- **What confirmation freezes.** Once an entity is confirmed, its name columns and its `short_name` cannot be changed by its own editor: `first_name`, `last_name` and `short_name` on `candidates`, and `name` and `short_name` on `organizations`, `factions` and `alliances`. A holder of `entity.edit_immutable` on the entity, such as a project admin, may still correct any of them. While the entity is unconfirmed its editor may set them. A refused change raises SQLSTATE `OV001`.
+- **What confirmation freezes.** Once an entity is confirmed, its name columns and its `short_name` cannot be changed by its own editor: `first_name`, `last_name` and `short_name` on `candidates`, and `name` and `short_name` on `organizations`, `factions` and `alliances`. A holder of `entity.edit_confirmed_names` on the entity, such as a project admin, may still correct any of them. While the entity is unconfirmed its editor may set them. A refused change raises SQLSTATE `OV001`.
 
 Both rules bind the `authenticated` role; a service-role client is not bound by them.
 
@@ -265,7 +265,7 @@ The Contestant App records and reads the acceptance through the Supabase data wr
 
 ## Storage
 
-`config.toml` defines two buckets: `public-assets`, which is public, and `private-assets`, which is not. An entity's objects are stored under `{project_id}/{entity_type}/{entity_id}/`. The policies on `storage.objects` delegate the authority decision to `storage_path_can()`, which asks `user_can` about the project or entity the path names. `storage_path_can()` refuses an entity-scope write while the project's contestant editing (`access.contestantEditing`) is `locked`; a project-scope holder still writes, and no read is affected. Anonymous reads from `public-assets` follow `storage_path_is_public()`, the same visibility rule as the tables.
+`config.toml` defines two buckets: `public-assets`, which is public, and `private-assets`, which is not. An entity's objects are stored under `{project_id}/{entity_type}/{entity_id}/`. The policies on `storage.objects` delegate the authority decision to `storage_path_can()`, which asks `user_can` about the project or entity the path names. `storage_path_can()` refuses an entity-scope write while the project's contestant editing (`access.contestantEditing`) is `locked`; a project-scope holder still writes, and no read is affected. Anonymous reads from `public-assets` follow `storage_path_is_public()`, which asks the caller's own row-level security on the table the path names, so a file is visible exactly when its row is.
 
 ## The service-role key
 

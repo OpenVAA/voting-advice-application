@@ -6,7 +6,7 @@
 --
 -- Depends on:
 -- - 00-helpers.test.sql (set_test_user, create_test_data, test_id, test_user_id)
--- - 400-storage.sql (storage_path_can, storage_path_is_public, the 15 policies)
+-- - 400-storage.sql (storage_path_can, storage_path_is_public, the 6 policies)
 -- - 301-auth-functions.sql (user_can, project_open_for_voters, entity_has_confirmed_nomination)
 BEGIN;
 
@@ -275,11 +275,11 @@ SELECT
         AND with_check NOT LIKE '%''candidates''%'
         AND with_check NOT LIKE '%''organizations''%'
     )::integer,
-    2,
-    'structural: the public-bucket INSERT pair reaches the authority helper and carries no other authority predicate, identity comparison or entity-type literal'
+    1,
+    'structural: the one INSERT policy covering the public bucket reaches the authority helper and carries no other authority predicate, identity comparison or entity-type literal'
   );
 
--- The public-bucket INSERT policies are exactly the entity-scope and project-scope pair. Test 26 asserts the global form beside it: no storage policy name carries an entity type.
+-- The INSERT policy covering the public bucket is the one policy for that verb, named by actor and verb. Test 26 asserts the global form beside it: no storage policy name carries an entity type.
 SELECT
   is (
     (
@@ -297,8 +297,8 @@ SELECT
         AND cmd = 'INSERT'
         AND COALESCE(with_check, '') LIKE '%public-assets%'
     ),
-    'entity_insert_public_assets,project_insert_public_assets',
-    'naming: the public-bucket INSERT policies are exactly the entity-scope and project-scope pair, named by scope rather than by entity type'
+    'authenticated_insert_assets',
+    'naming: the INSERT policy covering the public bucket is authenticated_insert_assets, named by verb rather than by entity type or scope'
   );
 
 -- =====================================================================
@@ -605,43 +605,22 @@ SELECT
 SELECT
   reset_role ();
 
--- 23. One expression per verb per scope, across both buckets: with the bucket literal replaced by a placeholder, the expressions of each write verb collapse to exactly ONE string per scope. Six families (three verbs x two scopes), each of which must be one distinct normalised expression across its two buckets.
+-- 23. One predicate for every write: the USING and WITH CHECK expressions of the three write policies are one and the same string, so every write verb asks storage_path_can for the write verb at both scopes over both buckets, and no verb carries a condition of its own.
 SELECT
   is (
     (
       SELECT
-        count(DISTINCT normalised)
+        ARRAY[count(DISTINCT p.policyname), count(DISTINCT e.expr)]
       FROM
-        (
-          SELECT
-            cmd,
-            CASE
-              WHEN COALESCE(qual, '') || COALESCE(with_check, '') LIKE '%''project''%' THEN 'project'
-              ELSE 'entity'
-            END AS scope,
-            replace(
-              replace(
-                regexp_replace(
-                  COALESCE(qual, '-') || '~' || COALESCE(with_check, '-'),
-                  '\s+',
-                  ' ',
-                  'g'
-                ),
-                '''public-assets''',
-                'BUCKET'
-              ),
-              '''private-assets''',
-              'BUCKET'
-            ) AS normalised
-          FROM
-            pg_policies
-          WHERE
-            schemaname = 'storage'
-            AND cmd IN ('INSERT', 'UPDATE', 'DELETE')
-        ) s
-    )::integer,
-    6,
-    'structural: the twelve write policies are SIX distinct expressions modulo the bucket literal -- one per verb per scope, across both buckets'
+        pg_policies p
+        CROSS JOIN LATERAL unnest(ARRAY[p.qual, p.with_check]) AS e (expr)
+      WHERE
+        p.schemaname = 'storage'
+        AND p.cmd IN ('INSERT', 'UPDATE', 'DELETE')
+        AND e.expr IS NOT NULL
+    ),
+    ARRAY[3::bigint, 1::bigint],
+    'structural: the three write policies carry ONE predicate between them, in every USING and WITH CHECK expression'
   );
 
 -- 24. The absence set. Read from pg_policies, so a source comment can neither satisfy nor invalidate it.
@@ -669,7 +648,7 @@ SELECT
     'absence: no storage policy expression carries can_access_project, has_role, an identity comparison, a publication flag or an entity-type literal'
   );
 
--- 25. Every one of the fifteen reaches one of the two helpers.
+-- 25. Every one of the six reaches one of the two helpers.
 SELECT
   is (
     (
@@ -685,7 +664,7 @@ SELECT
     'routing: every storage policy reaches storage_path_can or storage_path_is_public, and none answers the authority question its own way'
   );
 
--- 26. The storage-local publication helper is ABSENT from pg_proc, not merely unused, and no storage policy name carries an entity type. Test 11 makes the narrower claim about the public-bucket INSERT pair.
+-- 26. The storage-local publication helper is ABSENT from pg_proc, not merely unused, and no storage policy name carries an entity type. Test 11 makes the narrower claim about the INSERT policy.
 SELECT
   is (
     ARRAY[

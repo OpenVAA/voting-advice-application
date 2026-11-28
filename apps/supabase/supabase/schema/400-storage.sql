@@ -6,7 +6,8 @@
 -- - 102-entities.sql (candidates, organizations, factions, alliances)
 -- - 103-questions.sql (question_categories, questions)
 -- - 104-nominations.sql (nominations)
--- - 301-auth-functions.sql (user_can, and the visibility helpers project_open_for_voters, entity_has_confirmed_nomination and nomination_entities_confirmed)
+-- - 301-auth-functions.sql (user_can, and the visibility helper project_open_for_voters)
+-- - 302-rls.sql (the SELECT policies of the ten tables a path can name, which storage_path_is_public reads through)
 --
 -- Provides:
 -- - the pg_net extension, for async HTTP from triggers
@@ -14,7 +15,7 @@
 -- - the storage.buckets row public-assets - the public bucket
 -- - the storage.buckets row private-assets - the private bucket
 -- - storage_path_can() - may this caller do this verb to this path; the storage layer's authority decision, delegated to user_can
--- - storage_path_is_public() - whether the object at a path is anon-readable; the tables' visibility rule, asked of a path
+-- - storage_path_is_public() - whether the calling role may read the row a path names; the tables' own row-level security, asked of a path
 -- - delete_storage_object() - delete one whitelisted object via the Storage API (pg_net)
 -- - referenced_storage_paths() - the object paths a row still references
 -- - cleanup_entity_storage_files() - AFTER DELETE trigger for entity tables
@@ -70,7 +71,7 @@ ON CONFLICT (id) DO NOTHING;
 --------------------------------------------------------------------------------
 -- storage_path_can: may this caller do this verb to this path, at this scope?
 --
--- The storage layer's whole authority decision, delegated to `user_can` (301-auth-functions.sql) with the path's scope and id, and at entity scope with the entity type the type segment names. Fourteen of the fifteen policies on storage.objects call it and carry no predicate of their own; the anon read routes through storage_path_is_public instead, for the reason stated there.
+-- The storage layer's whole authority decision, delegated to `user_can` (301-auth-functions.sql) with the path's scope and id, and at entity scope with the entity type the type segment names. Five of the six policies on storage.objects call it and carry no predicate of their own; the anon read routes through storage_path_is_public instead, for the reason stated there.
 --
 -- The mapping describes the storage layout. For each of the eleven values the type segment can take (the ten tables carrying `cleanup_entity_storage_files`, whose path prefix is TG_TABLE_NAME, plus `project` for the project-level path), it names the permission that table's own policies ask, and `user_can` answers it. The role x permission matrix lives only in `grant_role_permissions`. An unrecognised segment denies.
 --
@@ -187,19 +188,19 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- storage_path_is_public: is the object at this path readable by the anonymous caller?
+-- storage_path_is_public: may the calling role read the row the path names?
 --
--- The public visibility rule, asked of a path instead of a row. Each branch restates, over path segments, the anon SELECT policy of the table its segment names, composed from 301-auth-functions.sql's helpers `project_open_for_voters`, `entity_has_confirmed_nomination` and `nomination_entities_confirmed`. It adds no rule of its own, so storage gives the same answer as the tables.
+-- The visibility question asked of a path instead of a row, and answered by the row-level security of the table the type segment names. SECURITY INVOKER, so the lookup runs as the caller: for the anonymous caller it passes exactly the rows the table's anon SELECT policy admits, and the function holds no copy of that rule. A change to a table's anon policy therefore changes storage visibility with it.
 --
--- Not `user_can`: it denies a caller whose JWT carries no `grants` key, which is every anon caller, so an anon policy built on it would deny everything and the public application would render blank. The anon policy therefore asks about visibility, and the other fourteen ask about authority.
+-- The project-level path names no row, so it asks `project_open_for_voters` (301-auth-functions.sql), the same project term every anon SELECT policy carries. 20-storage-authority.test.sql asserts both directions.
 --
--- The project-level path is anon-readable only while the project is open for voters, like every other path. 20-storage-authority.test.sql asserts both directions.
+-- Not `user_can`: anon holds no grant, which `user_can` denies by construction, so an anon policy built on it would deny everything and the public application would render blank. The anon policy therefore asks about visibility, and the other policies ask about authority.
 --
 -- An anon list request pays for this function on every object it reads. That cost is accepted because `public-assets` is a public bucket: Storage serves its downloads (`/object/public/...`, which the voter app uses, and `/object/authenticated/...`) without evaluating `storage.objects` RLS, only an anon `list` consults it, and no application code lists `public-assets` as anon. If the bucket is made private, every download becomes a policy evaluation, and the cost must be measured before that change ships.
 --
--- The same hardening, and the same deny on a missing row or a raised error, as storage_path_can.
+-- The type segment is caller-controlled text, so it is checked against the ten table names before `%I` builds a query from it, and an unrecognised segment denies. A missing row, an id that is not a uuid and any other raised error deny too.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.storage_path_is_public (p_project text, p_type text, p_id text) RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER
+CREATE OR REPLACE FUNCTION public.storage_path_is_public (p_project text, p_type text, p_id text) RETURNS boolean LANGUAGE plpgsql STABLE SECURITY INVOKER
 SET
   search_path = '' AS $$
 DECLARE
@@ -213,57 +214,32 @@ BEGIN
 
   v_project_id := p_project::uuid;
 
-  -- The conjunct every branch carries, and the only one the project-level path has.
-  IF NOT public.project_open_for_voters(v_project_id) THEN
-    RETURN false;
+  IF p_type = 'project' THEN
+    RETURN public.project_open_for_voters(v_project_id);
   END IF;
 
-  IF p_type = 'project' THEN
-    RETURN true;
+  IF p_type NOT IN (
+    'elections',
+    'constituencies',
+    'constituency_groups',
+    'questions',
+    'question_categories',
+    'nominations',
+    'candidates',
+    'organizations',
+    'factions',
+    'alliances'
+  ) THEN
+    RETURN false;
   END IF;
 
   v_entity_id := p_id::uuid;
 
-  -- The five project-structure tables: their anon policies carry the project conjunct and nothing else, so the row need only exist in this project.
-  IF p_type IN ('elections', 'constituencies', 'constituency_groups', 'questions', 'question_categories') THEN
-    EXECUTE format('SELECT true FROM public.%I WHERE id = $1 AND project_id = $2', p_type)
-    INTO v_row_visible
-    USING v_entity_id, v_project_id;
-    RETURN COALESCE(v_row_visible, false);
-  END IF;
+  EXECUTE format('SELECT EXISTS (SELECT 1 FROM public.%I WHERE id = $1 AND project_id = $2)', p_type)
+  INTO v_row_visible
+  USING v_entity_id, v_project_id;
 
-  -- nominations: anon_select_nominations' own three conjuncts.
-  IF p_type = 'nominations' THEN
-    SELECT n.confirmed AND private.nomination_entities_confirmed(n.id)
-    INTO v_row_visible
-    FROM public.nominations n
-    WHERE n.id = v_entity_id AND n.project_id = v_project_id;
-    RETURN COALESCE(v_row_visible, false);
-  END IF;
-
-  -- The four entity tables: the entity's own confirmation flag and a confirming nomination in this project.
-  IF p_type IN ('candidates', 'organizations', 'factions', 'alliances') THEN
-    EXECUTE format('SELECT e.confirmed FROM public.%I e WHERE e.id = $1 AND e.project_id = $2', p_type)
-    INTO v_row_visible
-    USING v_entity_id, v_project_id;
-
-    IF NOT COALESCE(v_row_visible, false) THEN
-      RETURN false;
-    END IF;
-
-    RETURN private.entity_has_confirmed_nomination(
-      (CASE p_type
-        WHEN 'candidates' THEN 'candidate'
-        WHEN 'organizations' THEN 'organization'
-        WHEN 'factions' THEN 'faction'
-        ELSE 'alliance'
-      END)::public.entity_type,
-      v_entity_id,
-      v_project_id
-    );
-  END IF;
-
-  RETURN false;
+  RETURN COALESCE(v_row_visible, false);
 EXCEPTION
   WHEN OTHERS THEN
     RETURN false;
@@ -282,9 +258,9 @@ $$;
 --
 -- Every policy below is a bucket comparison plus helper calls and nothing else: none re-derives a rule `user_can` answers, names an entity type, compares an identity column or reads a publication flag.
 --
--- Two questions, two functions. `storage_path_can` answers authority (may this caller do this verb to this path) and delegates to `user_can`; `storage_path_is_public` answers visibility (is this path's object public at all). The fourteen authenticated policies ask the first and the anon policy asks the second, because `user_can` denies every anon caller. The authenticated read of the public bucket also asks the second, since either answer admits that read.
+-- Two questions, two functions. `storage_path_can` answers authority (may this caller do this verb to this path) and delegates to `user_can`; `storage_path_is_public` answers visibility (may the calling role read the row this path names, by that table's own row-level security). The five authenticated policies ask the first and the anon policy asks the second, because `user_can` denies every anon caller. The authenticated read of the public bucket also asks the second, since either answer admits that read.
 --
--- Each write verb has an entity-scope and a project-scope policy per bucket, and PostgreSQL ORs them. The scope literal is the only difference within a pair: with the bucket literal replaced, a verb's expressions reduce to one string per scope, which 20-storage-authority.test.sql asserts from `pg_policies`.
+-- Each write verb has one policy covering both buckets, which asks `storage_path_can` at entity scope and at project scope and admits the write when either answers yes. The three write policies carry the same predicate, which 20-storage-authority.test.sql asserts from `pg_policies`.
 --
 -- The `(SELECT fn (...))` wrapping is this codebase's convention for helper calls in policies, as on the content-table policies.
 -- =====================================================================
@@ -308,7 +284,7 @@ SELECT
     )
   );
 
--- Authenticated: anything the anon reader can see, plus anything this caller has the authority to read at either scope. Three disjuncts, three helper calls, no predicate of its own.
+-- Authenticated: any path whose row this caller can read in its table, plus anything this caller has the authority to read at either scope. Three disjuncts, three helper calls, no predicate of its own.
 CREATE POLICY "authenticated_select_public_assets" ON storage.objects FOR
 SELECT
   TO authenticated USING (
@@ -378,248 +354,116 @@ SELECT
   );
 
 -- =====================================================================
--- The twelve write policies: three verbs x two scopes x two buckets
+-- The three write policies: one per verb, across both buckets and both scopes
 --
--- Each name leads with the scope its helper call asks at (`entity_` or `project_`), not with an entity type or an actor: the entity type is an argument of the helper, and the project-scope write permissions are held by project editors as well as admins.
+-- Each asks `storage_path_can` for the write verb at entity scope and at project scope. The scope is an argument of the helper, so the policy names neither an entity type nor an actor: the project-scope write permissions are held by project editors as well as admins.
 -- =====================================================================
-CREATE POLICY "entity_insert_public_assets" ON storage.objects FOR INSERT TO authenticated
+CREATE POLICY "authenticated_insert_assets" ON storage.objects FOR INSERT TO authenticated
 WITH
   CHECK (
-    bucket_id = 'public-assets'
+    bucket_id IN ('public-assets', 'private-assets')
     AND (
-      SELECT
-        storage_path_can (
-          'entity',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
+      (
+        SELECT
+          storage_path_can (
+            'entity',
+            (storage.foldername (storage.objects.name)) [1],
+            (storage.foldername (storage.objects.name)) [2],
+            (storage.foldername (storage.objects.name)) [3],
+            'write'
+          )
+      )
+      OR (
+        SELECT
+          storage_path_can (
+            'project',
+            (storage.foldername (storage.objects.name)) [1],
+            (storage.foldername (storage.objects.name)) [2],
+            (storage.foldername (storage.objects.name)) [3],
+            'write'
+          )
+      )
     )
   );
 
-CREATE POLICY "project_insert_public_assets" ON storage.objects FOR INSERT TO authenticated
-WITH
-  CHECK (
-    bucket_id = 'public-assets'
-    AND (
-      SELECT
-        storage_path_can (
-          'project',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
-    )
-  );
-
-CREATE POLICY "entity_insert_private_assets" ON storage.objects FOR INSERT TO authenticated
-WITH
-  CHECK (
-    bucket_id = 'private-assets'
-    AND (
-      SELECT
-        storage_path_can (
-          'entity',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
-    )
-  );
-
-CREATE POLICY "project_insert_private_assets" ON storage.objects FOR INSERT TO authenticated
-WITH
-  CHECK (
-    bucket_id = 'private-assets'
-    AND (
-      SELECT
-        storage_path_can (
-          'project',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
-    )
-  );
-
-CREATE POLICY "entity_update_public_assets" ON storage.objects
+CREATE POLICY "authenticated_update_assets" ON storage.objects
 FOR UPDATE
   TO authenticated USING (
-    bucket_id = 'public-assets'
+    bucket_id IN ('public-assets', 'private-assets')
     AND (
-      SELECT
-        storage_path_can (
-          'entity',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
+      (
+        SELECT
+          storage_path_can (
+            'entity',
+            (storage.foldername (storage.objects.name)) [1],
+            (storage.foldername (storage.objects.name)) [2],
+            (storage.foldername (storage.objects.name)) [3],
+            'write'
+          )
+      )
+      OR (
+        SELECT
+          storage_path_can (
+            'project',
+            (storage.foldername (storage.objects.name)) [1],
+            (storage.foldername (storage.objects.name)) [2],
+            (storage.foldername (storage.objects.name)) [3],
+            'write'
+          )
+      )
     )
   )
 WITH
   CHECK (
-    bucket_id = 'public-assets'
+    bucket_id IN ('public-assets', 'private-assets')
     AND (
-      SELECT
-        storage_path_can (
-          'entity',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
+      (
+        SELECT
+          storage_path_can (
+            'entity',
+            (storage.foldername (storage.objects.name)) [1],
+            (storage.foldername (storage.objects.name)) [2],
+            (storage.foldername (storage.objects.name)) [3],
+            'write'
+          )
+      )
+      OR (
+        SELECT
+          storage_path_can (
+            'project',
+            (storage.foldername (storage.objects.name)) [1],
+            (storage.foldername (storage.objects.name)) [2],
+            (storage.foldername (storage.objects.name)) [3],
+            'write'
+          )
+      )
     )
   );
 
-CREATE POLICY "project_update_public_assets" ON storage.objects
-FOR UPDATE
-  TO authenticated USING (
-    bucket_id = 'public-assets'
+CREATE POLICY "authenticated_delete_assets" ON storage.objects FOR DELETE TO authenticated USING (
+  bucket_id IN ('public-assets', 'private-assets')
     AND (
-      SELECT
-        storage_path_can (
-          'project',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
-    )
-  )
-WITH
-  CHECK (
-    bucket_id = 'public-assets'
-    AND (
-      SELECT
-        storage_path_can (
-          'project',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
-    )
-  );
-
-CREATE POLICY "entity_update_private_assets" ON storage.objects
-FOR UPDATE
-  TO authenticated USING (
-    bucket_id = 'private-assets'
-    AND (
-      SELECT
-        storage_path_can (
-          'entity',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
-    )
-  )
-WITH
-  CHECK (
-    bucket_id = 'private-assets'
-    AND (
-      SELECT
-        storage_path_can (
-          'entity',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
-    )
-  );
-
-CREATE POLICY "project_update_private_assets" ON storage.objects
-FOR UPDATE
-  TO authenticated USING (
-    bucket_id = 'private-assets'
-    AND (
-      SELECT
-        storage_path_can (
-          'project',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
-    )
-  )
-WITH
-  CHECK (
-    bucket_id = 'private-assets'
-    AND (
-      SELECT
-        storage_path_can (
-          'project',
-          (storage.foldername (storage.objects.name)) [1],
-          (storage.foldername (storage.objects.name)) [2],
-          (storage.foldername (storage.objects.name)) [3],
-          'write'
-        )
-    )
-  );
-
-CREATE POLICY "entity_delete_public_assets" ON storage.objects FOR DELETE TO authenticated USING (
-  bucket_id = 'public-assets'
-  AND (
-    SELECT
-      storage_path_can (
-        'entity',
-        (storage.foldername (storage.objects.name)) [1],
-        (storage.foldername (storage.objects.name)) [2],
-        (storage.foldername (storage.objects.name)) [3],
-        'write'
+      (
+        SELECT
+          storage_path_can (
+            'entity',
+            (storage.foldername (storage.objects.name)) [1],
+            (storage.foldername (storage.objects.name)) [2],
+            (storage.foldername (storage.objects.name)) [3],
+            'write'
+          )
       )
-  )
-);
-
-CREATE POLICY "project_delete_public_assets" ON storage.objects FOR DELETE TO authenticated USING (
-  bucket_id = 'public-assets'
-  AND (
-    SELECT
-      storage_path_can (
-        'project',
-        (storage.foldername (storage.objects.name)) [1],
-        (storage.foldername (storage.objects.name)) [2],
-        (storage.foldername (storage.objects.name)) [3],
-        'write'
+      OR (
+        SELECT
+          storage_path_can (
+            'project',
+            (storage.foldername (storage.objects.name)) [1],
+            (storage.foldername (storage.objects.name)) [2],
+            (storage.foldername (storage.objects.name)) [3],
+            'write'
+          )
       )
-  )
-);
-
-CREATE POLICY "entity_delete_private_assets" ON storage.objects FOR DELETE TO authenticated USING (
-  bucket_id = 'private-assets'
-  AND (
-    SELECT
-      storage_path_can (
-        'entity',
-        (storage.foldername (storage.objects.name)) [1],
-        (storage.foldername (storage.objects.name)) [2],
-        (storage.foldername (storage.objects.name)) [3],
-        'write'
-      )
-  )
-);
-
-CREATE POLICY "project_delete_private_assets" ON storage.objects FOR DELETE TO authenticated USING (
-  bucket_id = 'private-assets'
-  AND (
-    SELECT
-      storage_path_can (
-        'project',
-        (storage.foldername (storage.objects.name)) [1],
-        (storage.foldername (storage.objects.name)) [2],
-        (storage.foldername (storage.objects.name)) [3],
-        'write'
-      )
-  )
+    )
 );
 
 -- =====================================================================

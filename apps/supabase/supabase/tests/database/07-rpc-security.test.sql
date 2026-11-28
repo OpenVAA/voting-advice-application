@@ -374,8 +374,8 @@ SELECT
         AND p.proname NOT LIKE 'test\_%'
         AND has_function_privilege('anon', p.oid, 'EXECUTE')
     ),
-    'get_public_app_settings,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
-    'census: the SECURITY DEFINER functions in public that anon can execute are exactly the six allow-listed ones'
+    'get_public_app_settings,project_open_for_voters,storage_path_can,user_can,user_has_account_grant',
+    'census: the SECURITY DEFINER functions in public that anon can execute are exactly the five allow-listed ones'
   );
 
 SELECT
@@ -398,8 +398,8 @@ SELECT
         AND p.proname NOT LIKE 'test\_%'
         AND has_function_privilege('authenticated', p.oid, 'EXECUTE')
     ),
-    'claim_invitations,get_entity_basic_data,get_entity_nominations,get_nomination_parent_options,get_public_app_settings,get_user_project_grants,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
-    'census: the SECURITY DEFINER functions in public that authenticated can execute are the same six plus claim_invitations, get_entity_basic_data, get_entity_nominations, get_nomination_parent_options and get_user_project_grants'
+    'claim_invitations,get_entity_basic_data,get_entity_nominations,get_nomination_parent_options,get_public_app_settings,get_user_project_grants,project_open_for_voters,storage_path_can,user_can,user_has_account_grant',
+    'census: the SECURITY DEFINER functions in public that authenticated can execute are the same five plus claim_invitations, get_entity_basic_data, get_entity_nominations, get_nomination_parent_options and get_user_project_grants'
   );
 
 -- The definer functions that are RPC endpoints for the service role alone: each reads or writes what no API role may, and checks nothing about its caller, so each is safe only while both API roles stay refused.

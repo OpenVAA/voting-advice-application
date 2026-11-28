@@ -9,9 +9,9 @@
 /**
  * The placeholder pattern.
  *
- * THE CAPTURED KEY IS LOOKED UP FLAT, so a key containing a dot is one key whose text contains a dot -- not a path into a nested object. `public.resolve_email_variables` in `apps/supabase/supabase/schema/502-email-helpers.sql` is the producer, and it emits its keys already dotted (`candidate.first_name`, `organization.name`, `nomination.constituency.name`), built with `jsonb_build_object` into a single flat JSONB object with no nesting anywhere in it. Resolving the `(?:\.\w+)*` group as a traversal would therefore find nothing and break every placeholder in the product, which is why decision D-D4 rejected that option and kept the lookup flat.
+ * THE CAPTURED KEY IS LOOKED UP FLAT, so a key containing a dot is one key whose text contains a dot -- not a path into a nested object. `public.resolve_email_variables` in `apps/supabase/supabase/schema/502-email-helpers.sql` is the producer, and it emits its keys already dotted (`candidate.first_name`, `organization.name`, `nomination.constituency.name`), built with `jsonb_build_object` into a single flat JSONB object with no nesting anywhere in it. Resolving the `(?:\.\w+)*` group as a traversal would therefore find nothing and break every placeholder in the product, which is why the lookup is flat.
  *
- * The only change from the expression this replaced is the `\s*` on each side of the capture, which is what lets a template write `{{ name }}` as well as `{{name}}` (REVIEW-EDGE-03). The capture itself is byte-identical to the previous one, so no existing template changes meaning. The `\s*` sits OUTSIDE the capture on purpose: `{{ candidate . first_name }}` is still not a placeholder, because the key must be contiguous.
+ * The `\s*` on each side of the capture lets a template write `{{ name }}` as well as `{{name}}`. It sits OUTSIDE the capture on purpose: `{{ candidate . first_name }}` is still not a placeholder, because the key must be contiguous.
  *
  * `\w+` requires at least one character, so `{{}}` and `{{ }}` are not placeholders and pass through untouched.
  */
@@ -50,7 +50,7 @@ export function escapeHtml(value: string): string {
 /**
  * Render `text` for the HTML part of a message: identical to {@link renderTemplate}, except every substituted VALUE is HTML-escaped first.
  *
- * The template is the operator's own markup and is left as written; the values are not the operator's. Entity names reach `resolve_email_variables` from rows an entity editor writes, so an unescaped name such as `<a href=...>` would be injected into every message sent under the deployment's SMTP identity (162-REVIEW WR-02). The plain-text part keeps {@link renderTemplate}, where escaping would only corrupt the text.
+ * The template is the operator's own markup and is left as written; the values are not the operator's. Entity names reach `resolve_email_variables` from rows an entity editor writes, so an unescaped name such as `<a href=...>` would be injected into every message sent under the deployment's SMTP identity. The plain-text part keeps {@link renderTemplate}, where escaping would only corrupt the text.
  *
  * @param text - The template text for the HTML part
  * @param vars - The flat variable map, normally one recipient's `variables` object

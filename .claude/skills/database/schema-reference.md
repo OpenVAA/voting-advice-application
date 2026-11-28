@@ -81,7 +81,7 @@ Column listing for the OpenVAA Supabase schema. The applied `public` schema hold
   `enforce_entity_immutability` is registered per table with the columns it protects: `name` and
   `short_name` here and on `factions` and `alliances`, and `first_name`, `last_name` and `short_name` on
   `candidates`. A change to one of them on a row that was already confirmed, by the `authenticated` role,
-  needs `entity.edit_immutable` on the entity; a change to `confirmed` needs `entity.confirm`.
+  needs `entity.edit_confirmed_names` on the entity; a change to `confirmed` needs `entity.confirm`.
 - **`color` is validated on all four entity tables** by the trigger `validate_entity_color`: SQL null, or a
   JSON object whose only members are `normal` and `dark`, each absent, a JSON null or `#` followed by
   exactly three or six hexadecimal digits. Every writer is bound, the service role and `bulk_import`
@@ -477,7 +477,7 @@ Storage cleanup tables: candidates, organizations, factions, alliances, election
 | private.entity_has_confirmed_nomination(entity_type, uuid, uuid)             | 301  | SECURITY DEFINER | The nomination-level anon visibility sub-rule                                                                      |
 | private.caller_entity_ids(uuid, entity_type)                                 | 301  | SECURITY DEFINER | The ids of the caller's own `(entity, <type>, <id>, editor)` grants whose entity lies in the given project          |
 | storage_path_can(grant_scope_type, text, text, text, storage_verb)           | 400  | SECURITY DEFINER | The storage authority question, asked of a PATH. An entity-scope write is refused while the project's `access.contestantEditing` is `locked` (read through `private.contestant_editing_in`, so no definer call is nested); a read and a project-scope write are not |
-| storage_path_is_public(text, text, text)                                     | 400  | SECURITY DEFINER | The storage visibility question, asked of a PATH                                                                   |
+| storage_path_is_public(text, text, text)                                     | 400  | SECURITY INVOKER | The storage visibility question, asked of a PATH                                                                   |
 | delete_storage_object(text, text)                                            | 400  | SECURITY DEFINER | Deletes storage file via pg_net HTTP                                                                               |
 | cleanup_entity_storage_files()                                               | 400  | SECURITY DEFINER | Trigger: deletes storage files on entity DELETE                                                                    |
 | cleanup_old_image_file()                                                     | 400  | SECURITY DEFINER | Trigger: deletes old image file on UPDATE                                                                          |

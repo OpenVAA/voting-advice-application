@@ -85,7 +85,7 @@ Creating an invitation sends nothing, and creates no entity and no user. What el
 
 `SupabaseAdminClient.createInvitations` of `@openvaa/dev-seed` passes `true` unless told otherwise; `createInvitations(items, { confirmEntity: false })` confirms no one.
 
-A confirmed entity with a confirmed nomination is visible to voters once the project is open, whether or not anyone has signed in for it, so an invitation changes what voters see only through what its call states. Confirmation also freezes the entity's name columns and its `short_name` for its own editor, so the person who signs in for an invited entity finds those fields read-only from the first sign-in, and only a holder of `entity.edit_immutable` can change them; see [Row-level security and column grants](/developers-guide/backend/authentication#row-level-security-and-column-grants).
+A confirmed entity with a confirmed nomination is visible to voters once the project is open, whether or not anyone has signed in for it, so an invitation changes what voters see only through what its call states. Confirmation also freezes the entity's name columns and its `short_name` for its own editor, so the person who signs in for an invited entity finds those fields read-only from the first sign-in, and only a holder of `entity.edit_confirmed_names` can change them; see [Row-level security and column grants](/developers-guide/backend/authentication#row-level-security-and-column-grants).
 
 #### The nominations
 

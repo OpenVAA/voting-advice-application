@@ -672,12 +672,12 @@ $$;
 --------------------------------------------------------------------------------
 -- enforce_entity_immutability: the confirmation gate and the conditional identity freeze
 --
--- A confirmed entity's name and short name are frozen for the entity user and stay correctable by a holder of `entity.edit_immutable`. That is a rule about the transition between two row states, which neither a column grant (one global pair per role, blind to the row) nor a policy (`USING` sees only OLD, `WITH CHECK` only NEW) can express. A BEFORE UPDATE row trigger sees both rows in one scope. It follows the shape of `enforce_external_id_immutability` in 500-external-id.sql: an OLD-row condition, an `IS DISTINCT FROM` comparison, a named exception carrying both values, and one body registered on several tables.
+-- A confirmed entity's name and short name are frozen for the entity user and stay correctable by a holder of `entity.edit_confirmed_names`. That is a rule about the transition between two row states, which neither a column grant (one global pair per role, blind to the row) nor a policy (`USING` sees only OLD, `WITH CHECK` only NEW) can express. A BEFORE UPDATE row trigger sees both rows in one scope. It follows the shape of `enforce_external_id_immutability` in 500-external-id.sql: an OLD-row condition, an `IS DISTINCT FROM` comparison, a named exception carrying both values, and one body registered on several tables.
 --
 -- Two rules, in a fixed order:
 --
 --   1. The confirmation gate. A change to the confirmation flag, in either direction, by an `authenticated` caller who does not hold `entity.confirm` on the row is refused by name. Turning the flag off is refused too, because an entity user who could unconfirm could then rename.
---   2. The conditional freeze, read from the OLD row's flag. When the row was already confirmed before the statement, a change to any column named in TG_ARGV by an `authenticated` caller who does not hold `entity.edit_immutable` on the row is refused by name. Reading the OLD flag means a caller cannot unconfirm and rename in one statement, and because rule 1 runs first, such a statement is refused with the confirmation message.
+--   2. The conditional freeze, read from the OLD row's flag. When the row was already confirmed before the statement, a change to any column named in TG_ARGV by an `authenticated` caller who does not hold `entity.edit_confirmed_names` on the row is refused by name. Reading the OLD flag means a caller cannot unconfirm and rename in one statement, and because rule 1 runs first, such a statement is refused with the confirmation message.
 --
 -- The freeze is not absolute: on an unconfirmed row the entity user may still set their own name and short name, which the sign-up flow needs. 19-entity-immutability.test.sql asserts that outcome per protected column per table and pins the OLD-row guard on the function source.
 --
@@ -718,8 +718,8 @@ BEGIN
     FOR i IN 0 .. TG_NARGS - 1 LOOP
       v_col := TG_ARGV[i];
       IF (v_old_row ->> v_col) IS DISTINCT FROM (v_new_row ->> v_col)
-         AND NOT public.user_can('entity', NEW.id, 'entity.edit_immutable', v_entity_type) THEN
-        RAISE EXCEPTION 'Entity name is immutable once confirmed: column %.%.% on row % cannot be changed (current: %, attempted: %); changing it requires the entity.edit_immutable permission',
+         AND NOT public.user_can('entity', NEW.id, 'entity.edit_confirmed_names', v_entity_type) THEN
+        RAISE EXCEPTION 'Entity name is immutable once confirmed: column %.%.% on row % cannot be changed (current: %, attempted: %); changing it requires the entity.edit_confirmed_names permission',
           TG_TABLE_SCHEMA, TG_TABLE_NAME, v_col, NEW.id,
           COALESCE(v_old_row ->> v_col, '(none)'), COALESCE(v_new_row ->> v_col, '(none)')
           USING ERRCODE = 'OV001';

@@ -10,7 +10,7 @@
  *   - 0001 Unindexed foreign keys         (WARNING)
  *   - 9001 Read/write permission separation and mechanism reach (ERROR)
  *
- * Check 9001 is local to this project rather than Splinter-derived, which is why its number sits outside Splinter's range. It closes ROADMAP criterion 2 of phase 162 -- "a test that fails if the two predicates ever collapse back into one" -- as a PERMANENT gate rather than a plan-time scan, and it is built on WHAT A PREDICATE REACHES rather than on what it says. A comparison of the two predicate STRINGS has a hole one level up: it stays green when both predicates collapse onto a third shared expression, and green when a write policy is repointed at the read permission on a table whose read predicate carries a public disjunct so the strings still differ. Both of those are planted as controls and recorded in `.planning/phases/162-permissions-auth-model-refactor/162-NEGATIVE-CONTROL-LEDGER.md`.
+ * Check 9001 is local to this project rather than Splinter-derived, which is why its number sits outside Splinter's range. It fails when a table's read and write predicates collapse into one, and it is built on WHAT A PREDICATE REACHES rather than on what it says. A comparison of the two predicate STRINGS has a hole one level up: it stays green when both predicates collapse onto a third shared expression, and green when a write policy is repointed at the read permission on a table whose read predicate carries a public disjunct so the strings still differ.
  *
  * Usage:
  *   node scripts/lint-schema.mjs [--strict]
@@ -32,10 +32,10 @@ const STRICT = process.argv.includes('--strict');
 const RLS_EXCLUDE = ['schema_migrations', 'supabase_migrations'];
 
 // ---------------------------------------------------------------------------
-// Check 9001 — the ratified exemption lists
+// Check 9001 — the exemption lists
 //
-// THESE THREE LISTS ARE A SECURITY SURFACE. The numbering follows 162-17's ratified allow-lists, whose LIST 2 (the permission members no policy enforces) is asserted in pgTAP rather than here.
-// They are a security surface, not a convenience. Every entry was approved individually, with the reason written beside it, at 162-17 Task 2 (`162-CHECKPOINT-DECISIONS.md` § 1 S-5 / S-3 and § 8 C-11). An entry added later without a stated reason is the form in which a gate is quietly widened until it guards nothing — so do not add one without writing why, and do not treat a red from this check as an invitation to extend a list.
+// THESE THREE LISTS ARE A SECURITY SURFACE. LIST 2 (the permission members no policy enforces) is asserted in pgTAP, in 25-matrix-conformance.test.sql, rather than here.
+// Every entry carries its reason beside it. An entry added without a stated reason is the form in which a gate is quietly widened until it guards nothing — so do not add one without writing why, and do not treat a red from this check as an invitation to extend a list.
 // ---------------------------------------------------------------------------
 
 // The schemas whose policies carry this project's authority model.
@@ -44,26 +44,26 @@ const AUTHORITY_SCHEMAS = ['public', 'storage'];
 // LIST 1 — tables whose READ permission set may legitimately intersect their WRITE permission set.
 // Each entry is [schema, table, permission]; only that one member is tolerated on that one table.
 const SAME_PERMISSION_ALLOW = [
-  // § 3.2 enumerates no separate admin-jobs READ member. The operator ticked S-4 selecting `project.edit_questions`, and 162-11 put all three `admin_jobs` policies on it: the job queue's read and its write are ONE capability, held by whoever administers the project's questions. The intersection is the matrix's construction, not a collapse.
+  // The permission enum has no separate admin-jobs READ member, and all three `admin_jobs` policies ask `project.edit_questions`: the job queue's read and its write are ONE capability, held by whoever administers the project's questions. The intersection is the matrix's construction, not a collapse.
   ['public', 'admin_jobs', 'project.edit_questions'],
   // Whoever may promise a grant may read the promises; the matrix names no separate read member for grant administration. The invitation policies ask `project.manage_editors` for a project editor's promise on the read, the insert and the delete alike, so the intersection is that one capability and not a collapse. The entity arm does keep a read member (`project.read_entities`) apart from its write member (`project.edit_entities`) and needs no entry.
   ['public', 'invitations', 'project.manage_editors'],
   // Whoever may promise a grant may read the promises; the matrix names no separate read member for grant administration. The same construction one level up: `account.manage_admins` is asked for a project admin's promise on all three commands.
   ['public', 'invitations', 'account.manage_admins']
-  // `public.accounts` is deliberately ABSENT. C-11 cited it as known-legitimate because § 3.2 enumerated no separate account-read member; the operator's S-3 NOTE closed that gap, and 162-09 now gates the `accounts` SELECT on grant EXISTENCE via `user_has_account_grant(uuid)` while the UPDATE keeps `account.edit_settings`. Its derived read set is therefore empty and it needs no exemption. If it ever reappears here, that is a finding, not an entry.
+  // `public.accounts` is deliberately ABSENT. Its SELECT is gated on grant EXISTENCE via `user_has_account_grant(uuid)` while the UPDATE asks `account.edit_settings`, so its derived read set is empty and it needs no exemption. If it ever appears here, that is a finding, not an entry.
 ];
 
 // LIST 3 — the functions a policy may reach INSTEAD of naming a permission literal. Each is the single definition of one question the authority model does not ask through `user_can`.
 const MECHANISM_HELPERS = [
-  // 162-08's project-level anon visibility helper — the single definition of that sub-rule, called directly from each entity SELECT assembly under D-36.
+  // The project-level anon visibility helper — the single definition of that sub-rule, called directly from each entity SELECT policy.
   'project_open_for_voters',
-  // 162-08's nomination-level anon visibility helper, same arrangement.
+  // The nomination-level anon visibility helper, same arrangement.
   'entity_has_confirmed_nomination',
-  // 162-14's storage visibility helper, D-27's named exception: anon carries no `grants` claim, which `user_can` denies by construction, so the public-read storage policy cannot route through the authority mechanism and must route through this one.
+  // The storage visibility helper: anon holds no grant, which `user_can` denies by construction, so the public-read storage policy cannot route through the authority mechanism and must route through this one.
   'storage_path_is_public',
-  // 162-14's storage AUTHORITY helper — the eleven-segment path-to-permission mapping ratified at that plan's Task 2 Q2. It is the single definition of "which permission does this storage path ask for", so a policy reaching it reaches the authority mechanism by construction even though the permission literal lives in the helper's body rather than in the policy's own expression.
+  // The storage AUTHORITY helper — the eleven-segment path-to-permission mapping. It is the single definition of "which permission does this storage path ask for", so a policy reaching it reaches the authority mechanism by construction even though the permission literal lives in the helper's body rather than in the policy's own expression.
   'storage_path_can',
-  // D-30 / 162-09's grant-EXISTENCE predicate for the `accounts` read. It asks "is there ANY grant on this account or on a project it owns", which `user_can` cannot express because `user_can` takes a permission.
+  // The grant-EXISTENCE predicate for the `accounts` read. It asks "is there ANY grant on this account or on a project it owns", which `user_can` cannot express because `user_can` takes a permission.
   'user_has_account_grant'
 ];
 
@@ -153,7 +153,7 @@ GROUP BY c.conrelid, c.conname;
 /**
  * 9001 - Read/write permission separation, and mechanism reach, across the authority schemas.
  *
- * Every vocabulary this query uses is DERIVED rather than transcribed: the permission members come from `pg_enum`, the policies from `pg_policies`, and the "which function calls which" relation from a recursive closure over `pg_proc.prosrc`. A hardcoded member list would be a second copy of § 3.2, and this phase exists to end second copies.
+ * Every vocabulary this query uses is DERIVED rather than transcribed: the permission members come from `pg_enum`, the policies from `pg_policies`, and the "which function calls which" relation from a recursive closure over `pg_proc.prosrc`. A hardcoded member list would be a second copy of the enum.
  *
  * Reports one row per finding, plus ALWAYS one `census` row. The census is not decoration: the two existing checks print nothing on a clean run, which is correct for them because their silence means "no rows matched a defect query", while silence here would be indistinguishable from "the query matched no policies at all".
  *
@@ -385,12 +385,12 @@ function main() {
     );
   }
 
-  // The vocabulary floor. § 3.2 fixes the permission enum at 23 members; a derived count other than that means the guard partitioned against a vocabulary the SPEC does not describe.
-  if (memberCount !== 23) {
+  // The vocabulary floor. A permission enum read with no members means the guard partitioned against nothing, so its verdict is not a statement about the policies. The enum's membership itself is guarded by `yarn assert:grant-permission-enum`.
+  if (memberCount === 0) {
     errorCount += 1;
     console.log(
-      `[ERROR] 9001 vocabulary: grant_permission has ${memberCount} members, expected 23 ` +
-        '(162-IMPLEMENTATION-BRIEF.md § 3.2, ratified at 162-03).\n'
+      '[ERROR] 9001 vocabulary: grant_permission parsed with no members. ' +
+        'The enum is declared in schema/000-enums.sql, and scripts/assert-grant-permission-enum.mjs guards its membership.\n'
     );
   }
 

@@ -1,8 +1,6 @@
 -- 23-nominations-write.test.sql: the nomination write model
 --
--- 162-12 gives `public.nominations` a write model it has never had. Fact 19 records that this table was ADMIN-ONLY TO WRITE, so unlike every other plan in wave 4 this one does not convert existing policies -- it writes a permission surface from nothing. That is where the permissive failure lives, and the permissive failure is invisible: a policy that admits a row it should have refused breaks no test, reddens no gate and ships. Every assertion in this file therefore has a TWIN, and the guards are proven load-bearing by being individually removed and watched to turn an assertion green rather than by being argued for.
---
--- ⚠ THE ORDINAL IS FROM THE RATIFIED REGISTRY, NOT FROM THE TREE. `162-CONTEXT.md`'s pgTAP ordinal registry assigns `23-nominations-write` to 162-12. The tree's lowest free prefix is 19, and taking it would collide with the registry -- which exists precisely because deriving from the tree is correct alone and colliding collectively (three plans once claimed `17-`).
+-- The write model of `public.nominations`: who may insert, update, confirm and delete a nomination, and under which guards. The risk in a permission surface is the permissive failure, and the permissive failure is invisible: a policy that admits a row it should have refused breaks no test, reddens no gate and ships. Every assertion in this file therefore has a TWIN, and each guard has a pair that holds the others satisfied and flips it alone.
 --
 -- Synthetic rows use an `e2e12`-shaped id range -- `12121212-...` -- that no fixture, seed or sibling test file uses, following `11-question-rpcs.test.sql`'s stated precedent: an assertion that deletes must never remove a row a later assertion reads.
 --
@@ -40,7 +38,7 @@ $fn$;
 -- =====================================================================
 -- Section 1: the confirmation column and its default
 --
--- D-11c flips the column to the confirmed sense and makes it `NOT NULL DEFAULT false`. THE DEFAULT IS THE LOAD-BEARING HALF, not the name: section 11.5 guard 2 says the candidate-created parent is created unconfirmed and that the candidate cannot override that, fact 34 says the mechanism is the INSERT column grant, and a column absent from a `GRANT INSERT` column list takes its declared default rather than erroring. So `DEFAULT false` is what makes guard 2 true in the only case that matters -- the one where the caller does not name the column at all.
+-- The column is `confirmed boolean NOT NULL DEFAULT false`. THE DEFAULT IS THE LOAD-BEARING HALF: guard 2 says a candidate-created parent is created unconfirmed and that the candidate cannot override that, the mechanism is the INSERT column grant, and a column absent from a `GRANT INSERT` column list takes its declared default rather than erroring. So `DEFAULT false` is what makes guard 2 true in the case where the caller does not name the column at all.
 --
 -- Test 2 is test 1's twin and it is not decoration: without it, test 1 would pass equally against a column that CANNOT be set at all, and would then be measuring an inability rather than a default.
 -- =====================================================================
@@ -77,7 +75,7 @@ SELECT
         id = '12121212-1212-1212-1212-000000000001'::uuid
     ),
     false,
-    'a bare insert naming none of the confirmation column lands UNCONFIRMED -- the default section 11.5 guard 2 rests on'
+    'a bare insert naming none of the confirmation column lands UNCONFIRMED -- the default guard 2 rests on'
   );
 
 INSERT INTO
@@ -275,7 +273,7 @@ SELECT
       'attempted while locked'
     ),
     0,
-    'with the project nomination lock ON, the owning entity user affects zero rows -- the `own, unless locked` cell of section 3.3'
+    'with the project nomination lock ON, the owning entity user affects zero rows -- the `own, unless locked` cell of the capability matrix'
   );
 
 SELECT
@@ -355,7 +353,7 @@ SELECT
         AND column_name = 'confirmed'
     ),
     '0/NO',
-    'the table carries no column of the retired name and its confirmation column is NOT NULL -- the nullability that retires the null-coalescing idiom rather than merely renaming it'
+    'the table carries no unconfirmed column and its confirmation column is NOT NULL, so no reader needs a null-coalescing idiom'
   );
 
 -- =====================================================================
@@ -407,7 +405,7 @@ SELECT
       test_id ('constituency_a'),
       test_id ('nomination_faction_a')
     ),
-    'the same candidate nominated at the same election, constituency and round under a DIFFERENT parent is ACCEPTED -- the presidential case the operator gave as the reason for including the parent column'
+    'the same candidate nominated at the same election, constituency and round under a DIFFERENT parent is ACCEPTED -- the presidential case, which is the reason the key includes the parent column'
   );
 
 INSERT INTO
@@ -444,9 +442,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 7: section 11.5 -- the five guards, the cap, the privilege and the free-text branch
+-- Section 7: the five guards, the cap, the privilege and the free-text branch
 --
--- ⚠ THIS IS A DELIBERATE HOLE IN `own`. The insert a child nominee needs is NOT on their own nomination -- it is on an ORGANIZATION's, which under section 3.3 is by definition not theirs. Every guard pair below holds the OTHER FOUR GUARDS SATISFIED and flips exactly one, because a pair that flips two measures neither. Each guard is then removed from the policy in turn and the file re-run; a guard whose removal reddens nothing is being satisfied by one of the others and is decorative, which is how a permission surface acquires a hole that every test passes over.
+-- ⚠ THIS IS A DELIBERATE HOLE IN `own`. The insert a child nominee needs is NOT on their own nomination -- it is on an ORGANIZATION's, which is by definition not theirs. Every guard pair below holds the OTHER FOUR GUARDS SATISFIED and flips exactly one, because a pair that flips two measures neither. A guard whose removal from the policy would redden nothing is being satisfied by one of the others and is decorative, which is how a permission surface acquires a hole that every test passes over.
 --
 -- Contests, by round, so each guard has somewhere to stand:
 --   round 3  candidate_a holds a nomination        -- guard 5 satisfied, the working contest round 4  candidate_a2 holds none at first      -- guard 5's pair round 5  org_race is nominated UNDER AN ALLIANCE -- guard 3 versus the uniqueness key round 6  the lock pair on the parent insert round 40 the lock pair on the own insert round 7  candidate_a holds NO nomination       -- guard 5's contest-scope pair round 70 the pairs of caller type and row type round 71 to 79 the rows of the cap boundary of both parent types round 80 the id lookup round 81 organization A holds NO nomination -- guard 5's pair for an alliance's row
@@ -546,7 +544,7 @@ SELECT
 SELECT
   reset_role ();
 
--- Read as the OWNER. The entity user cannot yet SEE the row it just created -- the authenticated read policy is still the legacy project predicate until section 8 below rewrites it -- and reading as the caller would make this assertion measure the read model rather than the insert.
+-- Read as the OWNER: reading as the caller would make this assertion measure the read model, which section 8 below asserts, rather than the insert.
 SELECT
   is (
     (
@@ -600,7 +598,7 @@ SELECT
     'G2-neg: naming the confirmation column on insert is REFUSED at privilege level -- the belt, which fails before the policy is reached'
   );
 
--- G2-alt: the policy carries the conjunct too, and the two fail DIFFERENTLY. This half is asserted STRUCTURALLY and that is a limit of the instrument rather than a choice: while the column grant stands, an `authenticated` caller CANNOT reach the policy conjunct at all -- the privilege refuses first -- so there is no behavioural difference to observe. Dropping the grant to observe one would be asserting against a schema this plan does not ship.
+-- G2-alt: the policy carries the conjunct too, and the two fail DIFFERENTLY. This half is asserted STRUCTURALLY and that is a limit of the instrument rather than a choice: while the column grant stands, an `authenticated` caller CANNOT reach the policy conjunct at all -- the privilege refuses first -- so there is no behavioural difference to observe. Dropping the grant to observe one would be asserting against a schema that does not ship.
 SELECT
   is (
     (
@@ -817,7 +815,7 @@ SELECT
     'G5-scope: a caller whose own nominations are at OTHER contests is refused here -- so guard 5 is the contest match rather than the existence of any nomination at all'
   );
 
--- PROJ: D-12b grants a candidate any organization IN THE PROJECT. No table constraint forces a nomination's entity to share its project -- deliberately, because 07-rpc-security.test.sql section 9 depends on the table staying permissive -- so the agreement is a conjunct of THIS policy only.
+-- PROJ: a candidate may stand under any organization IN THE PROJECT. No table constraint forces a nomination's entity to share its project -- deliberately, because 07-rpc-security.test.sql section 9 depends on the table staying permissive -- so the agreement is a conjunct of THIS policy only.
 SELECT
   throws_ok (
     format(
@@ -830,7 +828,7 @@ SELECT
     ),
     '42501',
     NULL,
-    'PROJ: a parent naming an organization of a DIFFERENT project is refused -- the agreement D-12b needs, scoped to this policy rather than to the table'
+    'PROJ: a parent naming an organization of a DIFFERENT project is refused -- the agreement scoped to this policy rather than to the table'
   );
 
 -- ORIG: the originator cannot be forged. Without this the cap would count a value the capped party chooses.
@@ -1730,7 +1728,7 @@ SELECT
     'hardening: the entity user nonetheless INSERTS a child under that parent -- the hardened validator sees what it validates, where an invoker-rights one would have reported the parent missing'
   );
 
--- REQ: the free-text branch (D-12a). Section 11.5's third and fourth branches are BYTE-IDENTICAL in every column; the only thing distinguishing "my party is not in the system yet" from "I am independent" is this key. Confirming such a row publishes as an INDEPENDENT a candidate who asked for a party. The two rows in the pair differ in that key ALONE, so the guard is shown to be the key's presence and not some other property of the row.
+-- REQ: the free-text branch. A row asking for a party not yet in the system and a row standing as an independent are BYTE-IDENTICAL in every column; the only thing distinguishing "my party is not in the system yet" from "I am independent" is this key. Confirming such a row publishes as an INDEPENDENT a candidate who asked for a party. The two rows in the pair differ in that key ALONE, so the guard is shown to be the key's presence and not some other property of the row.
 SELECT
   reset_role ();
 
@@ -1894,7 +1892,7 @@ SELECT
         id = '12121212-1212-1212-1212-0000000000a2'::uuid
     ),
     1,
-    'READ: an ENTITY grantee sees their own UNCONFIRMED nomination, which no other disjunct admits -- through user_can at entity scope, which is also the branch 162-04 ratified for the parent hop (nomination.read, option D)'
+    'READ: an ENTITY grantee sees their own UNCONFIRMED nomination, which no other disjunct admits -- through user_can at entity scope, which is also the branch the parent hop asks (nomination.read)'
   );
 
 SELECT
@@ -3033,9 +3031,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 9: the parent foreign key's delete action (D-12d, task 2 Q2 = A)
+-- Section 9: the parent foreign key's delete action
 --
--- ⚠ LAST IN THE FILE ON PURPOSE. Its second assertion DELETES project B, which the read-model section above reads across; running it earlier left that section reading a project that no longer existed.
+-- ⚠ LAST IN THE FILE ON PURPOSE. Its second assertion DELETES project B, which the read-model section above reads across.
 --
 -- Both halves are asserted BEHAVIOURALLY rather than from `pg_constraint.confdeltype` alone, because the catalogue does not distinguish the two refusing options in the case that decides between them. `NO ACTION` refuses at the END OF THE STATEMENT and `RESTRICT` at the offending row; the second half below is the case `bulk_delete` depends on, and it is the half `RESTRICT` would break.
 -- =====================================================================
@@ -3046,7 +3044,7 @@ SELECT
       test_id ('nomination_org_b')
     ),
     '%nominations_parent_nomination_id_fkey%',
-    'a targeted delete of a parent nomination that still has a child is REFUSED by name -- the loud behaviour that replaces the silent cascade section 11.5 fact 35 forbids'
+    'a targeted delete of a parent nomination that still has a child is REFUSED by name -- loudly, rather than a silent cascade'
   );
 
 DELETE FROM projects
