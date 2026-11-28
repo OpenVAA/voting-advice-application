@@ -1,3 +1,8 @@
+---
+tags: [contestant, tests, bug]
+keywords: [reach-proof, login-url, pathname, axe, false-fail]
+---
+
 # Reach proof matches the login URL against the full URL, not the pathname
 
 **Filed:** 2026-08-27 · **Source:** Phase 147 code review, finding WR-02 (`147-REVIEW.md`)

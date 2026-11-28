@@ -9,6 +9,9 @@ files:
   - apps/frontend/src/lib/layouts/main/Header.svelte
   - apps/frontend/src/lib/contexts/layout
 related_phase: 158
+tags: [voter, contestant, admin, frontend, ui, improvement]
+keywords: [banner, header, snippets, static-component, layout, header-actions, top-bar]
+github_issues: [765]
 ---
 
 # Banner: static component + arbitrary layout-supplied header content
@@ -65,3 +68,9 @@ named by any of its six criteria.
 Overlaps `2026-08-28-header-style-settings-refactor.md` — the same header surface, and both would
 want to touch `getLayoutContext()`'s shape. Whoever picks up either should read both first; doing
 them together is probably cheaper than doing them apart.
+
+## From GitHub issue #765 (2026-11-28)
+
+[#765 feat[Svelte 5]: set `Banner` action items by passing components](https://github.com/openvaa/voting-advice-application/issues/765)
+
+GitHub issue #765 asks specifically that the Banner's action items be set by passing components (in Svelte 5: snippets) instead of the fixed set toggled by `topBarSettings.actions` (logout, feedback, help, results, video transcript toggle).

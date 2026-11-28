@@ -6,6 +6,8 @@ severity: minor
 source: Phase 147 (147-01's promise, 147-04 Decision 1; filed by 147-05)
 files:
   - .planning/phases/147-candidate-app-scan-reach-authenticated-fixture-raw-key-gate/147-NEGATIVE-CONTROL.md
+tags: [docs, tooling, improvement]
+keywords: [negative-control, register, convention, planning, reproducibility]
 ---
 
 ## The defect — a record-quality one, not a measurement one

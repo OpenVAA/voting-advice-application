@@ -2,6 +2,8 @@
 title: Conformance probe has no check of the storage buckets' policies
 priority: medium
 source: Phase 184 verification (2026-11-12); deployment workstream deferred-items.md (operator deferred it 2026-11-11)
+tags: [supabase, infra, tests, improvement]
+keywords: [conformance-probe, storage-policies, buckets, hosted-supabase]
 ---
 
 `infra/scripts/probe-hosted.mjs` checks that each bucket is served (`storage.buckets`) but no check reads the

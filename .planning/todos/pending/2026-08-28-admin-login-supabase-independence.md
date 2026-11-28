@@ -10,6 +10,8 @@ files:
   - apps/frontend/eslint.config.mjs
   - apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts
 related_phase: 158
+tags: [contestant, admin, frontend, supabase, improvement]
+keywords: [adapter-boundary, login, supabase-auth, eslint-allowlist, backend-independence, auth, supabase, safe-get-session]
 ---
 
 # Admin login: make the sign-in backend-independent
@@ -176,3 +178,9 @@ was shaped for.
 line anchors in the table above are **all stale** after the rewrite: the file is 28 lines, its single
 Supabase access is the `context:` line, and there is no `atob` decode and no `signOut` call in it any
 more. Address the file by the expression, not by line.
+
+## Merged from `2026-06-05-migrate-supabase-auth-code-from-routes-to-adapters.md` (2026-11-28)
+
+Broader scope to carry over: every grandfathered site, not only login (api/auth/logout/+server.ts, api/oidc/callback/+server.ts, lib/server/auth/mailedLink.ts, signOutOrFail.ts, contestant/register/code/sign-in, identityCallback.ts); and the safeGetSession audit (error swallowing, getSession->getUser order, tests for null/expired/invalid tokens), now in lib/supabase/safeGetSession.ts.
+
+The merged todo is kept at `.planning/todos/completed/2026-06-05-migrate-supabase-auth-code-from-routes-to-adapters.md`.

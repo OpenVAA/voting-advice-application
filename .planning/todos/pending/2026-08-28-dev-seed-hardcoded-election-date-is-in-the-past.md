@@ -4,6 +4,8 @@ source: Phase 154 (CONTEXT O-4)
 resolves_phase: null
 severity: low
 area: packages/dev-seed templates
+tags: [data, dev-seed, improvement]
+keywords: [election-date, templates, stale-date, fixed-rows]
 ---
 
 # Hand-authored dev-seed templates hardcode an election date that is already in the past

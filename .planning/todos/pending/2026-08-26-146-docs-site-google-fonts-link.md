@@ -6,6 +6,8 @@ severity: minor
 source: Phase 146 (D-13 A; threat T-146-06, disposition accept)
 files:
   - apps/docs/src/app.html
+tags: [frontend, docs, improvement]
+keywords: [google-fonts, privacy, self-hosted, inter, docs-site]
 ---
 
 ## Problem

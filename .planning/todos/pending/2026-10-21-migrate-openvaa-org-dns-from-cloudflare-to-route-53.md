@@ -8,6 +8,8 @@ files:
   - infra/envs/staging/dns-mail/
   - infra/modules/dns-zone/main.tf
   - .planning/workstreams/deployment/phases/183-terraform-foundation-and-supabase-as-code/183-18-PLAN.md
+tags: [infra, improvement]
+keywords: [dns, route53, cloudflare, terraform, ses]
 ---
 
 ## Problem

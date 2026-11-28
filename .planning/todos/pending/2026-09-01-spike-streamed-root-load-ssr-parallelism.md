@@ -4,6 +4,8 @@ priority: medium
 source: Phase 157.2 wave 3 operator ruling (2026-09-01)
 resolves_phase: null
 timing: end of milestone v2.15
+tags: [voter, frontend, ui, improvement]
+keywords: [spike, streaming, root-load, ssr, focus-reset, a11y]
 ---
 
 ## Why this exists

@@ -3,6 +3,8 @@ title: Move the local Supabase ports out of Linux's ephemeral range, or check th
 priority: medium
 source: Phase 187 plan 187-28 (run 44033456141 attempt 1, `ci-evidence/187-final-4` at 68a54299a, read 2026-11-17)
 target: after the stream merges
+tags: [supabase, ci, tooling, bug]
+keywords: [supabase-ports, ephemeral-range, ci-flake, supabase-start, config-toml]
 ---
 
 Note, 2026-11-20: re-targeted from phase 189 because it needs the merged default branch: the fix belongs to the stream that owns `apps/supabase/supabase/config.toml` and `main.yaml`'s E2E jobs after the merge.

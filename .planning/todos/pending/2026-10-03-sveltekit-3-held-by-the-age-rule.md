@@ -5,7 +5,6 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 12
 priority: medium
 suggested_phase: the first dependency phase on or after 2026-10-31 (a Kit-3-only plan; it needs an operator checkpoint, D-32)
-keywords: [sveltekit, kit-3, adapter-node, adapter-static, age-rule, d-03, d-15, hold, vite-configloader]
 re_check_trigger: "on or after 2026-10-31T17:25Z (the latest of the three x.0.0 clear times)"
 files:
   - .yarnrc.yml (catalog `'@sveltejs/kit': ^2.70.3`, resolves 2.70.3)
@@ -13,6 +12,8 @@ files:
   - apps/docs/package.json (`@sveltejs/adapter-static`, resolves 3.0.10)
   - apps/frontend/svelte.config.js, apps/frontend/vite.config.ts
   - apps/docs/svelte.config.js, apps/docs/vite.config.ts
+tags: [frontend, docs, tooling, improvement]
+keywords: [sveltekit, kit-3, adapter-node, adapter-static, age-rule, d-03, d-15, hold, vite-configloader, sveltekit-3, dependency-bump, vite-config]
 ---
 
 # SvelteKit 3 is held by the age rule

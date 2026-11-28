@@ -10,6 +10,8 @@ files:
   - apps/supabase/supabase/functions/account-access/index.ts
   - apps/supabase/supabase/functions/send-email/index.ts
   - apps/supabase/supabase/schema/502-email-helpers.sql
+tags: [admin, supabase, translations, feat]
+keywords: [invitations, email, announcement, account-access, admin-app]
 ---
 
 ## Problem

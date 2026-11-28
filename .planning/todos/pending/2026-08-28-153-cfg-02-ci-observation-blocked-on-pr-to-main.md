@@ -6,7 +6,8 @@ source_phase: 153-build-tooling-config-correctness
 source_plan: 03
 priority: medium
 suggested_phase: 163-ci-hardening
-keywords: [REVIEW-CFG-02, node-engine-range-negative-control, assert-node-engine, main.yaml, ci-trigger, workflow_dispatch, integration-branch, D3, D-N2, negative-control, deferred-verification, gh-run-view]
+tags: [ci, tooling, improvement]
+keywords: [REVIEW-CFG-02, node-engine-range-negative-control, assert-node-engine, main.yaml, ci-trigger, workflow_dispatch, integration-branch, D3, D-N2, negative-control, deferred-verification, gh-run-view, ci-observation, node-engine, workflow-run, evidence, skill-drift, audit]
 ---
 
 # The negative-control job's first CI run is unobserved
@@ -135,3 +136,9 @@ mark which of the three residual risks each observation closes. Then move this f
 ## Tags
 
 #ci #deferred-verification #negative-control #node-engine #REVIEW-CFG-02 #blocked-on-163-01
+
+## Merged from `2026-08-28-153-cfg-05-ci-observation-blocked-on-pr-to-main.md` (2026-11-28)
+
+Also read the skill-drift-check step log: the per-skill lines and the 'Checked: ... Drifted: ... Skipped:' trailer must be present. Record it under Row 5 and mark REVIEW-CFG-05 complete through the requirements tooling.
+
+The merged todo is kept at `.planning/todos/completed/2026-08-28-153-cfg-05-ci-observation-blocked-on-pr-to-main.md`.

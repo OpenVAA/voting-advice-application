@@ -7,6 +7,8 @@ files:
   - infra/modules/frontend-service/edge.tf:93-113
   - apps/frontend/static/
   - infra/envs/staging/aws/README.md (Step 7 item 6, the edge-cache observation)
+tags: [infra, improvement]
+keywords: [cloudfront, cache, static-assets, cdn, terraform]
 ---
 
 ## Problem

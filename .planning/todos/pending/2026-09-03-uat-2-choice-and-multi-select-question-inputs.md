@@ -6,6 +6,8 @@ files:
   - apps/frontend/src/lib/components/questions/QuestionChoices.svelte
   - apps/frontend/src/lib/components/input/Input.svelte
   - .planning/phases/159-component-context-consolidation/159-UAT-QUESTION-INPUTS.md
+tags: [voter, frontend, tests, ui, improvement]
+keywords: [uat, question-choices, multi-select, boolean-question]
 ---
 
 ## Status: filed AND delivered in Phase 159 — the RUN is scheduled for milestone close

@@ -5,6 +5,8 @@ source: Phase 163 plan 163-03 (Task 1, filed rather than absorbed)
 resolves_phase: null
 severity: medium
 area: infra
+tags: [supabase, ci, improvement]
+keywords: [lint-schema, strict-mode, fk-index, sql-lint]
 ---
 
 ## The hazard

@@ -5,8 +5,9 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: low
 suggested_phase: operator host maintenance (not a code change)
-keywords: [docker, credential-helper, docker-credential-desktop, images, disk, dev-host, operator]
 re_check_trigger: "the next Supabase CLI bump (its first db:start pulls images); or when Docker VM free space nears the 13.8 GiB E2E floor"
+tags: [tooling, improvement]
+keywords: [docker, credential-helper, docker-credential-desktop, images, disk, dev-host, operator, disk-space, image-prune]
 ---
 
 # Host maintenance items (169-04, 169-06, 169-11)

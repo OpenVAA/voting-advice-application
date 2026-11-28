@@ -9,6 +9,8 @@ files:
   - apps/frontend/src/lib/api/utils/translateHeroContent.ts
   - apps/frontend/src/lib/api/utils/translateVideoContent.ts
 blocked_on: 'nothing - the precondition landed in Phase 157. Needs an owning phase and a behaviour decision.'
+tags: [frontend, app-shared, translations, improvement]
+keywords: [i18n, translate, get-localized, app-shared, consolidation]
 ---
 
 ## Status: filed, not implemented - and the blocker the research named is DISCHARGED

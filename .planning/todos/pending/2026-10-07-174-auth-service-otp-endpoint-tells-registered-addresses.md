@@ -9,6 +9,8 @@ files:
   - apps/supabase/supabase/config.toml
   - apps/supabase/supabase/functions/account-access/index.ts
   - apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts
+tags: [supabase, infra, improvement]
+keywords: [auth, otp, account-enumeration, gotrue, gateway]
 ---
 
 ## Problem

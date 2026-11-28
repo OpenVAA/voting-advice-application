@@ -15,6 +15,8 @@ files:
   - apps/supabase/supabase/schema/501-bulk-operations.sql
 related:
   - .planning/todos/pending/2026-08-23-test-unit-leaves-seeded-dataset-in-live-db.md
+tags: [supabase, tests, improvement]
+keywords: [e2e, isolation, project-id, teardown, census]
 ---
 
 ## Problem

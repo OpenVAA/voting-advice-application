@@ -10,6 +10,8 @@ files:
   - apps/frontend/src/lib/contestant/nominations/nominationDraft.ts
   - apps/supabase/supabase/schema/503-entity-rpcs.sql
   - tests/tests/specs/perm/contestant-nominations.spec.ts
+tags: [contestant, frontend, bug]
+keywords: [nomination-editor, lost-update, concurrency, stale-data, admin-change]
 ---
 
 ## What happens

@@ -6,7 +6,9 @@ source_phase: 74-high-leverage-e2e-coverage
 source_plan: 01
 priority: medium
 suggested_phase: future-i18n-stage-b
-keywords: [e2e, e2e-01, staticSettings, supportedLocales, paraglide, single-locale, translation-surface, i18n, dynamic-settings, applyDynamicOverride, baselocale, divergence, stage-b, perm-localisation-negative]
+tags: [voter, contestant, frontend, app-shared, tests, translations, feat]
+keywords: [e2e, e2e-01, staticSettings, supportedLocales, paraglide, single-locale, translation-surface, i18n, dynamic-settings, applyDynamicOverride, baselocale, divergence, stage-b, perm-localisation-negative, supported-locales, runtime-override, static-settings]
+github_issues: [609]
 ---
 
 # E2E-01 single-locale variant — runtime-override mechanism
@@ -255,3 +257,8 @@ Per `[[2026-05-30-paraglide-baselocale-vs-runtime-default-divergence]]`: any fut
 - Phase 90 SUMMARYs (90-01..04) — preserved in `.planning/phases/90-*/` even after the source revert; describe the executor patterns + the perm-l10n composition root + fixture work that DID survive
 - Phase 90 verification record (`90-VERIFICATION.md`) — documents the 2 BLOCKER gaps (CR-01 wiring + CR-02 baseLocale regex) that arose from the divergence
 
+## From GitHub issue #609 (2026-11-28)
+
+[#609 feat: set supported locales outside staticSettings](https://github.com/openvaa/voting-advice-application/issues/609)
+
+GitHub #609 (2024) asks that the set of supported locales be changeable without editing `packages/app-shared/src/settings/staticSettings.ts` (the original Strapi constraint is gone). Verified 2026-11-28: there is currently NO `DynamicSettings.i18n.supportedLocales` and no `applyDynamicOverride` in `apps/frontend/src/lib/i18n/` — the 'Stage A' mechanism the sibling tree-shake todo describes is not in the tree, so the runtime override is still to build. Related: `projects.default_locale` (100-tenancy.sql) and todo 2026-10-09-175-three-unconnected-default-locales.md.

@@ -4,6 +4,8 @@ source: Phase 163 O-5 (SQL became prettier-covered in 163-07)
 resolves_phase: 153
 severity: low
 area: tooling / pre-commit
+tags: [tooling, improvement]
+keywords: [lint-staged, prettier, sql, pre-commit]
 ---
 
 # `.sql` now belongs in `.lintstagedrc.json`'s prettier-only glob — but only the SECOND one

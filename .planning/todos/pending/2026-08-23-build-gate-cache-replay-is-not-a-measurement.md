@@ -5,6 +5,8 @@ area: repo
 files:
   - turbo.json
 filed_by: Phase 144 (144-07), as residue RES-16 — found by that plan's own gate 4
+tags: [ci, tooling, improvement]
+keywords: [turbo, cache, build-gate, turbo-force, measurement]
 ---
 
 ## Measurement (taken at HEAD `47ee50054`, 2026-08-23)

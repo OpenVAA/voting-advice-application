@@ -12,6 +12,8 @@ files:
   - apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte
   - apps/supabase/supabase/schema/503-entity-rpcs.sql
   - apps/docs/src/routes/(content)/publishers-guide/preparing/candidates-and-parties-data-be/+page.md
+tags: [contestant, frontend, supabase, feat]
+keywords: [nominations, constituencies, multiple-constituencies, nomination-editor, setting]
 ---
 
 ## What is built

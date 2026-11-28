@@ -7,6 +7,8 @@ source: Phase 146 (.planning/debug/seed-determinism-across-resets.md, evidence T
 files:
   - packages/dev-seed/src/supabaseAdminClient.ts
   - packages/dev-seed/src/writer.ts
+tags: [dev-seed, tests, improvement]
+keywords: [external-id-prefix, portraits, determinism, e2e-base, seed]
 ---
 
 ## Problem

@@ -6,7 +6,9 @@ source_phase: 153-build-tooling-config-correctness
 source_plan: 05
 priority: medium
 suggested_phase: future-build-tooling
-keywords: [lint-staged, pre-commit, eslint, no-console, func-style, no-control-regex, apps-docs, ERR_INTERNAL_ASSERTION, v10_config_lookup_from_file, REVIEW-CFG-08, churn, mjs]
+tags: [tooling, bug]
+keywords: [lint-staged, pre-commit, eslint, no-console, func-style, no-control-regex, apps-docs, ERR_INTERNAL_ASSERTION, v10_config_lookup_from_file, REVIEW-CFG-08, churn, mjs, config-lookup, husky]
+github_issues: [756]
 ---
 
 # `eslint --fix` in the pre-commit hook is red on `.mjs`, and aborts on `apps/docs`
@@ -100,3 +102,9 @@ workspace's own `lint` script, not `--flag v10_config_lookup_from_file` per file
    reproduction. Until it is resolved, any commit staging an `apps/docs` file fails the hook.
 4. Only after 1-3: re-run `153-CHURN-MEASUREMENT.md`'s command set and land the (then genuinely
    formatting-only) churn commit D-B3 anticipated.
+
+## From GitHub issue #756 (2026-11-28)
+
+[#756 build/fix: lint-staged does not use (folder-specific) eslint options](https://github.com/openvaa/voting-advice-application/issues/756)
+
+GitHub issue #756 (2025) reports the same family: code that passes lint-staged's `eslint --fix` fails the repo-wide lint (folder-specific options not applied). With ESLint 10 the per-file config lookup is default, so re-measure whether the hook and `turbo run lint` now agree. Fallback idea from the issue: run the workspaces' own `lint:fix` in the pre-commit hook instead of lint-staged's eslint, with a cache (turbo) to avoid redundant runs.
