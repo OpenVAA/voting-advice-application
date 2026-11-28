@@ -85,7 +85,7 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
     entities = translate({ value: entities, locale });
     if (constituencyId || electionId)
       nominations = filterData({ data: nominations, filters: { constituencyId, electionId } });
-    // A nomination with no round is in round 1, the data model's default. This differs from `get_nominations` for one row shape: `nominations.election_round` defaults to 1 but is nullable, and the RPC's equality drops a row that stores an explicit NULL.
+    // A nomination with no round is in round 1, the data model's default.
     if (electionRound != null)
       nominations = nominations.filter(
         (nomination: { electionRound?: number | null }) => (nomination.electionRound ?? 1) === electionRound

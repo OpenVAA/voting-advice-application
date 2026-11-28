@@ -1,19 +1,83 @@
 import { AbortError } from '@openvaa/core';
+import { createAdminWriter } from '$lib/api/adminWriter';
+import { createSupabaseJobClient } from '$lib/api/dataProvider';
+import { assertValidJobId } from './assertValidJobId';
 import { getAllMessagesFromJob, getJob, markAborted } from './jobStore';
+import { PipelineController } from './pipelineController';
 import type { Id, Serializable } from '@openvaa/core';
-import type { createAdminWriter } from '$lib/api/adminWriter';
-import type { AdminJobRecord } from '$lib/api/base/dataWriter.type';
-import type { PipelineController } from './pipelineController';
+import type { AdminJobRecord } from '$lib/api/base/adminWriter.type';
+import type { AdapterSource } from '$lib/api/dataProvider';
 
 /**
  * The job-record half of an admin feature: the `AdminJobRecord` assembly and the abort/fail branch, in one place.
  *
- * ## Why this exists
- *
- * `condenseArguments.ts` and `generateQuestionInfo.ts` carried ~55 identical lines each — the whole `_getResultData` closure, the three `insertJobResult` calls and the entire `catch` block — differing only in the `output` expression and two message prefixes. Both were touched by this phase for the per-job-writer change, and the change had to be made twice; the WR-06 upload block is the same shape of duplication one layer down, and its lesson is the same one: a fix applied to one copy silently leaves the other.
- *
- * The features keep their own control flow. What moves here is the part that was identical, and only that: nothing in this module decides WHEN a job ends, only what is written when it does.
+ * `condenseArguments.ts` and `generateQuestionInfo.ts` both start through {@link startAdminJob} and record through the recorder it returns, so a fix to the job start-up or to the record is made once. The features keep their own control flow: nothing in this module decides WHEN a job ends, only how it starts and what is written when it ends.
  */
+
+/** What a feature hands over to start a job run. */
+type StartAdminJobOptions = Pick<
+  JobRecorderOptions,
+  'jobId' | 'electionId' | 'input' | 'getOutput' | 'logPrefix' | 'failureMessage'
+> & {
+  /** The initiating admin's request context, read once for its verified session and then left behind. */
+  source: { fetch: Fetch; locals: App.Locals };
+};
+
+/** What a started job holds for its whole run. */
+export type StartedAdminJob = {
+  /** The job's own source: the global `fetch` and a client over the initiating admin's credential. Every read and write of the run goes through it. */
+  jobSource: AdapterSource;
+  /** The job's pipeline controller. */
+  controller: PipelineController;
+  /** The job's own writer over {@link StartedAdminJob.jobSource}. */
+  adminWriter: ReturnType<typeof createAdminWriter>;
+  /** The job's recorder, see {@link createJobRecorder}. */
+  jobRecord: JobRecorder;
+};
+
+/**
+ * Start one admin job run: validate its id, fix its credential and build the controller, the writer and the recorder it holds for the whole run.
+ *
+ * The order is the property:
+ * - The job id is validated FIRST, so an invalid start does no credential work and makes no outbound call.
+ * - The session is resolved ONCE, through `locals.safeGetSession`, this application's one verification path: it calls `getSession()` and then the `getUser()` round-trip that checks the token against Supabase Auth, and hands back nothing when that fails. Nothing resolves it again: resolving mid-run would put the job back on the request's clock.
+ * - The job's source names a CLIENT rather than the request's `locals`. `createSupabaseJobClient` raises when no session was found, so a job that nobody authorised does not proceed anonymously. The transport is the plain global `fetch` rather than `source.fetch`: the request's `fetch` is scoped to a response the job outlives.
+ * - The writer is the job's own, over the job's own credential, so neither a second admin's job nor the initiating request's lifetime can reach it. The job's client renews no session and has no cookie adapter, so it never emits a `Set-Cookie`: a gateway that times the connection out before the job ends cannot lose a renewed session, and a write after the response has been generated, such as a late `insertJobResult` on an aborted job, cannot meet the `cookies.set` that `@sveltejs/kit` makes throw at that point.
+ *
+ * Open: what a job should do when the initiating admin's session expires partway through the run.
+ * @param options - See {@link StartAdminJobOptions}.
+ * @returns The job's source, controller, writer and recorder.
+ */
+export async function startAdminJob({
+  jobId,
+  source,
+  electionId,
+  input,
+  getOutput,
+  logPrefix,
+  failureMessage
+}: StartAdminJobOptions): Promise<StartedAdminJob> {
+  assertValidJobId(jobId);
+  const { session } = await source.locals.safeGetSession();
+  const jobSource: AdapterSource = {
+    fetch: globalThis.fetch,
+    client: createSupabaseJobClient({ accessToken: session?.access_token })
+  };
+  const controller = new PipelineController(jobId);
+  const adminWriter = createAdminWriter(jobSource);
+  const jobRecord = createJobRecorder({
+    jobId,
+    electionId,
+    startTime: new Date().toISOString(),
+    input,
+    adminWriter,
+    controller,
+    getOutput,
+    logPrefix,
+    failureMessage
+  });
+  return { jobSource, controller, adminWriter, jobRecord };
+}
 
 /** What a feature hands over so the record can be assembled without the feature re-stating it three times. */
 type JobRecorderOptions = {

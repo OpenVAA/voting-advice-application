@@ -23,8 +23,8 @@
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_nominations (
   p_project_id uuid,
-  p_election_id uuid DEFAULT NULL,
-  p_constituency_id uuid DEFAULT NULL,
+  p_election_ids uuid[] DEFAULT NULL,
+  p_constituency_ids uuid[] DEFAULT NULL,
   p_include_unconfirmed boolean DEFAULT false,
   p_election_round integer DEFAULT NULL
 ) RETURNS TABLE (
@@ -87,8 +87,8 @@ CREATE OR REPLACE FUNCTION public.get_nominations (
   LEFT JOIN public.alliances a ON n.alliance_id = a.id AND a.project_id = p_project_id
   -- The project predicate is an unconditional equality rather than the `IS NULL OR` shape the other filters use: there is no every-project case.
   WHERE n.project_id = p_project_id
-    AND (p_election_id IS NULL OR n.election_id = p_election_id)
-    AND (p_constituency_id IS NULL OR n.constituency_id = p_constituency_id)
+    AND (p_election_ids IS NULL OR n.election_id = ANY (p_election_ids))
+    AND (p_constituency_ids IS NULL OR n.constituency_id = ANY (p_constituency_ids))
     AND (p_include_unconfirmed OR n.confirmed)
     -- nominations.election_round is a scalar integer, so this is an equality rather than the array containment that get_questions uses against the JSONB election_rounds on questions and question categories.
     AND (p_election_round IS NULL OR n.election_round = p_election_round)
@@ -98,7 +98,7 @@ CREATE OR REPLACE FUNCTION public.get_nominations (
 $$;
 
 GRANT
-EXECUTE ON FUNCTION public.get_nominations (uuid, uuid, uuid, boolean, integer) TO anon,
+EXECUTE ON FUNCTION public.get_nominations (uuid, uuid[], uuid[], boolean, integer) TO anon,
 authenticated;
 
 --------------------------------------------------------------------------------

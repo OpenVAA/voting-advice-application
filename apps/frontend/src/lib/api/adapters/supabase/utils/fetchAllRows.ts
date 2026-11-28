@@ -3,7 +3,7 @@ import { log } from '@openvaa/app-shared';
 /**
  * The event name the probable-row-cap warning is filed under.
  *
- * A CONSTANT, never an interpolation (decision **C4** NOTE 1, the rule `isValidResult.ts`'s `INVALID_RESULT_MESSAGE` follows): the varying values travel as flat attributes beside it — `label`, `pageLength`, `pageSize` — and no row data or query text ever does.
+ * A CONSTANT, never an interpolation, the rule `isValidResult.ts`'s `INVALID_RESULT_MESSAGE` follows: sinks key events on the message, so the varying values travel as flat attributes beside it — `label`, `pageLength`, `pageSize` — and no row data or query text ever does.
  */
 export const PROBABLE_ROW_CAP_MESSAGE =
   'A paged read received a short page whose length is a multiple of 1,000, so the server probably caps responses (PostgREST max_rows) below the configured page size.';
@@ -21,17 +21,17 @@ type PageResult<TRow> = { data: Array<TRow> | null; error: { message: string } |
 /**
  * Read every row of a collection in pages, so a server-side per-response row cap cannot truncate the result silently.
  *
- * PostgREST answers a request for more rows than its `max_rows` with the capped rows and HTTP 200 — no error, no header the client checks. Spike 026 F1 measured the voter app returning 1,000 of 1,510 nominations that way. This helper is the one place every multi-row read of the Supabase data provider goes through (D-07).
+ * PostgREST answers a request for more rows than its `max_rows` with the capped rows and HTTP 200 — no error, no header the client checks. This helper is the one place every multi-row read of the Supabase data provider goes through.
  *
  * **The contract.**
  * - `fetchPage(from, to)` is a FACTORY: it must build a FRESH query for every call. A postgrest-js builder mutates its URL on `range()` and re-executes on every `then`, so reusing one across pages is fragile.
  * - The first request is `(0, pageSize - 1)`; each next one starts where the rows RECEIVED end, never at `offset + pageSize` — advancing by the page size would skip every row a capped server withheld.
  * - A full page continues the read.
- * - A shorter page ends it, with one exception — spike 030 option (c), D-09: a non-empty short page whose length is a multiple of 1,000 looks like a server cap below `pageSize`. Then exactly one confirming request is issued at the next offset, and one warning ({@link PROBABLE_ROW_CAP_MESSAGE}) is logged per read. An empty confirming page ends the read (the false alarm: a total that happens to be a multiple of 1,000); a non-empty one proves the cap and the read carries on.
+ * - A shorter page ends it, with one exception: a non-empty short page whose length is a multiple of 1,000 looks like a server cap below `pageSize`. Then exactly one confirming request is issued at the next offset, and one warning ({@link PROBABLE_ROW_CAP_MESSAGE}) is logged per read. An empty confirming page ends the read (the false alarm: a total that happens to be a multiple of 1,000); a non-empty one proves the cap and the read carries on.
  * - `data: null` without an error is an empty page.
  * - An error on any page rejects with `` `${label}: ${message}` ``, so callers keep the message prefixes they already had.
  *
- * Callers that page a table must order on a unique key (`sort_order`, then `id` — D-08), or page boundaries are not stable across requests.
+ * Callers that page a table must order on a unique key (`sort_order`, then `id`), or page boundaries are not stable across requests.
  *
  * @param fetchPage - Builds and runs a fresh query for the inclusive row range `[from, to]`.
  * @param options.pageSize - Rows requested per page; `staticSettings.dataAdapter.pageSize` for the provider. Must be a positive integer.

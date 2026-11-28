@@ -36,6 +36,14 @@
     {
       "file": "00008_storage_write_policies.sql",
       "sha256": "7a8045e6385bfd2ca2f18d997473a3ca6e722d2ab5c1ae57564fe4d56df907cb"
+    },
+    {
+      "file": "00009_get_rpcs_take_id_arrays.sql",
+      "sha256": "63bda624c8e59f8f85e8f00fb39bb8adbc56a31b683353d12d431efcb7f5c7f3"
+    },
+    {
+      "file": "00010_nomination_round_not_null.sql",
+      "sha256": "6cc295bf4fa934c5c0244ee35b7018955a7b7e9f90cf63bd26a112374401e535"
     }
   ]
 }

@@ -3,7 +3,7 @@
  *
  * Implements the PKCE + client_secret auth flow behind the `IdentityProvider` interface, with the `AuthConfig` claim mapping driving extraction.
  *
- * This module carries NO decrypt/verify logic of its own: it delegates to the shared core `../decryptAndVerifyIdToken.ts` and keeps only the per-provider claim mapping. There is exactly one decrypt/verify path in `src`, and a second copy of it here would be a second thing to keep correct.
+ * This module carries NO decrypt/verify logic of its own: it delegates to the shared core `../decryptAndVerifyIdToken.ts` and keeps only its claim config, `SIGNICAT_FTN_AUTH_CONFIG`. There is exactly one decrypt/verify path in `src`, and a second copy of it here would be a second thing to keep correct.
  *
  * - Authorization: Client-side PKCE redirect with `code_challenge` in query params
  * - Token exchange: `client_secret` POST to the token endpoint
@@ -14,7 +14,7 @@ import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
 import { requireConfigured } from './requireConfigured';
 import { uiLocalesFor } from './uiLocales';
-import { decryptAndVerifyIdToken } from '../decryptAndVerifyIdToken';
+import { getIdTokenClaimsWith } from '../decryptAndVerifyIdToken';
 import type {
   AuthConfig,
   AuthorizeParams,
@@ -109,35 +109,6 @@ export const signicatProvider: IdentityProvider = {
   },
 
   async getIdTokenClaims(idToken: string): Promise<IdTokenClaimsResult> {
-    try {
-      const payload = await decryptAndVerifyIdToken(idToken);
-
-      const extractedClaims: Record<string, string> = Object.fromEntries(
-        SIGNICAT_FTN_AUTH_CONFIG.extractClaims.map((claim) => [claim, String(payload[claim] ?? '')])
-      );
-
-      return {
-        success: true,
-        data: {
-          firstName: String(payload[SIGNICAT_FTN_AUTH_CONFIG.firstNameProp] ?? ''),
-          lastName: String(payload[SIGNICAT_FTN_AUTH_CONFIG.lastNameProp] ?? ''),
-          identifier: String(payload[SIGNICAT_FTN_AUTH_CONFIG.identityMatchProp] ?? ''),
-          extractedClaims
-        }
-      };
-    } catch (e) {
-      if (e instanceof Error && 'code' in e) {
-        return {
-          success: false,
-          error: {
-            code: `${(e as Error & { code: string }).code}`
-          }
-        };
-      }
-      return {
-        success: false,
-        error: {}
-      };
-    }
+    return getIdTokenClaimsWith(SIGNICAT_FTN_AUTH_CONFIG, idToken);
   }
 };

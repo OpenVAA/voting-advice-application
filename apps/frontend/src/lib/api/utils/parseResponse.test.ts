@@ -1,5 +1,4 @@
 import { describe, expect, test, vi } from 'vitest';
-import { isRefusedResponse } from './isRefusedResponse';
 import { parseResponse } from './parseResponse';
 import type { ResponseParser } from './parseResponse';
 
@@ -165,7 +164,7 @@ describe('parseResponse', () => {
     });
 
     /**
-     * THE CONSISTENCY PIN. The helper's notion of "refused" is the adapter's notion of "refused", because both are the same exported predicate. Two notions inside one adapter would reopen the hole at whichever of them is the laxer.
+     * The helper refuses exactly the responses the adapter refuses: those with `response.ok` false.
      */
     test.each([
       { label: '200 OK', response: { ok: true, status: 200 }, refused: false },
@@ -173,10 +172,9 @@ describe('parseResponse', () => {
       { label: '401 Unauthorized', response: { ok: false, status: 401 }, refused: true },
       { label: '403 Forbidden', response: { ok: false, status: 403 }, refused: true },
       { label: '500 Internal Server Error', response: { ok: false, status: 500 }, refused: true }
-    ])('parseResponse refuses $label exactly when the shared predicate does', ({ response, refused }) => {
+    ])('parseResponse refuses $label exactly when response.ok is false', ({ response, refused }) => {
       const mockResponse = { ...response, json: vi.fn().mockResolvedValue({}) } as unknown as Response;
 
-      expect(isRefusedResponse(mockResponse)).toBe(refused);
       if (refused) {
         expect(() => parseResponse(mockResponse, 'json')).toThrow(/refused/i);
       } else {

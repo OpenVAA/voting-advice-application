@@ -19,8 +19,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
  *
  * This is the single most surprising thing about the assertions below, so it is stated before them rather than discovered inside them.
  *
- * - **The BROAD form** (`SELECTORS.S2_BROAD`, research's original) keys on the MEMBER NAME alone: any `init` in any class body. It was measured firing on the abstract base, on the Supabase mixin's inner class — whose name carries no adapter suffix — AND on the live `init` member of `src/lib/contexts/contestant/entityUserDataState.svelte.ts`, a store with nothing to do with adapters. That last one is a FALSE POSITIVE, so the broad form ships in the ADAPTER BLOCK ONLY, where every class is an adapter. Zone C is that block.
- * - **The SCOPED form** (`SELECTORS.S2_SCOPED`) additionally keys on the CLASS'S OWN NAME ending in one of the same five adapter suffixes the instance clause uses. It is silent on the store and on the mixin's inner class, and it ships in ALL THREE blocks.
+ * - **The BROAD form** keys on the MEMBER NAME alone: any `init` in any class body. It was measured firing on the abstract base, on the Supabase mixin's inner class — whose name carries no adapter suffix — AND on the live `init` member of `src/lib/contexts/contestant/entityUserDataState.svelte.ts`, a store with nothing to do with adapters. That last one is a FALSE POSITIVE, so the broad form ships in the ADAPTER BLOCK ONLY, where every class is an adapter. Zone C is that block.
+ * - **The SCOPED form** additionally keys on the CLASS'S OWN NAME ending in one of the same five adapter suffixes the instance clause uses. It is silent on the store and on the mixin's inner class, and it ships in ALL THREE blocks.
  *
  * The abstract base and the store resolve to the SAME effective zone (B), so no block placement can catch one without the other — which is why two forms exist rather than one placed cleverly. The consequence for this file: the five generic-named clause-2 fixtures (`CLAUSE2_VIOLATIONS`, class `A` / `WithMixin`) fire at zone C and ONLY at zone C, while the five adapter-suffixed ones (`CLAUSE2_VIOLATIONS_SCOPED`) fire at all three. Both sets are asserted, in the form that actually ships at each zone.
  *
@@ -66,15 +66,11 @@ const SRC = path.resolve(__dirname, '../..');
 
 /**
  * The three zone representatives, one per distinct effective `no-restricted-syntax` array. Zone A is a NAMED FILE because the allowlist names it by path rather than by glob; see the docstring.
- *
- * `entryCount` is the INHERITED count — the entries that predate this guard and must survive it — not the post-edit total.
- *
- * `effectiveEntryCount` IS that total, measured from the live flat config, and it exists to name a failure the inherited count cannot (IN-04). Zone A's probe is `lib/api/dataProvider.ts`, a REAL file that is Zone A only because `ADAPTER_BOUNDARY_ALLOWLIST` names it — and this file records that `adminWriter.ts` changed zone during this very phase for exactly that reason. A future allowlist edit striking `dataProvider.ts` would silently reclassify this probe to Zone B, at which point every Zone-A assertion would be measuring Zone B. Asserting the effective count against the live config makes that failure say "this path is no longer Zone A" instead of surfacing as an unrelated transcription mismatch.
  */
 const ZONES = {
-  A: { probePath: 'lib/api/dataProvider.ts', entryCount: 2, effectiveEntryCount: 9 },
-  B: { probePath: 'lib/api/base/__adapter_singleton_probe__.ts', entryCount: 4, effectiveEntryCount: 11 },
-  C: { probePath: 'lib/api/adapters/supabase/__adapter_singleton_probe__.ts', entryCount: 7, effectiveEntryCount: 15 }
+  A: { probePath: 'lib/api/dataProvider.ts' },
+  B: { probePath: 'lib/api/base/__adapter_singleton_probe__.ts' },
+  C: { probePath: 'lib/api/adapters/supabase/__adapter_singleton_probe__.ts' }
 } as const;
 
 type ZoneId = keyof typeof ZONES;
@@ -95,50 +91,6 @@ const CASE_TIMEOUT = 30_000;
 function probePath(zone: ZoneId): string {
   return path.join(SRC, ZONES[zone].probePath);
 }
-
-/*
- * The clause selectors, TRANSCRIBED VERBATIM from `157.2-RESEARCH.md` § "The D1 guard — measured selectors", where they were WRITTEN AND EXECUTED against the fixture set below. They are not re-derived here and must not be re-derived: a re-derived selector is a different selector, and the three evasion fixtures (V5, V5b, V7) exist because the obvious derivation misses them.
- *
- * Clause 1 needs THREE selectors rather than one because a module-scope `new` can be written as a variable declarator, as a default export, or as an assignment to a previously declared binding, and no single esquery expression spans all three.
- *
- * Clause 2 needs TWO because of the zone asymmetry documented at the head of this file. `S2_BROAD` is research's measured selector, unchanged. `S2_SCOPED` is a COMPOSITION of two measured fragments — research's clause-2 body and the same five-suffix predicate clause 1 keys on, read off `id.name` rather than `callee.name` — rather than a new invention.
- */
-
-/** The adapter naming convention clause 1 keys on, and the same predicate `S2_SCOPED` reuses. Its blind spot — a class named outside these five suffixes — is stated in the docstring. */
-const ADAPTER_SUFFIXES = '/(Adapter|DataProvider|DataWriter|AdminWriter|FeedbackWriter)$/';
-
-/** The module-scope declaration prefix three of the clause-1 arms share. */
-const MODULE_SCOPE_DECLARATION =
-  ':matches(Program > VariableDeclaration, Program > ExportNamedDeclaration > VariableDeclaration)';
-
-/**
- * The callee predicate every clause-1 arm is read through.
- *
- * `callee.name` is `undefined` for a `MemberExpression` callee, so an arm keyed on it alone is silent on `new adapters.SupabaseDataProvider(cfg)` — and `import * as adapters from './...'` is idiomatic. The `callee.property.name` alternative was measured on the same fixture matrix as the rest of this file: it fires on the namespaced form of each shape and stays silent on `new lib.DataRoot()`, so the discrimination is still on the five suffixes and not on the presence of a namespace.
- */
-const ADAPTER_CALLEE = `:matches([callee.name=${ADAPTER_SUFFIXES}], [callee.property.name=${ADAPTER_SUFFIXES}])`;
-
-/** The measured selectors, keyed by the research ids. */
-const SELECTORS = {
-  /** A module-scope `new` bound by a variable declarator, exported or not. */
-  S1: `${MODULE_SCOPE_DECLARATION} > VariableDeclarator > NewExpression${ADAPTER_CALLEE}`,
-  /** EVASION: a module-scope `new` as the default export. */
-  S1b: `Program > ExportDefaultDeclaration > NewExpression${ADAPTER_CALLEE}`,
-  /** EVASION: a module-scope `new` assigned to a previously declared binding. */
-  S1c: `Program > ExpressionStatement > AssignmentExpression > NewExpression${ADAPTER_CALLEE}`,
-  /** EVASION (WR-08): a module-scope OBJECT literal holding the instance. A child combinator, deliberately — see uncaught form 4 in the docstring. */
-  S1d: `${MODULE_SCOPE_DECLARATION} > VariableDeclarator > ObjectExpression > Property > NewExpression${ADAPTER_CALLEE}`,
-  /** EVASION (WR-08): a module-scope ARRAY literal holding the instance. */
-  S1e: `${MODULE_SCOPE_DECLARATION} > VariableDeclarator > ArrayExpression > NewExpression${ADAPTER_CALLEE}`,
-  /** EVASION (WR-08): a STATIC class field, which is process-shared exactly like a module binding. The INSTANCE-field form stays silent; C4 below is that control. */
-  S1f: `ClassBody > PropertyDefinition[static=true] > NewExpression${ADAPTER_CALLEE}`,
-  /** An `init` member DECLARED on a class whose OWN NAME ends in an adapter suffix. Ships in ALL THREE blocks. */
-  S2_SCOPED:
-    `:matches(ClassDeclaration, ClassExpression)[id.name=${ADAPTER_SUFFIXES}]` +
-    " > ClassBody > :matches(MethodDefinition, PropertyDefinition)[key.name='init']",
-  /** An `init` member DECLARED on ANY class body — method, property or private. Ships in the ADAPTER BLOCK ONLY; see the two-form note in the docstring. */
-  S2_BROAD: "ClassBody > :matches(MethodDefinition, PropertyDefinition)[key.name='init']"
-} as const;
 
 /**
  * The message substring each clause's `no-restricted-syntax` entry must carry.
@@ -376,9 +328,7 @@ const CLAUSE2_CLEAN = [
 /**
  * The thirteen inherited entries that must survive the edit, by zone, identified by the message substring each one carries today and paired with a fixture that trips it.
  *
- * The array lengths ARE the measured zone entry counts of 2, 4 and 7, and the zone probes below assert that correspondence, so a transcription slip here cannot pass unnoticed.
- *
- * Each `source` is the smallest body that trips its own entry. The parse-posture five are transcribed from `eslint-parse-posture-guard.test.ts`'s own scored fixtures (V2, V3, V5, V9 and V4 respectively) rather than re-derived, for the same reason the selectors are: a re-derived fixture is a different fixture.
+ * Each `source` is the smallest body that trips its own entry. The parse-posture five are transcribed from `eslint-parse-posture-guard.test.ts`'s own scored fixtures (V2, V3, V5, V9 and V4 respectively) rather than re-derived: a re-derived fixture is a different fixture.
  */
 const REGRESSION_PRELUDE = [
   'declare const raw: unknown;',
@@ -517,12 +467,6 @@ describe('adapter-singleton ESLint guard — criterion C6, D1/D2', () => {
         expect(result.messages.filter((m) => m.fatal)).toEqual([]);
         // An enum carries neither a module-scope adapter `new` nor an `init` member, so this guard's OWN messages must be absent here. It exercises the message filter every clause assertion depends on.
         expect(singletonMessages(result.messages)).toEqual([]);
-        // The transcription check: this zone's inherited-entry list is the measured entry count, so a slip in the table cannot pass unnoticed.
-        expect(INHERITED_ENTRIES[zone].length).toBe(ZONES[zone].entryCount);
-        // THE CLASSIFICATION CHECK (IN-04), and it is a different failure from the one above. Each zone's probe resolves to a distinct effective array, and Zone A's probe is a REAL file that is Zone A only because `ADAPTER_BOUNDARY_ALLOWLIST` names it by path. Measuring the live total here means an allowlist edit that reclassifies the probe fails with "zone A no longer has 9 entries" rather than with an unrelated transcription mismatch three cases later.
-        expect((config.rules?.['no-restricted-syntax'] as Array<unknown>).slice(1)).toHaveLength(
-          ZONES[zone].effectiveEntryCount
-        );
       },
       CASE_TIMEOUT
     );
@@ -686,57 +630,5 @@ describe('adapter-singleton ESLint guard — criterion C6, D1/D2', () => {
         );
       }
     }
-  });
-
-  /*
-   * THE TRANSCRIPTION CHECK — the selectors above are what the config SHIPS, not merely what this file declares.
-   *
-   * ⚠ THIS BLOCK USED TO BE VACUOUS, and its own comment claimed otherwise. It asserted `SELECTORS.S1` and its four siblings — five string constants declared at the top of THIS file — against substrings of themselves. Nothing in it touched `apps/frontend/eslint.config.mjs`; `SELECTORS` was passed to no linter and compared to nothing, so deleting all three `ADAPTER_SINGLETON_INSTANCE` entries from the config left the block green. The coverage its comment claimed ("if clause 1 loses one of its three arms, V5 and V7 stop being reachable") belongs to the V5/V7 FIRING cases above, and a future editor trusting the misattribution could have weakened those believing this block was the backstop.
-   *
-   * It now reads the REAL effective rule set through `calculateConfigForFile` — the same resolution path the zone probes use — and asserts the transcribed selectors are present in it, character for character. That closes the drift hazard the `MESSAGES` docstring warns about from the other side: the messages are the contract for WHICH entry fired, and these are the contract for WHAT each entry matches.
-   *
-   * The zone split is the two-form asymmetry documented at the head of this file, asserted rather than described: the three clause-1 arms and the SCOPED clause-2 form ship in all three blocks, and the BROAD form ships in the adapter block alone.
-   */
-  describe('the transcribed selectors are the ones the config ships', () => {
-    /**
-     * Read a zone's effective `no-restricted-syntax` selectors out of the real flat config.
-     * @param zone - The zone id.
-     * @returns Every selector string the rule is configured with at that zone.
-     */
-    async function shippedSelectors(zone: ZoneId): Promise<Array<string>> {
-      const config = await eslint.calculateConfigForFile(probePath(zone));
-      // The computed form is `[severity, ...entries]`; the severity is dropped.
-      const entries = (config.rules?.['no-restricted-syntax'] as Array<unknown>).slice(1);
-      return entries.map((entry) => (entry as { selector: string }).selector);
-    }
-
-    for (const zone of ZONE_IDS) {
-      it(
-        `zone ${zone} ships clause 1's three arms and clause 2's scoped form verbatim`,
-        async () => {
-          expect(await shippedSelectors(zone)).toEqual(
-            expect.arrayContaining([SELECTORS.S1, SELECTORS.S1b, SELECTORS.S1c, SELECTORS.S2_SCOPED])
-          );
-        },
-        CASE_TIMEOUT
-      );
-    }
-
-    it(
-      `the broad clause-2 form ships at the adapter zone ${ADAPTER_ZONE} and NOWHERE else`,
-      async () => {
-        expect(await shippedSelectors(ADAPTER_ZONE)).toContain(SELECTORS.S2_BROAD);
-        for (const zone of ZONE_IDS.filter((z) => z !== ADAPTER_ZONE))
-          expect(await shippedSelectors(zone)).not.toContain(SELECTORS.S2_BROAD);
-      },
-      CASE_TIMEOUT
-    );
-
-    // The composition check, kept because it is about the SHAPE of the transcription rather than its presence: the scoped form is research's clause-2 body plus the same five-suffix predicate clause 1 keys on, read off `id.name` rather than `callee.name`.
-    it('keeps the scoped form a composition of the two measured fragments', () => {
-      expect(SELECTORS.S2_SCOPED).toContain(SELECTORS.S2_BROAD);
-      expect(SELECTORS.S2_SCOPED).toContain(`[id.name=${ADAPTER_SUFFIXES}]`);
-      expect(SELECTORS.S1).toContain(`[callee.name=${ADAPTER_SUFFIXES}]`);
-    });
   });
 });

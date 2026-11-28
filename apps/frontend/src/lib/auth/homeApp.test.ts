@@ -7,7 +7,7 @@
 import { log } from '@openvaa/app-shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isAdminOnly, isContestantOnly, isContestantOnlyInProject } from './homeApp';
-import type { GrantClaim } from './roles';
+import type { GrantClaim } from './grants';
 
 const PROJECT_ADMIN: GrantClaim = { scope: 'project', target_type: null, target_id: 'project-1', role: 'admin' };
 const ACCOUNT_ADMIN: GrantClaim = { scope: 'account', target_type: null, target_id: 'account-1', role: 'admin' };

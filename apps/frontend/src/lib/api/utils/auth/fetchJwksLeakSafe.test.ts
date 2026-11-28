@@ -10,10 +10,11 @@
  * @vitest-environment node
  */
 
+import { configureLogger } from '@openvaa/app-shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchJwksLeakSafe } from './fetchJwksLeakSafe';
-import { OIDC_FAILURE } from './oidcFailure';
-import type { MockInstance } from 'vitest';
+import { ID_TOKEN_FAILURE } from './idTokenFailure';
+import type { LogRecord } from '@openvaa/app-shared';
 
 /**
  * Fixture identifiers, deliberately distinctive.
@@ -46,11 +47,11 @@ function joseOptions(): Parameters<typeof fetchJwksLeakSafe>[1] {
   };
 }
 
-let consoleError: MockInstance<typeof console.error>;
+let records: Array<LogRecord>;
 
-/** Every string this module wrote to the console during the current test, concatenated. */
+/** Every record this module wrote to the logger during the current test, serialised and concatenated. */
 function loggedText(): string {
-  return consoleError.mock.calls.map((call) => call.map(String).join(' ')).join('\n');
+  return records.map((record) => JSON.stringify(record)).join('\n');
 }
 
 /** Assert that neither the thrown message nor anything logged carries a fixture identifier. */
@@ -73,10 +74,12 @@ async function callAndCatch(url = JWKS_URL): Promise<Error & { code?: string }> 
 }
 
 beforeEach(() => {
-  consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  records = [];
+  configureLogger({ level: 'debug', sink: (record) => records.push(record) });
 });
 
 afterEach(() => {
+  configureLogger({ level: 'silent', sink: undefined });
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -139,7 +142,7 @@ describe('fetchJwksLeakSafe', () => {
 
       const caught = await callAndCatch();
 
-      expect(caught.code).toBe(OIDC_FAILURE.jwksUriHttpStatus);
+      expect(caught.code).toBe(ID_TOKEN_FAILURE.jwksUriHttpStatus);
       expect(caught.message).toContain('IDENTITY_PROVIDER_JWKS_URI');
       expect(caught.message).toContain(`status=${status}`);
       expectNoLeak(caught.message);
@@ -154,7 +157,7 @@ describe('fetchJwksLeakSafe', () => {
 
       const caught = await callAndCatch();
 
-      expect(caught.code).toBe(OIDC_FAILURE.jwksUriHttpStatus);
+      expect(caught.code).toBe(ID_TOKEN_FAILURE.jwksUriHttpStatus);
       expect(caught.message).toContain(`status=${status}`);
       expect(caught.message).toContain('redirect');
       expect(caught.message).toContain('not followed');
@@ -187,7 +190,7 @@ describe('fetchJwksLeakSafe', () => {
 
       const caught = await callAndCatch();
 
-      expect(caught.code).toBe(OIDC_FAILURE.jwksUriNotJson);
+      expect(caught.code).toBe(ID_TOKEN_FAILURE.jwksUriNotJson);
       expect(caught.message).toContain('IDENTITY_PROVIDER_JWKS_URI');
       expect(caught.message).toContain('text/html');
       expect(caught.message).toContain('looksLikeMarkup=true');
@@ -203,7 +206,7 @@ describe('fetchJwksLeakSafe', () => {
 
       const caught = await callAndCatch();
 
-      expect(caught.code).toBe(OIDC_FAILURE.jwksUriNotJson);
+      expect(caught.code).toBe(ID_TOKEN_FAILURE.jwksUriNotJson);
       expect(caught.message).toContain('looksLikeMarkup=false');
     });
 
@@ -218,7 +221,7 @@ describe('fetchJwksLeakSafe', () => {
 
       const caught = await callAndCatch();
 
-      expect(caught.code).toBe(OIDC_FAILURE.jwksUriNotJson);
+      expect(caught.code).toBe(ID_TOKEN_FAILURE.jwksUriNotJson);
       expect(caught.message).toContain('content-type=absent');
       expect(caught.message).not.toContain('undefined');
     });
@@ -232,7 +235,7 @@ describe('fetchJwksLeakSafe', () => {
 
       const caught = await callAndCatch();
 
-      expect(caught.code).toBe(OIDC_FAILURE.jwksUriNotJson);
+      expect(caught.code).toBe(ID_TOKEN_FAILURE.jwksUriNotJson);
       expect(caught.message).toContain('bytes=0');
     });
   });
@@ -252,7 +255,7 @@ describe('fetchJwksLeakSafe', () => {
 
         const caught = await callAndCatch();
 
-        expect(caught.code).toBe(OIDC_FAILURE.jwksUriUnreachable);
+        expect(caught.code).toBe(ID_TOKEN_FAILURE.jwksUriUnreachable);
         expect(caught.message).toContain('IDENTITY_PROVIDER_JWKS_URI');
         expect(caught.message).toContain(`transport=${code}`);
         expectNoLeak(caught.message);
@@ -271,7 +274,7 @@ describe('fetchJwksLeakSafe', () => {
 
       const caught = await callAndCatch();
 
-      expect(caught.code).toBe(OIDC_FAILURE.jwksUriUnreachable);
+      expect(caught.code).toBe(ID_TOKEN_FAILURE.jwksUriUnreachable);
       expect(caught.message).toContain('transport=unidentified');
       expectNoLeak(caught.message);
     });
@@ -301,7 +304,7 @@ describe('fetchJwksLeakSafe', () => {
 
       expect(caught).toBe(timeout);
       expect(caught.code).toBeUndefined();
-      expect(consoleError).not.toHaveBeenCalled();
+      expect(records).toHaveLength(0);
     });
   });
 
@@ -315,7 +318,7 @@ describe('fetchJwksLeakSafe', () => {
 
       await callAndCatch();
 
-      expect(consoleError).toHaveBeenCalledTimes(1);
+      expect(records).toHaveLength(1);
       expect(loggedText()).toContain('[oidc/jwks]');
       expect(loggedText()).toContain('status=404');
     });

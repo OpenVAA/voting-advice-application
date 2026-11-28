@@ -1,7 +1,7 @@
 import { log } from '@openvaa/app-shared';
-import { hasAnyGrant } from './roles';
+import { hasAnyGrant } from './grants';
 import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
-import type { GrantClaim, GrantShape } from './roles';
+import type { GrantClaim, GrantShape } from './grants';
 
 /**
  * Admit a session that was just established: claim the user's invitations, refresh the session when a grant was written, and only then gate the session on a set of grant shapes.

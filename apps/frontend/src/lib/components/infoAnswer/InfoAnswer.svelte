@@ -99,7 +99,15 @@
     </span>
   {/if}
   <!-- 
-  TODO[preferenceOrder]: Check {:else if question.type === 'preferenceOrder'} <ol {...restProps}> {#each answer as item} <li class:vaa-tag={asTag}>{item}</li> {/each} </ol>
+  TODO[preferenceOrder]: Check
+  ```svelte
+  {:else if question.type === 'preferenceOrder'}
+    <ol {...restProps}>
+      {#each answer as item}
+        <li class:vaa-tag={asTag}>{item}</li>
+      {/each}
+    </ol>
+  ```
 -->
 {:else if question.type === 'image'}
   <figure class:vaa-tag={asTag} {...restProps}>

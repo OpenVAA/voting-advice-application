@@ -1,11 +1,11 @@
 /**
  * The single decrypt -> verify core for OIDC ID tokens.
  *
- * Both identity providers (`providers/idura.ts`, `providers/signicat.ts`) call this from their `getIdTokenClaims` method; the per-provider claim mapping stays in the providers, each of which declares its own (`SIGNICAT_FTN_AUTH_CONFIG` in `providers/signicat.ts`, `IDURA_FTN_AUTH_CONFIG` in `providers/idura.ts`). This module owns only the parts that are genuinely identical: the lazy env parse, the JWE decrypt, the JWT verify, and the discriminating coded failures -- which are declared once in `./oidcFailure.ts` and referenced from here as `OIDC_FAILURE.*` rather than spelled inline, so the thrower and the route that logs them cannot drift.
+ * Both identity providers (`providers/idura.ts`, `providers/signicat.ts`) implement `getIdTokenClaims` by calling {@link getIdTokenClaimsWith} with their own claim config (`SIGNICAT_FTN_AUTH_CONFIG` in `providers/signicat.ts`, `IDURA_FTN_AUTH_CONFIG` in `providers/idura.ts`); the providers keep only those configs. This module owns everything that is identical between them: the lazy env parse, the JWE decrypt, the JWT verify, the config-driven claim mapping, and the discriminating coded failures -- which are declared once in `./idTokenFailure.ts` and referenced from here as `ID_TOKEN_FAILURE.*` rather than spelled inline, so the thrower and the route that logs them cannot drift.
  *
- * The failure classes are NOT a closed set, and it matters that this is said plainly: jose's own coded errors flow through these throw sites unchanged, because each provider's catch arm forwards `e.code` for any `Error` carrying one. `./oidcFailure.ts` maps both provenances -- ours and jose's -- to a stage and an operator hint.
+ * The failure classes are NOT a closed set, and it matters that this is said plainly: jose's own coded errors flow through these throw sites unchanged, because `getIdTokenClaimsWith`'s catch arm forwards `e.code` for any `Error` carrying one. `./idTokenFailure.ts` maps both provenances -- ours and jose's -- to a stage and an operator hint.
  *
- * It THROWS rather than returning a result union: each provider's existing catch arm already maps a `code`-carrying `Error` to `{ success: false, error: { code } }`, so the collapse changes no public type.
+ * {@link decryptAndVerifyIdToken} THROWS rather than returning a result union; {@link getIdTokenClaimsWith}'s catch arm maps a `code`-carrying `Error` to `{ success: false, error: { code } }`.
  *
  * HARD RULE: this module reads `$lib/server/constants` -- a server-only secret. NEVER re-export it from `providers/index.ts`. That barrel is the one place a client-reachable import could be introduced by accident; SvelteKit's `$lib/server` guard is the build-time backstop, not the rule.
  */
@@ -14,7 +14,8 @@ import * as jose from 'jose';
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
 import { fetchJwksLeakSafe } from './fetchJwksLeakSafe';
-import { OIDC_FAILURE } from './oidcFailure';
+import { ID_TOKEN_FAILURE } from './idTokenFailure';
+import type { AuthConfig, IdTokenClaimsResult } from './providers/types';
 
 export interface DecryptAndVerifyOptions {
   privateEncryptionJWKSet: Array<jose.JWK>;
@@ -35,7 +36,7 @@ export const defaultOptions: DecryptAndVerifyOptions = {
     } catch {
       // Opaque identifier only -- the malformed value is NOT echoed.
       throw Object.assign(new Error('Cannot decode ID token: the configured decryption JWK set is not valid JSON.'), {
-        code: OIDC_FAILURE.jwksMalformed
+        code: ID_TOKEN_FAILURE.jwksMalformed
       });
     }
   },
@@ -54,7 +55,7 @@ export const defaultOptions: DecryptAndVerifyOptions = {
       // Opaque identifier only -- the message names the VARIABLE, never a value, per this module's standing bar.
       throw Object.assign(
         new Error('Cannot verify ID token: no signature key set is configured (IDENTITY_PROVIDER_JWKS_URI).'),
-        { code: OIDC_FAILURE.jwksUriUnconfigured }
+        { code: ID_TOKEN_FAILURE.jwksUriUnconfigured }
       );
     }
     return uri;
@@ -73,7 +74,7 @@ export const defaultOptions: DecryptAndVerifyOptions = {
     if (!audience) {
       // Opaque identifier only -- per this module's standing bar the message names neither the configured audience nor the env var's value.
       throw Object.assign(new Error('Cannot verify ID token: no expected audience is configured.'), {
-        code: OIDC_FAILURE.audienceUnconfigured
+        code: ID_TOKEN_FAILURE.audienceUnconfigured
       });
     }
     return audience;
@@ -88,7 +89,7 @@ export const defaultOptions: DecryptAndVerifyOptions = {
     if (!issuer) {
       // Opaque identifier only -- the configured issuer is NOT echoed.
       throw Object.assign(new Error('Cannot verify ID token: no expected issuer is configured.'), {
-        code: OIDC_FAILURE.issuerUnconfigured
+        code: ID_TOKEN_FAILURE.issuerUnconfigured
       });
     }
     return issuer;
@@ -98,7 +99,7 @@ export const defaultOptions: DecryptAndVerifyOptions = {
 /**
  * Decrypt a JWE-wrapped OIDC ID token and verify the enclosed JWT.
  *
- * @throws {Error & { code: string }} One of this application's own classes -- `ERR_JWKS_MALFORMED`, `ERR_JWKS_EMPTY`, `ERR_JWK_KID_MISMATCH`, `ERR_AUDIENCE_UNCONFIGURED`, `ERR_ISSUER_UNCONFIGURED`, `ERR_JWKS_URI_UNCONFIGURED`, `ERR_JWKS_URI_HTTP_STATUS`, `ERR_JWKS_URI_NOT_JSON` or `ERR_JWKS_URI_UNREACHABLE` (all declared in `./oidcFailure.ts`) -- or one of jose's own coded errors, which flow through unchanged. Callers must therefore treat the code as an OPEN set; `describeOidcFailure` is total over it.
+ * @throws {Error & { code: string }} One of this application's own classes -- `ERR_JWKS_MALFORMED`, `ERR_JWKS_EMPTY`, `ERR_JWK_KID_MISMATCH`, `ERR_AUDIENCE_UNCONFIGURED`, `ERR_ISSUER_UNCONFIGURED`, `ERR_JWKS_URI_UNCONFIGURED`, `ERR_JWKS_URI_HTTP_STATUS`, `ERR_JWKS_URI_NOT_JSON` or `ERR_JWKS_URI_UNREACHABLE` (all declared in `./idTokenFailure.ts`) -- or one of jose's own coded errors, which flow through unchanged. Callers must therefore treat the code as an OPEN set; `describeIdTokenFailure` is total over it.
  */
 export async function decryptAndVerifyIdToken(
   idToken: string,
@@ -112,7 +113,7 @@ export async function decryptAndVerifyIdToken(
 
   if (privateEncryptionJWKSet.length === 0) {
     throw Object.assign(new Error('Cannot decode ID token: no decryption JWKs are configured.'), {
-      code: OIDC_FAILURE.jwksEmpty
+      code: ID_TOKEN_FAILURE.jwksEmpty
     });
   }
 
@@ -120,7 +121,7 @@ export async function decryptAndVerifyIdToken(
 
   if (!privateEncryptionJWK) {
     throw Object.assign(new Error(`Cannot decode ID token: JWK not found: kid=${kid}.`), {
-      code: OIDC_FAILURE.jwkKidMismatch
+      code: ID_TOKEN_FAILURE.jwkKidMismatch
     });
   }
 
@@ -133,14 +134,14 @@ export async function decryptAndVerifyIdToken(
   if (!audience) {
     // Opaque identifier only -- the configured audience is NOT echoed.
     throw Object.assign(new Error('Cannot verify ID token: no audience is configured.'), {
-      code: OIDC_FAILURE.audienceUnconfigured
+      code: ID_TOKEN_FAILURE.audienceUnconfigured
     });
   }
 
   if (!issuer) {
     // Opaque identifier only -- the configured issuer is NOT echoed.
     throw Object.assign(new Error('Cannot verify ID token: no issuer is configured.'), {
-      code: OIDC_FAILURE.issuerUnconfigured
+      code: ID_TOKEN_FAILURE.issuerUnconfigured
     });
   }
 
@@ -151,7 +152,7 @@ export async function decryptAndVerifyIdToken(
     // Opaque identifier only -- names the VARIABLE, never a value.
     throw Object.assign(
       new Error('Cannot verify ID token: no signature key set is configured (IDENTITY_PROVIDER_JWKS_URI).'),
-      { code: OIDC_FAILURE.jwksUriUnconfigured }
+      { code: ID_TOKEN_FAILURE.jwksUriUnconfigured }
     );
   }
 
@@ -163,4 +164,44 @@ export async function decryptAndVerifyIdToken(
     { audience, issuer }
   );
   return payload;
+}
+
+/**
+ * Decrypt and verify an OIDC ID token and map its claims with a provider's claim config.
+ *
+ * @param config - The provider's claim mapping.
+ * @param idToken - The JWE-wrapped ID token.
+ * @returns The mapped claims, or a failure carrying only the error's `code` when it has one.
+ */
+export async function getIdTokenClaimsWith(config: AuthConfig, idToken: string): Promise<IdTokenClaimsResult> {
+  try {
+    const payload = await decryptAndVerifyIdToken(idToken);
+
+    const extractedClaims: Record<string, string> = Object.fromEntries(
+      config.extractClaims.map((claim) => [claim, String(payload[claim] ?? '')])
+    );
+
+    return {
+      success: true,
+      data: {
+        firstName: String(payload[config.firstNameProp] ?? ''),
+        lastName: String(payload[config.lastNameProp] ?? ''),
+        identifier: String(payload[config.identityMatchProp] ?? ''),
+        extractedClaims
+      }
+    };
+  } catch (e) {
+    if (e instanceof Error && 'code' in e) {
+      return {
+        success: false,
+        error: {
+          code: `${(e as Error & { code: string }).code}`
+        }
+      };
+    }
+    return {
+      success: false,
+      error: {}
+    };
+  }
 }

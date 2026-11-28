@@ -5,7 +5,7 @@ import { parseWithPartialPreserve, reportParseFailure } from '../utils/parseOutc
 import type { SendEmailResult } from '@openvaa/app-shared';
 import type { Enums } from '@openvaa/supabase-types';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
-import type { InsertJobResultOptions, SetQuestionOptions } from '$lib/api/base/dataWriter.type';
+import type { InsertJobResultOptions, SetQuestionOptions } from '$lib/api/base/adminWriter.type';
 import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
 import type { ParseSource } from '../utils/parseOutcome.type';
 

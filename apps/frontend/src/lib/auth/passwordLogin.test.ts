@@ -1,10 +1,10 @@
 import { configureLogger } from '@openvaa/app-shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { passwordLogin } from './passwordLogin';
-import { ADMIN_GRANTS, CONTESTANT_GRANTS, hasAnyGrant, parseGrantClaims, readGrants, readSessionGrants } from './roles';
+import { ADMIN_GRANTS, CONTESTANT_GRANTS, hasAnyGrant, parseGrantClaims, readGrants, readSessionGrants } from './grants';
 import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
 import type { PasswordLoginContext } from './passwordLogin';
-import type { GrantClaim, GrantShape } from './roles';
+import type { GrantClaim, GrantShape } from './grants';
 
 /**
  * The shared password-login helper and the grant-shape sets it gates on.

@@ -1,6 +1,6 @@
 import { log } from '@openvaa/app-shared';
 import { admitSession } from './sessionAdmission';
-import type { GrantShape } from './roles';
+import type { GrantShape } from './grants';
 import type { SessionAdmissionContext, SessionAdmissionOutcome } from './sessionAdmission';
 
 /**

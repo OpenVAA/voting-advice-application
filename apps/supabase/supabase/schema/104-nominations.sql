@@ -51,7 +51,7 @@ CREATE TABLE public.nominations (
   election_id uuid NOT NULL REFERENCES public.elections (id) ON DELETE CASCADE,
   constituency_id uuid NOT NULL REFERENCES public.constituencies (id) ON DELETE CASCADE,
   -- The round the nomination is for, counted from 1.
-  election_round integer DEFAULT 1,
+  election_round integer NOT NULL DEFAULT 1,
   -- The symbol, usually a number, marked on the ballot instead of the nominee's name.
   election_symbol text,
   -- The nomination this one sits under, per the hierarchy above. NO ACTION, not CASCADE, so deleting a parent never silently deletes the nominations under it: the delete is refused while children remain. NO ACTION rather than RESTRICT because the check runs at the end of the statement, which lets bulk_delete remove a parent and its children in one statement.

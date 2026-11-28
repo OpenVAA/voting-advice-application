@@ -59,7 +59,7 @@ import { supabaseServiceRoleKey } from '../../utils/supabaseServiceRoleKey';
 import type { ServedEntityType } from '@openvaa/app-shared';
 import type { SeededInvitation } from '@openvaa/dev-seed';
 import type { Page, Route } from '@playwright/test';
-import type { GrantClaim } from '../../../../apps/frontend/src/lib/auth/roles';
+import type { GrantClaim } from '../../../../apps/frontend/src/lib/auth/grants';
 import type { AccountAccessAnswer } from '../../utils/accountAccessClient';
 import type { RpcAnswer, SessionTokens } from '../../utils/authApi';
 import type { EntityGrantTarget, LinkWitnessOutcome } from '../../utils/supabaseAdminClient';

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { clearOverrides, getOverride, setOverrides } from '../overrides';
+import { clearOverrides, getOverride, setOverrides } from './overrides';
 
 describe('Runtime override wrapper', () => {
   beforeEach(() => {

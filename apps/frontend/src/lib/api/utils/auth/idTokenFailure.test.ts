@@ -7,18 +7,23 @@
  * - every jose 6.x code this pipeline can produce is mapped, enumerated against jose's own error classes rather than against a list retyped by hand;
  * - `ERR_JOSE_GENERIC` specifically resolves to the jwks-fetch stage, because that is the only thing it can mean in jose 6.x and mis-attributing it sends the reader to the wrong stage;
  * - the describer is TOTAL -- an unknown code is admitted as unknown, never mapped to a plausible-looking stage;
- * - no hint interpolates anything, which is what makes `formatOidcFailure` safe to log.
+ * - no hint interpolates anything, which is what makes `formatIdTokenFailure` safe to log.
  *
  * @vitest-environment node
  */
 
 import * as jose from 'jose';
 import { describe, expect, it } from 'vitest';
-import { describeOidcFailure, formatOidcFailure, OIDC_FAILURE, OIDC_FAILURE_NONE } from './oidcFailure';
-import type { OidcFailureKey, OidcFailureStage } from './oidcFailure';
+import {
+  describeIdTokenFailure,
+  formatIdTokenFailure,
+  ID_TOKEN_FAILURE,
+  ID_TOKEN_FAILURE_NONE
+} from './idTokenFailure';
+import type { IdTokenFailureKey, IdTokenFailureStage } from './idTokenFailure';
 
-/** The keys of `OIDC_FAILURE`, enumerated so a new member cannot be added without a mapping. */
-const OWN_KEYS: Array<OidcFailureKey> = [
+/** The keys of `ID_TOKEN_FAILURE`, enumerated so a new member cannot be added without a mapping. */
+const OWN_KEYS: Array<IdTokenFailureKey> = [
   'jwksMalformed',
   'jwksEmpty',
   'jwkKidMismatch',
@@ -39,34 +44,34 @@ const JOSE_CODES: Array<string> = Object.values(jose.errors)
   .map((cls) => (cls as unknown as { code?: unknown }).code)
   .filter((code): code is string => typeof code === 'string');
 
-describe('OIDC_FAILURE', () => {
+describe('ID_TOKEN_FAILURE', () => {
   it('exposes a code for every declared key', () => {
     for (const key of OWN_KEYS) {
-      expect(OIDC_FAILURE[key], key).toMatch(/^ERR_[A-Z0-9_]+$/);
+      expect(ID_TOKEN_FAILURE[key], key).toMatch(/^ERR_[A-Z0-9_]+$/);
     }
   });
 
   it('declares no duplicate codes', () => {
-    const codes = OWN_KEYS.map((key) => OIDC_FAILURE[key]);
+    const codes = OWN_KEYS.map((key) => ID_TOKEN_FAILURE[key]);
     expect(new Set(codes).size).toBe(codes.length);
   });
 
   // These five spellings have appeared in operator-facing server logs and in the bank-authentication runbook, so renaming one is a documentation change rather than a refactor. Pinned verbatim.
   it('preserves the five pre-existing wire spellings verbatim', () => {
-    expect(OIDC_FAILURE.jwksMalformed).toBe('ERR_JWKS_MALFORMED');
-    expect(OIDC_FAILURE.jwksEmpty).toBe('ERR_JWKS_EMPTY');
-    expect(OIDC_FAILURE.jwkKidMismatch).toBe('ERR_JWK_KID_MISMATCH');
-    expect(OIDC_FAILURE.audienceUnconfigured).toBe('ERR_AUDIENCE_UNCONFIGURED');
-    expect(OIDC_FAILURE.issuerUnconfigured).toBe('ERR_ISSUER_UNCONFIGURED');
+    expect(ID_TOKEN_FAILURE.jwksMalformed).toBe('ERR_JWKS_MALFORMED');
+    expect(ID_TOKEN_FAILURE.jwksEmpty).toBe('ERR_JWKS_EMPTY');
+    expect(ID_TOKEN_FAILURE.jwkKidMismatch).toBe('ERR_JWK_KID_MISMATCH');
+    expect(ID_TOKEN_FAILURE.audienceUnconfigured).toBe('ERR_AUDIENCE_UNCONFIGURED');
+    expect(ID_TOKEN_FAILURE.issuerUnconfigured).toBe('ERR_ISSUER_UNCONFIGURED');
   });
 });
 
-describe('describeOidcFailure', () => {
-  // The rot-guard: a member added to `OIDC_FAILURE` without a hint reds here, so the table cannot silently become a false closed set.
+describe('describeIdTokenFailure', () => {
+  // The rot-guard: a member added to `ID_TOKEN_FAILURE` without a hint reds here, so the table cannot silently become a false closed set.
   it('maps every code this application throws to a known stage and a non-empty hint', () => {
     for (const key of OWN_KEYS) {
-      const code = OIDC_FAILURE[key];
-      const description = describeOidcFailure(code);
+      const code = ID_TOKEN_FAILURE[key];
+      const description = describeIdTokenFailure(code);
 
       expect(description.code, code).toBe(code);
       expect(description.stage, code).not.toBe('unknown');
@@ -79,7 +84,7 @@ describe('describeOidcFailure', () => {
     expect(JOSE_CODES.length).toBeGreaterThan(10);
 
     for (const code of JOSE_CODES) {
-      const description = describeOidcFailure(code);
+      const description = describeIdTokenFailure(code);
       expect(description.stage, `jose code ${code} is unmapped`).not.toBe('unknown');
       expect(description.hint.length, code).toBeGreaterThan(20);
     }
@@ -87,7 +92,7 @@ describe('describeOidcFailure', () => {
 
   // THE POINT OF THE WHOLE MODULE. `ERR_JOSE_GENERIC` is jose's base-class code and in jose 6.x a bare `JOSEError` is constructed at exactly two sites, both fetching the remote key set. Attributing it to any other stage sends the next reader to the wrong variable.
   it('attributes ERR_JOSE_GENERIC to the jwks-fetch stage and names IDENTITY_PROVIDER_JWKS_URI', () => {
-    const description = describeOidcFailure('ERR_JOSE_GENERIC');
+    const description = describeIdTokenFailure('ERR_JOSE_GENERIC');
 
     expect(description.stage).toBe('jwks-fetch');
     expect(description.hint).toContain('IDENTITY_PROVIDER_JWKS_URI');
@@ -100,27 +105,27 @@ describe('describeOidcFailure', () => {
 
   // The stage partitions the remedy, so a configuration fault must say which variable to edit. A `config`-stage hint that names no variable is useless in precisely the situation it exists for.
   it('names at least one environment variable in every config-stage hint', () => {
-    const configCodes = [...OWN_KEYS.map((key) => OIDC_FAILURE[key]), ...JOSE_CODES].filter(
-      (code) => describeOidcFailure(code).stage === 'config'
+    const configCodes = [...OWN_KEYS.map((key) => ID_TOKEN_FAILURE[key]), ...JOSE_CODES].filter(
+      (code) => describeIdTokenFailure(code).stage === 'config'
     );
 
     expect(configCodes.length).toBeGreaterThan(0);
     for (const code of configCodes) {
-      expect(describeOidcFailure(code).hint, code).toMatch(/[A-Z][A-Z0-9_]{6,}/);
+      expect(describeIdTokenFailure(code).hint, code).toMatch(/[A-Z][A-Z0-9_]{6,}/);
     }
   });
 
   it('routes each JWKS-URI class to the stage its remedy belongs to', () => {
     // An unconfigured variable is a `.env` edit; a bad response from a configured one is a URL or reachability problem at the provider. Collapsing the two would merge two different remedies under one label.
-    expect(describeOidcFailure(OIDC_FAILURE.jwksUriUnconfigured).stage).toBe('config');
-    expect(describeOidcFailure(OIDC_FAILURE.jwksUriHttpStatus).stage).toBe('jwks-fetch');
-    expect(describeOidcFailure(OIDC_FAILURE.jwksUriNotJson).stage).toBe('jwks-fetch');
-    expect(describeOidcFailure(OIDC_FAILURE.jwksUriUnreachable).stage).toBe('jwks-fetch');
+    expect(describeIdTokenFailure(ID_TOKEN_FAILURE.jwksUriUnconfigured).stage).toBe('config');
+    expect(describeIdTokenFailure(ID_TOKEN_FAILURE.jwksUriHttpStatus).stage).toBe('jwks-fetch');
+    expect(describeIdTokenFailure(ID_TOKEN_FAILURE.jwksUriNotJson).stage).toBe('jwks-fetch');
+    expect(describeIdTokenFailure(ID_TOKEN_FAILURE.jwksUriUnreachable).stage).toBe('jwks-fetch');
   });
 
   // Where the cross-runtime client-id drift surfaces. The hint has to point at the two variables and at the checker, because a claim mismatch looks identical to a key problem from the outside.
   it('points a claim-validation failure at the audience and issuer variables and at the pair checker', () => {
-    const { stage, hint } = describeOidcFailure('ERR_JWT_CLAIM_VALIDATION_FAILED');
+    const { stage, hint } = describeIdTokenFailure('ERR_JWT_CLAIM_VALIDATION_FAILED');
 
     expect(stage).toBe('claims');
     expect(hint).toContain('PUBLIC_IDENTITY_PROVIDER_CLIENT_ID');
@@ -130,7 +135,7 @@ describe('describeOidcFailure', () => {
 
   describe('totality', () => {
     it('admits an unrecognised code as unknown instead of guessing a stage', () => {
-      const description = describeOidcFailure('ERR_SOMETHING_JOSE_SEVEN_INVENTED');
+      const description = describeIdTokenFailure('ERR_SOMETHING_JOSE_SEVEN_INVENTED');
 
       expect(description.code).toBe('ERR_SOMETHING_JOSE_SEVEN_INVENTED');
       expect(description.stage).toBe('unknown');
@@ -139,9 +144,9 @@ describe('describeOidcFailure', () => {
 
     // Boundary neighbours of "a code": the two ways `IdTokenClaimsResult.error.code` can be absent. `error: {}` is a real production shape -- both provider catch arms return it when the thrown value carries no `code`.
     it.each([undefined, ''])('resolves %o to the none placeholder', (code) => {
-      const description = describeOidcFailure(code);
+      const description = describeIdTokenFailure(code);
 
-      expect(description.code).toBe(OIDC_FAILURE_NONE);
+      expect(description.code).toBe(ID_TOKEN_FAILURE_NONE);
       expect(description.stage).toBe('unknown');
       expect(description.hint).toContain('no code');
     });
@@ -152,21 +157,21 @@ describe('describeOidcFailure', () => {
         '',
         'nonsense',
         'ERR_JOSE_GENERIC',
-        ...OWN_KEYS.map((key) => OIDC_FAILURE[key]),
+        ...OWN_KEYS.map((key) => ID_TOKEN_FAILURE[key]),
         ...JOSE_CODES
       ];
 
       for (const input of inputs) {
-        expect(describeOidcFailure(input).hint.length, String(input)).toBeGreaterThan(0);
+        expect(describeIdTokenFailure(input).hint.length, String(input)).toBeGreaterThan(0);
       }
     });
 
     it('only ever reports a declared stage', () => {
-      const stages: Array<OidcFailureStage> = ['config', 'jwks-fetch', 'decrypt', 'verify', 'claims', 'unknown'];
-      const inputs = [undefined, 'nonsense', ...OWN_KEYS.map((key) => OIDC_FAILURE[key]), ...JOSE_CODES];
+      const stages: Array<IdTokenFailureStage> = ['config', 'jwks-fetch', 'decrypt', 'verify', 'claims', 'unknown'];
+      const inputs = [undefined, 'nonsense', ...OWN_KEYS.map((key) => ID_TOKEN_FAILURE[key]), ...JOSE_CODES];
 
       for (const input of inputs) {
-        expect(stages, String(input)).toContain(describeOidcFailure(input).stage);
+        expect(stages, String(input)).toContain(describeIdTokenFailure(input).stage);
       }
     });
   });
@@ -174,10 +179,10 @@ describe('describeOidcFailure', () => {
   // The hints are logged verbatim, so they are only safe because they are FIXED. A hint that interpolated a value would be a leak with no call site to blame.
   describe('leak safety', () => {
     it('contains no interpolation in any hint', () => {
-      const inputs = [undefined, 'nonsense', ...OWN_KEYS.map((key) => OIDC_FAILURE[key]), ...JOSE_CODES];
+      const inputs = [undefined, 'nonsense', ...OWN_KEYS.map((key) => ID_TOKEN_FAILURE[key]), ...JOSE_CODES];
 
       for (const input of inputs) {
-        const { hint } = describeOidcFailure(input);
+        const { hint } = describeIdTokenFailure(input);
         expect(hint, String(input)).not.toContain('${');
         expect(hint, String(input)).not.toContain('undefined');
         expect(hint, String(input)).not.toMatch(/\bhttps?:\/\/(?!\{)/);
@@ -186,11 +191,11 @@ describe('describeOidcFailure', () => {
   });
 });
 
-describe('formatOidcFailure', () => {
+describe('formatIdTokenFailure', () => {
   it('renders one greppable line carrying the code, stage, provider and hint', () => {
-    const line = formatOidcFailure(OIDC_FAILURE.jwksUriHttpStatus, 'idura-ftn');
+    const line = formatIdTokenFailure(ID_TOKEN_FAILURE.jwksUriHttpStatus, 'idura-ftn');
 
-    expect(line).toContain(`code=${OIDC_FAILURE.jwksUriHttpStatus}`);
+    expect(line).toContain(`code=${ID_TOKEN_FAILURE.jwksUriHttpStatus}`);
     expect(line).toContain('stage=jwks-fetch');
     expect(line).toContain('provider=idura-ftn');
     expect(line).toContain('IDENTITY_PROVIDER_JWKS_URI');
@@ -199,11 +204,11 @@ describe('formatOidcFailure', () => {
 
   // Naming the active provider is what makes "the wrong provider was selected" -- for example an unset type silently defaulting to signicat-ftn -- visible in the log instead of invisible.
   it('names the active provider so a wrong-provider selection is visible', () => {
-    expect(formatOidcFailure('ERR_JOSE_GENERIC', 'signicat-ftn')).toContain('provider=signicat-ftn');
-    expect(formatOidcFailure('ERR_JOSE_GENERIC', 'idura-ftn')).toContain('provider=idura-ftn');
+    expect(formatIdTokenFailure('ERR_JOSE_GENERIC', 'signicat-ftn')).toContain('provider=signicat-ftn');
+    expect(formatIdTokenFailure('ERR_JOSE_GENERIC', 'idura-ftn')).toContain('provider=idura-ftn');
   });
 
   it('renders the none placeholder for a failure with no code', () => {
-    expect(formatOidcFailure(undefined, 'idura-ftn')).toContain(`code=${OIDC_FAILURE_NONE}`);
+    expect(formatIdTokenFailure(undefined, 'idura-ftn')).toContain(`code=${ID_TOKEN_FAILURE_NONE}`);
   });
 });

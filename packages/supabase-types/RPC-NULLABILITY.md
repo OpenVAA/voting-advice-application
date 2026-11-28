@@ -129,7 +129,7 @@ reaches `apps/supabase/supabase/functions/**`.
 ## 2. `get_nominations` — 31 columns, 13 overridden, 18 no-change
 
 Declared in `apps/supabase/supabase/schema/503-entity-rpcs.sql` as `public.get_nominations
-(p_project_id, p_election_id, p_constituency_id, p_include_unconfirmed, p_election_round)`; generated
+(p_project_id, p_election_ids, p_constituency_ids, p_include_unconfirmed, p_election_round)`; generated
 `Returns` under `get_nominations` in `Functions` of `src/database.ts`; the `nominations` table `Row`
 in the same file. Every citation in this section is by content, not by line number.
 

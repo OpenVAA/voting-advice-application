@@ -14,7 +14,7 @@
 import { configureLogger, log } from '@openvaa/app-shared';
 import { isHttpError, isRedirect } from '@sveltejs/kit';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { readGrants } from '$lib/auth/roles';
+import { readGrants } from '$lib/auth/grants';
 import { COOKIE } from '$lib/cookies';
 import { buildRoute } from '$lib/routes';
 import { actions, load } from './+page.server';

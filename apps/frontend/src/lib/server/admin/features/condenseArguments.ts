@@ -1,18 +1,13 @@
 import { handleQuestion } from '@openvaa/argument-condensation';
 import { ENTITY_TYPE, QUESTION_TYPE } from '@openvaa/data';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
-import { createAdminWriter } from '$lib/api/adminWriter';
-import { createSupabaseJobClient } from '$lib/api/dataProvider';
 import { getLLMProvider } from '../../llm/llmProvider';
-import { assertValidJobId } from '../jobs/assertValidJobId';
-import { createJobRecorder } from '../jobs/jobRecord';
-import { PipelineController } from '../jobs/pipelineController';
+import { startAdminJob } from '../jobs/jobRecord';
 import type { LocalizedQuestionArguments } from '@openvaa/app-shared';
 import type { CondensationRunResult } from '@openvaa/argument-condensation';
 import type { Id, Serializable } from '@openvaa/core';
 import type { AnyQuestionVariant, SingleChoiceCategoricalQuestion } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
-import type { AdapterSource } from '$lib/api/dataProvider';
 
 /**
  * Run argument condensation for selected or all opinion questions.
@@ -40,27 +35,6 @@ export async function condenseArguments({
   locale: string;
   jobId: string;
 }): Promise<DataApiActionResult> {
-  // THE IDENTIFIER GUARD, AND IT IS FIRST — ahead of the pipeline controller, ahead of the job recorder, and ahead of the writer construction below, so an invalid start does no credential work and makes no outbound call. Order is the property here: the same rejection placed after the writer would let exactly the same work happen and only change what is reported afterwards. This line owns whether the identifier the job was handed is usable at all; the writer construction under it owns where that writer's credentials come from — two edits, one under the other, neither inside the other.
-  assertValidJobId(jobId);
-
-  // THIS JOB'S OWN CREDENTIAL, RESOLVED ONCE AND FIXED FOR THE WHOLE RUN — after the guard above and ahead of everything else, so an invalid start still does no credential work. `locals.safeGetSession` is this application's ONE verification path: it calls `getSession()` and then the `getUser()` round-trip that checks the token against Supabase Auth, and hands back nothing when that fails. Reading a jar or a header here instead would be a second verification path and a second thing to get wrong. Nothing below resolves it again: resolving mid-run would put the job back on the request's clock.
-  const { session } = await source.locals.safeGetSession();
-
-  // The job's own source, and it names a CLIENT rather than the request's `locals`. `createSupabaseJobClient` raises if the lookup above found no session, so a job that nobody authorised does not proceed anonymously. The transport is the plain global `fetch` rather than `source.fetch`: the request's `fetch` is scoped to a response this job outlives, and nothing the job does may depend on that response still being there.
-  const jobSource: AdapterSource = {
-    fetch: globalThis.fetch,
-    client: createSupabaseJobClient({ accessToken: session?.access_token })
-  };
-
-  // Create controller immediately - it will be initialized with pipeline later
-  const controller = new PipelineController(jobId);
-
-  // This job's own writer, over this job's own credential, constructed here and held for the whole run, so neither a second admin's job nor the initiating request's lifetime can reach it. The job's client renews no session and has no cookie adapter, so it never emits a `Set-Cookie`: a gateway that times the connection out before the job ends cannot lose a renewed session, and a write after the response has been generated, such as a late `insertJobResult` on an aborted job, cannot meet the `cookies.set` that `@sveltejs/kit` makes throw at that point.
-  // Open: what a job should do when the initiating admin's session expires partway through the run.
-  const adminWriter = createAdminWriter(jobSource);
-
-  // Track start time and input parameters for job record
-  const startTime = new Date().toISOString();
   const inputParams = {
     electionId,
     questionIds,
@@ -74,14 +48,12 @@ export async function condenseArguments({
     results: Array<CondensationRunResult>;
   }> = [];
 
-  // The job-record half — the `AdminJobRecord` assembly and the abort/fail branch — lives in `createJobRecorder`, which `generateQuestionInfo` shares. Only the `output` thunk and the two prefixes below differ between the two features.
-  const jobRecord = createJobRecorder({
+  // The job's credential, controller, writer and recorder are fixed here for the whole run; see `startAdminJob`.
+  const { jobSource, controller, adminWriter, jobRecord } = await startAdminJob({
     jobId,
+    source,
     electionId,
-    startTime,
     input: inputParams,
-    adminWriter,
-    controller,
     getOutput: () =>
       allCondensationResults.length > 0 ? (allCondensationResults as unknown as Array<Serializable>) : null,
     logPrefix: 'condenseArguments',

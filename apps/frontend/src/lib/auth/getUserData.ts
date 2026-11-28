@@ -52,7 +52,7 @@ export async function getUserData(
   const dataWriter = createDataWriter(source);
 
   const userData = await dataWriter.getBasicUserData().catch((e) => {
-    log.error(`Error fetching user data: ${e?.message ?? 'No error message'}`);
+    log.error('Error fetching user data', { err: e });
     return undefined;
   });
 

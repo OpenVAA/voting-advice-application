@@ -828,7 +828,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       await expect(helper).toBeVisible();
       await expect(helper).toHaveText(/2.*3/);
 
-      // save gating across the 2..3 window. QuestionChoices.svelte never disables unchecked boxes (its `handleToggle`); over/under-selection surfaces on the caller's Save button via `isMultiChoiceCountValid` in multiChoiceValidity.ts (valid iff the count is within [effectiveMin=2, effectiveMax=3]).
+      // save gating across the 2..3 window. QuestionChoices.svelte never disables unchecked boxes (its `handleToggle`); over/under-selection surfaces on the caller's Save button via `isMultiChoiceCountValid` in `@openvaa/app-shared` (valid iff the count is within [effectiveMin=2, effectiveMax=3]).
       const boxes = contestantQuestionPage.choicesFor(qid);
       // 1 selected → below min → Save DISABLED.
       await boxes.nth(0).click();

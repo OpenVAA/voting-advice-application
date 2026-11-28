@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapRow, mapRows, mapRowToDb } from '../utils/mapRow';
+import { mapRow } from '../utils/mapRow';
 
 describe('mapRow', () => {
   it('renames COLUMN_MAP keys to camelCase', () => {
@@ -46,44 +46,5 @@ describe('mapRow', () => {
       organizationId: 'org-1',
       categoryId: 'cat-1'
     });
-  });
-});
-
-describe('mapRowToDb', () => {
-  it('reverses camelCase properties to snake_case columns', () => {
-    const obj = { order: 1, firstName: 'Alice', lastName: 'Smith' };
-    const result = mapRowToDb(obj);
-    expect(result).toEqual({ sort_order: 1, first_name: 'Alice', last_name: 'Smith' });
-  });
-
-  it('passes unmapped keys through unchanged', () => {
-    const obj = { id: '123', name: 'Test', type: 'candidate' };
-    const result = mapRowToDb(obj);
-    expect(result).toEqual({ id: '123', name: 'Test', type: 'candidate' });
-  });
-
-  it('handles mixed mapped and unmapped keys', () => {
-    const obj = { order: 1, name: 'Test' };
-    const result = mapRowToDb(obj);
-    expect(result).toEqual({ sort_order: 1, name: 'Test' });
-  });
-});
-
-describe('mapRows', () => {
-  it('maps an array of rows', () => {
-    const rows = [
-      { sort_order: 1, name: 'A' },
-      { sort_order: 2, name: 'B' }
-    ];
-    const result = mapRows(rows);
-    expect(result).toEqual([
-      { order: 1, name: 'A' },
-      { order: 2, name: 'B' }
-    ]);
-  });
-
-  it('returns empty array for empty input', () => {
-    const result = mapRows([]);
-    expect(result).toEqual([]);
   });
 });

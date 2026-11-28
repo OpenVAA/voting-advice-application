@@ -20,7 +20,7 @@ import { redirect } from '@sveltejs/kit';
 import { OIDC_ERROR, oidcErrorFromProvider } from '$contestant/utils/oidcError';
 import { identityProviderEntityType } from '$contestant/utils/registrationOffer';
 import { createDataProvider, createSupabaseAnonClient } from '$lib/api/dataProvider';
-import { formatOidcFailure } from '$lib/api/utils/auth/oidcFailure';
+import { formatIdTokenFailure } from '$lib/api/utils/auth/idTokenFailure';
 import { getActiveProvider } from '$lib/api/utils/auth/providers';
 import { COOKIE, OIDC_FLOW_COOKIE_OPTIONS } from '$lib/cookies';
 import { isLocale } from '$lib/paraglide/runtime';
@@ -103,8 +103,8 @@ export async function GET(event: RequestEvent): Promise<never> {
 
     const claims = await provider.getIdTokenClaims(idToken);
     if (!claims.success) {
-      // The log names the failure's code, resolved by `formatOidcFailure` to the stage it failed at and a fixed operator hint, and the provider type; it interpolates no value of the token or the error. The address carries only the coarse `invalid_token`.
-      log.error(`[oidc/callback] ID token claims rejected; ${formatOidcFailure(claims.error.code, provider.type)}`);
+      // The log names the failure's code, resolved by `formatIdTokenFailure` to the stage it failed at and a fixed operator hint, and the provider type; it interpolates no value of the token or the error. The address carries only the coarse `invalid_token`.
+      log.error(`[oidc/callback] ID token claims rejected; ${formatIdTokenFailure(claims.error.code, provider.type)}`);
       throw redirect(303, errorScreen(OIDC_ERROR.invalidToken, locale));
     }
 

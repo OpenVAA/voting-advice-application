@@ -1,6 +1,5 @@
 import qs from 'qs';
 import { addHeader } from '../utils/addHeader';
-import { isRefusedResponse } from '../utils/isRefusedResponse';
 import { parseResponse } from '../utils/parseResponse';
 import type { ParsedResponse, ResponseParser } from '../utils/parseResponse';
 import type { AdapterConfig, FetchOptions, GetOptions, PostOptions, SearchParams } from './universalAdapter.type';
@@ -40,8 +39,7 @@ export abstract class UniversalAdapter {
       );
     });
 
-    // The refusal test is the shared predicate, not a second inline spelling of it: `parseResponse` applies the SAME one, so the adapter and the parser cannot disagree about what a refusal is.
-    if (isRefusedResponse(response)) {
+    if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       const message = body?.message ?? '(Could not parse error message from Response.)';
       throw new Error(

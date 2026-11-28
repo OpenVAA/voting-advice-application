@@ -25,7 +25,7 @@ import {
   verifyMailedLink
 } from './mailedLink';
 import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
-import type { GrantClaim } from '$lib/auth/roles';
+import type { GrantClaim } from '$lib/auth/grants';
 
 const writerMocks = vi.hoisted(() => ({ createDataWriter: vi.fn() }));
 vi.mock('$lib/api/dataWriter', () => ({ createDataWriter: writerMocks.createDataWriter }));

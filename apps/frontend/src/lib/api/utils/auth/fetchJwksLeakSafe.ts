@@ -5,7 +5,7 @@
  *
  * That is not hypothetical. A live Idura callback produced exactly `[oidc/callback] ID token claims rejected; code= ERR_JOSE_GENERIC` and nothing else; the failing stage had to be recovered by reading jose's source. See `.planning/debug/resolved/idura-bank-auth-empty-client.md`, finding 2.
  *
- * Passing this as `createRemoteJWKSet`'s `[jose.customFetch]` option moves the classification in front of jose's two throw sites: we observe the status and the body ourselves and raise {@link OIDC_FAILURE.jwksUriHttpStatus}, {@link OIDC_FAILURE.jwksUriNotJson} or {@link OIDC_FAILURE.jwksUriUnreachable}, each naming the variable. jose's own checks then never fire, which is why `ERR_JOSE_GENERIC` reaching a log after this landed is itself a signal -- see its entry in `oidcFailure.ts`.
+ * Passing this as `createRemoteJWKSet`'s `[jose.customFetch]` option moves the classification in front of jose's two throw sites: we observe the status and the body ourselves and raise {@link ID_TOKEN_FAILURE.jwksUriHttpStatus}, {@link ID_TOKEN_FAILURE.jwksUriNotJson} or {@link ID_TOKEN_FAILURE.jwksUriUnreachable}, each naming the variable. jose's own checks then never fire, which is why `ERR_JOSE_GENERIC` reaching a log after this landed is itself a signal -- see its entry in `idTokenFailure.ts`.
  *
  * THE REDIRECT TRAP, worth stating because it is invisible at the call site. jose requests the key set with `redirect: 'manual'`, so a 301/302/307/308 is delivered as a response with a non-200 status and is NOT followed. A JWKS URI that redirects -- http to https, a trailing-slash normalisation, a moved `.well-known` path -- fails exactly like a 404. The hint on `jwksUriHttpStatus` says so, and a test pins it.
  *
@@ -20,7 +20,8 @@
  * NEVER the url, the hostname, the body text, the `location` value, the transport error's message (Node writes `getaddrinfo ENOTFOUND <host>` there), or any key material. A colocated test asserts each of those absences rather than trusting this comment. Do not add a field here without adding its absence test.
  */
 
-import { OIDC_FAILURE } from './oidcFailure';
+import { log } from '@openvaa/app-shared';
+import { ID_TOKEN_FAILURE } from './idTokenFailure';
 import type * as jose from 'jose';
 
 /**
@@ -41,7 +42,7 @@ function transportCode(error: unknown): string {
  *
  * Pass it to `createRemoteJWKSet` under the `[jose.customFetch]` key. On success it returns a `Response` carrying the same JSON body, so jose's subsequent `response.json()` behaves exactly as it would have unwrapped -- the happy path is unchanged by design, and a test pins that.
  *
- * Writes one `[oidc/jwks]` line to the server console at each throw site. That is deliberate duplication with the route-level `[oidc/callback]` line, because the two lines carry different things and reach the same reader: this one has the observed HTTP facts, which exist only here and must not cross the provider result boundary; the route's has the stage and the remedy. Server console and browser URL are different audiences, and only the opaque class is allowed to reach the second.
+ * Writes one `[oidc/jwks]` line to the server log at each throw site. That is deliberate duplication with the route-level `[oidc/callback]` line, because the two lines carry different things and reach the same reader: this one has the observed HTTP facts, which exist only here and must not cross the provider result boundary; the route's has the stage and the remedy. Server log and browser URL are different audiences, and only the opaque class is allowed to reach the second.
  *
  * @param url - The JWKS url jose is fetching. Used to make the request and NEVER put into a message or a log line.
  * @param options - jose's request options, forwarded unchanged. Carries the `accept` headers, `redirect: 'manual'` and the 5s `AbortSignal`.
@@ -61,28 +62,28 @@ export async function fetchJwksLeakSafe(
     if ((e as { name?: unknown })?.name === 'TimeoutError') throw e;
 
     const code = transportCode(e);
-    console.error(
+    log.error(
       `[oidc/jwks] key-set request failed before any HTTP response; transport=${code}. The url is not logged; it is the value of IDENTITY_PROVIDER_JWKS_URI.`
     );
     throw Object.assign(
       new Error(
         `Cannot verify ID token: the key-set endpoint configured in IDENTITY_PROVIDER_JWKS_URI could not be reached (transport=${code}).`
       ),
-      { code: OIDC_FAILURE.jwksUriUnreachable }
+      { code: ID_TOKEN_FAILURE.jwksUriUnreachable }
     );
   }
 
   if (response.status !== 200) {
     // A 3xx lands here like any other non-200: jose sets `redirect: 'manual'`, so the redirect is handed back rather than followed. Reporting the `location` header's PRESENCE (never its value) is what distinguishes "the URL moved" from "the URL is wrong", which are different edits to the same variable.
     const redirected = response.headers.has('location');
-    console.error(
+    log.error(
       `[oidc/jwks] key-set endpoint answered status=${response.status}${redirected ? ' with a location header (a redirect, which is NOT followed: the request sets redirect=manual)' : ''}. The url is not logged; it is the value of IDENTITY_PROVIDER_JWKS_URI.`
     );
     throw Object.assign(
       new Error(
         `Cannot verify ID token: the key-set endpoint configured in IDENTITY_PROVIDER_JWKS_URI answered status=${response.status}${redirected ? ' and is a redirect, which is not followed' : ''}.`
       ),
-      { code: OIDC_FAILURE.jwksUriHttpStatus }
+      { code: ID_TOKEN_FAILURE.jwksUriHttpStatus }
     );
   }
 
@@ -94,14 +95,14 @@ export async function fetchJwksLeakSafe(
   } catch {
     // Length and a single leading-`<` boolean, and nothing else. An HTML error page is the overwhelmingly common case and `looksLikeMarkup` identifies it without quoting one byte of a body that came from a host we do not control.
     const looksLikeMarkup = body.trimStart().startsWith('<');
-    console.error(
+    log.error(
       `[oidc/jwks] key-set endpoint answered 200 but the body is not JSON; content-type=${contentType} bytes=${body.length} looksLikeMarkup=${looksLikeMarkup}. The body and the url are not logged.`
     );
     throw Object.assign(
       new Error(
         `Cannot verify ID token: the key-set endpoint configured in IDENTITY_PROVIDER_JWKS_URI answered 200 but the body is not JSON (content-type=${contentType}, bytes=${body.length}, looksLikeMarkup=${looksLikeMarkup}).`
       ),
-      { code: OIDC_FAILURE.jwksUriNotJson }
+      { code: ID_TOKEN_FAILURE.jwksUriNotJson }
     );
   }
 

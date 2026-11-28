@@ -134,7 +134,7 @@ export function createContestantQuestionPage(page: Page) {
         if (isCheckbox) {
           // Select the SMALLEST VALID count instead of a hard-coded 2.
           // The base seed carries TWO multi-choice opinion questions with DIFFERENT windows (base-7 → 2..3, base-8 → exactly
-          // 1), so 2 clicks is over-max on base-8 and leaves Save permanently disabled — `walkRemainingOpinionQuestions`'s `expectContinueEnabled` would fail there. The Save button IS the validity signal (isMultiChoiceCountValid, multiChoiceValidity.ts:30).
+          // 1), so 2 clicks is over-max on base-8 and leaves Save permanently disabled — `walkRemainingOpinionQuestions`'s `expectContinueEnabled` would fail there. The Save button IS the validity signal (isMultiChoiceCountValid in `@openvaa/app-shared`).
           const selected = await selectSmallestValidMultiChoice({
             choices: scopedChoices,
             validWhenEnabled: page.getByTestId(testIds.contestant.questions.saveButton)

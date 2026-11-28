@@ -11,7 +11,7 @@
  *
  * Callers pass `validWhenEnabled` — a Locator for a control that is enabled iff the current selection is a VALID answer:
  *   - contestant app → `contestant-questions-save` (Save gates on
- *     `isMultiChoiceCountValid`, multiChoiceValidity.ts:30).
+ *     `isMultiChoiceCountValid` in `@openvaa/app-shared`).
  *   - voter app → `question-delete` (enabled iff an answer is persisted, and an
  *     out-of-range multi-choice selection is NEVER persisted —
  *     (voters)/(located)/questions/+layout.svelte handleAnswer).

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getEffectiveSelectionBounds, isMultiChoiceCountValid } from './multiChoiceValidity';
+import { getEffectiveSelectionBounds, isMultiChoiceCountValid } from './selectionBounds';
 
 /**
  * boundary matrix for the multi-choice selection-count validity helper.

@@ -1,6 +1,6 @@
 import { log } from '@openvaa/app-shared';
-import { ADMIN_GRANTS, CONTESTANT_GRANTS, hasAnyGrant, readSessionGrants } from './roles';
-import type { GrantClaim } from './roles';
+import { ADMIN_GRANTS, CONTESTANT_GRANTS, hasAnyGrant, readSessionGrants } from './grants';
+import type { GrantClaim } from './grants';
 
 /**
  * Whether a grant set opens the Admin App and not the Contestant App: it holds a shape of `ADMIN_GRANTS` and none of `CONTESTANT_GRANTS`.

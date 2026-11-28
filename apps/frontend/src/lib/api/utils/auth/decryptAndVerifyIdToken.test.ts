@@ -127,7 +127,7 @@ describe('decryptAndVerifyIdToken', () => {
     rsaOaep256EncPriv = oaep256.privateKey;
     rsaOaep256EncPrivJwk = { ...(await jose.exportJWK(oaep256.privateKey)), kid: 'idura-enc-key', alg: 'RSA-OAEP-256' };
 
-    // `TestKeySet` types its JWKs as `Record<string, unknown>` (see `keys.ts`), and `jose.JWK` is an interface, so it carries no implicit index signature -- hence the widening casts. The inverse cast has in-tree precedent in `fixtures.test.ts`.
+    // `TestKeySet` types its JWKs as `Record<string, unknown>` (see `keys.ts`), and `jose.JWK` is an interface, so it carries no implicit index signature -- hence the widening casts.
     rsaOaepKeys = {
       signingPrivateKey,
       signingPublicKey,

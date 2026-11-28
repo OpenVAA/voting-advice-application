@@ -2105,8 +2105,8 @@ describe('SupabaseDataProvider', () => {
       // The election filter is now applied by the RPC, so the adapter's job is to forward it and pass the payload through untouched.
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
         p_project_id: '00000000-0000-0000-0000-000000000001',
-        p_election_id: 'e1',
-        p_constituency_id: undefined,
+        p_election_ids: ['e1'],
+        p_constituency_ids: undefined,
         p_election_round: undefined
       });
       // cat3 is scoped to e2 and this mock deliberately returns it anyway. A client-side filter re-applied on top of the RPC would drop it, so its presence is the negative assertion that no such filter survives.
@@ -2215,8 +2215,8 @@ describe('SupabaseDataProvider', () => {
       expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
         p_project_id: '00000000-0000-0000-0000-000000000001',
-        p_election_id: undefined,
-        p_constituency_id: undefined,
+        p_election_ids: undefined,
+        p_constituency_ids: undefined,
         p_election_round: undefined
       });
       expect(mockSupabase.from).not.toHaveBeenCalled();
@@ -2229,15 +2229,14 @@ describe('SupabaseDataProvider', () => {
 
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
         p_project_id: '00000000-0000-0000-0000-000000000001',
-        p_election_id: 'e1',
-        p_constituency_id: 'c1',
+        p_election_ids: ['e1'],
+        p_constituency_ids: ['c1'],
         p_election_round: 2
       });
-      // The round is a scalar, so it adds no level to the fan-out.
       expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
     });
 
-    it('fans out over election and constituency arrays and merges the results by id', async () => {
+    it('passes election and constituency arrays to one RPC call', async () => {
       // A caller nominated in two elections passes a two-element array; picking [0] would drop the other election's scoped questions. See `contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/+layout.server.ts`, which derives electionId from the candidate's nominations.
       mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({
         categories: [{ id: 'cat1', name: { en: 'C' }, sort_order: 1, category_type: 'opinion' }],
@@ -2248,14 +2247,13 @@ describe('SupabaseDataProvider', () => {
 
       const result = await provider.getQuestionData({ electionId: ['e1', 'e2'], constituencyId: ['c1', 'c2'] });
 
-      expect(mockSupabase.rpc).toHaveBeenCalledTimes(4);
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
         p_project_id: '00000000-0000-0000-0000-000000000001',
-        p_election_id: 'e2',
-        p_constituency_id: 'c2',
+        p_election_ids: ['e1', 'e2'],
+        p_constituency_ids: ['c1', 'c2'],
         p_election_round: undefined
       });
-      // The four calls return the same rows, so the union must deduplicate them rather than return them four times.
       expect(result.categories).toHaveLength(1);
       expect(result.questions).toHaveLength(1);
     });
@@ -2493,8 +2491,8 @@ describe('SupabaseDataProvider', () => {
 
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
         p_project_id: '00000000-0000-0000-0000-000000000001',
-        p_election_id: 'e1',
-        p_constituency_id: 'co1',
+        p_election_ids: ['e1'],
+        p_constituency_ids: ['co1'],
         p_include_unconfirmed: true,
         p_election_round: undefined
       });
@@ -2514,16 +2512,15 @@ describe('SupabaseDataProvider', () => {
 
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
         p_project_id: '00000000-0000-0000-0000-000000000001',
-        p_election_id: 'e1',
-        p_constituency_id: 'co1',
+        p_election_ids: ['e1'],
+        p_constituency_ids: ['co1'],
         p_include_unconfirmed: false,
         p_election_round: 2
       });
-      // The round is a scalar, so it must not add a level to the fan-out: one election and one constituency still means exactly one call.
       expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
     });
 
-    it('fans out over arrays without multiplying by the election round', async () => {
+    it('passes election and constituency arrays to one RPC call', async () => {
       mockSupabase._mockRpcResponses['get_nominations'] = {
         data: [],
         error: null
@@ -2535,11 +2532,11 @@ describe('SupabaseDataProvider', () => {
         electionRound: 1
       });
 
-      expect(mockSupabase.rpc).toHaveBeenCalledTimes(4);
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
         p_project_id: '00000000-0000-0000-0000-000000000001',
-        p_election_id: 'e2',
-        p_constituency_id: 'co2',
+        p_election_ids: ['e1', 'e2'],
+        p_constituency_ids: ['co1', 'co2'],
         p_include_unconfirmed: false,
         p_election_round: 1
       });
@@ -2610,7 +2607,7 @@ describe('SupabaseDataProvider', () => {
 
     it('nomination objects include entityType, entityId, electionId, constituencyId fields', async () => {
       // Include orgNomRow so the candidate nomination's parent (n3 → organization) resolves in the in-memory parent-type lookup.
-      // Without it, the adapter clears parentNominationId to honor the Nomination "either both or neither" invariant. In production, get_nominations always returns all nominations for the election so the parent IS in the same fan-out.
+      // Without it, the adapter clears parentNominationId to honor the Nomination "either both or neither" invariant. In production, get_nominations always returns all nominations for the election so the parent IS in the same result.
       mockSupabase._mockRpcResponses['get_nominations'] = {
         data: [baseCandidateNomRow, orgNomRow],
         error: null
@@ -2631,7 +2628,7 @@ describe('SupabaseDataProvider', () => {
     });
 
     it('clears parentNominationId when the parent nomination is not in the result set', async () => {
-      // If the RPC fan-out doesn't include the parent (e.g., a cross-constituency parent that the filter excluded), the adapter MUST clear parentNominationId so the Nomination constructor's "either both or neither" invariant holds.
+      // If the RPC result doesn't include the parent (e.g., a cross-constituency parent that the filter excluded), the adapter MUST clear parentNominationId so the Nomination constructor's "either both or neither" invariant holds.
       mockSupabase._mockRpcResponses['get_nominations'] = {
         data: [baseCandidateNomRow], // no orgNomRow — parent unresolvable
         error: null
@@ -2646,7 +2643,7 @@ describe('SupabaseDataProvider', () => {
     });
 
     it('a ROOT nomination (parent_nomination_id IS null) yields parentNominationId null and no parentNominationType', async () => {
-      // Distinct input from the test above: there the parent id is set but its row is absent from the fan-out; here the column is genuinely null, which is the shape every top-level nomination has in production. Both reach the same output, so name them apart.
+      // Distinct input from the test above: there the parent id is set but its row is absent from the result; here the column is genuinely null, which is the shape every top-level nomination has in production. Both reach the same output, so name them apart.
       // This pins the null path against a BEHAVIOURAL change — someone replacing `?? null` with `?? undefined`, or setting parentNominationType unconditionally. It is NOT a proof that the null-guard is load-bearing: `Map.get(null)` returns undefined and `undefined ?? null` is null, so the guarded and unguarded expressions are runtime-identical on this path. That proof is a typecheck under mutation, not a unit test.
       mockSupabase._mockRpcResponses['get_nominations'] = {
         data: [orgNomRow],
@@ -2698,15 +2695,14 @@ describe('SupabaseDataProvider', () => {
 
       await provider.getNominationData();
 
-      // The regenerated RPC types `p_election_id` / `p_constituency_id` as `string | undefined`, so the provider now coerces the null fan-out locals to `undefined`. Omitting the value applies the SQL DEFAULT NULL — semantically identical to passing null (behavior-neutral).
+      // An unfiltered axis is omitted, so the SQL DEFAULT NULL applies.
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
         p_project_id: '00000000-0000-0000-0000-000000000001',
-        p_election_id: undefined,
-        p_constituency_id: undefined,
+        p_election_ids: undefined,
+        p_constituency_ids: undefined,
         p_include_unconfirmed: false,
         p_election_round: undefined
       });
-      // `convertFilterValue(undefined)` returns the single-element `[null]` sentinel, so the unfiltered read is exactly one call rather than none.
       expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
     });
   });
@@ -2780,24 +2776,23 @@ describe('SupabaseDataProvider', () => {
 
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
         p_project_id: PROJECT_ID,
-        p_election_id: undefined,
-        p_constituency_id: undefined,
+        p_election_ids: undefined,
+        p_constituency_ids: undefined,
         p_include_unconfirmed: false,
         p_election_round: undefined
       });
     });
 
-    it('getNominationData passes p_project_id on every call of a multi-election fan-out', async () => {
+    it('getNominationData passes p_project_id on a multi-election read', async () => {
       mockSupabase._mockRpcResponses['get_nominations'] = { data: [], error: null };
 
       await provider.getNominationData({ electionId: ['e1', 'e2'], constituencyId: ['c1', 'c2'] });
 
-      // Two elections crossed with two constituencies is four calls, and the project key must be on all four rather than on the first.
-      expect(mockSupabase.rpc).toHaveBeenCalledTimes(4);
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
       const projectKeys = mockSupabase.rpc.mock.calls.map(
         (call) => (call[1] as Record<string, unknown> | undefined)?.p_project_id
       );
-      expect(projectKeys).toEqual([PROJECT_ID, PROJECT_ID, PROJECT_ID, PROJECT_ID]);
+      expect(projectKeys).toEqual([PROJECT_ID]);
     });
 
     it('getQuestionData passes p_project_id on the unfiltered call, where both scope ids are null', async () => {
@@ -2807,23 +2802,22 @@ describe('SupabaseDataProvider', () => {
 
       expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
         p_project_id: PROJECT_ID,
-        p_election_id: undefined,
-        p_constituency_id: undefined,
+        p_election_ids: undefined,
+        p_constituency_ids: undefined,
         p_election_round: undefined
       });
     });
 
-    it('getQuestionData passes p_project_id on every call of a multi-election fan-out', async () => {
+    it('getQuestionData passes p_project_id on a multi-election read', async () => {
       mockSupabase._mockRpcResponses['get_questions'] = { data: { categories: [], questions: [] }, error: null };
 
       await provider.getQuestionData({ electionId: ['e1', 'e2'], constituencyId: ['c1', 'c2'] });
 
-      // Two elections crossed with two constituencies is four calls, and the project key must be on all four rather than on the first.
-      expect(mockSupabase.rpc).toHaveBeenCalledTimes(4);
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
       const projectKeys = mockSupabase.rpc.mock.calls.map(
         (call) => (call[1] as Record<string, unknown> | undefined)?.p_project_id
       );
-      expect(projectKeys).toEqual([PROJECT_ID, PROJECT_ID, PROJECT_ID, PROJECT_ID]);
+      expect(projectKeys).toEqual([PROJECT_ID]);
     });
 
     it('the provider issues no unscoped read: every table chain it creates carries the project filter', async () => {
@@ -2916,20 +2910,15 @@ describe('SupabaseDataProvider', () => {
       await expect(provider.getConstituencyData()).rejects.toThrow('getConstituencyData (constituencies): c-boom');
     });
 
-    it('getNominationData requests range(0, 49999) on every get_nominations call of the fan-out', async () => {
+    it('getNominationData requests range(0, 49999) on its get_nominations call', async () => {
       mockSupabase._mockRpcResponses['get_nominations'] = { data: [], error: null };
 
       await provider.getNominationData({ electionId: ['e1', 'e2'], constituencyId: ['c1', 'c2'] });
 
-      expect(rpcRangeCallsFor(mockSupabase, 'get_nominations')).toEqual([
-        [[0, 49999]],
-        [[0, 49999]],
-        [[0, 49999]],
-        [[0, 49999]]
-      ]);
+      expect(rpcRangeCallsFor(mockSupabase, 'get_nominations')).toEqual([[[0, 49999]]]);
     });
 
-    it('getNominationData rejects with its prefix when a fan-out call fails', async () => {
+    it('getNominationData rejects with its prefix when the RPC call fails', async () => {
       mockSupabase._mockRpcResponses['get_nominations'] = { data: null, error: { message: 'rpc-boom' } };
       await expect(provider.getNominationData({ electionId: 'e1', constituencyId: 'c1' })).rejects.toThrow(
         'getNominationData: rpc-boom'

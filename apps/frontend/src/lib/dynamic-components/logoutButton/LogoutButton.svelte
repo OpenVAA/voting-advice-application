@@ -113,7 +113,7 @@ With unsaved changes on the page the modal's dialog is named by the sentence say
     clearLogoutDeadline();
     // The page's navigations are held until the sign-out settles.
     await holdNavigationWhile(() => (reason ? logout({ reason }) : logout())).catch((e) => {
-      log.error(`Error logging out: ${e?.message}`);
+      log.error('Error logging out', { err: e });
     });
     if (modalOpen) timedModalRef?.closeModal();
     leaving = false;

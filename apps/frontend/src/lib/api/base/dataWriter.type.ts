@@ -1,23 +1,9 @@
-import type {
-  LocalizedAnswer,
-  LocalizedQuestionArguments,
-  LocalizedQuestionInfoSection,
-  LocalizedString,
-  LocalizedTermDefinition,
-  LocalizedVideoContent,
-  ServedEntityType
-} from '@openvaa/app-shared';
-import type { Id, Serializable } from '@openvaa/core';
+import type { LocalizedAnswer, LocalizedString, ServedEntityType } from '@openvaa/app-shared';
+import type { Id } from '@openvaa/core';
 import type { AllianceData, CandidateData, Colors, EntityType, Image, OrganizationData } from '@openvaa/data';
-import type { AdminFeature } from '$lib/admin/features';
-import type { GrantClaim } from '$lib/auth/roles';
+import type { GrantClaim } from '$lib/auth/grants';
 import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
-import type {
-  ActiveJobQueryParams,
-  JobInfo,
-  JobMessage,
-  PastJobQueryParams
-} from '$lib/server/admin/jobs/jobStore.type';
+import type { ActiveJobQueryParams, JobInfo, PastJobQueryParams } from '$lib/server/admin/jobs/jobStore.type';
 import type { IdentityProviderRegistrationResult } from '$lib/server/contestant/identityProviderRegistration';
 import type { DataApiActionResult } from './actionResult.type';
 import type { AdapterType } from './adapterType.type';
@@ -372,18 +358,18 @@ export type LocalizedAnswers = {
 };
 
 /**
- * What an answer setter reports when the write SUCCEEDED but the value it read back could not be validated (decision **B3**, requirement **D8**).
+ * What an answer setter reports when the write SUCCEEDED but the value it read back could not be validated.
  *
- * The write is not in doubt — the RPC returned without an error. What is in doubt is the state the adapter is about to report as the entity's new answers, and reporting an unverified state as a verified one is what let a malformed read-back clear a candidate's edit buffer (fact 5). This says "the write happened, its result is unknown" instead.
+ * The write is not in doubt — the RPC returned without an error. What is in doubt is the state the adapter is about to report as the entity's new answers, and reporting an unverified state as a verified one would let a malformed read-back clear a candidate's edit buffer. This says "the write happened, its result is unknown" instead.
  *
- * A STRING rather than an empty object or a branded record. `LocalizedAnswers` is an open record keyed by question id, so any object-shaped sentinel could in principle collide with a real question id — `{ unverified: true }` is indistinguishable from an entity that answered a question called `unverified`. A string can never be a `LocalizedAnswers`, so the union narrows unambiguously and no collision is expressible. It also survives the `devalue` serialization boundary, which a `Symbol` would not (the reason decision **B1** rejected symbol branding).
+ * A STRING rather than an empty object or a branded record. `LocalizedAnswers` is an open record keyed by question id, so any object-shaped sentinel could in principle collide with a real question id — `{ unverified: true }` is indistinguishable from an entity that answered a question called `unverified`. A string can never be a `LocalizedAnswers`, so the union narrows unambiguously and no collision is expressible. It also survives the `devalue` serialization boundary, which a `Symbol` would not, so symbol branding is not an option.
  */
 export type UnverifiedAnswers = 'unverified-answers';
 
 /**
  * What the answer setters resolve to: the validated answers map, or {@link UnverifiedAnswers}.
  *
- * The union is deliberately NOT collapsible by a `??` or a spread — the two arms have different TYPES, so a consumer that ignores the distinction fails to typecheck rather than silently degrading. That is the property requirement **D8** asks for and the one the previous `?? {}` destroyed.
+ * The union is deliberately NOT collapsible by a `??` or a spread — the two arms have different TYPES, so a consumer that ignores the distinction fails to typecheck rather than silently degrading. A `?? {}` would erase exactly that distinction.
  */
 export type SetAnswersResult = LocalizedAnswers | UnverifiedAnswers;
 
@@ -675,27 +661,6 @@ export type UpdateEntityPropertiesResult =
   | { type: 'saved'; properties: SavedEntityProps; localizedNames: Partial<LocalizedEntityNames> }
   | { type: 'nameRefused' };
 
-/**
- * Result of an admin job.
- * TODO: Define in a more logical place when saved job listing is implemented.
- */
-export type AdminJobRecord = {
-  jobId: JobInfo['id'];
-  jobType: AdminFeature;
-  electionId: Id;
-  /**
-   * Author email
-   */
-  author: string;
-  endStatus: 'completed' | 'failed' | 'aborted'; // TODO: this could be dynamic, right?
-  startTime?: string;
-  endTime?: string;
-  input?: Serializable;
-  output?: Serializable;
-  messages?: Array<JobMessage>;
-  metadata?: Serializable;
-};
-
 ////////////////////////////////////////////////////////////////////
 // Types for building the params to DataWriter methods
 ////////////////////////////////////////////////////////////////////
@@ -733,8 +698,6 @@ export type GetNominationParentOptionsOptions = WithTargetEntity & {
   contests: ReadonlyArray<NominationContest>;
   locale: string;
 };
-
-export type SetQuestionOptions = WithTargetId & { data: TemporarySetQuestionData };
 
 export type GetUserEntitiesOptions = {
   locale?: string;
@@ -875,18 +838,6 @@ export type WithUserSettings = {
   settings: UserSettings;
 };
 
-/**
- * A temporary type for setting `Question` data, which will be updated later to allow for setting all properties. It currently supports only `customData` properties.
- */
-export type TemporarySetQuestionData = {
-  customData: {
-    arguments?: Array<LocalizedQuestionArguments>;
-    infoSections?: Array<LocalizedQuestionInfoSection>;
-    terms?: Array<LocalizedTermDefinition>;
-    video?: LocalizedVideoContent;
-  };
-};
-
 export type GetActiveJobsOptions = ActiveJobQueryParams;
 
 export type GetPastJobsOptions = PastJobQueryParams;
@@ -904,5 +855,3 @@ export type AbortJobOptions = {
   jobId: string;
   reason?: string;
 };
-
-export type InsertJobResultOptions = { data: AdminJobRecord };

@@ -60,7 +60,7 @@ function localsWith({
           : { data: { user: null }, error: { message: 'invalid JWT: unable to parse or verify signature' } }
       )
     },
-    // The RPCs the gate reaches, answered by name. `get_caller_account_state` is the identity read's own call, for the caller's password fact, answered as for a user who has a password. `get_user_entities`, which the identity read makes only for an account an identity provider made, answers as for a user who edits nothing. Every other name is the database's `user_can` for this caller on the deployment's project, which defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly.
+    // The RPCs the gate reaches, answered by name. `get_caller_account_state` is the identity read's own call, for the caller's password fact, answered as for a user who has a password. `get_user_entities`, which the identity read makes only for an account an identity provider made, answers as for a user who edits nothing. Every other name is the database's `user_can` for this caller on the deployment's project, which defaults to `true` so the cases about the SESSION keep measuring that; the NON-admin case sets it to `false`.
     rpc: vi.fn(async (name: string) => {
       if (name === 'get_caller_account_state')
         return { data: { password_set: true, pending_email_taken: false }, error: null };
@@ -102,7 +102,7 @@ function callActive(locals: App.Locals): Promise<Response> {
   } as unknown as Parameters<typeof GET>[0]) as Promise<Response>;
 }
 
-describe('/api/admin/jobs authorization — a VERIFIED identity, then the role (CR-01)', () => {
+describe('/api/admin/jobs authorization — a VERIFIED identity, then user_can (CR-01)', () => {
   beforeEach(() => {
     // `getUserData` swallows the adapter's throw into a structured `error` record; keep the suite's stdout clean without silencing the assertions.
     configureLogger({ level: 'silent' });
@@ -135,7 +135,7 @@ describe('/api/admin/jobs authorization — a VERIFIED identity, then the role (
     expect(jobStoreMocks.getActiveJobs).not.toHaveBeenCalled();
   });
 
-  it('still answers a verified NON-admin with the unchanged 403', async () => {
+  it('still answers a verified NON-admin, whom user_can refuses, with the unchanged 403', async () => {
     const user = { id: 'cand-1', email: 'candidate@example.com', user_metadata: {} };
     const response = await callActive(
       localsWith({
@@ -146,7 +146,8 @@ describe('/api/admin/jobs authorization — a VERIFIED identity, then the role (
           ]),
           expires_at: Math.floor(Date.now() / 1000) + 3600
         },
-        verifiedUser: user
+        verifiedUser: user,
+        userCan: { data: false, error: null }
       })
     );
 

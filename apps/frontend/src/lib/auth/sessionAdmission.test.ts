@@ -1,9 +1,9 @@
 import { configureLogger, log } from '@openvaa/app-shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ADMIN_GRANTS, CONTESTANT_GRANTS, readGrants } from './roles';
+import { ADMIN_GRANTS, CONTESTANT_GRANTS, readGrants } from './grants';
 import { admitSession, claimAndRefresh } from './sessionAdmission';
 import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
-import type { GrantClaim, GrantShape } from './roles';
+import type { GrantClaim, GrantShape } from './grants';
 import type { SessionAdmissionContext } from './sessionAdmission';
 
 /**

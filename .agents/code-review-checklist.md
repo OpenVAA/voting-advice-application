@@ -11,7 +11,7 @@ When performing code review, double check all of the items below:
 - [ ] The repo documentation markdown files are updated if the changes touch upon those.
 - [ ] If the change adds functions available to the user, tracking events are enabled with new ones defined if needed.
 - [ ] Any new Svelte components that have been created follow the [Svelte component guidelines](<apps/docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md>).
-- [ ] Errors are handled properly and logged in the code.
+- [ ] Errors are handled properly and logged in the code. A caught error is passed to `log.*` as `{ err }`, never interpolated into the message.
 - [ ] Troubleshoot any failing checks in the PR.
 - [ ] Check that parts of the application that share dependencies with the PR but are not included in it are not unduly affected.
 - [ ] The changes pass the [WCAG A and AA requirements for accessibility](https://usability.yale.edu/web-accessibility/articles/wcag2-checklist).

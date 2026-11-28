@@ -61,12 +61,11 @@ The same component can also be used to display the answers of the voter and anot
 -->
 
 <script lang="ts">
-  import { getCustomData } from '@openvaa/app-shared';
+  import { getCustomData, getEffectiveSelectionBounds } from '@openvaa/app-shared';
   import { isMultipleChoiceQuestion, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { cn, concatClass, getUUID } from '$lib/utils/components';
-  import { getEffectiveSelectionBounds } from '$lib/utils/multiChoiceValidity';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
   import type { QuestionChoicesProps } from './QuestionChoices.type';

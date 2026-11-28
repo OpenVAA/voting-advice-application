@@ -4,10 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { ENTITY_TYPE } from '@openvaa/data';
 import { Constants } from '@openvaa/supabase-types';
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { GRANT_ROLES, GRANT_SCOPES } from '$lib/auth/roles';
+import { GRANT_ROLES, GRANT_SCOPES } from '$lib/auth/grants';
 import type { EntityType } from '@openvaa/data';
 import type { Enums } from '@openvaa/supabase-types';
-import type { GrantRole, GrantScope, GrantShape } from '$lib/auth/roles';
+import type { GrantRole, GrantScope, GrantShape } from '$lib/auth/grants';
 
 /**
  * The frontend defines its grant and entity vocabulary itself, so it does not depend on the generated database types. These tests fail when that vocabulary and the database's enums disagree, in either direction.

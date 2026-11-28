@@ -2,7 +2,7 @@ import { expect, test } from '../../fixtures/shared/invitationFlow.fixture';
 import { TIMEOUTS } from '../../helpers/timeouts';
 import { SIGN_IN_LINK_EMAIL_SUBJECT, SIGN_IN_LINK_EMAIL_SUBJECT_FI } from '../../utils/invitationConstants';
 import type { SeededInvitation } from '@openvaa/dev-seed';
-import type { GrantClaim } from '../../../../apps/frontend/src/lib/auth/roles';
+import type { GrantClaim } from '../../../../apps/frontend/src/lib/auth/grants';
 import type { ReceivedSignInLink } from '../../fixtures/shared/invitationFlow.fixture';
 import type { AccountAccessAnswer } from '../../utils/accountAccessClient';
 import type { SessionTokens } from '../../utils/authApi';

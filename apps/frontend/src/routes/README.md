@@ -18,8 +18,7 @@ shell components that used to sit here now live outside the router's namespace, 
 `SingleCardContent.svelte` (the `<h1>` and the `[data-focus-on-nav]` post-navigation focus
 target), `Banner.svelte` and `MaintenancePage.svelte`. Import them as
 `import { MainContent } from '$layouts/main';` — the alias resolves identically from any
-depth, and `$lib/layouts/tests/noRelativeLayoutImports.test.ts` fails the unit suite if a
-relative path to one of them reappears. The post-login redirect-target validator that the two
+depth. The post-login redirect-target validator that the two
 login form actions share also lives outside this directory, at
 `$lib/routes/loginRedirectTarget.ts`, alongside the route definitions.
 

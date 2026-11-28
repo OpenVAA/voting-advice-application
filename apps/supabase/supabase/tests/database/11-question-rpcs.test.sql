@@ -12,7 +12,7 @@
 --
 -- Membership is asserted against specific row ids rather than against absolute result counts. A count assertion would pass or fail depending on whether the database happens to carry dev-seed data at the time of the run, which is exactly the kind of environment-dependent test the E2E hard rule forbids.
 --
--- Depends on: 00-helpers.test.sql (create_test_data, test_id); the 4-argument get_questions (p_project_id, p_election_id, p_constituency_id, p_election_round), declared in schema/505-question-rpcs.sql; and the 5-argument get_nominations (p_project_id, p_election_id, p_constituency_id, p_include_unconfirmed, p_election_round), declared in schema/503-entity-rpcs.sql. Both carry a required leading project parameter with no DEFAULT, and these assertions depend on those argument counts.
+-- Depends on: 00-helpers.test.sql (create_test_data, test_id); the 4-argument get_questions (p_project_id, p_election_ids, p_constituency_ids, p_election_round), declared in schema/505-question-rpcs.sql; and the 5-argument get_nominations (p_project_id, p_election_ids, p_constituency_ids, p_include_unconfirmed, p_election_round), declared in schema/503-entity-rpcs.sql. Both carry a required leading project parameter with no DEFAULT, and these assertions depend on those argument counts.
 BEGIN;
 
 SET
@@ -23,7 +23,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (55);
+  plan (61);
 
 -- Create test fixture data
 SELECT
@@ -204,7 +204,7 @@ SELECT
   ok (
     has_function_privilege(
       'anon',
-      'public.get_questions(uuid, uuid, uuid, integer)',
+      'public.get_questions(uuid, uuid[], uuid[], integer)',
       'EXECUTE'
     ),
     'anon can EXECUTE get_questions'
@@ -214,7 +214,7 @@ SELECT
   ok (
     has_function_privilege(
       'authenticated',
-      'public.get_questions(uuid, uuid, uuid, integer)',
+      'public.get_questions(uuid, uuid[], uuid[], integer)',
       'EXECUTE'
     ),
     'authenticated can EXECUTE get_questions'
@@ -267,8 +267,8 @@ SELECT
         n.nspname = 'public'
         AND p.proname = 'get_questions'
     ),
-    'get_questions(uuid,uuid,uuid,integer)',
-    'get_questions has the four-argument signature, so the three-argument overload was dropped'
+    'get_questions(uuid,uuid[],uuid[],integer)',
+    'get_questions has the four-argument signature taking arrays of election and constituency ids'
   );
 
 SELECT
@@ -283,8 +283,8 @@ SELECT
         n.nspname = 'public'
         AND p.proname = 'get_nominations'
     ),
-    'get_nominations(uuid,uuid,uuid,boolean,integer)',
-    'get_nominations has the five-argument signature, so the four-argument overload was dropped'
+    'get_nominations(uuid,uuid[],uuid[],boolean,integer)',
+    'get_nominations has the five-argument signature taking arrays of election and constituency ids'
   );
 
 -- =====================================================================
@@ -336,47 +336,47 @@ SELECT
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000003'
     ),
-    'NULL p_election_id returns the election-A-only category (NULL parameter means all)'
+    'NULL p_election_ids returns the election-A-only category (NULL parameter means all)'
   );
 
 SELECT
   ok (
     pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_a')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_a')]),
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000001'
     ),
-    'p_election_id includes the category whose election_ids is NULL'
+    'p_election_ids includes the category whose election_ids is NULL'
   );
 
 SELECT
   ok (
     pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_a')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_a')]),
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000002'
     ),
-    'p_election_id includes the category whose election_ids is an empty array'
+    'p_election_ids includes the category whose election_ids is an empty array'
   );
 
 SELECT
   ok (
     pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_a')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_a')]),
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000003'
     ),
-    'p_election_id includes the category naming that election'
+    'p_election_ids includes the category naming that election'
   );
 
 SELECT
   ok (
     NOT pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_b')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_b')]),
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000003'
     ),
-    'p_election_id excludes the category naming a different election'
+    'p_election_ids excludes the category naming a different election'
   );
 
 -- =====================================================================
@@ -389,47 +389,47 @@ SELECT
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000013'
     ),
-    'NULL p_election_id returns the election-A-only question (NULL parameter means all)'
+    'NULL p_election_ids returns the election-A-only question (NULL parameter means all)'
   );
 
 SELECT
   ok (
     pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_a')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_a')]),
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000011'
     ),
-    'p_election_id includes the question whose election_ids is NULL'
+    'p_election_ids includes the question whose election_ids is NULL'
   );
 
 SELECT
   ok (
     pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_a')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_a')]),
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000012'
     ),
-    'p_election_id includes the question whose election_ids is an empty array'
+    'p_election_ids includes the question whose election_ids is an empty array'
   );
 
 SELECT
   ok (
     pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_a')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_a')]),
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000013'
     ),
-    'p_election_id includes the question naming that election'
+    'p_election_ids includes the question naming that election'
   );
 
 SELECT
   ok (
     NOT pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_b')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_b')]),
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000013'
     ),
-    'p_election_id excludes the question naming a different election'
+    'p_election_ids excludes the question naming a different election'
   );
 
 -- =====================================================================
@@ -442,7 +442,7 @@ SELECT
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000004'
     ),
-    'NULL p_constituency_id returns the constituency-A-only category (NULL parameter means all)'
+    'NULL p_constituency_ids returns the constituency-A-only category (NULL parameter means all)'
   );
 
 SELECT
@@ -451,12 +451,12 @@ SELECT
       get_questions (
         test_id ('project_a'),
         NULL,
-        test_id ('constituency_a')
+        ARRAY[test_id ('constituency_a')]
       ),
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000001'
     ),
-    'p_constituency_id includes the category whose constituency_ids is NULL'
+    'p_constituency_ids includes the category whose constituency_ids is NULL'
   );
 
 SELECT
@@ -465,12 +465,12 @@ SELECT
       get_questions (
         test_id ('project_a'),
         NULL,
-        test_id ('constituency_a')
+        ARRAY[test_id ('constituency_a')]
       ),
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000002'
     ),
-    'p_constituency_id includes the category whose constituency_ids is an empty array'
+    'p_constituency_ids includes the category whose constituency_ids is an empty array'
   );
 
 SELECT
@@ -479,12 +479,12 @@ SELECT
       get_questions (
         test_id ('project_a'),
         NULL,
-        test_id ('constituency_a')
+        ARRAY[test_id ('constituency_a')]
       ),
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000004'
     ),
-    'p_constituency_id includes the category naming that constituency'
+    'p_constituency_ids includes the category naming that constituency'
   );
 
 SELECT
@@ -493,12 +493,12 @@ SELECT
       get_questions (
         test_id ('project_a'),
         NULL,
-        test_id ('constituency_b')
+        ARRAY[test_id ('constituency_b')]
       ),
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000004'
     ),
-    'p_constituency_id excludes the category naming a different constituency'
+    'p_constituency_ids excludes the category naming a different constituency'
   );
 
 -- =====================================================================
@@ -511,7 +511,7 @@ SELECT
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000014'
     ),
-    'NULL p_constituency_id returns the constituency-A-only question (NULL parameter means all)'
+    'NULL p_constituency_ids returns the constituency-A-only question (NULL parameter means all)'
   );
 
 SELECT
@@ -520,12 +520,12 @@ SELECT
       get_questions (
         test_id ('project_a'),
         NULL,
-        test_id ('constituency_a')
+        ARRAY[test_id ('constituency_a')]
       ),
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000011'
     ),
-    'p_constituency_id includes the question whose constituency_ids is NULL'
+    'p_constituency_ids includes the question whose constituency_ids is NULL'
   );
 
 SELECT
@@ -534,12 +534,12 @@ SELECT
       get_questions (
         test_id ('project_a'),
         NULL,
-        test_id ('constituency_a')
+        ARRAY[test_id ('constituency_a')]
       ),
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000012'
     ),
-    'p_constituency_id includes the question whose constituency_ids is an empty array'
+    'p_constituency_ids includes the question whose constituency_ids is an empty array'
   );
 
 SELECT
@@ -548,12 +548,12 @@ SELECT
       get_questions (
         test_id ('project_a'),
         NULL,
-        test_id ('constituency_a')
+        ARRAY[test_id ('constituency_a')]
       ),
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000014'
     ),
-    'p_constituency_id includes the question naming that constituency'
+    'p_constituency_ids includes the question naming that constituency'
   );
 
 SELECT
@@ -562,12 +562,12 @@ SELECT
       get_questions (
         test_id ('project_a'),
         NULL,
-        test_id ('constituency_b')
+        ARRAY[test_id ('constituency_b')]
       ),
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000014'
     ),
-    'p_constituency_id excludes the question naming a different constituency'
+    'p_constituency_ids excludes the question naming a different constituency'
   );
 
 -- =====================================================================
@@ -683,16 +683,46 @@ SELECT
 SELECT
   ok (
     pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_b')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_b')]),
       'categories',
       'eeeeeeee-eeee-eeee-eeee-000000000001'
     )
     AND NOT pg_temp.result_has (
-      get_questions (test_id ('project_a'), test_id ('election_b')),
+      get_questions (test_id ('project_a'), ARRAY[test_id ('election_b')]),
       'questions',
       'eeeeeeee-eeee-eeee-eeee-000000000013'
     ),
     'A question is excluded by its own election_ids even when its category survives the filter'
+  );
+
+-- =====================================================================
+-- Section 10b: an id array matches a row naming any one of its ids
+-- =====================================================================
+SELECT
+  ok (
+    pg_temp.result_has (
+      get_questions (
+        test_id ('project_a'),
+        ARRAY[test_id ('election_b'), test_id ('election_a')]
+      ),
+      'categories',
+      'eeeeeeee-eeee-eeee-eeee-000000000003'
+    ),
+    'p_election_ids includes the category naming any one of the given elections'
+  );
+
+SELECT
+  ok (
+    pg_temp.result_has (
+      get_questions (
+        test_id ('project_a'),
+        NULL,
+        ARRAY[test_id ('constituency_b'), test_id ('constituency_a')]
+      ),
+      'categories',
+      'eeeeeeee-eeee-eeee-eeee-000000000004'
+    ),
+    'p_constituency_ids includes the category naming any one of the given constituencies'
   );
 
 -- =====================================================================
@@ -829,12 +859,70 @@ SELECT
   lives_ok (
     $$SELECT count(*) FROM get_nominations(
       p_project_id => test_id('project_a'),
-      p_election_id => NULL,
-      p_constituency_id => NULL,
+      p_election_ids => NULL,
+      p_constituency_ids => NULL,
       p_include_unconfirmed => false,
       p_election_round => NULL
     )$$,
     'get_nominations resolves when all five parameters are passed by name'
+  );
+
+SELECT
+  ok (
+    EXISTS (
+      SELECT
+        1
+      FROM
+        get_nominations (
+          p_project_id => test_id ('project_a'),
+          p_election_ids => ARRAY[test_id ('election_b'), test_id ('election_a')]
+        ) n
+      WHERE
+        n.id = test_id ('nomination_cand_a')
+    ),
+    'p_election_ids includes a nomination in any one of the given elections'
+  );
+
+SELECT
+  ok (
+    NOT EXISTS (
+      SELECT
+        1
+      FROM
+        get_nominations (
+          p_project_id => test_id ('project_a'),
+          p_election_ids => ARRAY[test_id ('election_b')]
+        ) n
+      WHERE
+        n.id = test_id ('nomination_cand_a')
+    ),
+    'p_election_ids excludes a nomination in none of the given elections'
+  );
+
+SELECT
+  ok (
+    EXISTS (
+      SELECT
+        1
+      FROM
+        get_nominations (
+          p_project_id => test_id ('project_a'),
+          p_constituency_ids => ARRAY[test_id ('constituency_b'), test_id ('constituency_a')]
+        ) n
+      WHERE
+        n.id = test_id ('nomination_cand_a')
+    ),
+    'p_constituency_ids includes a nomination in any one of the given constituencies'
+  );
+
+-- A nomination's round is never NULL, so the round filter's equality cannot drop a stored nomination of the default round.
+SELECT
+  throws_ok (
+    $$INSERT INTO nominations (project_id, organization_id, election_id, constituency_id, election_round, confirmed)
+      VALUES (test_id('project_a'), test_id('org_a'), test_id('election_a'), test_id('constituency_a'), NULL, true)$$,
+    '23502',
+    'null value in column "election_round" of relation "nominations" violates not-null constraint',
+    'A nomination with a NULL election_round is refused'
   );
 
 -- =====================================================================

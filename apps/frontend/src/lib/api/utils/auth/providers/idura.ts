@@ -15,7 +15,7 @@ import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
 import { requireConfigured } from './requireConfigured';
 import { uiLocalesFor } from './uiLocales';
-import { decryptAndVerifyIdToken } from '../decryptAndVerifyIdToken';
+import { getIdTokenClaimsWith } from '../decryptAndVerifyIdToken';
 import type {
   AuthConfig,
   AuthorizeParams,
@@ -140,35 +140,6 @@ export const iduraProvider: IdentityProvider = {
   },
 
   async getIdTokenClaims(idToken: string): Promise<IdTokenClaimsResult> {
-    try {
-      const payload = await decryptAndVerifyIdToken(idToken);
-
-      const extractedClaims: Record<string, string> = Object.fromEntries(
-        IDURA_FTN_AUTH_CONFIG.extractClaims.map((claim) => [claim, String(payload[claim] ?? '')])
-      );
-
-      return {
-        success: true,
-        data: {
-          firstName: String(payload[IDURA_FTN_AUTH_CONFIG.firstNameProp] ?? ''),
-          lastName: String(payload[IDURA_FTN_AUTH_CONFIG.lastNameProp] ?? ''),
-          identifier: String(payload[IDURA_FTN_AUTH_CONFIG.identityMatchProp] ?? ''),
-          extractedClaims
-        }
-      };
-    } catch (e) {
-      if (e instanceof Error && 'code' in e) {
-        return {
-          success: false,
-          error: {
-            code: `${(e as Error & { code: string }).code}`
-          }
-        };
-      }
-      return {
-        success: false,
-        error: {}
-      };
-    }
+    return getIdTokenClaimsWith(IDURA_FTN_AUTH_CONFIG, idToken);
   }
 };

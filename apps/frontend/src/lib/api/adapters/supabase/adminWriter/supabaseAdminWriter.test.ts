@@ -5,7 +5,7 @@ import type { LogRecord } from '@openvaa/app-shared';
 import type { Database } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AdminFeature } from '$lib/admin/features';
-import type { TemporarySetQuestionData } from '$lib/api/base/dataWriter.type';
+import type { TemporarySetQuestionData } from '$lib/api/base/adminWriter.type';
 import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
 
 // Mock $env/dynamic/public before any imports that depend on it

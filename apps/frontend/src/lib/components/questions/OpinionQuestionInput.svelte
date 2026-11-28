@@ -29,11 +29,10 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 -->
 
 <script lang="ts">
-  import { getCustomData, log } from '@openvaa/app-shared';
+  import { getCustomData, isMultiChoiceCountValid, log } from '@openvaa/app-shared';
   import { isBooleanQuestion, isMultipleChoiceQuestion, isNumberQuestion, isSingleChoiceQuestion } from '@openvaa/data';
   import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
-  import { isMultiChoiceCountValid } from '$lib/utils/multiChoiceValidity';
   import NumberScaleInput from './NumberScaleInput.svelte';
   import QuestionChoices from './QuestionChoices.svelte';
   import ErrorMessage from '../errorMessage/ErrorMessage.svelte';

@@ -316,7 +316,6 @@ const GUARDED_SOURCES = [
   `${ADAPTER_DIR}/adminWriter/supabaseAdminWriter.ts`,
   `${ADAPTER_DIR}/feedbackWriter/supabaseFeedbackWriter.ts`,
   `${ADAPTER_DIR}/sessionGone.ts`,
-  `${ADAPTER_DIR}/utils/bySortOrderThenId.ts`,
   `${ADAPTER_DIR}/utils/convertFilterValue.ts`,
   `${ADAPTER_DIR}/utils/entityNominations.ts`,
   `${ADAPTER_DIR}/utils/fetchAllRows.ts`,

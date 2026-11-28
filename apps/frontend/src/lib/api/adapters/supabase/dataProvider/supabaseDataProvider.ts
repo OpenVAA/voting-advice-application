@@ -10,7 +10,6 @@ import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
 import { parseAnswers } from '$lib/api/utils/parseAnswers';
 import { constants } from '$lib/utils/constants';
 import { supabaseAdapterMixin } from '../supabaseAdapter';
-import { bySortOrderThenId } from '../utils/bySortOrderThenId';
 import { convertFilterValue } from '../utils/convertFilterValue';
 import { fetchAllRows } from '../utils/fetchAllRows';
 import { SETTINGS_PARSE_FAILURE_MESSAGE } from '../utils/parseFailureMessages';
@@ -43,12 +42,7 @@ import type {
 import type { AppCustomization } from '$lib/contexts/app';
 import type { TranslationKey } from '$types';
 import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
-import type {
-  GetQuestionsPayload,
-  InternalFlatNomination,
-  QuestionCategoryRow,
-  QuestionRow
-} from './supabaseDataProvider.type';
+import type { GetQuestionsPayload, InternalFlatNomination } from './supabaseDataProvider.type';
 
 /**
  * Place the four values `get_public_app_settings` answers at their storage paths, as a value for `StoredSettingsSchema` to validate.
@@ -333,52 +327,36 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
-    // The `get_nominations` RPC accepts a single uuid per election and constituency.
-    // When the caller passes arrays (the multi-election voter flow in `(voters)/(located)/+layout.ts` threads the URL's `electionId` and `constituencyId` arrays through), fan out into one call per (election, constituency) pair and concatenate the results. Reading only the first id would drop the other elections' nominations and break the multi-election partial-coverage dialog. The two-election topologies under `tests/tests/specs/perm/` (`perm-2e-shared`, `perm-2e-asymmetric`) cover this.
-    const electionIds = convertFilterValue(options?.electionId);
-    const constituencyIds = convertFilterValue(options?.constituencyId);
-
     const includeUnconfirmed = options?.includeUnconfirmed ?? false;
-    // The election round is a scalar rather than a `FilterValue`, so it adds no level to the fan-out and is passed through unchanged.
-    const electionRound = options?.electionRound;
-    // Each call of the fan-out is paged on its own. No `.order()` is added: the RPC already orders by `sort_order NULLS LAST, id`, a unique key, so its page boundaries are stable. The helper throws on the first failing page with the `getNominationData` prefix, which `Promise.all` propagates.
-    const calls = electionIds.flatMap((eid) =>
-      constituencyIds.map((cid) =>
-        fetchAllRows(
-          (from, to) =>
-            this.supabase
-              .rpc('get_nominations', {
-                // `p_project_id` is required and has no SQL default, so every call passes it, including the unfiltered one.
-                p_project_id: this.projectId,
-                // The RPC types both filters as `string | undefined`, so null becomes undefined: omitting the key applies the SQL `DEFAULT NULL`, the same as passing null.
-                p_election_id: eid ?? undefined,
-                p_constituency_id: cid ?? undefined,
-                p_include_unconfirmed: includeUnconfirmed,
-                p_election_round: electionRound
-              })
-              .range(from, to),
-          { pageSize: staticSettings.dataAdapter.pageSize, label: 'getNominationData' }
-        )
-      )
+    // No `.order()` is added: the RPC already orders by `sort_order NULLS LAST, id`, a unique key, so its page boundaries are stable. The helper throws on the first failing page with the `getNominationData` prefix.
+    const data = await fetchAllRows(
+      (from, to) =>
+        this.supabase
+          .rpc('get_nominations', {
+            // `p_project_id` is required and has no SQL default, so every call passes it, including the unfiltered one.
+            p_project_id: this.projectId,
+            // An unfiltered axis is `undefined`: omitting the key applies the SQL `DEFAULT NULL`. The multi-election voter flow in `(voters)/(located)/+layout.ts` passes the URL's `electionId` and `constituencyId` arrays, and the RPC returns the nominations of every one of them.
+            p_election_ids: convertFilterValue(options?.electionId),
+            p_constituency_ids: convertFilterValue(options?.constituencyId),
+            p_include_unconfirmed: includeUnconfirmed,
+            p_election_round: options?.electionRound
+          })
+          .range(from, to),
+      { pageSize: staticSettings.dataAdapter.pageSize, label: 'getNominationData' }
     );
-    const results = await Promise.all(calls);
-    const data = results.flat();
 
-    // Deduplicate entities by `entity_id`. Nominations have unique (election_id, constituency_id) keys, so the fan-out cannot duplicate them; the Set guards against it anyway.
+    // Deduplicate entities by `entity_id`: an entity nominated in several contests appears on several rows.
     const entityMap = new Map<string, AnyEntityVariantData>();
     const nominations: Array<AnyNominationVariantPublicData> = [];
-    const seenNominationIds = new Set<string>();
 
     // Build nomination_id → entity_type map for parent-type derivation.
-    // `nominations` stores `parent_nomination_id` but not the parent's entity type, so it is looked up from the parent. The `Nomination` constructor in `@openvaa/data` throws when `parentNominationId` is set without `parentNominationType`, so both must be set. `get_nominations` returns parents and children in the same fan-out, so the lookup is in memory.
+    // `nominations` stores `parent_nomination_id` but not the parent's entity type, so it is looked up from the parent. The `Nomination` constructor in `@openvaa/data` throws when `parentNominationId` is set without `parentNominationType`, so both must be set. `get_nominations` returns parents and children in the same result, so the lookup is in memory.
     const nominationTypeById = new Map<string, string>();
     for (const row of data) {
       nominationTypeById.set(row.id, row.entity_type);
     }
 
     for (const row of data) {
-      if (seenNominationIds.has(row.id)) continue;
-      seenNominationIds.add(row.id);
       // Build nomination object from nomination-level columns
       const parentNominationId = row.parent_nomination_id;
       const parentNominationType =
@@ -402,7 +380,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       const nomObj = toDataObject(nomRow, locale, this.defaultLocale);
 
       // Enforce the `Nomination` invariant that `parentNominationId` and `parentNominationType` are both set or both absent.
-      // `mapRow` has no column for `parentNominationType`, so it is set here from the in-memory lookup. A parent outside this fan-out's result (for example a cross-constituency parent the RPC filtered out) cannot be resolved, so its id is dropped and the constructor does not throw.
+      // `mapRow` has no column for `parentNominationType`, so it is set here from the in-memory lookup. A parent outside this result (for example a cross-constituency parent the RPC filtered out) cannot be resolved, so its id is dropped and the constructor does not throw.
       const nominationOut: Record<string, unknown> = {
         ...nomObj,
         entityType: row.entity_type,
@@ -573,41 +551,24 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
-    // The `get_questions` RPC accepts a single uuid per election and constituency, so arrays from the caller fan out into one call per (election, constituency) pair and the payloads are merged. Arrays do reach this read: `contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/+layout.server.ts` derives `electionId` from the candidate's own nominations, which span two elections for a candidate nominated in both, and `(voters)/(located)/+layout.ts` threads the URL's multi-valued `electionId` through. Reading only the first id would drop the other election's scoped questions.
-    const electionIds = convertFilterValue(options?.electionId);
-    const constituencyIds = convertFilterValue(options?.constituencyId);
-    // The election round is a scalar rather than a `FilterValue`, so it adds no level to the fan-out and is passed through unchanged.
-    const electionRound = options?.electionRound;
+    // Not paged: `get_questions` returns one aggregated jsonb row, so a row cap cannot truncate it.
+    const { data, error } = await this.supabase.rpc('get_questions', {
+      // `p_project_id` is required and has no SQL default, so every call passes it, including the unfiltered one.
+      p_project_id: this.projectId,
+      // An unfiltered axis is `undefined`: omitting the key applies the SQL `DEFAULT NULL`. Arrays do reach this read: `contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/+layout.server.ts` derives `electionId` from the candidate's own nominations, which span two elections for a candidate nominated in both, and `(voters)/(located)/+layout.ts` threads the URL's multi-valued `electionId` through.
+      p_election_ids: convertFilterValue(options?.electionId),
+      p_constituency_ids: convertFilterValue(options?.constituencyId),
+      p_election_round: options?.electionRound
+    });
+    if (error) throw new Error(`getQuestionData: ${error.message}`);
 
-    // Not paged: `get_questions` returns one aggregated jsonb row per call, so a row cap cannot truncate it.
-    const results = await Promise.all(
-      electionIds.flatMap((eid) =>
-        constituencyIds.map((cid) =>
-          this.supabase.rpc('get_questions', {
-            // `p_project_id` is required and has no SQL default, so every call passes it, including the unfiltered one.
-            p_project_id: this.projectId,
-            // The RPC types both filters as `string | undefined`, so null becomes undefined: omitting the key applies the SQL `DEFAULT NULL`, the same as passing null.
-            p_election_id: eid ?? undefined,
-            p_constituency_id: cid ?? undefined,
-            p_election_round: electionRound
-          })
-        )
-      )
-    );
-    const firstError = results.find((r) => r.error)?.error;
-    if (firstError) throw new Error(`getQuestionData: ${firstError.message}`);
+    // reason: the RPC is declared `RETURNS jsonb`, so its generated type is the opaque `Json`; this single narrowing is the adapter's trust boundary for the payload.
+    const payload = data as GetQuestionsPayload | null;
+    const categoryRows = payload?.categories ?? [];
+    const questionRows = payload?.questions ?? [];
+    const categoryIds = new Set(categoryRows.map((row) => row.id));
 
-    // Union the payloads keyed by row id, so a row returned by several calls appears once. This gives OR semantics over the id arrays.
-    const categoryRows = new Map<string, QuestionCategoryRow>();
-    const questionRows = new Map<string, QuestionRow>();
-    for (const { data } of results) {
-      // reason: the RPC is declared `RETURNS jsonb`, so its generated type is the opaque `Json`; this single narrowing is the adapter's trust boundary for the payload.
-      const payload = data as GetQuestionsPayload | null;
-      for (const row of payload?.categories ?? []) categoryRows.set(row.id, row);
-      for (const row of payload?.questions ?? []) questionRows.set(row.id, row);
-    }
-
-    const categories = [...categoryRows.values()].sort(bySortOrderThenId).map((row) => {
+    const categories = categoryRows.map((row) => {
       const obj = toDataObject(row, locale, this.defaultLocale);
       return {
         ...obj,
@@ -618,9 +579,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     });
 
     // The RPC filters categories and questions independently on their own columns, so an unscoped question under a scoped category outlives its category. `Question.category` resolves through `DataRoot.getQuestionCategory`, which throws `DataNotFoundError` when the category is absent, so such an orphan is dropped here.
-    const questions = [...questionRows.values()]
-      .filter((row) => categoryRows.has(row.category_id))
-      .sort(bySortOrderThenId)
+    const questions = questionRows
+      .filter((row) => categoryIds.has(row.category_id))
       .map((row) => {
         const obj = toDataObject(row, locale, this.defaultLocale);
         // Localize choice labels for choice-type questions.

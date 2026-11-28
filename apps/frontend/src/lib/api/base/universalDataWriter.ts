@@ -2,7 +2,7 @@ import { log } from '@openvaa/app-shared';
 import { resolveRoute } from '$app/paths';
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
-import type { GrantClaim } from '$lib/auth/roles';
+import type { GrantClaim } from '$lib/auth/grants';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { IdentityProviderRegistrationResult } from '$lib/server/contestant/identityProviderRegistration';
 import type { DataApiActionResult } from './actionResult.type';
@@ -39,7 +39,7 @@ import type {
 } from './dataWriter.type';
 
 /**
- * The value an answer setter resolves to when the write succeeded but its read-back could not be validated (decision **B3**).
+ * The value an answer setter resolves to when the write succeeded but its read-back could not be validated.
  *
  * Declared HERE rather than beside its type in `dataWriter.type.ts` because that module is types-only, as every `.type.ts` under `lib/api/` is; a runtime export there would be the first and would break the convention for every consumer that imports it with `import type`. This module is the runtime base every writer already extends, so the constant is in scope wherever the setters are.
  *

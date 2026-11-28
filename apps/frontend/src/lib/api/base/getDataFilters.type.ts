@@ -33,7 +33,7 @@ export type FilterByConstituency = {
 
 export type FilterByElectionRound = {
   /**
-   * The round of the election to restrict results to. NB. This is a single value and cannot be an array, because the nomination read already fans out over the election and constituency axes and a third array axis would multiply the number of RPC calls.
+   * The round of the election to restrict results to. NB. This is a single value and cannot be an array: the `get_nominations` and `get_questions` RPCs take one round.
    */
   electionRound?: number;
 };

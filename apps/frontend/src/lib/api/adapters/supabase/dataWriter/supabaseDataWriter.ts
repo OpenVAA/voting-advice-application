@@ -4,7 +4,7 @@ import { AnswersLockedError } from '$lib/api/base/answersLockedError';
 import { parseRetryAfter, TooManyRequestsError } from '$lib/api/base/tooManyRequestsError';
 import { UniversalDataWriter, UNVERIFIED_ANSWERS } from '$lib/api/base/universalDataWriter';
 // Imported from the module rather than the `$lib/auth` barrel on purpose: the barrel also re-exports `getUserData`, which reaches `$lib/api/dataWriter` and back to this file.
-import { ADMIN_GRANTS, CONTESTANT_GRANTS, hasAnyGrant, parseGrantClaims, readGrants } from '$lib/auth/roles';
+import { ADMIN_GRANTS, CONTESTANT_GRANTS, hasAnyGrant, parseGrantClaims, readGrants } from '$lib/auth/grants';
 import {
   addressStateOf,
   hasDefaultLocaleName,
@@ -82,7 +82,7 @@ import type {
   UserEntity,
   UserRole
 } from '$lib/api/base/dataWriter.type';
-import type { GrantClaim } from '$lib/auth/roles';
+import type { GrantClaim } from '$lib/auth/grants';
 import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
 import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
 import type { EntityNominationRow } from '../utils/entityNominations';

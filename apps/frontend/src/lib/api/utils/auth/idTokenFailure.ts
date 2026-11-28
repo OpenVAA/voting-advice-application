@@ -5,11 +5,11 @@
  *
  * So this module does three things:
  *
- * 1. Declares the project's own codes ONCE ({@link OIDC_FAILURE}), so the thrower and the logger cannot drift.
- * 2. Maps every code -- ours and jose's -- to the STAGE it failed at and a static operator hint naming the environment variable behind it ({@link describeOidcFailure}), so a log line is actionable without a source dive.
+ * 1. Declares the project's own codes ONCE ({@link ID_TOKEN_FAILURE}), so the thrower and the logger cannot drift.
+ * 2. Maps every code -- ours and jose's -- to the STAGE it failed at and a static operator hint naming the environment variable behind it ({@link describeIdTokenFailure}), so a log line is actionable without a source dive.
  * 3. Stays honest about the open tail: an unrecognised code is reported as such rather than silently mis-attributed.
  *
- * LEAK SAFETY. Every hint in this module is a FIXED string. Nothing here interpolates a value, a URL, a host, a `kid`, a token, a claim or any key material, which is what makes the output of {@link formatOidcFailure} safe to write to a server log. That is a property of the data in this file, not of its callers, so keep it: a hint that interpolates is a hint that can leak. The separate and stricter rule -- that only the opaque failure CLASS crosses the redirect boundary to the browser, never a message -- lives at the route's call site.
+ * LEAK SAFETY. Every hint in this module is a FIXED string. Nothing here interpolates a value, a URL, a host, a `kid`, a token, a claim or any key material, which is what makes the output of {@link formatIdTokenFailure} safe to write to a server log. That is a property of the data in this file, not of its callers, so keep it: a hint that interpolates is a hint that can leak. The separate and stricter rule -- that only the opaque failure CLASS crosses the redirect boundary to the browser, never a message -- lives at the route's call site.
  *
  * This module is intentionally free of imports. It reads no environment and no secret, so it is safe to import from anywhere, including a client bundle, and needs no `$lib/server` guard.
  */
@@ -21,7 +21,7 @@
  *
  * Typed as a `Record` over the key union so that omitting a member is a compile error rather than a silently missing case -- the same shape, and for the same reason, as `OIDC_ERROR` in `$contestant/utils/oidcError`.
  */
-export const OIDC_FAILURE: Record<OidcFailureKey, string> = {
+export const ID_TOKEN_FAILURE: Record<IdTokenFailureKey, string> = {
   /** `IDENTITY_PROVIDER_DECRYPTION_JWKS` is set but is not valid JSON. */
   jwksMalformed: 'ERR_JWKS_MALFORMED',
   /** `IDENTITY_PROVIDER_DECRYPTION_JWKS` parsed, but to an empty set -- nothing to decrypt with. */
@@ -47,14 +47,14 @@ export const OIDC_FAILURE: Record<OidcFailureKey, string> = {
  *
  * The value of naming the stage is that it partitions the remedy. `config` is a `.env` edit; `jwks-fetch` is a reachability or URL problem at the identity provider; `decrypt` and `verify` are key-registration problems; `claims` means the crypto was fine and the token simply is not for us.
  */
-export type OidcFailureStage = 'config' | 'jwks-fetch' | 'decrypt' | 'verify' | 'claims' | 'unknown';
+export type IdTokenFailureStage = 'config' | 'jwks-fetch' | 'decrypt' | 'verify' | 'claims' | 'unknown';
 
 /** A failure class, resolved to the stage it failed at and a static, leak-safe operator hint. */
-export interface OidcFailureDescription {
+export interface IdTokenFailureDescription {
   /** The code as logged. `'none'` when the provider returned no code at all. */
   code: string;
   /** Which stage of the pipeline this class belongs to. */
-  stage: OidcFailureStage;
+  stage: IdTokenFailureStage;
   /** A fixed operator hint. Names environment variables, never values. */
   hint: string;
 }
@@ -62,58 +62,58 @@ export interface OidcFailureDescription {
 /**
  * The placeholder logged when a provider reports a failure carrying no code.
  *
- * Reached when the thrown value is not an `Error`, or is an `Error` without a `code` own-property -- Node's `TypeError: fetch failed` is the realistic case, since it carries its code on `.cause` rather than on itself. NOT a member of {@link OIDC_FAILURE}: it is the absence of a class, not a class.
+ * Reached when the thrown value is not an `Error`, or is an `Error` without a `code` own-property -- Node's `TypeError: fetch failed` is the realistic case, since it carries its code on `.cause` rather than on itself. NOT a member of {@link ID_TOKEN_FAILURE}: it is the absence of a class, not a class.
  */
-export const OIDC_FAILURE_NONE = 'none';
+export const ID_TOKEN_FAILURE_NONE = 'none';
 
 /**
  * Static hints for the codes this application throws itself.
  *
  * Kept separate from {@link JOSE_FAILURES} so the two provenances stay visibly distinct: these we can change by editing our own throw sites, those we cannot.
  */
-const OWN_FAILURES: Record<string, OidcFailureDescription> = {
-  [OIDC_FAILURE.jwksMalformed]: {
-    code: OIDC_FAILURE.jwksMalformed,
+const OWN_FAILURES: Record<string, IdTokenFailureDescription> = {
+  [ID_TOKEN_FAILURE.jwksMalformed]: {
+    code: ID_TOKEN_FAILURE.jwksMalformed,
     stage: 'config',
     hint: 'IDENTITY_PROVIDER_DECRYPTION_JWKS is set but is not valid JSON. It must be a JSON ARRAY of JWK objects, quoted as a single env value.'
   },
-  [OIDC_FAILURE.jwksEmpty]: {
-    code: OIDC_FAILURE.jwksEmpty,
+  [ID_TOKEN_FAILURE.jwksEmpty]: {
+    code: ID_TOKEN_FAILURE.jwksEmpty,
     stage: 'config',
     hint: 'IDENTITY_PROVIDER_DECRYPTION_JWKS parsed to an empty array, so there is no key to decrypt the id_token with. See docs/key-generation.md.'
   },
-  [OIDC_FAILURE.jwkKidMismatch]: {
-    code: OIDC_FAILURE.jwkKidMismatch,
+  [ID_TOKEN_FAILURE.jwkKidMismatch]: {
+    code: ID_TOKEN_FAILURE.jwkKidMismatch,
     stage: 'decrypt',
     hint: 'No JWK in IDENTITY_PROVIDER_DECRYPTION_JWKS matches the kid the identity provider encrypted this token to. Either the provider holds a different public key than the private key configured here, or the key was rotated on one side only.'
   },
-  [OIDC_FAILURE.audienceUnconfigured]: {
-    code: OIDC_FAILURE.audienceUnconfigured,
+  [ID_TOKEN_FAILURE.audienceUnconfigured]: {
+    code: ID_TOKEN_FAILURE.audienceUnconfigured,
     stage: 'config',
     hint: 'PUBLIC_IDENTITY_PROVIDER_CLIENT_ID is unset or blank, so the token cannot be bound to this relying party. This check fails closed on purpose -- an unset audience would accept a token minted for any other client.'
   },
-  [OIDC_FAILURE.issuerUnconfigured]: {
-    code: OIDC_FAILURE.issuerUnconfigured,
+  [ID_TOKEN_FAILURE.issuerUnconfigured]: {
+    code: ID_TOKEN_FAILURE.issuerUnconfigured,
     stage: 'config',
     hint: 'IDENTITY_PROVIDER_ISSUER is unset or blank. This check fails closed on purpose -- an unset issuer would accept a signature-valid token bound to no provider at all.'
   },
-  [OIDC_FAILURE.jwksUriUnconfigured]: {
-    code: OIDC_FAILURE.jwksUriUnconfigured,
+  [ID_TOKEN_FAILURE.jwksUriUnconfigured]: {
+    code: ID_TOKEN_FAILURE.jwksUriUnconfigured,
     stage: 'config',
     hint: 'IDENTITY_PROVIDER_JWKS_URI is unset or blank, so there is no key set to verify the id_token signature against.'
   },
-  [OIDC_FAILURE.jwksUriHttpStatus]: {
-    code: OIDC_FAILURE.jwksUriHttpStatus,
+  [ID_TOKEN_FAILURE.jwksUriHttpStatus]: {
+    code: ID_TOKEN_FAILURE.jwksUriHttpStatus,
     stage: 'jwks-fetch',
     hint: 'The endpoint named by IDENTITY_PROVIDER_JWKS_URI answered, but not with 200. Read the ACTIVE provider live .well-known/openid-configuration and copy its jwks_uri field verbatim -- do not assemble the path by hand. Measured shapes, as a sanity check only: Idura serves https://{IDURA_DOMAIN}/.well-known/jwks (NOT .../openid-configuration/jwks, which 404s -- this hint itself said the wrong one until it was measured against a live tenant); Signicat serves .../auth/open/.well-known/openid-configuration/jwks. A 3xx also lands here: the key set is requested with redirect:manual and redirects are NOT followed, so the variable must name the URL that serves the JWK set DIRECTLY rather than one that redirects to it.'
   },
-  [OIDC_FAILURE.jwksUriNotJson]: {
-    code: OIDC_FAILURE.jwksUriNotJson,
+  [ID_TOKEN_FAILURE.jwksUriNotJson]: {
+    code: ID_TOKEN_FAILURE.jwksUriNotJson,
     stage: 'jwks-fetch',
     hint: 'The endpoint named by IDENTITY_PROVIDER_JWKS_URI answered 200 but the body is not JSON -- usually an HTML error or sign-in page served where the key set was expected. Check the path.'
   },
-  [OIDC_FAILURE.jwksUriUnreachable]: {
-    code: OIDC_FAILURE.jwksUriUnreachable,
+  [ID_TOKEN_FAILURE.jwksUriUnreachable]: {
+    code: ID_TOKEN_FAILURE.jwksUriUnreachable,
     stage: 'jwks-fetch',
     hint: 'The host in IDENTITY_PROVIDER_JWKS_URI could not be reached: DNS, TCP or TLS failed before any HTTP response existed. Check the hostname, and whether this network can reach the identity provider at all.'
   }
@@ -126,7 +126,7 @@ const OWN_FAILURES: Record<string, OidcFailureDescription> = {
  *
  * `ERR_JOSE_GENERIC` earns its unusually specific hint. It is the code of jose's BASE error class, and in jose 6.2.1 a bare `JOSEError` is constructed at exactly two sites in the entire library -- both inside `fetchJwks` in `jwks/remote.js`, on a non-200 status and on a body that will not parse as JSON. So observing it means the remote key-set fetch failed AND `fetchJwksLeakSafe` did not get to classify it first, which is either a bypassed wrapper or a jose upgrade that added a third site. Either is worth knowing from the log rather than from a bisect.
  */
-const JOSE_FAILURES: Record<string, OidcFailureDescription> = {
+const JOSE_FAILURES: Record<string, IdTokenFailureDescription> = {
   ERR_JOSE_GENERIC: {
     code: 'ERR_JOSE_GENERIC',
     stage: 'jwks-fetch',
@@ -214,13 +214,13 @@ const JOSE_FAILURES: Record<string, OidcFailureDescription> = {
  *
  * Total by construction: an unrecognised code is reported as `unknown` with a hint that says so, rather than being mapped to a plausible-looking stage it may not belong to. That openness is deliberate -- jose's code set can grow across versions, and a wrong stage is worse than an admitted gap.
  *
- * @param code - The failure class, as returned in `IdTokenClaimsResult.error.code`. `undefined` resolves to {@link OIDC_FAILURE_NONE}.
+ * @param code - The failure class, as returned in `IdTokenClaimsResult.error.code`. `undefined` resolves to {@link ID_TOKEN_FAILURE_NONE}.
  * @returns The code, its stage and a FIXED hint. Never interpolates any value, so the result is safe to log verbatim.
  */
-export function describeOidcFailure(code: string | undefined): OidcFailureDescription {
+export function describeIdTokenFailure(code: string | undefined): IdTokenFailureDescription {
   if (code === undefined || code === '') {
     return {
-      code: OIDC_FAILURE_NONE,
+      code: ID_TOKEN_FAILURE_NONE,
       stage: 'unknown',
       hint: 'The failure carried no code. The thrown value was not an Error, or was an Error with no `code` own-property -- Node’s `TypeError: fetch failed` is the realistic case, since it carries its code on `.cause`. Check the preceding server log lines for the token-exchange leg.'
     };
@@ -231,7 +231,7 @@ export function describeOidcFailure(code: string | undefined): OidcFailureDescri
     JOSE_FAILURES[code] ?? {
       code,
       stage: 'unknown',
-      hint: 'Unrecognised failure class -- neither one this application throws nor one of jose 6.x’s own. Most likely a jose upgrade added a code; add it to JOSE_FAILURES in `oidcFailure.ts` with its stage so the next reader is not sent to the library source.'
+      hint: 'Unrecognised failure class -- neither one this application throws nor one of jose 6.x’s own. Most likely a jose upgrade added a code; add it to JOSE_FAILURES in `idTokenFailure.ts` with its stage so the next reader is not sent to the library source.'
     }
   );
 }
@@ -247,17 +247,17 @@ export function describeOidcFailure(code: string | undefined): OidcFailureDescri
  * @param providerType - The active provider (`'idura-ftn'` / `'signicat-ftn'`). Included because selecting the wrong provider is a real misconfiguration, and a log line that names it makes that fault self-evident.
  * @returns A single line, no trailing newline.
  */
-export function formatOidcFailure(code: string | undefined, providerType: string): string {
-  const { code: resolved, stage, hint } = describeOidcFailure(code);
+export function formatIdTokenFailure(code: string | undefined, providerType: string): string {
+  const { code: resolved, stage, hint } = describeIdTokenFailure(code);
   return `code=${resolved} stage=${stage} provider=${providerType} — ${hint}`;
 }
 
 /**
- * The keys call sites use to reach an {@link OIDC_FAILURE} value.
+ * The keys call sites use to reach an {@link ID_TOKEN_FAILURE} value.
  *
  * Exported, unlike `OidcErrorKey` in `$contestant/utils/oidcError`, because the colocated test enumerates the union to prove every member is mapped -- which is the assertion that keeps this module's promise from rotting.
  */
-export type OidcFailureKey =
+export type IdTokenFailureKey =
   | 'jwksMalformed'
   | 'jwksEmpty'
   | 'jwkKidMismatch'

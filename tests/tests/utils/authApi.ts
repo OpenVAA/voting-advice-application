@@ -9,7 +9,7 @@
 import * as jose from 'jose';
 import { supabaseAnonKey } from './supabaseAnonKey';
 import { supabaseUrl } from './supabaseUrl';
-import type { GrantClaim } from '../../../apps/frontend/src/lib/auth/roles';
+import type { GrantClaim } from '../../../apps/frontend/src/lib/auth/grants';
 
 /** The two tokens of a session. Both are credentials: neither goes into a log, a test title or an assertion message. */
 export interface SessionTokens {

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { UniversalAdapter } from './universalAdapter';
-import { isRefusedResponse } from '../utils/isRefusedResponse';
 import { parseResponse } from '../utils/parseResponse';
 import type { Mock } from 'vitest';
 import type * as ParseResponseModule from '../utils/parseResponse';
@@ -471,14 +470,13 @@ describe('UniversalAdapter', () => {
       { label: '401 Unauthorized', response: { ok: false, status: 401 }, refused: true },
       { label: '403 Forbidden', response: { ok: false, status: 403 }, refused: true },
       { label: '500 Internal Server Error', response: { ok: false, status: 500 }, refused: true }
-    ])('fetch refuses $label exactly when the shared predicate does', async ({ response, refused }) => {
+    ])('fetch refuses $label exactly when response.ok is false', async ({ response, refused }) => {
       const mockResponse = {
         ...response,
         json: vi.fn().mockResolvedValue({ message: 'refused' })
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      expect(isRefusedResponse(mockResponse)).toBe(refused);
       if (refused) {
         await expect(adapter.fetch('http://openvaa.org/api')).rejects.toThrow(/UniversalAdapter\.fetch/);
       } else {

@@ -238,7 +238,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
    decision reads the claim**: `user_can` and `user_has_account_grant` read the caller's rows of
    `public.grants` for `(SELECT auth.uid())`, so a grant counts from the moment it is written and a
    deleted grant is denied at once, for the next read and the next write made with the same token. The
-   claim is written for the frontend's app-entry gates only (`apps/frontend/src/lib/auth/roles.ts`),
+   claim is written for the frontend's app-entry gates only (`apps/frontend/src/lib/auth/grants.ts`),
    which decide which app a signed-in user is shown, so a session is still refreshed after a claim.
    The second hook, `send_email_hook(event jsonb)` in the same file, takes every mail the auth service
    would send and sends none (`[auth.hook.send_email]`): the application's mails are sent by

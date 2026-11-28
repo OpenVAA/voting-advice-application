@@ -741,7 +741,7 @@ export type Database = {
           created_by: string | null;
           custom_data: Json | null;
           election_id: string;
-          election_round: number | null;
+          election_round: number;
           election_symbol: string | null;
           entity_type: Database['public']['Enums']['entity_type'];
           external_id: string | null;
@@ -768,7 +768,7 @@ export type Database = {
           created_by?: string | null;
           custom_data?: Json | null;
           election_id: string;
-          election_round?: number | null;
+          election_round?: number;
           election_symbol?: string | null;
           entity_type?: never;
           external_id?: string | null;
@@ -795,7 +795,7 @@ export type Database = {
           created_by?: string | null;
           custom_data?: Json | null;
           election_id?: string;
-          election_round?: number | null;
+          election_round?: number;
           election_symbol?: string | null;
           entity_type?: never;
           external_id?: string | null;
@@ -1238,8 +1238,8 @@ export type Database = {
       };
       get_nominations: {
         Args: {
-          p_constituency_id?: string;
-          p_election_id?: string;
+          p_constituency_ids?: string[];
+          p_election_ids?: string[];
           p_election_round?: number;
           p_include_unconfirmed?: boolean;
           p_project_id: string;
@@ -1280,7 +1280,12 @@ export type Database = {
       };
       get_public_app_settings: { Args: { p_project_id: string }; Returns: Json };
       get_questions: {
-        Args: { p_constituency_id?: string; p_election_id?: string; p_election_round?: number; p_project_id: string };
+        Args: {
+          p_constituency_ids?: string[];
+          p_election_ids?: string[];
+          p_election_round?: number;
+          p_project_id: string;
+        };
         Returns: Json;
       };
       get_user_entities: { Args: { p_project_id: string }; Returns: Json };
