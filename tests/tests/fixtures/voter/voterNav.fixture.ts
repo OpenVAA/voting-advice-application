@@ -1,5 +1,5 @@
 /**
- * @file voterNavFixture.
+ * @file voterNav fixture.
  *
  * Function-fixture for the voter nav drawer (Header.svelte menu-toggle + VoterNav.svelte). The LanguageSelection NavGroup (consumed by langSelectorFixture) renders ONLY inside this drawer, which is closed by default. This fixture exposes a locale-independent open/close pair so specs can reach the language selector in any UI locale.
  *
@@ -16,9 +16,9 @@
 
 import { expect } from '@playwright/test';
 import { testIds } from '../../utils/testIds';
-import { createLangSelector } from '../shared/langSelectorFixture.fixture';
+import { createLangSelector } from '../shared/langSelector.fixture';
 import type { Page } from '@playwright/test';
-import type { LangSelectorFixture } from '../shared/langSelectorFixture.fixture';
+import type { LangSelectorFixture } from '../shared/langSelector.fixture';
 
 export function createVoterNav(page: Page) {
   return {

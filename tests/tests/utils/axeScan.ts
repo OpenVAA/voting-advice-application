@@ -1,11 +1,11 @@
 /**
  * @file The a11y scan core — the one copy in the repository.
  *
- * Extracted from `specs/a11y/a11y-smoke.spec.ts` as a pure MOVE: every body and every docblock below transferred unchanged, and the voter spec now imports what it used to declare. The proof that the move changed nothing a report can see is the ordered comparison of the a11y project's enumerated test titles before and after it.
+ * Both a11y specs import this core, so they share one rule set.
  *
  * ## Why it is a module rather than a second copy
  *
- * Both halves of the application are scanned — the voter routes from `a11y-smoke.spec.ts`, the candidate `(protected)` routes from `contestant-a11y.spec.ts`. Criterion 6 requires the two to be `identical in strictness`. Holding the tag set, the per-rule trio, the global zero gate, the animation settle, the dark-theme guard and the shared scan body in ONE module makes that a property of the code: there is no second copy that could drift. A difference between the two halves can therefore only ever be a difference in their route tables, never in how hard they are scanned.
+ * Both halves of the application are scanned — the voter routes from `a11y-smoke.spec.ts`, the candidate `(protected)` routes from `contestant-a11y.spec.ts`. The two halves must be scanned with identical strictness. Holding the tag set, the per-rule trio, the global zero gate, the animation settle, the dark-theme guard and the shared scan body in ONE module makes that a property of the code: there is no second copy that could drift. A difference between the two halves can therefore only ever be a difference in their route tables, never in how hard they are scanned.
  *
  * ## What deliberately did NOT move
  *
@@ -115,7 +115,7 @@ export async function assertAxeGates(
   // Global zero gate — 0 violations on every surface a spec scans through this function, in both themes.
   // Catches new rule-IDs that the per-rule trio doesn't name (e.g., heading-order from a latent h4-hoist outline gap).
   //
-  // This function is the ONLY place either half's violations are gated, and it takes no per-surface parameter that could relax it — which is what makes criterion 6's "identical in strictness" a property of the code rather than of two tables agreeing.
+  // This function is the ONLY place either half's violations are gated, and it takes no per-surface parameter that could relax it — which is what makes the halves' identical strictness a property of the code rather than of two tables agreeing.
   expect(results.violations).toHaveLength(0);
 
   // reason: defensive shape checks PRESERVED — defends against AxeBuilder API breakage on future axe-core upgrades; zero runtime cost.
@@ -205,8 +205,6 @@ export async function assertAxeScan(page: Page, route: AxeRoute, testInfo: TestI
   const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
 
   // BOTH verdicts are computed before EITHER is reported, and the raw-key one is reported softly: compute both verdicts in one body, report both, neither short-circuiting the other.
-  //
-  // What that fixes, measured rather than supposed: the raw-key gate used to terminate in a throwing `expect`, so on a surface with BOTH defects the axe scan never ran and the surface reported one finding when it had two. The criterion's premise — that an axe failure could subsume a raw-key one — was already false in execution order; the real coupling ran the other way, and this is the line that removes it. Costed at ≈0 s: both gates already ran, and the alternative (a separate reported test per surface) was measured at ≤ +138 s of suite wall clock.
   //
   // `expect.soft` records the raw-key verdict and CONTINUES, so `assertAxeGates` below always runs and its own hard gates still fail the test. A soft failure still fails the test at its end, so nothing is downgraded to a warning — the only thing that changes is that one finding can no longer hide the other.
   // ONE entry point (this function) is shared by both specs, so the property is app-wide by construction rather than by two files agreeing.

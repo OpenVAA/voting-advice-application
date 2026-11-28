@@ -130,7 +130,7 @@ scan_row section-anchor   strip    '§'                            -- apps/ pack
 scan_row planning-path    strip    '\.planning/'                  -- apps/ packages/ tests/ infra/
 scan_row plan-number      strip    '(?i)\bplans?\s+\d+[-.]\d+'    -- apps/ packages/ tests/ infra/
 scan_row milestone-ver    report   '\bv\d+\.\d+\b'                -- apps/ packages/ tests/ infra/
-scan_row task-id          strip    '\b[A-Z]{3,}-\d{2}\b'          -- apps/ packages/ tests/ infra/
+scan_row task-id          strip    '\b[A-Z]{2,}-\d{2}\b'          -- apps/ packages/ tests/ infra/
 
 # ---------------------------------------------------------------------------------------
 

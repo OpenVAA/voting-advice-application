@@ -1,3 +1,4 @@
+import { BUILT_IN_TEMPLATES } from '@openvaa/dev-seed';
 import { defineConfig, devices } from '@playwright/test';
 import type { Project } from '@playwright/test';
 import dotenv from 'dotenv';
@@ -52,13 +53,12 @@ if (fs.existsSync(probesDir)) {
 }
 
 /**
- * Declared soft-assertion budget per spec file, keyed by path relative to `TESTS_DIR`.
- * Hoisted so the budget guard below — and every reader — has ONE place to look for the number, which is why the spec's own header names this symbol instead of restating it.
- *
- * Scoped deliberately to a single file, `voter-journey.spec.ts`. Adding a file here is a deliberate budget decision for that file, not a quiet widening of this table.
+ * The most soft assertions each spec file may carry, keyed by path relative to `TESTS_DIR`. A spec with no entry may carry none.
+ * Hoisted so the budget guard below — and every reader — has ONE place to look for the number, which is why a spec's own header names this symbol instead of restating it.
  */
 const SOFT_ASSERTION_BUDGETS: Record<string, number> = {
-  'specs/voter/voter-journey.spec.ts': 136
+  'specs/voter/voter-journey.spec.ts': 136,
+  'specs/contestant/contestant-journey.spec.ts': 3
 };
 
 /**
@@ -68,34 +68,40 @@ const SOFT_ASSERTION_BUDGETS: Record<string, number> = {
  *
  * A budget stated only in prose drifts one honest addition at a time, and every one of those additions runs green, because a prose claim cannot fail. A comment asking future authors to keep the number in sync would be the same kind of non-guard this check exists to replace, so the invariant is CHECKED — the identical argument this file already makes for its sibling above.
  *
- * The comparison is EQUALITY, not a ceiling: REMOVING a soft assertion without updating the budget throws too, so the declared posture stays honest in both directions and a promotion to a hard `expect()` is recorded rather than absorbed. Counting is by OCCURRENCE — a global regex match over the file contents — not by line, so a line carrying two calls counts as two; `grep -c` semantics would silently undercount it.
+ * The comparison is a CEILING over every `*.spec.ts` under `specs/`: a file may carry at most its budget, and a file with no entry may carry none, so promoting a soft assertion to a hard `expect()` needs no edit here. Counting is by OCCURRENCE — a global regex match over the file contents — not by line, so a line carrying two calls counts as two; `grep -c` semantics would silently undercount it.
  *
  * Throwing here fails every `playwright test` / `--list` invocation immediately and by name. `--list` matters specifically: it does not run `globalSetup`, so a check living in a test or in setup would never see it. Config-load code does.
  */
-for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
-  const specPath = path.join(TESTS_DIR, rel);
-  if (!fs.existsSync(specPath)) {
+const specsDir = path.join(TESTS_DIR, 'specs');
+for (const rel of Object.keys(SOFT_ASSERTION_BUDGETS)) {
+  if (!fs.existsSync(path.join(TESTS_DIR, rel))) {
     throw new Error(
       `Soft-assertion budget names a spec that does not exist: ${rel}. Either restore the ` +
         `file, or drop its entry from SOFT_ASSERTION_BUDGETS in this file. A budget pointing at ` +
         `nothing is a guard that can never fire.`
     );
   }
-  // Strip comments before counting. A naive whole-file regex match counts every textual occurrence including inside comments and string literals — so the remediation instruction below ("state the reason in that spec's header") could itself contain the literal `expect.soft(` token and re-trip this very guard by inflating the count with a comment, not code.
+}
+for (const entry of fs
+  .readdirSync(specsDir, { recursive: true, withFileTypes: true })
+  .filter((e) => e.isFile() && e.name.endsWith('.spec.ts'))) {
+  const specPath = path.join(entry.parentPath, entry.name);
+  const rel = path.relative(TESTS_DIR, specPath).split(path.sep).join('/');
+  const budget = SOFT_ASSERTION_BUDGETS[rel] ?? 0;
+  // Strip comments before counting. A naive whole-file regex match counts every textual occurrence including inside comments — so a header that names the soft modifier (as every rigidity contract does) would inflate the count with a comment, not code.
   const source = fs
     .readFileSync(specPath, 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '') // block comments
     .replace(/(^|[^:])\/\/.*$/gm, '$1'); // line comments (":" guard skips URLs like https://)
   const actual = (source.match(/\bexpect\.soft\s*\(/g) ?? []).length;
-  if (actual !== budget) {
+  if (actual > budget) {
     throw new Error(
-      `Soft-assertion budget diverged in ${rel} — the declared budget is ${budget} but the file ` +
+      `Soft-assertion budget exceeded in ${rel} — the budget is ${budget} but the file carries ` +
         // The count is taken outside comments; string literals are NOT excluded (a claim that they were would itself be an unchecked prose claim).
-        `carries ${actual} (counted outside comments; string literals are NOT excluded). Convert the ` +
-        `new assertion to a hard \`expect()\`, or change the budget in SOFT_ASSERTION_BUDGETS in this ` +
-        `file AND record the reason in that spec's header (prose only — do not restate the number; the ` +
-        `header deliberately does not). A budget edited to match whatever the file happens to contain ` +
-        `is not a budget.`
+        `${actual} (counted outside comments; string literals are NOT excluded). Use a hard ` +
+        `\`expect()\`, or raise that file's budget in SOFT_ASSERTION_BUDGETS in this file AND record ` +
+        `the reason in that spec's header (prose only — do not restate the number). A budget raised ` +
+        `to match whatever the file happens to contain is not a budget.`
     );
   }
   // Under-count hole: the count above matches only the literal `expect.soft(` token, so an aliased/destructured soft assertion — e.g.
@@ -114,11 +120,11 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
  *
  * `runTeardownAsserted` (`tests/tests/setup/shared/assertTeardown.ts`) turned the before/after row-count accounting into a HARD assertion. That assertion is only valid if each `*.teardown.ts` project owns an `external_id` prefix that no other project can touch concurrently — two data-teardown projects sharing (or substring-overlapping) a prefix race on the same before/after counts, and Playwright does not order data-teardown projects relative to each other unless an explicit `dependencies` edge forces it (most don't — see the perm family's `extraTeardownPrefix`-based cross-chain isolation instead of hard ordering).
  *
- * The guard scans every `*.teardown.ts` file's `const PREFIX = '...'` declaration and throws at config-load time if any two are equal OR one is a string-prefix of another, because a `LIKE '<prefix>%'` scan of the shorter prefix also matches the longer one's rows. A shared prefix is otherwise invisible: the two counts race rather than failing on a fixed value. A comment asking future authors to pick a distinct prefix would be the same non-guard this file's other two checks exist to remove.
+ * The guard collects every `*.teardown.ts` file's prefix — a literal `const PREFIX = '...'` declaration, or the `externalIdPrefix` of the template a `runTemplateTeardownAsserted('<template>')` / `templateTeardownPrefix('<template>')` call names — and throws at config-load time if any two are equal OR one is a string-prefix of another, because a `LIKE '<prefix>%'` scan of the shorter prefix also matches the longer one's rows. A shared prefix is otherwise invisible: the two counts race rather than failing on a fixed value. A comment asking future authors to pick a distinct prefix would be the same non-guard this file's other two checks exist to remove.
  *
- * Deliberately excludes files with no `const PREFIX = '...'` declaration AND no `runTeardownAsserted(` call (e.g. `contestant-journey.teardown.ts`, which performs no prefix-scoped delete — see `assertTeardown.ts`'s docblock). A file that DOES call `runTeardownAsserted(` but whose `const PREFIX` this guard fails to parse is a completeness failure, not a legitimate exclusion — see the `unparsed` check below (an enumeration guard with no completeness check fails the same way the orphan-probe guard above prevents).
+ * Deliberately excludes files that declare no prefix AND call neither assertion helper (e.g. `contestant-journey.teardown.ts`, which performs no prefix-scoped delete — see `assertTeardown.ts`'s docblock). A file that DOES call `runTeardownAsserted(` or `runTemplateTeardownAsserted(` but whose prefix this guard fails to parse is a completeness failure, not a legitimate exclusion — see the `unparsed` check below (an enumeration guard with no completeness check fails the same way the orphan-probe guard above prevents).
  *
- * ENUMERATION SCOPE. Scans all of `TESTS_DIR`, not `TESTS_DIR/setup`, even though all 28 `*.teardown.ts` files live under `setup/` today. The teardown projects' `testMatch` patterns are unanchored regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/` would leave exactly that file invisible to the uniqueness check: the same enumeration drift the orphan-probe guard above prevents. Matching the scan to the runner's own scope keeps the two from drifting apart, which a convention ("put teardowns in setup/") would not.
+ * ENUMERATION SCOPE. Scans all of `TESTS_DIR`, not `TESTS_DIR/setup`, even though every `*.teardown.ts` file lives under `setup/` today. The teardown projects' `testMatch` patterns are unanchored regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/` would leave exactly that file invisible to the uniqueness check: the same enumeration drift the orphan-probe guard above prevents. Matching the scan to the runner's own scope keeps the two from drifting apart, which a convention ("put teardowns in setup/") would not.
  */
 const teardownDir = TESTS_DIR;
 // Named precondition, mirroring the ORPHAN-PROBE guard's `fs.existsSync` check above. Without it, a missing/renamed tests directory would die on a raw `readdirSync` ENOENT — the opposite of the "fails immediately and by name" property this guard claims for itself.
@@ -138,20 +144,36 @@ for (const rel of fs
   const abs = path.join(teardownDir, rel);
   const source = fs.readFileSync(abs, 'utf8');
   const match = /^\s*(?:export\s+)?const PREFIX(?:\s*:\s*string)?\s*=\s*['"]([^'"]+)['"]/m.exec(source);
+  const templateNames = new Set(
+    [...source.matchAll(/\b(?:runTemplateTeardownAsserted|templateTeardownPrefix)\(\s*['"]([^'"]+)['"]/g)].map(
+      (m) => m[1]
+    )
+  );
   if (match) {
     teardownPrefixDeclarations.push({ file: rel, prefix: match[1] });
-  } else if (source.includes('runTeardownAsserted(')) {
+  } else if (templateNames.size > 0) {
+    for (const templateName of templateNames) {
+      const prefix = BUILT_IN_TEMPLATES[templateName]?.externalIdPrefix;
+      if (!prefix) {
+        throw new Error(
+          `Teardown prefix guard: '${rel}' names the template '${templateName}', which is not registered in ` +
+            "@openvaa/dev-seed's BUILT_IN_TEMPLATES or declares no externalIdPrefix."
+        );
+      }
+      teardownPrefixDeclarations.push({ file: rel, prefix });
+    }
+  } else if (source.includes('runTeardownAsserted(') || source.includes('runTemplateTeardownAsserted(')) {
     unparsedTeardownPrefixFiles.push(rel);
   }
 }
 if (unparsedTeardownPrefixFiles.length > 0) {
   throw new Error(
-    "Teardown prefix guard could not parse a `const PREFIX = '...'` declaration in " +
-      `${unparsedTeardownPrefixFiles.join(', ')}, but the file calls runTeardownAsserted — so its ` +
+    'Teardown prefix guard could not parse a prefix in ' +
+      `${unparsedTeardownPrefixFiles.join(', ')}, but the file calls a teardown assertion helper — so its ` +
       'prefix is NOT covered by the uniqueness/overlap check below and a collision could reappear ' +
-      'silently. Make ' +
-      "the declaration match `const PREFIX = '...'` (a plain top-level string literal), or widen the " +
-      'regex above to cover the new shape.'
+      "silently. Name the template as a string literal (`runTemplateTeardownAsserted('<template>')`), " +
+      "declare `const PREFIX = '...'` as a plain top-level string literal, or widen the regexes above " +
+      'to cover the new shape.'
   );
 }
 for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
@@ -605,12 +627,12 @@ const BASE_PROJECTS: Array<Project> = [
 
   // voter-results-redraw — LEAF. Read-only navigation-BEHAVIOUR regression on the base dataset: scroll position survives entity open / close / entity-tab switch measured from a scrolled start, overlay navigations run no document View Transition at all, any transition running under an open modal dialog carries no named groups, and the subtrees that must not remount are proven by DOM node identity. assert-only — it opens and closes the results drawer and switches tabs, and mutates no seed, no app_settings and no product file (no own setup/teardown). `testMatch` is scoped to this spec alone (`voter-results-redraw.spec.ts`); sibling voter-* projects' exact testMatch excludes it.
   //
-  // The block is not optional bookkeeping: see the ORPHAN-PROBE GUARD docblock at the top of this file. A spec file with no project matches no project and runs from NO command while still sitting in `specs/` looking like coverage — which is exactly what happened to four probe files. No `SOFT_ASSERTION_BUDGETS` entry either: this spec is hard-assertions-only by its own rigidity contract.
+  // The block is not optional bookkeeping: see the ORPHAN-PROBE GUARD docblock at the top of this file. A spec file with no project matches no project and runs from NO command while still sitting in `specs/` looking like coverage — which is exactly what happened to four probe files. No `SOFT_ASSERTION_BUDGETS` entry either, so its ceiling is zero: this spec is hard-assertions-only by its own rigidity contract.
   {
     name: 'voter-results-redraw',
     testDir: './tests/specs/voter',
     testMatch: /voter-results-redraw\.spec\.ts/,
-    use: { ...devices['Desktop Chrome'] },
+    use: { ...devices['Desktop Chrome'], reducedMotion: 'no-preference' },
     dependencies: ['data-setup-base']
   },
 
@@ -900,10 +922,10 @@ const CLOSED_PROJECT_EXCLUDED_LEAVES: Record<string, string> = {
  *
  * A leaf is a project that no other project names in `dependencies` and that is not some project's `teardown`. Conditional projects (`PLAYWRIGHT_NO_PERF`, `PLAYWRIGHT_NO_A11Y`, `PLAYWRIGHT_VISUAL`) are in `BASE_PROJECTS` only when their env gate declared them, so the derived list never names an undeclared project, which Playwright rejects at config load.
  */
-const closedProjectTeardownNames = new Set(BASE_PROJECTS.map((p) => p.teardown).filter((n): n is string => !!n));
-const closedProjectDependedOnNames = new Set(BASE_PROJECTS.flatMap((p) => p.dependencies ?? []));
+const baseTeardownNames = new Set(BASE_PROJECTS.map((p) => p.teardown).filter((n): n is string => !!n));
+const baseDependedOnNames = new Set(BASE_PROJECTS.flatMap((p) => p.dependencies ?? []));
 const baseLeafNames = BASE_PROJECTS.map((p) => p.name).filter(
-  (n): n is string => !!n && !closedProjectTeardownNames.has(n) && !closedProjectDependedOnNames.has(n)
+  (n): n is string => !!n && !baseTeardownNames.has(n) && !baseDependedOnNames.has(n)
 );
 const CLOSED_PROJECT_DEPENDENCIES = baseLeafNames.filter((n) => !(n in CLOSED_PROJECT_EXCLUDED_LEAVES));
 

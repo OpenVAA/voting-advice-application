@@ -14,9 +14,9 @@
  *   - DID-NOT-REMOUNT by DOM NODE IDENTITY: tag a node before the navigation, assert the document still contains that same node after it. That is literally what the claim means, and it needs zero production instrumentation.
  *   - THE DRAWER HOST'S SWAP AND TEARDOWN CONTRACT: an entity-to-entity navigation swaps content inside the SAME dialog node rather than reopening, and a dismissal always ends with no open dialog even though the opener is destroyed while the host is still rendering its payload.
  *
- * ## Skip, not fail — and derived in the page
+ * ## A precondition, not a skip — and derived in the page
  *
- * The View-Transition describe SKIPS when there is nothing to observe: a browser without `document.startViewTransition`, or a `prefers-reduced-motion: reduce` preference that makes the app's own `shouldAnimate` gate short-circuit. Both conditions are derived INSIDE THE PAGE rather than read off the runner, because the repo carries two contradictory claims about whether `page.emulateMedia({ reducedMotion })` reaches the application's `matchMedia` — `voter-journey.fixture.ts@282` says it does not, `eperm07-term-trigger.spec.ts` uses it as a deliberate discriminator. An in-page evaluation is true either way. The scroll describe is deliberately NOT skipped: those assertions hold with or without motion.
+ * The View-Transition test needs something to observe: a browser with `document.startViewTransition`, and no `prefers-reduced-motion: reduce` preference, which would make the app's own `shouldAnimate` gate short-circuit. The project pins Desktop Chrome and `reducedMotion: 'no-preference'`, so either condition failing is a broken setup, and the test FAILS on it rather than skipping. Both conditions are derived INSIDE THE PAGE rather than read off the runner, because the repo carries two contradictory claims about whether `page.emulateMedia({ reducedMotion })` reaches the application's `matchMedia` — `voter-journey.fixture.ts@282` says it does not, `eperm07-term-trigger.spec.ts` uses it as a deliberate discriminator. An in-page evaluation is true either way. The scroll describe has no such precondition: those assertions hold with or without motion.
  *
  * ## How each case reaches its entry condition, and why that keeps the property intact
  *
@@ -73,24 +73,20 @@ async function scrollDown(page: Page): Promise<void> {
 }
 
 /**
- * Skip the caller when there is no View Transition to observe.
+ * Assert that there is a View Transition to observe: the page has a native `document.startViewTransition`, and the page does not prefer reduced motion.
  *
  * BOTH conditions are derived in the page. `isSupported()` reads the flag the capture fixture's init script recorded while it was deciding whether it had a native entry point to wrap, and the reduced-motion condition evaluates the media query in the page — the same query the application's own `shouldAnimate` gate reads. Neither trusts the runner.
- *
- * The conditional lives here, at module scope, rather than in a test body — the house pattern `eperm07-term-trigger.spec.ts` established for keeping `playwright/no-conditional-in-test` satisfied without hiding the branch.
  */
-async function skipUnlessTransitionsAreObservable(page: Page, log: ViewTransitionLogFixture): Promise<void> {
-  const supported = await log.isSupported();
+async function assertTransitionsAreObservable(page: Page, log: ViewTransitionLogFixture): Promise<void> {
+  expect(
+    await log.isSupported(),
+    'document.startViewTransition is missing: the voter-results-redraw project must run on a browser with the View Transitions API'
+  ).toBe(true);
   const reduced = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
-  // reason: a browser without `document.startViewTransition` has nothing to observe, and a spec that FAILED there would be asserting the browser's feature set rather than the application's behaviour. A skip is the honest outcome, and this one is derived in the page rather than from the runner.
-  // eslint-disable-next-line playwright/no-skipped-test
-  test.skip(!supported, 'document.startViewTransition is unavailable in this browser — nothing to observe');
-  // reason: under `prefers-reduced-motion: reduce` the application's own `shouldAnimate` gate short-circuits before any transition starts, so an empty log is the CORRECT outcome and proves nothing about the two invariants. Skipping is honest; asserting would be theatre.
-  // eslint-disable-next-line playwright/no-skipped-test
-  test.skip(
+  expect(
     reduced,
-    'prefers-reduced-motion: reduce — shouldAnimate short-circuits, so there is no transition to observe'
-  );
+    'prefers-reduced-motion is on, so shouldAnimate short-circuits: the project must not emulate reduced motion'
+  ).toBe(false);
 }
 
 test.describe('voter-results-redraw — scroll survival and node identity', () => {
@@ -200,7 +196,7 @@ test.describe('voter-results-redraw — the two view-transition invariants', () 
   }) => {
     test.setTimeout(TIMEOUTS.testMax);
     await landOnResults(page);
-    await skipUnlessTransitionsAreObservable(page, viewTransitionLog);
+    await assertTransitionsAreObservable(page, viewTransitionLog);
 
     await test.step('NON-VACUITY: the instrument records a transition for a navigation that IS expected to start one', async () => {
       // An unobserved absence is not evidence of absence. An entity-tab switch is a plain in-app navigation — no `entity`/`id` params, so `isOverlayNavigation` does not exempt it — and it is therefore expected to start a document transition. Proving the log grows here is what makes the two empty logs below mean something.

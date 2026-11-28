@@ -16,11 +16,6 @@
 #   ```
 #
 #   --run-dir <path>        REQUIRED. Where every artifact for this run lands. A relative path is resolved against the REPO ROOT, never against $PWD, so the script behaves identically from any working directory. It MUST resolve inside the repo root, because that is the only thing mounted into the container -- a run dir outside it would be discarded when the --rm container exits, taking the run's entire evidence with it.
-#   --config <path>         OPTIONAL. Playwright config to run. Default: tests/playwright.config.ts, the SHIPPED configuration, which is what every verdict-bearing run must use.
-#                           Exists for MEASUREMENT-ONLY overlays (the zero-tolerance noise matrix and the height control), which live under tests/e2e-runs/ precisely so they are gitignored and can never be shipped. A relative path is resolved against the REPO ROOT and MUST stay inside it -- the repo root is the only thing mounted, so a config outside it does not exist in the container.
-#                           Mutually exclusive with --ci-literal (which reproduces CI's invocation, and CI runs the shipped config) and with
-#                           --egress-control-only (which runs no suite at all).
-#                           NOTE: an overlay two directories down does NOT inherit the base config's relative `globalSetup` or relative project `testDir`s -- both resolve against the CONFIG FILE's own directory, so an overlay that merely spreads the base silently loses the served-application preflight and enumerates zero tests. Overlays must absolutise both, and prove it with --list before measuring.
 #   --project <name>        OPTIONAL. Playwright project. Default: visual-regression.
 #                           Mutually exclusive with --grep and with --ci-literal.
 #   --grep <pattern>        OPTIONAL. Select by title tag instead of by project.
@@ -28,7 +23,6 @@
 #   --update-snapshots-all  OPTIONAL. Appends the literal --update-snapshots=all. There is deliberately NO flag that produces the bare form: bare
 #                           --update-snapshots is mode `changed`, which SKIPS images that are within tolerance. A re-baseline whose whole purpose is to re-capture every image against new rendering must not silently leave the within-tolerance ones carrying old pixels.
 #   --block-egress          OPTIONAL. Blackhole fonts.googleapis.com and fonts.gstatic.com at the container's own resolver, and run a curl control FIRST that MUST fail. A green suite behind an unproven block proves nothing, so the control runs BEFORE Playwright, not after.
-#   --egress-control-only   OPTIONAL, and only meaningful with --block-egress (a usage error without it). Take the controls and STOP: run the step-2 curl control, then drive Chromium at the same URL, and exit WITHOUT starting the forwarder or Playwright. The block must be proven live BEFORE any suite runs behind it, and a control run that also runs the suite cannot be that proof -- it would already be the thing it is supposed to license. Writes curl-control.log and chromium-control.log beside provenance.txt in the run dir. Exit 0 means BOTH controls failed to connect, which is the passing outcome here; exit 6 means one of them reached Google.
 #   --ci-literal            OPTIONAL. Reproduce CI's invocation exactly: CI runs tests/scripts/e2e-run.sh with --project visual-regression, and the wrapper unsets CI, so this mode passes that project with no --workers/--retries override and leaves the config's unset-CI defaults (retries: 0, and 4 workers under GITHUB_ACTIONS). It also sets GITHUB_ACTIONS=true in the container, as every CI job has, so the per-test ceiling is CI's 180 s and forbidOnly is on. Playwright also runs the setup projects visual-regression depends on.
 #   -h, --help              Print this header and exit 0.
 #
@@ -52,9 +46,7 @@
 #   3:  docker is unavailable (the daemon did not answer)
 #   4:  the pinned image digest is NOT present locally; this script REFUSES to pull
 #   5:  the TCP forwarder failed to bind inside the container
-#   6:  an egress control did NOT fail under --block-egress, so the block is unproven and the suite must not run behind it. Raised by the step-2 curl control on every
-#      --block-egress run, and additionally by the Chromium control under
-#      --egress-control-only: curl proves the RESOLVER is blackholed, Chromium proves the browser that actually takes the screenshots is subject to the same blackhole rather than resolving around /etc/hosts. Two claims, one code -- either one succeeding means the block is not applied.
+#   6:  the step-2 curl control did NOT fail under --block-egress, so the block is unproven and the suite must not run behind it
 #   7:  the host dev server was not reachable through the forwarder
 #   130:  the run was INTERRUPTED (SIGINT/SIGTERM). Never 0: the determinism gate counts CONSECUTIVE runs, so an abort must be recorded as an abort by the caller, not silently counted as a green.
 #
@@ -77,12 +69,10 @@ FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 PW_IMAGE="${PW_IMAGE:-mcr.microsoft.com/playwright@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27}"
 
 RUN_DIR=""
-CONFIG_PATH=""
 PROJECT=""
 GREP_PATTERN=""
 UPDATE_ALL=0
 BLOCK_EGRESS=0
-CONTROLS_ONLY=0
 CI_LITERAL=0
 INTERRUPTED=0
 
@@ -116,11 +106,6 @@ while [ $# -gt 0 ]; do
       RUN_DIR="$2"
       shift 2
       ;;
-    --config)
-      require_value --config $#
-      CONFIG_PATH="$2"
-      shift 2
-      ;;
     --project)
       require_value --project $#
       PROJECT="$2"
@@ -137,10 +122,6 @@ while [ $# -gt 0 ]; do
       ;;
     --block-egress)
       BLOCK_EGRESS=1
-      shift
-      ;;
-    --egress-control-only)
-      CONTROLS_ONLY=1
       shift
       ;;
     --ci-literal)
@@ -170,32 +151,8 @@ if [ -n "$PROJECT" ] && [ -n "$GREP_PATTERN" ]; then
   exit 2
 fi
 
-if [ "$CONTROLS_ONLY" = "1" ] && [ "$BLOCK_EGRESS" != "1" ]; then
-  echo "visual-container.sh: --egress-control-only requires --block-egress; without the block the controls would" >&2
-  echo "visual-container.sh: succeed by design and would measure nothing" >&2
-  exit 2
-fi
-
-if [ "$CONTROLS_ONLY" = "1" ] &&
-  { [ -n "$PROJECT" ] || [ -n "$GREP_PATTERN" ] || [ "$UPDATE_ALL" = "1" ] || [ "$CI_LITERAL" = "1" ]; }; then
-  echo "visual-container.sh: --egress-control-only runs no suite, so a selection or snapshot flag alongside it" >&2
-  echo "visual-container.sh: describes a run that will not happen. Drop the flag or drop --egress-control-only." >&2
-  exit 2
-fi
-
 if [ "$CI_LITERAL" = "1" ] && { [ -n "$PROJECT" ] || [ -n "$GREP_PATTERN" ]; }; then
   echo "visual-container.sh: --ci-literal reproduces CI's selection exactly and cannot be combined with --project or --grep" >&2
-  exit 2
-fi
-
-if [ -n "$CONFIG_PATH" ] && [ "$CI_LITERAL" = "1" ]; then
-  echo "visual-container.sh: --ci-literal reproduces CI's invocation, and CI runs the SHIPPED config; an overlay" >&2
-  echo "visual-container.sh: alongside it describes a run CI never performs." >&2
-  exit 2
-fi
-
-if [ -n "$CONFIG_PATH" ] && [ "$CONTROLS_ONLY" = "1" ]; then
-  echo "visual-container.sh: --egress-control-only runs no suite, so the config it would have run is not used." >&2
   exit 2
 fi
 
@@ -213,27 +170,6 @@ case "$RUN_DIR" in
     exit 2
     ;;
 esac
-
-# The config crosses the container boundary the same way the run dir does: resolved against the REPO ROOT, and required to stay inside it. The repo root is the ONLY thing mounted, so a config outside it simply does not exist in the container -- and Playwright's failure for a missing config is a generic non-zero exit that would be indistinguishable from a test failure to a caller branching on the status alone.
-if [ -n "$CONFIG_PATH" ]; then
-  case "$CONFIG_PATH" in
-    /*) : ;;
-    *) CONFIG_PATH="$REPO_ROOT/$CONFIG_PATH" ;;
-  esac
-  case "$CONFIG_PATH" in
-    "$REPO_ROOT"/*) : ;;
-    *)
-      echo "visual-container.sh: --config must resolve inside $REPO_ROOT (the mounted tree); got '$CONFIG_PATH'" >&2
-      exit 2
-      ;;
-  esac
-  if [ ! -f "$CONFIG_PATH" ]; then
-    echo "visual-container.sh: --config '$CONFIG_PATH' does not exist" >&2
-    exit 2
-  fi
-  # Emitted to Playwright as a REPO-ROOT-RELATIVE path: the container's workdir is the repo root (the identical-path mount), so the relative form is stable and the recorded pw-args.txt reads the same on both sides of the boundary.
-  CONFIG_PATH="${CONFIG_PATH#"$REPO_ROOT"/}"
-fi
 
 # `install -d` rather than `mkdir` with a parents flag: this script must contain no standalone short flag that a reader (or a grep) could mistake for a docker port publication, which this script's no-port-publication rule forbids outright.
 install -d "$RUN_DIR"
@@ -269,7 +205,7 @@ PW_ARGS_FILE="$RUN_DIR/pw-args.txt"
 {
   echo "test"
   echo "-c"
-  echo "${CONFIG_PATH:-tests/playwright.config.ts}"
+  echo "tests/playwright.config.ts"
   if [ "$CI_LITERAL" = "1" ]; then
     # CI selects the project and passes no worker/retry override, with CI unset by the wrapper. Reproducing that literally is the point of this mode -- do not "improve" it toward the strict runs.
     echo "--project=visual-regression"
@@ -349,57 +285,6 @@ if [ "${VC_BLOCK_EGRESS:-0}" = "1" ]; then
     echo "$SELF: any green suite behind it would prove nothing. Refusing to run." >&2
     exit 6
   fi
-fi
-
-# --- 2b. the BROWSER-level control, and the stop --------------------------------------
-
-# curl proves the RESOLVER is blackholed. It does not prove the browser is: Chromium has its own resolver path and could in principle route around /etc/hosts, in which case every claim about a font-egress-blocked capture would be vacuous. That is a different claim, so it is measured separately -- and it is measured with the image's own bundled Playwright rather than through a spec file, because a committed spec would make a one-off control part of the permanent suite.
-if [ "${VC_CONTROLS_ONLY:-0}" = "1" ]; then
-  set +e
-  node -e '
-    const { chromium } = require("@playwright/test");
-    // NOT named `URL`: a top-level `const URL` shadows the global URL class, and node
-    // undici dereferences that global while loading `fetch` -- observed here as
-    // `ReferenceError: URL is not defined` from inside undici, several frames away from
-    // anything this probe wrote.
-    const TARGET = "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap";
-    (async () => {
-      const browser = await chromium.launch();
-      console.info("playwright_version=" + require("@playwright/test/package.json").version);
-      console.info("chromium_version=" + browser.version());
-      console.info("navigating to " + TARGET);
-      const page = await browser.newPage();
-      let failure = null;
-      try {
-        const res = await page.goto(TARGET, { timeout: 20000 });
-        console.info("navigation SUCCEEDED with HTTP " + (res && res.status()));
-      } catch (e) {
-        failure = e.message.split("\n")[0];
-        console.info("navigation FAILED: " + failure);
-      }
-      await browser.close();
-      // Exit 6 on a SUCCESSFUL navigation: same meaning as the curl control above.
-      process.exit(failure ? 0 : 6);
-    })().catch((e) => {
-      console.error("probe itself failed: " + e.message);
-      process.exit(1);
-    });
-  ' > "$VC_RUN_DIR/chromium-control.log" 2>&1
-  CHROMIUM_STATUS=$?
-  set -e
-  echo "exit=$CHROMIUM_STATUS" >> "$VC_RUN_DIR/chromium-control.log"
-  cat "$VC_RUN_DIR/chromium-control.log"
-  # NOT `exit`: in every other run directory that filename holds Playwright's status, and a controls-only run never reaches Playwright, so reusing it would present a control as a suite result.
-  echo "$CHROMIUM_STATUS" > "$VC_RUN_DIR/controls-exit"
-
-  if [ "$CHROMIUM_STATUS" != "0" ]; then
-    echo "$SELF: FATAL -- the Chromium egress control did not fail as required (exit $CHROMIUM_STATUS)." >&2
-    exit "$CHROMIUM_STATUS"
-  fi
-  echo "$SELF: both egress controls failed to connect, which is the passing outcome. Stopping"
-  echo "$SELF: before the forwarder and before Playwright: the block must be proven"
-  echo "$SELF: BEFORE a suite runs behind it, so this run must not be that suite."
-  exit 0
 fi
 
 # --- 3. the TCP relay ------------------------------------------------------------------
@@ -491,7 +376,6 @@ fi
 DOCKER_ARGS+=(-v "$PWD":"$PWD" -w "$PWD")
 DOCKER_ARGS+=(-e FRONTEND_PORT -e PLAYWRIGHT_VISUAL=1)
 DOCKER_ARGS+=(-e "VC_RUN_DIR=$RUN_DIR" -e "VC_BLOCK_EGRESS=$BLOCK_EGRESS")
-DOCKER_ARGS+=(-e "VC_CONTROLS_ONLY=$CONTROLS_ONLY")
 if [ "$CI_LITERAL" = "1" ]; then
   # GitHub sets GITHUB_ACTIONS=true on every CI job, and the Playwright config keys the 180 s per-test ceiling and forbidOnly on it. Without it the container would run with the local 90 s ceiling.
   DOCKER_ARGS+=(-e GITHUB_ACTIONS=true)

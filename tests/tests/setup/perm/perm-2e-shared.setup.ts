@@ -2,7 +2,6 @@
  * perm-2e-shared data-setup project.
  *
  * Invokes setupFromTemplate('perm-2e-shared').
- * Prefix: 'test-perm-2e-shared-'.
  */
 
 import { test as setup } from '@playwright/test';

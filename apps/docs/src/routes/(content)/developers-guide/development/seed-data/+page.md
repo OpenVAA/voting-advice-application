@@ -63,7 +63,7 @@ The built-in templates are the keys of `BUILT_IN_TEMPLATES` in [`packages/dev-se
 - **`default`**: a demo election for people working on the app: constituencies, organizations, candidates with portraits, and questions with answers clustered by organization, translated into every supported locale. Its records' `external_id`s start with `seed_`.
 - **`e2e/base`**: the dataset the Playwright specs depend on, in one locale.
 - **`smoke`**: 1001 candidates with one nomination each, no auth user, prefix `smoke_`, for seeding a hosted project once with `--allow-remote --project-id` set to the deployment's `public_project_id` ([the package README's `smoke` section](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/dev-seed/README.md#smoke)).
-- **`perm-*`** and **`show-feedback-survey`**: small datasets for individual E2E specs, each covering one permutation of the app settings or of the election and constituency layout (for example `perm-1e1cg1co`, `perm-access-disable` and `perm-closed-project`).
+- **`perm-*`**: small datasets for individual E2E specs, each covering one permutation of the app settings or of the election and constituency layout (for example `perm-1e1cg1co`, `perm-access-disable` and `perm-closed-project`).
 
 ### Custom templates
 

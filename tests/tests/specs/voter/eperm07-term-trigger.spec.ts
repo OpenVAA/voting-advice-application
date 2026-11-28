@@ -31,7 +31,7 @@ import type { CaptureNavigationBaseline } from '../../helpers';
 /**
  * Read a numeric forcing knob, or fall back to the PRODUCTION default. Never to anything more permissive than production, and never silently.
  *
- * reason: (review WR-03) the file's neutrality contract above says neutrality is structural rather than remembered, and `Number(process.env.X ??
+ * reason: the file's neutrality contract above says neutrality is structural rather than remembered, and `Number(process.env.X ??
  * default)` did not deliver that for anything except a strictly-unset variable.
  * `??` catches only `undefined`, so an EXPORTED-BUT-EMPTY variable — the ordinary result of `env: X: ${{ inputs.budget }}` with no input, or of `X= yarn test:e2e` — yielded `Number('') === 0`. For the budget knob Playwright reads `timeout: 0` as NO TIMEOUT, silently converting this permanent regression guard's only assertion into one that cannot fail on latency; for the CPU knob `0 <= 1` meant the throttle was silently not applied, so an operator hunting "at rate 40" would read a no-reproduction result off a run that had no throttle. A non-numeric value was worse still: `Number('2s')` is `NaN`, whose Playwright timeout semantics are undefined and which CDP serialises to `null`, killing the test with a protocol error instead of a usage error.
  *
@@ -97,7 +97,7 @@ async function settleOnUrlChangeAsProductionDoes(
 /**
  * Gate on `text` as THIS question's heading, then click its LAST answer option.
  *
- * Does NOT settle afterwards — the caller owns the settle, because on the hop under test the settle IS the thing being reproduced. It DOES own the settle's baseline: `capture()` runs after the heading gate and immediately before the click, which is the only instant at which the DOM is known to be on the question we are leaving (review WR-01).
+ * Does NOT settle afterwards — the caller owns the settle, because on the hop under test the settle IS the thing being reproduced. It DOES own the settle's baseline: `capture()` runs after the heading gate and immediately before the click, which is the only instant at which the DOM is known to be on the question we are leaving.
  *
  * The option locator is scoped to the current question id rather than page-wide: on a Q→Q nav the outgoing question's options can linger in the DOM for a frame after the heading has already updated, so a page-wide count would be stale (the mechanism documented at voter-journey.spec.ts:255-265).
  */

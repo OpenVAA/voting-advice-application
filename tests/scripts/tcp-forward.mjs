@@ -12,7 +12,9 @@
  *
  *   # The invocation `tests/scripts/visual-container.sh` issues inside the container:
  *   node tests/scripts/tcp-forward.mjs \
- *     "5173:host.docker.internal:5173" \ "54321:host.docker.internal:54321" \ "54324:host.docker.internal:54324"
+ *     "5173:host.docker.internal:5173" \
+ *     "54321:host.docker.internal:54321" \
+ *     "54324:host.docker.internal:54324"
  *
  * Handshake -- the caller waits on stdout rather than sleeping:
  *   tcp-forward.mjs: READY <listenPort> -> <upstreamHost>:<upstreamPort>   (one per listener)
@@ -21,7 +23,9 @@
  * Shutdown: SIGTERM or SIGINT closes every listener and exits 0. A forwarder killed by the wrapper at end of run must not turn a green Playwright run into a non-zero script exit.
  *
  * Exit codes -- the caller must be able to branch on the status alone:
- *   0 - clean shutdown (SIGTERM/SIGINT received, every listener closed) 2 - usage error (no arguments, or an argument that is not <listenPort>:<host>:<port>) 5 - a listener failed to bind
+ *   0 - clean shutdown (SIGTERM/SIGINT received, every listener closed)
+ *   2 - usage error (no arguments, or an argument that is not <listenPort>:<host>:<port>)
+ *   5 - a listener failed to bind
  *
  * These three numbers are shared with `tests/scripts/visual-container.sh`'s exit-code table and must stay in agreement with it.
  *
@@ -59,7 +63,7 @@ const CONNECT_TIMEOUT_MS = Number(process.env.TCP_FORWARD_CONNECT_TIMEOUT_MS ?? 
  *
  * The bound is chosen against the budget it must not blow: `TIMEOUTS.slowPage` is 10 000 ms and is the shortest wait in the suite that a stalled asset can expire. 8 x 1 000 ms = 8 s worst case, which stays under it.
  *
- * The depth is chosen against the measured ladder. Across 82 dropped-SYN events observed under suite load after this fix landed, the connection was established on dial 2 in 66 cases, dial 3 in 11, dial 4 in 4 and dial 5 in 1 -- so drops do come in short bursts and a single retry would NOT have been enough. 8 leaves three dials of headroom over the deepest ladder ever seen, and no connection has yet been given up on.
+ * The depth is chosen against the measured ladder. Across 82 dropped-SYN events observed under suite load, the connection was established on dial 2 in 66 cases, dial 3 in 11, dial 4 in 4 and dial 5 in 1 -- so drops do come in short bursts and a single retry would NOT have been enough. 8 leaves three dials of headroom over the deepest ladder ever seen, and no connection has yet been given up on.
  */
 const CONNECT_ATTEMPTS = Number(process.env.TCP_FORWARD_CONNECT_ATTEMPTS ?? 8);
 
@@ -170,7 +174,7 @@ for (const { listenPort, upstreamHost, upstreamPort } of routes) {
         `${SELF}: the most likely cause is that the HOST service is bound to loopback only. ` +
           'Vite declares no `host`, so it binds 127.0.0.1 unless started as ' +
           '`yarn workspace @openvaa/frontend dev --host 0.0.0.0` -- note that ' +
-          '`yarn dev --host 0.0.0.0` does NOT forward the flag to vite (research N-10).'
+          '`yarn dev --host 0.0.0.0` does NOT forward the flag to vite.'
       );
     }
 

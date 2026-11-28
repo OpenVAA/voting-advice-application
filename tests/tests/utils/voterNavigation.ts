@@ -10,37 +10,8 @@ import { errors, expect, test } from '@playwright/test';
 import { testIds } from './testIds';
 import { FIRST_QUESTION_ID } from '../../../apps/frontend/src/lib/routes/route';
 import { createVoterHomePage } from '../fixtures/voter/voterHomePage.fixture';
-import { TIMEOUTS } from '../helpers';
+import { TIMEOUTS, waitForHydration } from '../helpers';
 import type { Locator, Page } from '@playwright/test';
-
-/**
- * Click a navigation-triggering button or link of the stage walk and wait briefly for the click to take effect: the URL changes, or the clicked element detaches.
- *
- * The click has a tight 3 s budget and both waits swallow their timeout, because this is a step of a resilient walker, not an assertion. A click that does not take effect (the element detached mid-click, or it landed before the handler was attached) leaves the walk on the same stage, and `walkVoterStages` resolves the stage again and repeats the action until its progress check gives up. Any error other than a timeout, such as a strict-mode violation, is thrown. Detection is by route AND rendered anchor, so a button still mounted after its navigation has begun is never taken for the current page.
- *
- * The walk's guarantee is terminal: it returns only on a stage it resolved, and every spec built on it opens with its own hard assertion. For a hop whose next assertion is not a hard landing assertion, use `helpers/navigation.ts` `expectClientNavigation` instead.
- *
- * @returns the first line of the click's timeout error, or `undefined` when the click went through.
- */
-async function advanceClick(page: Page, target: Locator): Promise<string | undefined> {
-  const urlBefore = page.url();
-  let clickError: string | undefined;
-  try {
-    // reason: a fixed 3s fast-fail click, far below STAGE_BUDGET, so a detached or non-actionable button times out quickly and the walk resolves the stage again (see the docstring above). Not bucket-mappable.
-    await target.click({ timeout: 3000 });
-  } catch (error) {
-    if (!isTimeout(error)) throw error;
-    // The element was not actionable within 3 s. The settle below still checks whether the action took effect: a click that times out mid-flight often still navigates if SvelteKit had already begun the route transition.
-    clickError = firstLine(error);
-  }
-  // Settle: confirm the click took effect. Either the URL changes OR the clicked target leaves the DOM. Whichever wins, the next loop iteration sees a clean post-navigation page state.
-  // reason: tight 3s post-click settle race (URL-change OR target-hidden) — paired with the fast-fail click above; deliberately below TIMEOUTS.page so a no-op click short-circuits the loop iteration fast. Not bucket-mappable.
-  await Promise.race([
-    page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3000 }).catch(() => null),
-    target.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => null)
-  ]);
-  return clickError;
-}
 
 /**
  * The voter-flow pages the walkers recognise, each identified by its route AND a rendered anchor.
@@ -146,7 +117,7 @@ function firstLine(error: unknown): string {
 }
 
 /**
- * True when `error` is a Playwright timeout, the only error a stage action retries on. That is an action or wait that threw `TimeoutError`, or a web-first assertion that ran out of time, whose matcher result then carries the timeout.
+ * True when `error` is a Playwright timeout, which a stage action reports with the stage and the URL. That is an action or wait that threw `TimeoutError`, or a web-first assertion that ran out of time, whose matcher result then carries the timeout.
  */
 function isTimeout(error: unknown): boolean {
   if (error instanceof errors.TimeoutError) return true;
@@ -172,7 +143,7 @@ async function continueFromConstituencies(page: Page): Promise<void> {
     await listbox.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
     await listbox.getByRole('option').first().click({ timeout: TIMEOUTS.click });
   }
-  await advanceClick(page, page.getByTestId(testIds.voter.constituencies.continue));
+  await page.getByTestId(testIds.voter.constituencies.continue).click({ timeout: STAGE_BUDGET });
 }
 
 /**
@@ -200,23 +171,19 @@ export async function followCategoryStart(page: Page): Promise<void> {
 }
 
 /**
- * Take the action that leaves `stage`: the start button, the Continue button, or the category start link. An action that does not take effect, such as a click that lands before the handler is attached, throws a timeout or leaves the URL unchanged; the walk then resolves the stage again and repeats the action. Any error other than a timeout is thrown.
- *
- * @returns the first line of the timeout the action swallowed, or `undefined` when it raised none.
+ * Take the action that leaves `stage` — the start button, the Continue button, or the category start link — and wait until the URL is off the stage's route. The caller has waited for the page to hydrate, so the action is taken once. An action or a wait that times out throws an error naming the stage and the URL; any other error is thrown as it is.
  */
-async function leaveStage(page: Page, stage: VoterStage): Promise<string | undefined> {
-  let actionError: string | undefined;
+async function leaveStage(page: Page, stage: VoterStage): Promise<void> {
   try {
     switch (stage) {
       case 'home':
       case 'intro':
-      case 'elections':
-      case 'questions-intro': {
-        const target =
-          stage === 'elections' ? page.getByTestId(testIds.voter.elections.continue) : stageAnchor(page, stage);
-        actionError = await advanceClick(page, target);
+      case 'questions-intro':
+        await stageAnchor(page, stage).click({ timeout: STAGE_BUDGET });
         break;
-      }
+      case 'elections':
+        await page.getByTestId(testIds.voter.elections.continue).click({ timeout: STAGE_BUDGET });
+        break;
       case 'constituencies':
         await continueFromConstituencies(page);
         break;
@@ -226,32 +193,34 @@ async function leaveStage(page: Page, stage: VoterStage): Promise<string | undef
       case 'question':
         throw new Error('a question page has no leave action in the stage walk');
     }
+    await page.waitForURL(leftStage(stage), { timeout: STAGE_BUDGET });
   } catch (error) {
     if (!isTimeout(error)) throw error;
-    actionError = firstLine(error);
+    throw new Error(
+      `voter walk: the action of the ${stage} page at ${page.url()} did not leave it: ${firstLine(error)}`,
+      {
+        cause: error
+      }
+    );
   }
-  await page.waitForURL(leftStage(stage), { timeout: TIMEOUTS.page }).catch((error) => {
-    if (!isTimeout(error)) throw error;
-  });
-  return actionError;
 }
 
 /**
  * Walk the voter flow from whichever page is showing until it reaches one of `until`, acting on each page as it renders.
  *
- * Every page before the questions is optional: a seed can disable the intro or the questions intro, and a single election or constituency skips its selector. The walk therefore never branches on whether a page appeared within some window. It resolves the page that IS showing, acts on it, and resolves again. A page that renders late is simply acted on late.
+ * Every page before the questions is optional: a seed can disable the intro or the questions intro, and a single election or constituency skips its selector, and parallel settings specs can toggle the optional pages. The walk therefore never branches on whether a page appeared within some window. It resolves the page that IS showing, waits for that page's document to hydrate, acts on it once, and resolves again. A page that renders late is simply acted on late.
  *
- * Fails loudly in two cases:
+ * Fails loudly when:
  *  - the walk passes the question stage without reaching `until`, for example a `category-intro` walk on a seed with category intros disabled;
- *  - one page's action does not take effect: the same stage on the same path is still showing `STAGE_BUDGET` after the walk first acted on it. A disabled start button, or a modal over the Continue button, ends up here. The message names the stage, the URL, the number of attempts and the last swallowed error.
+ *  - a page's action does not leave it within `STAGE_BUDGET`, for example a disabled start button or a modal over the Continue button; the message names the stage and the URL;
+ *  - the page the walk resolves after an action is the one it just left.
  *
  * @param page - Playwright Page.
  * @param until - the stages to stop on.
  * @returns the stage the walk stopped on.
  */
 export async function walkVoterStages(page: Page, until: ReadonlyArray<VoterStage>): Promise<VoterStage> {
-  let current: { key: string; since: number; attempts: number } | undefined;
-  let lastActionError: string | undefined;
+  let previousKey: string | undefined;
   for (;;) {
     const stage = await resolveVoterStage(page);
     if (until.includes(stage)) return stage;
@@ -259,19 +228,12 @@ export async function walkVoterStages(page: Page, until: ReadonlyArray<VoterStag
       throw new Error(`voter walk: reached a question page at ${page.url()} without passing [${until.join(', ')}]`);
     }
     const key = `${stage} ${new URL(page.url()).pathname}`;
-    if (current?.key !== key) {
-      current = { key, since: Date.now(), attempts: 0 };
-    } else if (Date.now() - current.since >= STAGE_BUDGET) {
-      throw new Error(
-        `voter walk: stuck on the ${stage} page at ${page.url()}. ` +
-          `Its action did not take effect in ${current.attempts} attempt(s) over ${Date.now() - current.since} ms. ` +
-          (lastActionError
-            ? `The last attempt failed with: ${lastActionError}`
-            : 'Every attempt completed without leaving the page.')
-      );
+    if (key === previousKey) {
+      throw new Error(`voter walk: the ${stage} page at ${page.url()} is showing again after its action left it`);
     }
-    current.attempts++;
-    lastActionError = await leaveStage(page, stage);
+    previousKey = key;
+    await waitForHydration(page, { timeout: STAGE_BUDGET });
+    await leaveStage(page, stage);
   }
 }
 

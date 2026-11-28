@@ -1,7 +1,7 @@
 /**
  * @file video fixture (shared — voter + candidate).
  *
- * Shared function-fixture for the generic `Video` component (apps/frontend/src/lib/components/video/Video.svelte). Authored standalone under tests/tests/fixtures/shared/ (NOT extended into a voter- or candidate-scoped composition root) so BOTH apps can consume the same surface via a direct `createVideoReader(page)` import — mirroring the standalone `feedbackDialog.fixture.ts` / `langSelectorFixture.fixture.ts` shape.
+ * Shared function-fixture for the generic `Video` component (apps/frontend/src/lib/components/video/Video.svelte). Authored standalone under tests/tests/fixtures/shared/ (NOT extended into a voter- or candidate-scoped composition root) so BOTH apps can consume the same surface via a direct `createVideoReader(page)` import — mirroring the standalone `feedbackDialog.fixture.ts` / `langSelector.fixture.ts` shape.
  *
  * Surface:
  *  - video: Locator         — testid-bound `video` anchor (Video.svelte root <div>).

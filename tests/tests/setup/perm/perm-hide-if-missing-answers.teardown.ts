@@ -1,16 +1,12 @@
 /**
  * perm-hide-if-missing-answers data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-hide-missing-'.
+ * Clears only this scenario's prefix, the `externalIdPrefix` the `perm-hide-if-missing-answers` template declares.
  */
 
 import { test as teardown } from '@playwright/test';
-import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { runTeardownAsserted } from '../shared/assertTeardown';
+import { runTemplateTeardownAsserted } from '../shared/assertTeardown';
 
-const PREFIX = 'e2e-perm-hide-missing-';
-
-teardown('delete perm-hide-if-missing-answers dataset', async () => {
-  const client = new SupabaseAdminClient();
-  await runTeardownAsserted(PREFIX, client);
-});
+teardown('delete perm-hide-if-missing-answers dataset', () =>
+  runTemplateTeardownAsserted('perm-hide-if-missing-answers')
+);

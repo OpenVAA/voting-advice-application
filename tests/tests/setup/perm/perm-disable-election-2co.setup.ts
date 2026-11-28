@@ -2,7 +2,6 @@
  * perm-disable-election-2co data-setup project.
  *
  * Invokes setupFromTemplate('perm-disable-election-2co').
- * Prefix: 'test-perm-disable-elec-2co-'.
  */
 
 import { test as setup } from '@playwright/test';

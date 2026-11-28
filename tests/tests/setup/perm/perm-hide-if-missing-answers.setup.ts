@@ -2,8 +2,6 @@
  * perm-hide-if-missing-answers data-setup project.
  *
  * UNAUTHENTICATED — voter walk to /results asserting on candidate-card filtering.
- *
- * Prefix: 'e2e-perm-hide-missing-'.
  */
 
 import { test as setup } from '@playwright/test';

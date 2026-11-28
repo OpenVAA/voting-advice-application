@@ -5,8 +5,6 @@
  *
  * The storage-state file is consumed by the AUTHENTICATED sub-tests in perm-answers-locked.spec.ts (surfaces 2 + 3: /contestant/profile + /contestant/questions/[questionId]); the UNAUTH sub-test (surface 1, the contestant app's login and sign-in screens) does not use storage state.
  *
- * Prefix: 'e2e-perm-answers-locked-'.
- *
  * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain leakage from prior perm chains still mid-teardown when this setup starts.
  */
 

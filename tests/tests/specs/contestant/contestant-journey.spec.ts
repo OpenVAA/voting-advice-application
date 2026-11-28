@@ -35,7 +35,7 @@
  * Rigidity contract:
  *   - 0 try/catch wrapping expect()
  *   - 0 .catch(() => null) on assertion-bearing locator interactions
- *   - expect.soft is used, in the optional-page checks and the link field's error check, where a failure should not abort the remaining 20 steps of the walk. This spec is outside SOFT_ASSERTION_BUDGETS, which is deliberately scoped to voter-journey.spec.ts; see the note above that table in playwright.config.ts.
+ *   - expect.soft is used, in the optional-page checks and the link field's error check, where a failure should not abort the remaining 20 steps of the walk. Its ceiling lives in SOFT_ASSERTION_BUDGETS in playwright.config.ts.
  *
  * After the walk:
  *   - The candidate removes the portrait uploaded in step 13 and saves; the profile shows no portrait afterwards, and the stored object stops being served.

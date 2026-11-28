@@ -72,7 +72,7 @@ test.describe('voter-journey-mobile (EFLOW-11)', () => {
     await entityFilters.clearTextFilter();
     await expect(resultsPage.getEntityCards()).toHaveCount(fullCount, { timeout: TIMEOUTS.page });
 
-    // --- Mobile nav menu: the hamburger opens the drawer; activate Feedback. --- `openMobileNav()` is the canonical hamburger-open step (hydration-race guarded `toPass` inside) — never a bespoke toggle click.
+    // --- Mobile nav menu: the hamburger opens the drawer; activate Feedback. --- `openMobileNav()` is the canonical hamburger-open step (it waits for hydration before its one click) — never a bespoke toggle click.
     await navMenu.openMobileNav();
     // The leading item is always the "Close menu" affordance (VoterNav.svelte), proving the drawer is genuinely open with its items resolved.
     await expect(navMenu.items().first()).toHaveAccessibleName(/close menu/i);

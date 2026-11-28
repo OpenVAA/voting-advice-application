@@ -1,7 +1,7 @@
 /**
  * perm-closed-project data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-closed-project-' (matches the template's own externalIdPrefix).
+ * Clears only this scenario's prefix, the `externalIdPrefix` the `perm-closed-project` template declares.
  *
  * It unregisters the auth user the setup minted for the seeded candidate, deletes the prefix, and always reopens the shared E2E project with `ensureProject`, which forces `open_for_voters = true`. `runTeardownAsserted` does not reopen the project, so this call is the one that does.
  *
@@ -10,9 +10,9 @@
 
 import { test as teardown } from '@playwright/test';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { runTeardownAsserted } from '../shared/assertTeardown';
+import { runTemplateTeardownAsserted, templateTeardownPrefix } from '../shared/assertTeardown';
 
-const PREFIX = 'e2e-perm-closed-project-';
+const PREFIX = templateTeardownPrefix('perm-closed-project');
 // The auth.users row minted by the setup's forceRegister. runTeardown(PREFIX) deletes the seeded candidate row but NOT the auth user. Idempotent no-op when no matching auth.users row exists.
 const CANDIDATE_EMAIL = `${PREFIX}cand-1@test.openvaa.local`;
 
@@ -44,7 +44,7 @@ teardown('delete perm-closed-project dataset and reopen the project', async () =
   const client = new SupabaseAdminClient();
   await runEveryStep([
     ['unregister the seeded candidate auth user', () => client.unregisterUser(CANDIDATE_EMAIL)],
-    ['delete the prefixed dataset', () => runTeardownAsserted(PREFIX, client)],
+    ['delete the prefixed dataset', () => runTemplateTeardownAsserted('perm-closed-project', client)],
     ['reopen the project', () => client.ensureProject()]
   ]);
 });

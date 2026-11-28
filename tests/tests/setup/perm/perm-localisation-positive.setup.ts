@@ -2,7 +2,6 @@
  * perm-localisation-positive data-setup project.
  *
  * Invokes setupFromTemplate('perm-localisation-positive').
- * Prefix: 'e2e-perm-l10n-pos-'.
  *
  * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain leakage from base / contestant-journey / prior perm chains still mid-teardown when this setup starts.
  *

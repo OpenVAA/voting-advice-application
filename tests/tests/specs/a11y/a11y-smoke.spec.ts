@@ -225,7 +225,7 @@ for (const route of ANSWERED_ROUTES) {
 // These prove the navigation-a11y stack (mechanism surfaces) behaves correctly WITH the View-Transition layer active. They run under the same `a11y-smoke` project (PLAYWRIGHT_A11Y=1, depends: data-setup-base) and drive the transition deterministically via the `?notr=1` escape hatch so assertions never race the cross-fade animation.
 
 /**
- * Assert the `#route-announcer` aria-live region is present, polite, and that its text is the active route's already-localized page title (the value fed to the document `<title>`, minus the constant app-name/maintenance suffix), surfaced via the layout-context `routeTitle` signal that MainContent / SingleCardContent register their localized `title` into (CR-01 / NAVA11Y-01).
+ * Assert the `#route-announcer` aria-live region is present, polite, and that its text is the active route's already-localized page title (the value fed to the document `<title>`, minus the constant app-name/maintenance suffix), surfaced via the layout-context `routeTitle` signal that MainContent / SingleCardContent register their localized `title` into.
  *
  * On the question route this proves the announcer speaks the localized question heading text rather than the opaque DB `questionId` slug: the announcer text MUST NOT contain the raw slug from the URL AND MUST equal the visible question heading textContent. The label also still differs between the /questions intro and the entered question (the localized titles differ). Lives at module scope (mirrors `assertAxeGates`) so the `expect()` calls are assertion-helper bodies, not inline test-block expects (playwright/no-standalone-expect).
  */
@@ -235,7 +235,7 @@ async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
   const announcer = page.locator('#route-announcer');
   await announcer.waitFor({ state: 'attached', timeout: TIMEOUTS.slowPage });
 
-  // The announcer is always present + aria-live="polite" + aria-atomic (NAVA11Y-01).
+  // The announcer is always present + aria-live="polite" + aria-atomic.
   await expect(announcer).toHaveAttribute('aria-live', 'polite');
   await expect(announcer).toHaveAttribute('aria-atomic', 'true');
   // Localized title on the questions intro (no questionId param yet).
@@ -256,14 +256,14 @@ async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
   expect(questionLabel.length).toBeGreaterThan(0);
   expect(questionLabel).not.toBe(introLabel);
 
-  // CR-01: the announcer must NOT leak the opaque DB questionId slug. Extract the slug from the question route URL (last path segment, query/hash stripped) and assert it is absent from the spoken label.
+  // The announcer must NOT leak the opaque DB questionId slug. Extract the slug from the question route URL (last path segment, query/hash stripped) and assert it is absent from the spoken label.
   const slug = decodeURIComponent(
     new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? ''
   );
   expect(slug.length).toBeGreaterThan(0);
   expect(questionLabel).not.toContain(slug);
 
-  // CR-01: the announcer speaks the localized question title — the same text the route feeds to the document <title>. The visible heading testId wraps a PreHeading (category tag + N/M counter + election tags) ABOVE the <h1>, so its textContent is a superset of the announced title; assert containment (not equality) to prove the announcer carries the localized title, not the slug.
+  // The announcer speaks the localized question title — the same text the route feeds to the document <title>. The visible heading testId wraps a PreHeading (category tag + N/M counter + election tags) ABOVE the <h1>, so its textContent is a superset of the announced title; assert containment (not equality) to prove the announcer carries the localized title, not the slug.
   const headingText = (await page.getByTestId(testIds.voter.questions.heading).textContent())?.trim() ?? '';
   expect(headingText.length).toBeGreaterThan(0);
   expect(headingText).toContain(questionLabel);
@@ -294,7 +294,7 @@ async function assertFocusOnHeading(page: Page): Promise<void> {
 }
 
 /**
- * NAVA11Y-01 / CR-01 — the always-present `#route-announcer` aria-live region exists, is `aria-live="polite"` + `aria-atomic="true"`, and carries the active route's already-localized page title (title-minus-constants, sourced from the layout-context `routeTitle` signal). The label is non-empty on the /questions intro AND changes after navigating into a question; on the question route it does NOT contain the opaque DB `questionId` slug and appears within the visible localized question heading text — proving the announcer speaks the localized title rather than the raw slug.
+ * The always-present `#route-announcer` aria-live region exists, is `aria-live="polite"` + `aria-atomic="true"`, and carries the active route's already-localized page title (title-minus-constants, sourced from the layout-context `routeTitle` signal). The label is non-empty on the /questions intro AND changes after navigating into a question; on the question route it does NOT contain the opaque DB `questionId` slug and appears within the visible localized question heading text — proving the announcer speaks the localized title rather than the raw slug.
  */
 voterJourneyTest('navigation-a11y — route announcer is route-derived', async ({ locatedVoterPage: page }) => {
   // locatedVoterPage parks on the /questions intro (located, not answered).
@@ -302,7 +302,14 @@ voterJourneyTest('navigation-a11y — route announcer is route-derived', async (
 });
 
 /**
- * NAVA11Y-02 — focus lands on the question heading after a Q→Q navigation. The root-layout `afterNavigate` rAF focus reset targets `[data-focus-on-nav]` (fallback first `<h1>`), placed on the QuestionHeading callsite.
+ * Assert that the page has navigated away from `url`. Lives at module scope so the `expect()` is an assertion-helper body, not an inline test-block expect (playwright/no-standalone-expect).
+ */
+async function expectLeftUrl(page: Page, url: string): Promise<void> {
+  await expect(page).not.toHaveURL(url, { timeout: TIMEOUTS.slowPage });
+}
+
+/**
+ * Focus lands on the question heading after a Q→Q navigation. The root-layout `afterNavigate` rAF focus reset targets `[data-focus-on-nav]` (fallback first `<h1>`), placed on the QuestionHeading callsite.
  * The Q→Q hop is driven with `?notr=1` so the cross-fade is disabled and `document.activeElement` is asserted against the settled DOM, not the `::view-transition` pseudo-tree (determinism).
  */
 voterJourneyTest('navigation-a11y — focus lands on heading after Q→Q nav', async ({ page }) => {
@@ -321,11 +328,11 @@ voterJourneyTest('navigation-a11y — focus lands on heading after Q→Q nav', a
   await answerOption.first().click();
 
   // Wait for the Q→Q navigation to settle on a NEW question route (URL changed, heading re-rendered). The auto-advance may land on a category-intro for the first question of a new category; tolerate that by advancing if needed.
-  await page.waitForURL((url) => url.toString() !== firstQuestionUrl, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+  await expectLeftUrl(page, firstQuestionUrl);
   await advancePastCategoryIntro(page);
   await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
-  // Re-enter the settled question route deterministically (transition disabled) so the afterNavigate focus reset runs against a non-animating DOM — this is the binding Q→Q focus assertion (NAVA11Y-02).
+  // Re-enter the settled question route deterministically (transition disabled) so the afterNavigate focus reset runs against a non-animating DOM — this is the binding Q→Q focus assertion.
   const settledUrl = page.url();
   await page.goto(withNoTransition(settledUrl));
   await page.getByTestId(testIds.voter.questions.heading).waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });

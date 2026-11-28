@@ -154,7 +154,7 @@ test.describe('perm-localisation-positive', () => {
     // Page is on /fi — the locale-independent menuToggle testid opens the drawer regardless of UI locale. No close needed — switchTo reloads.
     await voterNav.open();
     await langSelector.switchTo('en');
-    // baseLocale: served from `/` with NO `/en/` prefix per Paraglide's urlPatterns table (see langSelectorFixture.fixture.ts switchTo()).
+    // baseLocale: served from `/` with NO `/en/` prefix per Paraglide's urlPatterns table (see langSelector.fixture.ts switchTo()).
     await expect(page).not.toHaveURL(/\/(fi|sv|da|et|fr|lb)(\/|$)/);
     const reEnglishStartButton = page.getByTestId(testIds.voter.home.startButton);
     await expect(reEnglishStartButton).toBeVisible();

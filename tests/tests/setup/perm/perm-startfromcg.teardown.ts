@@ -10,11 +10,10 @@ import { expect, test as teardown } from '@playwright/test';
 import { clearWrittenNominations } from '../../fixtures/contestant/perm-startfromcg';
 import { EDITORS, START_FROM_CG_PREFIX } from '../../utils/permStartFromCgData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { runTeardownAsserted } from '../shared/assertTeardown';
+import { runTemplateTeardownAsserted, templateTeardownPrefix } from '../shared/assertTeardown';
 import { removeEditorSessions } from '../shared/registerAndStoreSession';
 
-// A plain string literal: the Playwright configuration reads it from this file's text to check that no two teardowns own overlapping prefixes.
-const PREFIX = 'e2e-perm-startfromcg-';
+const PREFIX = templateTeardownPrefix('perm-startfromcg');
 
 teardown('delete perm-startfromcg dataset', async () => {
   expect(PREFIX, 'the prefix deleted here is the one the dataset is seeded under').toBe(START_FROM_CG_PREFIX);
@@ -24,5 +23,5 @@ teardown('delete perm-startfromcg dataset', async () => {
   const client = new SupabaseAdminClient();
   await removeEditorSessions(client, EDITORS);
 
-  await runTeardownAsserted(PREFIX, client);
+  await runTemplateTeardownAsserted('perm-startfromcg', client);
 });

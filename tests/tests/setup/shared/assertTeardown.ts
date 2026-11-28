@@ -1,32 +1,64 @@
 /**
- * Shared delete-count assertion helper — the single owner of the F3 assertion.
+ * Shared delete-count assertion helper — the single owner of the teardown accounting assertion.
  *
- * ROLE: wraps `runTeardown(prefix, client)` and asserts the delete accounted for every ROW that was present under the prefix, and that none survived it — `runTeardown`'s OTHER return value, `storageRemoved` (portrait objects), is NOT asserted here at all (see WHAT IT DOES NOT CATCH below). Every `*.teardown.ts` project that performs a prefix delete routes through this function (27 of 28; `contestant-journey.teardown.ts` performs no delete — it only unregisters an auth user, so it has nothing to route through here).
+ * ROLE: wraps `runTeardown(prefix, client)` and asserts the delete accounted for every ROW that was present under the prefix, and that none survived it — `runTeardown`'s OTHER return value, `storageRemoved` (portrait objects), is NOT asserted here at all (see WHAT IT DOES NOT CATCH below). Every `*.teardown.ts` project that performs a prefix delete routes through this function; `contestant-journey.teardown.ts` performs no delete — it only unregisters an auth user, so it has nothing to route through here.
  *
- * RATIONALE: the assertion previously lived inline at 27 call sites, so strengthening it meant 27 hand edits and the 27th file was covered only by whoever remembered it. With the matcher owned here, a newly added `*.teardown.ts` project's OWN delete is covered by construction — the call sites carry no matcher of their own.
+ * With the matcher owned here, a newly added `*.teardown.ts` project's OWN delete is covered by construction — the call sites carry no matcher of their own.
  *
- * NOT covered (review finding WR-05): `setupFromTemplate.ts` performs three prefix-scoped deletes of its own that do NOT route through this function — the `extraTeardownPrefix` pre-clear loop, the template's own step-1b pre-clear, and the `cleanup` closure returned to callers. Cited by SYMBOL, not by line (review finding WR-01): line-number citations into this file go stale on its own first edit, as this docblock's own MATCHER paragraph below already observes. These are the deletes that run in the COMMON case (they are why `rowsBefore === 0` at almost every teardown site — see WHAT IT CATCHES ONLY WHEN `rowsBefore > 0` below), so the delete path most exercised by the suite carries no assertion at all. "Every `*.teardown.ts` project's own delete is covered by construction" does NOT extend to `setupFromTemplate.ts`'s internal deletes.
+ * A teardown of a dataset seeded from a dev-seed template calls `runTemplateTeardownAsserted(templateName)`, which reads the prefix from the template's own `externalIdPrefix`, so the setup and the teardown cannot disagree on it. Only the base dataset, whose template declares an empty prefix and whose ids carry a literal `test-e2e-base-`, passes a literal prefix to `runTeardownAsserted`.
  *
- * The helper deliberately does NOT construct the admin client and does NOT own the Playwright wrapper: all three call-site shapes build the client themselves and reuse it for other work, as `identity-provider.teardown.ts` does for the removals that follow its delete. This function replaces exactly the `runTeardown(...)` call plus its `expect(...)` line.
+ * NOT covered: `setupFromTemplate.ts` performs three prefix-scoped deletes of its own that do NOT route through this function — the `extraTeardownPrefix` pre-clear loop, the template's own step-1b pre-clear, and the `cleanup` closure returned to callers. These are the deletes that run in the COMMON case (they are why `rowsBefore === 0` at almost every teardown site — see WHAT IT CATCHES ONLY WHEN `rowsBefore > 0` below), so the delete path most exercised by the suite carries no assertion at all. "Every `*.teardown.ts` project's own delete is covered by construction" does NOT extend to `setupFromTemplate.ts`'s internal deletes.
  *
- * MATCHER — the before/after invariant, adopted against a pre-specified decision rule. Figures from that measurement are deliberately NOT restated here (review finding IN-02 — a duplicated number in a docblock is precisely the F10 failure mode closed elsewhere, and line-number citations into `setupFromTemplate.ts` go stale on that file's first edit). Conclusion: both `rowsDeleted === before` and `after === 0` held at every observed site, so the invariant is adopted without relaxation; a uniform positivity floor on `rowsDeleted` (research shape C) was rejected because Playwright's `teardown:` deferral and `setupFromTemplate.ts`'s `extraTeardownPrefix` pre-clear make `rowsBefore === 0` (and therefore `rowsDeleted === 0`) the LEGITIMATE outcome at almost every site — see WHAT IT CATCHES below for what that implies about this assertion's discriminating power at those sites.
+ * Neither function owns the Playwright wrapper. A call site that reuses the admin client for other work, as `identity-provider.teardown.ts` does for the removals that follow its delete, builds it itself and passes it in.
+ *
+ * MATCHER — the before/after invariant: `rowsDeleted === before` and `after === 0`, without relaxation. There is no positivity floor on `rowsDeleted`, because Playwright's `teardown:` deferral and `setupFromTemplate.ts`'s `extraTeardownPrefix` pre-clear make `rowsBefore === 0` (and therefore `rowsDeleted === 0`) the LEGITIMATE outcome at almost every site — see WHAT IT CATCHES below for what that implies about this assertion's discriminating power at those sites.
  *
  * WHAT IT CATCHES UNCONDITIONALLY (holds regardless of `rowsBefore`): over-deletion — rows deleted under a prefix the probe counted as empty (`rowsDeleted > 0` while `rowsBefore === 0`), or rows left behind after a delete that claimed to have removed them (`rowsAfter > 0`).
  *
- * WHAT IT CATCHES ONLY WHEN `rowsBefore > 0` AT THE SITE IN QUESTION: a silently no-opping `bulk_delete`, a scoping bug that sends the RPC a different prefix from the one counted. As measured, `rowsBefore > 0` was the RARE outcome, not the common one (see MATCHER above for the mechanism) — so at most observed sites this assertion's discriminating power is limited to the unconditional over-deletion catch above; the no-op/scoping catches are exercised by construction only at the sites that still own rows at teardown time. Read any "held at every site" framing accordingly: that is a `0/0/0` confirmation of the trivial branch at most sites, not an independent confirmation of the no-op/scoping catches everywhere.
+ * WHAT IT CATCHES ONLY WHEN `rowsBefore > 0` AT THE SITE IN QUESTION: a silently no-opping `bulk_delete`, a scoping bug that sends the RPC a different prefix from the one counted. `rowsBefore > 0` is the RARE outcome, not the common one (see MATCHER above for the mechanism) — so at most sites this assertion's discriminating power is limited to the unconditional over-deletion catch above; the no-op/scoping catches are exercised only at the sites that still own rows at teardown time. A green teardown at most sites is a `0/0/0` confirmation of the trivial branch, not an independent confirmation of the no-op/scoping catches.
  *
  * WHAT IT DOES NOT CATCH:
- *   - A typo in a call site's `PREFIX` constant, which propagates to the count and the delete alike and therefore presents as a legitimate `0/0/0` no-op.
- *   - A table removed from `ALLOWED_TEARDOWN_TABLES`. `countRowsByPrefix` (`tests/tests/utils/supabaseAdminClient.ts` — cited by symbol, not by line; review finding WR-01) iterates that SAME constant, by design (its own docblock: "the SAME list `runTeardown`'s `bulkDelete` clears — so the probe cannot drift from the delete it measures" — a second hand-maintained copy under `tests/` was rejected as exactly the duplicated-fact drift closed elsewhere, per `ALLOWED_TEARDOWN_TABLES`'s own docblock in `packages/dev-seed/src/cli/teardown.ts`). Sharing the constant is the right call for scope-drift, but it means a table dropped from that list goes blind on BOTH sides at once: `rowsBefore` stops counting it, `bulk_delete` stops deleting it, `rowsDeleted` drops by the same amount, and `rowsAfter` never looks at it again — a clean `N/N/0` while every row in the dropped table survives.
- *   - Portrait STORAGE cleanup (review finding IN-03). `runTeardown` returns `{ rowsDeleted, storageRemoved }` (`runTeardown` in `packages/dev-seed/src/cli/teardown.ts`); this function only destructures `rowsDeleted`. `storageRemoved` is completely unasserted at all 27 call sites — a silent regression in `listCandidatePortraitPaths` / `removePortraitStorageObjects` would leak storage objects across every run with no signal. Not a regression (matches prior behaviour), but this ROLE paragraph's "the delete accounted for every row that was present… and none survived it" describes rows only — it should not be read as covering storage too.
- * Stated so nobody reads more into this assertion than the measurement supports.
+ *   - A typo in a call site's literal prefix, which propagates to the count and the delete alike and therefore presents as a legitimate `0/0/0` no-op.
+ *   - A table removed from `ALLOWED_TEARDOWN_TABLES`. `countRowsByPrefix` (`tests/tests/utils/supabaseAdminClient.ts`) iterates that SAME constant, by design (its own docblock: "the SAME list `runTeardown`'s `bulkDelete` clears — so the probe cannot drift from the delete it measures"). Sharing the constant keeps the probe's scope equal to the delete's, but it means a table dropped from that list goes blind on BOTH sides at once: `rowsBefore` stops counting it, `bulk_delete` stops deleting it, `rowsDeleted` drops by the same amount, and `rowsAfter` never looks at it again — a clean `N/N/0` while every row in the dropped table survives.
+ *   - Portrait STORAGE cleanup. `runTeardown` returns `{ rowsDeleted, storageRemoved }` (`runTeardown` in `packages/dev-seed/src/cli/teardown.ts`); this function only destructures `rowsDeleted`, so a silent regression in `listCandidatePortraitPaths` / `removePortraitStorageObjects` would leak storage objects across every run with no signal. The ROLE paragraph's "the delete accounted for every row that was present… and none survived it" describes rows only — it should not be read as covering storage too.
  *
- * The caller's `prefix` is forwarded verbatim — no default, no normalisation, no fallback — so `runTeardown`'s two-character mass-delete guard keeps its full reach over the delete, and the call is not wrapped in a try/catch that would swallow it. Per review findings WR-07 / IN-02, the SAME guard is re-checked at the top of `runTeardownAsserted` itself via dev-seed's exported `assertTeardownPrefix` (the SAME implementation `runTeardown` calls, not a hand-maintained mirror that could drift from it), so the before-count probe below never runs an unbounded `LIKE '%'` scan for a prefix `runTeardown` would refuse anyway.
+ * The caller's `prefix` is forwarded verbatim — no default, no normalisation, no fallback — so `runTeardown`'s two-character mass-delete guard keeps its full reach over the delete, and the call is not wrapped in a try/catch that would swallow it. The SAME guard is checked at the top of `runTeardownAsserted` itself via dev-seed's exported `assertTeardownPrefix` (the SAME implementation `runTeardown` calls), so the before-count probe never runs an unbounded `LIKE '%'` scan for a prefix `runTeardown` would refuse anyway.
  */
 
-import { assertTeardownPrefix, runTeardown } from '@openvaa/dev-seed';
+import { assertTeardownPrefix, BUILT_IN_TEMPLATES, runTeardown } from '@openvaa/dev-seed';
 import { expect } from '@playwright/test';
-import type { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+
+/**
+ * The `external_id` prefix a dev-seed template seeds its rows under, read from the template's own `externalIdPrefix`.
+ *
+ * @param templateName - Key into `BUILT_IN_TEMPLATES`.
+ * @throws When no template is registered under `templateName`, or its prefix is shorter than the two characters `runTeardown` requires.
+ */
+export function templateTeardownPrefix(templateName: string): string {
+  const template = BUILT_IN_TEMPLATES[templateName];
+  if (!template) {
+    throw new Error(
+      `No dev-seed template is registered as '${templateName}' — check BUILT_IN_TEMPLATES in templates/index.ts.`
+    );
+  }
+  const prefix = template.externalIdPrefix ?? '';
+  assertTeardownPrefix(prefix, `templateTeardownPrefix('${templateName}')`);
+  return prefix;
+}
+
+/**
+ * Delete every row of the dataset seeded from `templateName`, under the prefix the template declares, and assert the delete as `runTeardownAsserted` does.
+ *
+ * @param templateName - Key into `BUILT_IN_TEMPLATES`.
+ * @param client - admin client to reuse; a new one by default.
+ */
+export async function runTemplateTeardownAsserted(
+  templateName: string,
+  client: SupabaseAdminClient = new SupabaseAdminClient()
+): Promise<void> {
+  await runTeardownAsserted(templateTeardownPrefix(templateName), client);
+}
 
 /**
  * Delete every row matching `prefix`, then assert the delete accounted for all of them and left none behind.
@@ -37,13 +69,11 @@ import type { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
  * @param client - admin client constructed by the caller (reused for its other steps).
  */
 export async function runTeardownAsserted(prefix: string, client: SupabaseAdminClient): Promise<void> {
-  // Review findings WR-07 / IN-02: re-check runTeardown's mass-delete guard here, BEFORE the probe below, via the SAME exported implementation `runTeardown` itself calls (`assertTeardownPrefix` from `@openvaa/dev-seed`) — not a hand-maintained mirror that could silently drift from it (IN-02).
-  // Forwarding `prefix` verbatim (this file's docblock, "no default, no normalisation, no fallback") means `runTeardown`'s own guard still fires for a bad prefix — but only AFTER this function's `countRowsByPrefix` has already run ten unbounded `external_id LIKE '%'` exact-count scans across every content table. Read-only, so no data risk, but it inverts the guard's stated intent (refuse before touching the DB) and is the slowest possible way to reach an error that is decidable from the argument alone.
-  // Re-checking the identical invariant here means the probe never runs for an argument the delete will refuse anyway.
+  // runTeardown's own mass-delete guard, checked BEFORE the probe below so that a prefix the delete would refuse never reaches `countRowsByPrefix`'s unbounded `external_id LIKE '%'` scans.
   assertTeardownPrefix(prefix, 'runTeardownAsserted');
 
   const rowsBefore = await client.countRowsByPrefix(prefix);
-  // `storageRemoved` (portrait objects) is intentionally NOT destructured — this function asserts row counts only. See the file docblock's WHAT IT DOES NOT CATCH entry (review finding IN-03) for why that gap is unclosed.
+  // `storageRemoved` (portrait objects) is intentionally NOT destructured — this function asserts row counts only. See the file docblock's WHAT IT DOES NOT CATCH entry.
   const { rowsDeleted } = await runTeardown(prefix, client);
   const rowsAfter = await client.countRowsByPrefix(prefix);
 

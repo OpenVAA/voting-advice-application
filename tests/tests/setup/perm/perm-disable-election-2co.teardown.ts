@@ -1,16 +1,10 @@
 /**
  * perm-disable-election-2co data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-disable-elec-2co-'.
+ * Clears only this scenario's prefix, the `externalIdPrefix` the `perm-disable-election-2co` template declares.
  */
 
 import { test as teardown } from '@playwright/test';
-import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { runTeardownAsserted } from '../shared/assertTeardown';
+import { runTemplateTeardownAsserted } from '../shared/assertTeardown';
 
-const PREFIX = 'e2e-perm-disable-elec-2co-';
-
-teardown('delete perm-disable-election-2co dataset', async () => {
-  const client = new SupabaseAdminClient();
-  await runTeardownAsserted(PREFIX, client);
-});
+teardown('delete perm-disable-election-2co dataset', () => runTemplateTeardownAsserted('perm-disable-election-2co'));

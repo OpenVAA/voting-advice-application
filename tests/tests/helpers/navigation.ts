@@ -1,15 +1,12 @@
 /**
  * Navigation assertion + click-and-settle helpers.
  *
- * TWO DIFFERENT SETTLE CONTRACTS LIVE IN THIS FILE, and the difference is load-bearing (review finding WR-04):
+ * TWO DIFFERENT SETTLE CONTRACTS LIVE IN THIS FILE, and the difference is load-bearing:
  *
  *   - `settleAfterClientNavigation` / `expectClientNavigation` settle on the DESTINATION DOM and do NOT swallow. This is the contract the walk needs: it is the link the diagnosed ordering defect broke.
  *   - `expectLandedOn` and `clickAndRaceSettle` are thin wrappers around `expect(page).toHaveURL(...)` and the `click + race-against-URL-change` pattern. `clickAndRaceSettle` settles on the URL ALONE and swallows its own timeout — i.e. it still has the shape the diagnosis calls link 4. It is NOT a settle in the sense the fixed helper is; see its own docblock for the residual exposure and why it is nevertheless correct at its two call sites.
  *
  * "The settle was fixed" therefore does NOT mean every navigation in the suite is settled on the DOM. It means the voter walk's Q→Q hops are, plus the instrument that witnesses them.
- *
- * Existing in-tree analog for `clickAndRaceSettle`:
- *   `tests/tests/utils/voterNavigation.ts` `advanceClick` — NOT refactored to call this helper. The two co-exist intentionally; `voterNavigation.ts` is the domain-specific voter-journey assembler, this helper is its generic counterpart for non-voter-journey call sites. It carries the same residual exposure, recorded in its own docblock.
  *
  * "Stuck click" defense rationale:
  *   Without the click-timeout + post-click URL-change race, a raw `.click()` against a button that detaches mid-action (because the SvelteKit route transition began before the actionability check resolved) retries through the full 90s test timeout. The bound timeout
@@ -27,17 +24,17 @@ import type { Locator, Page } from '@playwright/test';
  *
  * Two stages, and BOTH matter:
  *
- *  1. The URL changed — and this wait is NOT swallowed. The predecessor helper ended in `.catch(() => null)`, which made "the URL changed but the DOM has not" and "the URL never changed at all" flow onward identically. A navigation that never happens now fails HERE, where it reads as a navigation problem, instead of surfacing lines later as a missing element.
+ *  1. The URL changed — and this wait is NOT swallowed. A swallowed wait would let "the URL changed but the DOM has not" and "the URL never changed at all" flow onward identically. A navigation that never happens fails HERE, where it reads as a navigation problem, instead of surfacing lines later as a missing element.
  *
  *  2. The destination DOM committed — the page's navigation landmark now carries DIFFERENT text than the one we navigated away from. The landmark selector `[data-focus-on-nav] ?? h1` mirrors the app's own afterNavigate focus target (`+layout.svelte:178-180`) character for character, so the two cannot drift.
  *
  *     Why a TEXT comparison and not mere attachment: the stale state this defect produces is not always "no heading". At low CPU rates the heading NODE survives the hop and only its content is stale — the previous question is still rendered — so an attachment-only wait would pass instantly against Base-2 and settle nothing. `headingCount: 0` (no landmark at all) is the same defect observed at high CPU rates, and the text comparison covers both because a null landmark is never "different text" and keeps the wait open.
  *
- *     Three ways that comparison can be satisfied WITHOUT the swap having landed, all closed here (review finding WR-02):
+ *     Three ways that comparison could be satisfied WITHOUT the swap having landed, all closed here:
  *
- *       (a) a `null` BASELINE made the whole predicate a tautology. The destination read is always a `string`, and `string !== null` is always `true`, so the settle silently collapsed to the attachment-only wait this docblock rejects by name. The `null`-baseline case is not hypothetical: the diagnosis records `headingCount: 0` as the observed shape of the defect at high CPU rates. It is now REJECTED rather than honoured — see below.
- *       (b) an EMPTY destination landmark (a skeleton, a one-frame `{#key}` remount, a hydration boundary) satisfied `'' !== previous`. The predicate now requires non-empty text.
- *       (c) WHITESPACE-ONLY differences between a server-rendered and a client-rendered pass of the SAME heading satisfied a raw `textContent` comparison. Both sides are now whitespace-normalised, identically.
+ *       (a) a `null` BASELINE made the whole predicate a tautology. The destination read is always a `string`, and `string !== null` is always `true`, so the settle silently collapsed to the attachment-only wait this docblock rejects by name. The `null`-baseline case is not hypothetical: the diagnosis records `headingCount: 0` as the observed shape of the defect at high CPU rates. It is REJECTED rather than honoured — see below.
+ *       (b) an EMPTY destination landmark (a skeleton, a one-frame `{#key}` remount, a hydration boundary) satisfied `'' !== previous`. The predicate requires non-empty text.
+ *       (c) WHITESPACE-ONLY differences between a server-rendered and a client-rendered pass of the SAME heading satisfied a raw `textContent` comparison. Both sides are whitespace-normalised, identically.
  *
  *     Why NOT the focus itself, which would be the stronger fact: measured during this phase, `document.activeElement === target` does not become true until the View Transition has finished, because the app's `onNavigate` resolves inside `startViewTransition` and `afterNavigate` runs after it. That makes a focus wait a measurement of the ANIMATION rather than of the swap, and at CPU rate 40 it exceeds the element budget outright. The text comparison settles on the swap, which is the link the diagnosis names.
  *
@@ -54,7 +51,7 @@ export async function settleAfterClientNavigation(
   urlBefore: string,
   landmarkTextBefore: string | null
 ): Promise<void> {
-  // A baseline we cannot trust must fail LOUDLY here, where it reads as "the settle was handed a bad baseline", rather than degrading into an attachment-only wait that passes instantly and surfaces lines later as a missing element (review finding WR-02(a)). Reaching this means the caller captured its baseline while the origin page had no landmark — i.e. mid-swap, which is precisely when the baseline is meaningless.
+  // A baseline we cannot trust must fail LOUDLY here, where it reads as "the settle was handed a bad baseline", rather than degrading into an attachment-only wait that passes instantly and surfaces lines later as a missing element. Reaching this means the caller captured its baseline while the origin page had no landmark — i.e. mid-swap, which is precisely when the baseline is meaningless.
   if (landmarkTextBefore === null || landmarkTextBefore.trim() === '') {
     throw new Error(
       'settleAfterClientNavigation: the origin landmark text is absent or blank, so the ' +
@@ -90,7 +87,7 @@ export async function settleAfterClientNavigation(
 /**
  * Read the navigation landmark's text, for use as {@link settleAfterClientNavigation}'s `landmarkTextBefore`. Returns `null` when no landmark ELEMENT is present, and `''` when one is present but carries no text — the two stay distinct observations.
  *
- * The text is whitespace-normalised (runs collapsed, ends trimmed), identically to the settle's own in-page predicate. Raw `textContent` carries template indentation and newlines, so an unnormalised comparison can be satisfied by a server-rendered vs client-rendered pass of the SAME heading (review finding WR-02(c)).
+ * The text is whitespace-normalised (runs collapsed, ends trimmed), identically to the settle's own in-page predicate. Raw `textContent` carries template indentation and newlines, so an unnormalised comparison can be satisfied by a server-rendered vs client-rendered pass of the SAME heading.
  *
  * reason: the selector mirrors the app's afterNavigate focus target (`+layout.svelte:178-180`); keeping the two reads in one module is what stops the "before" and "after" halves of the comparison from drifting apart.
  */
@@ -100,6 +97,15 @@ export async function readNavigationLandmarkText(page: Page): Promise<string | n
     if (target === null) return null;
     return (target.textContent ?? '').replace(/\s+/g, ' ').trim();
   });
+}
+
+/**
+ * The document of each page that {@link waitForNavigationFocusReset} or {@link waitForHydration} has seen hydrated, by its `performance.timeOrigin`, which is the same for the whole life of a document and new for each document a page loads.
+ */
+const hydratedDocuments = new WeakMap<Page, number>();
+
+function documentTimeOrigin(page: Page): Promise<number> {
+  return page.evaluate(() => performance.timeOrigin);
 }
 
 /**
@@ -131,6 +137,37 @@ export async function waitForNavigationFocusReset(
       }
     )
     .toBe(true);
+  hydratedDocuments.set(page, await documentTimeOrigin(page));
+}
+
+/**
+ * Wait until the page's current document has hydrated, so that a press of a control the server rendered reaches its handler.
+ *
+ * A document hydrates once. When a {@link waitForNavigationFocusReset} or an earlier call of this function has already seen this document hydrated, this returns at once, whatever holds focus now. Otherwise it waits for either of two facts that only the page's script can produce: the post-navigation focus reset (see {@link waitForNavigationFocusReset}, whose precondition applies — nothing has moved focus since the navigation that opened the page), or an open modal dialog, which only `showModal()` opens and which makes the content under it inert, so that the focus reset cannot land while it is open. A step that moves focus before the first press that needs hydration calls this right after the navigation instead.
+ *
+ * @param page - Playwright Page.
+ * @param options.timeout - The wait's budget; `TIMEOUTS.slowPage` when omitted.
+ */
+export async function waitForHydration(
+  page: Page,
+  { timeout = TIMEOUTS.slowPage }: { timeout?: number } = {}
+): Promise<void> {
+  if (hydratedDocuments.get(page) === (await documentTimeOrigin(page))) return;
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          if (document.querySelector(':modal') !== null) return true;
+          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
+          return target !== null && document.activeElement === target;
+        }),
+      {
+        message: `the page at ${page.url()} did not hydrate: neither the post-navigation focus reset landed nor a modal dialog opened`,
+        timeout
+      }
+    )
+    .toBe(true);
+  hydratedDocuments.set(page, await documentTimeOrigin(page));
 }
 
 /**
@@ -141,7 +178,7 @@ export type CaptureNavigationBaseline = () => Promise<void>;
 /**
  * Run a navigating `action` and then settle on the DESTINATION DOM.
  *
- * reason (review finding WR-01): the baseline MUST be read from the page the action navigates AWAY from, and only the action knows when the DOM is definitively on that page — its own entry gate (`expect(heading).toHaveText(...)`)
+ * reason: the baseline MUST be read from the page the action navigates AWAY from, and only the action knows when the DOM is definitively on that page — its own entry gate (`expect(heading).toHaveText(...)`)
  * is what establishes it. Reading the baseline at wrapper entry instead is unsound: the caller's gate targets the SAME element the baseline read targets, so a DOM that is one page stale at wrapper entry yields the sequence
  *
  *   1. baseline := page A's landmark text (stale)
@@ -206,14 +243,14 @@ type UrlPredicate = string | RegExp | ((url: URL) => boolean);
 /**
  * Click a locator and race the click against a destination URL settle.
  *
- * Pattern: bound the click with a short timeout (default 3_000ms) and INTERNALLY swallow click-timeout failures (matches the `voterNavigation.ts:advanceClick` pattern). Then race `Promise.race(...)`
+ * Pattern: bound the click with a short timeout (default 3_000ms) and INTERNALLY swallow click-timeout failures. Then race `Promise.race(...)`
  * against one or more URL predicates with a `settleTimeoutMs` budget (default 5_000ms). Each predicate is wrapped in `.catch(() => null)` so the race resolves on first settle (not first throw).
  *
- * Internal `.catch(() => null)` matches the `voterNavigation.advanceClick` pattern — distinct from `settleNetworkIdle` which does NOT swallow. The asymmetry is intentional: `settleNetworkIdle` is a hard wait helper, this is a defensive click+race helper.
+ * Internal `.catch(() => null)` is distinct from `settleNetworkIdle` which does NOT swallow. The asymmetry is intentional: `settleNetworkIdle` is a hard wait helper, this is a defensive click+race helper.
  *
- * RESIDUAL EXPOSURE, stated explicitly (review finding WR-04). This helper still has the exact shape the diagnosis names as link 4 of the mechanism: it settles on the URL ALONE, and it swallows. Under the ordering named as the root cause, SvelteKit commits the URL (`client.js:1759-1760`) before it swaps the DOM (`:1824`), so this helper can return with the PREVIOUS page still rendered, and it cannot distinguish "the navigation never happened" from "the URL committed but the DOM has not".
+ * RESIDUAL EXPOSURE, stated explicitly. This helper still has the exact shape the diagnosis names as link 4 of the mechanism: it settles on the URL ALONE, and it swallows. Under the ordering named as the root cause, SvelteKit commits the URL (`client.js:1759-1760`) before it swaps the DOM (`:1824`), so this helper can return with the PREVIOUS page still rendered, and it cannot distinguish "the navigation never happened" from "the URL committed but the DOM has not".
  *
- * It was deliberately NOT routed through `settleAfterClientNavigation`, because doing so would break what makes it correct where it is used. Both call sites (`utils/voterIntro.ts:71,77`) follow it IMMEDIATELY with a HARD landing assertion — the intro CTA `toBeVisible`, then the caller's `expectation()` — and that assertion IS the DOM settle. `bypassIntroThen`'s docblock records the measurement behind that design (DEF-133-01): the swallow moves the failure signal from "the click did not ack in 2 s" to "the flow did not land", which is strictly more meaningful. A throwing DOM settle here would re-introduce the actionability-timeout failure mode that design removed, and would do it on the hydration boundary where it was measured worst.
+ * It was deliberately NOT routed through `settleAfterClientNavigation`, because doing so would break what makes it correct where it is used. Both call sites (`utils/voterIntro.ts:71,77`) follow it IMMEDIATELY with a HARD landing assertion — the intro CTA `toBeVisible`, then the caller's `expectation()` — and that assertion IS the DOM settle. `bypassIntroThen`'s docblock records the measurement behind that design: the swallow moves the failure signal from "the click did not ack in 2 s" to "the flow did not land", which is strictly more meaningful. A throwing DOM settle here would re-introduce the actionability-timeout failure mode that design removed, and would do it on the hydration boundary where it was measured worst.
  *
  * The exposure is therefore bounded by the call sites' own hard assertions rather than by this helper. Do not use it for a hop whose next assertion is not a hard landing assertion on the destination — use `expectClientNavigation` for that.
  *

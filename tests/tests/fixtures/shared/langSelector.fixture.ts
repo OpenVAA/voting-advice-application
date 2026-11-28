@@ -1,5 +1,5 @@
 /**
- * @file langSelectorFixture.
+ * @file langSelector fixture.
  *
  * Function-fixture for the LanguageSelection NavGroup at `apps/frontend/src/lib/dynamic-components/navigation/languages/LanguageSelection.svelte`.
  *

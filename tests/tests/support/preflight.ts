@@ -21,7 +21,7 @@ import path from 'path';
  *
  *       Evaluated ONCE — never polled (see `assertServedApp`).
  *
- *       (b2) replaced an earlier form that required the `/@fs` PROBE BODY to echo the probed absolute path back in Vite's `__vite__createHotContext(…)` preamble. Vite 6.4.1 still emits the preamble, but with a ROOT-RELATIVE id (`"/src/routes/+layout.svelte"`) for any module inside the Vite root — and the probe target necessarily is inside it, because SvelteKit's `server.fs.allow` excludes everything above `apps/frontend`. That made the old assertion unsatisfiable against a CORRECT checkout. The absolute-path property it was buying is preserved by reading it from the served HTML, which this Vite version still emits in absolute `/@fs` form. Relaxing (b) to accept the relative id would NOT have preserved it: a different checkout of this same repo emits a byte-identical relative id.
+ *       A root-relative module id (`"/src/routes/+layout.svelte"`), which is what Vite emits for any module inside its root, cannot identify a checkout: every checkout of this repo emits the same one. That is why (b2) reads the absolute `/@fs` root from the served HTML.
  *
  *   (c) TITLE SANITY — the served `<title>` is one of the `appName` values in this checkout's message catalogue. Explicitly subordinate to (b): a six-line adversary can serve a byte-identical title, and one was measured doing exactly that. Skipped when the document carries no title, because maintenance mode legitimately replaces it.
  *
@@ -77,14 +77,14 @@ const MODULE_ROOT_NOT_FOUND = '(not found)';
 /**
  * First line of every failure. Fixed, because the shell wrappers and the runbook both grep for it.
  *
- * EXPORTED (review finding WR-09) so the shell wrappers can assert the literal they grep for still exists here. `tests/scripts/e2e-run.sh` previously bound itself to this string through a comment alone, which meant a rename here and a stale copy there would agree on "0 preflight failures" forever.
+ * EXPORTED so the shell wrappers can assert the literal they grep for still exists here; a rename here and a stale copy there would otherwise agree on "0 preflight failures" forever.
  */
 export const FAILURE_HEADLINE = 'E2E PREFLIGHT FAILED';
 
 /**
  * Printed exactly once, on success. Fixed for the same reason as {@link FAILURE_HEADLINE}, and load-bearing for a different one.
  *
- * reason (review finding WR-09): the wrappers' "preflight-confirmed" verdict was an ABSENCE check — `grep -c 'E2E PREFLIGHT FAILED' == 0`. Three different states produce that zero: the preflight passed, the preflight never executed, or the two copies of the literal drifted apart. All three were recorded identically, and the determinism ledger's evidentiary claim ("each confirmed by the served-app preflight") rested on it. Success was previously silent — this function emitted no output at all on the happy path — so a POSITIVE confirmation was not merely absent, it was impossible. It is now emitted, and the wrappers require `successes >= 1 && failures == 0`.
+ * reason: an ABSENCE check — `grep -c 'E2E PREFLIGHT FAILED' == 0` — cannot confirm a preflight, because three different states produce that zero: the preflight passed, the preflight never executed, or the two copies of the literal drifted apart. This line is the POSITIVE confirmation, and the wrappers require `successes >= 1 && failures == 0`.
  */
 export const SUCCESS_HEADLINE = 'E2E PREFLIGHT OK';
 

@@ -125,7 +125,7 @@ export async function setupFromTemplate(
 
   // 1a. (Optional) Pre-clear chain-family prefix(es) first — defends against
   //     the case where another chain's per-prefix teardown is still running in parallel with this setup (Playwright wires per-setup teardowns via the `teardown:` key, which runs after the setup's dependents finish but BEFORE the next chain's setup waits on it). Without this, two templates from different chains coexist briefly. ≥2-char guard delegated to runTeardown itself.
-  //     NOTE (review finding WR-05): this delete does NOT route through runTeardownAsserted (assertTeardown.ts) and is therefore unasserted — see assertTeardown.ts's RATIONALE docblock.
+  //     This delete does NOT route through runTeardownAsserted (assertTeardown.ts) and is therefore unasserted — see assertTeardown.ts's docblock.
   if (options?.extraTeardownPrefix) {
     const prefixes = Array.isArray(options.extraTeardownPrefix)
       ? options.extraTeardownPrefix
@@ -137,7 +137,7 @@ export async function setupFromTemplate(
 
   // 1b. Pre-clear any stale state from a prior run. runTeardown's 2-char
   //     guard requires prefix.length >= 2; the base dataset uses 'test-e2e-base-' (empty-prefix fallback above).
-  //     NOTE (review finding WR-05): unasserted, same as 1a above — the template's own pre-clear does not route through runTeardownAsserted either.
+  //     Unasserted, same as 1a above — the template's own pre-clear does not route through runTeardownAsserted either.
   await runTeardown(teardownPrefix, client);
 
   // 2. Pipeline + writer. Writer Pass-5 applies app_settings.fixed[] via
@@ -151,7 +151,7 @@ export async function setupFromTemplate(
 
   // 3. Authoritative app_settings REPLACE + EXACT post-seed assertion.
   //
-  //    ROOT-CAUSE FIX (perm-* singleton-merge contamination): the local test DB has a SINGLE `app_settings` row that EVERY perm setup mutates, and entity teardown deliberately EXCLUDES `app_settings` (resetting it is `db:reset`'s job). The Writer's Pass-5 applies `app_settings.fixed[]` via the ADDITIVE `merge_jsonb_column` RPC, so any key a PRIOR perm set but THIS perm's settings object omits LEAKS forward — the singleton becomes a deep-merge of every perm's settings, and each perm's voter/candidate walk runs against that contaminated blend (e.g. perm-localisation-positive stalling on the voter Intro because an upstream perm's `elections.startFromConstituencyGroup` / access flag bled in).
+  //    The local test DB has a SINGLE `app_settings` row that EVERY perm setup mutates, and entity teardown deliberately EXCLUDES `app_settings` (resetting it is `db:reset`'s job). The Writer's Pass-5 applies `app_settings.fixed[]` via the ADDITIVE `merge_jsonb_column` RPC, so without this step any key a PRIOR perm set but THIS perm's settings object omits would leak forward, and each perm's voter/candidate walk would run against a deep-merge of every earlier perm's settings.
   //
   //    Every E2E/perm template emits a COMPLETE settings object in `app_settings.fixed[0].settings` (MINIMAL_BASE_APP_SETTINGS or a deep-merge of it), so we REPLACE the entire `settings` JSONB with THIS template's own resolved settings — a destructive full-set write that WIPES any accumulated foreign keys. The frontend fills any omitted keys from the TS/staticSettings defaults (the bootstrap row seeds `{}`), so a full overwrite is self-contained.
   //
@@ -190,7 +190,7 @@ export async function setupFromTemplate(
   }
 
   // 5. Cleanup closure — idempotent re-invocation of runTeardown.
-  //    NOTE (review finding WR-05): unasserted, same as steps 1a/1b above.
+  //    Unasserted, same as steps 1a/1b above.
   const cleanup = async (): Promise<void> => {
     await runTeardown(teardownPrefix, client);
   };

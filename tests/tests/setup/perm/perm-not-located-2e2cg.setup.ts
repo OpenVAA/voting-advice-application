@@ -2,7 +2,6 @@
  * perm-not-located-2e2cg data-setup project.
  *
  * Invokes setupFromTemplate('perm-not-located-2e2cg').
- * Prefix: 'test-perm-notloc-'.
  */
 
 import { test as setup } from '@playwright/test';

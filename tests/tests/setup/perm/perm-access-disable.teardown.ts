@@ -1,16 +1,10 @@
 /**
- * perm-access-disable data-teardown project (consolidated).
+ * perm-access-disable data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-access-disable-' (matches the template's own externalIdPrefix).
+ * Clears only this scenario's prefix, the `externalIdPrefix` the `perm-access-disable` template declares.
  */
 
 import { test as teardown } from '@playwright/test';
-import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { runTeardownAsserted } from '../shared/assertTeardown';
+import { runTemplateTeardownAsserted } from '../shared/assertTeardown';
 
-const PREFIX = 'e2e-perm-access-disable-';
-
-teardown('delete perm-access-disable dataset', async () => {
-  const client = new SupabaseAdminClient();
-  await runTeardownAsserted(PREFIX, client);
-});
+teardown('delete perm-access-disable dataset', () => runTemplateTeardownAsserted('perm-access-disable'));

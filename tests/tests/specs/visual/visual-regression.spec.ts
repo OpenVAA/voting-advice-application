@@ -94,7 +94,7 @@ async function guardThirdPartyFonts(page: Page): Promise<void> {
   const thirdParty = resources.filter((url) => THIRD_PARTY_FONT_HOSTS.test(url));
   expect(
     thirdParty,
-    `third-party font requests observed (VGATE-05 requires none): ${thirdParty.join(', ')}`
+    `third-party font requests observed (the visual gate allows none): ${thirdParty.join(', ')}`
   ).toStrictEqual([]);
 
   const stylesheet = resources.find((url) => url.includes(SELF_HOSTED_FONT_STYLESHEET));

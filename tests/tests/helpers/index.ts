@@ -21,6 +21,7 @@ export {
   expectLandedOn,
   readNavigationLandmarkText,
   settleAfterClientNavigation,
+  waitForHydration,
   waitForNavigationFocusReset
 } from './navigation';
 export { iterateSelectOptions } from './select';

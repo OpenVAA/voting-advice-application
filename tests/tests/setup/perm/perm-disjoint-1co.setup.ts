@@ -2,7 +2,6 @@
  * perm-disjoint-1co data-setup project.
  *
  * Invokes setupFromTemplate('perm-disjoint-1co').
- * Prefix: 'test-perm-disjoint-1co-'.
  */
 
 import { test as setup } from '@playwright/test';

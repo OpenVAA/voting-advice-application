@@ -105,17 +105,10 @@ test.describe('storage cleanup (committed state)', () => {
 
   test('replacing a candidate image deletes the old object and keeps the new one', async () => {
     const externalId = `${STORAGE_CLEANUP_EXTERNAL_ID_PREFIX}image-replace`;
-    await client.bulkImport({
-      candidates: [
-        { external_id: externalId, project_id: SCRATCH_PROJECT_ID, first_name: 'Storage', last_name: 'Cleanup' }
-      ]
-    });
-    const ids = await client.listCandidateIdsByPrefix(externalId);
-    expect(ids, 'exactly one candidate was imported under the spec prefix').toHaveLength(1);
-    const [id] = ids;
+    const id = await importCandidate(client, externalId);
 
-    const oldPath = await client.uploadPortrait(id, externalId, `${crypto.randomUUID()}.jpg`, OBJECT_BYTES);
-    const newPath = await client.uploadPortrait(id, externalId, `${crypto.randomUUID()}.jpg`, OBJECT_BYTES);
+    const oldPath = await uploadObject(client, id, externalId);
+    const newPath = await uploadObject(client, id, externalId);
     expect(await publicStatus(oldPath), 'the old object is served before the replace').toBe(200);
 
     await client.update('candidates', id, { image: { path: oldPath, alt: 'Storage Cleanup' } });

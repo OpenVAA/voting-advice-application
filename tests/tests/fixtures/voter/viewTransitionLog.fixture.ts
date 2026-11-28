@@ -25,7 +25,7 @@
  *  - install()  — idempotent; (re)arm the `document.startViewTransition` wrapper via addInitScript. Called by the async factory; exposed so a caller can re-arm after a fresh context if needed.
  *  - read()     — read the captured `ViewTransitionCall[]` from the page.
  *  - clear()    — reset the captured-calls array in the page.
- *  - isSupported() — whether the page found a native `document.startViewTransition` at all, so a consuming spec can SKIP rather than FAIL on a browser without the API.
+ *  - isSupported() — whether the page found a native `document.startViewTransition` at all; false is a setup failure for a consuming spec.
  *
  * **Rigidity contract**: no `expect.soft`, no `try/catch` wrapping `expect(...)`, no `.catch(() => null)` on assertion-bearing interactions. This fixture performs no assertions itself (it is a capture seam) — the consuming spec asserts against `read()`.
  */
@@ -51,7 +51,7 @@ export interface ViewTransitionLogFixture {
   read(): Promise<Array<ViewTransitionCall>>;
   /** Reset the captured-records array in the page. */
   clear(): Promise<void>;
-  /** Whether the page had a native `document.startViewTransition` to wrap. False means there is nothing to observe and the consuming spec must skip, not fail. */
+  /** Whether the page had a native `document.startViewTransition` to wrap. False means there is nothing to observe, which is a setup failure: the consuming spec fails on it. */
   isSupported(): Promise<boolean>;
 }
 

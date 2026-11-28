@@ -12,11 +12,10 @@ import { expect, test as teardown } from '@playwright/test';
 import { clearWrittenNominations } from '../../fixtures/contestant/perm-contestant-nominations';
 import { CONTESTANT_NOMINATIONS_PREFIX, EDITORS } from '../../utils/permContestantNominationsData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { runTeardownAsserted } from '../shared/assertTeardown';
+import { runTemplateTeardownAsserted, templateTeardownPrefix } from '../shared/assertTeardown';
 import { removeEditorSessions } from '../shared/registerAndStoreSession';
 
-// A plain string literal: the Playwright configuration reads it from this file's text to check that no two teardowns own overlapping prefixes.
-const PREFIX = 'e2e-perm-contestant-nominations-';
+const PREFIX = templateTeardownPrefix('perm-contestant-nominations');
 
 teardown('delete perm-contestant-nominations dataset', async () => {
   expect(PREFIX, 'the prefix deleted here is the one the dataset is seeded under').toBe(CONTESTANT_NOMINATIONS_PREFIX);
@@ -26,5 +25,5 @@ teardown('delete perm-contestant-nominations dataset', async () => {
   const client = new SupabaseAdminClient();
   await removeEditorSessions(client, EDITORS);
 
-  await runTeardownAsserted(PREFIX, client);
+  await runTemplateTeardownAsserted('perm-contestant-nominations', client);
 });

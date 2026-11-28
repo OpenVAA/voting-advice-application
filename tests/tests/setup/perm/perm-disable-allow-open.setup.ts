@@ -2,8 +2,6 @@
  * perm-disable-allow-open data-setup project.
  *
  * Stores the seeded candidate's session through the shared session helper `registerAndStoreSession` (synthetic tokens fail server-side JWT validation). Consumed by the candidate-side describe block in perm-disable-allow-open.spec.ts. The voter-side describe block does not use storage state.
- *
- * Prefix: 'e2e-perm-no-allowopen-'.
  */
 
 import { test as setup } from '@playwright/test';

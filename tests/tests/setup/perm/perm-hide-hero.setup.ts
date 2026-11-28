@@ -4,8 +4,6 @@
  * Invokes setupFromTemplate('perm-hide-hero') then stores the seeded candidate's session through the shared session helper `registerAndStoreSession` (synthetic tokens fail server-side JWT validation).
  *
  * The spec consumes the storage state to navigate to /en/contestant/questions/[questionId] as an authenticated candidate and assert hideHero=true suppresses hero rendering.
- *
- * Prefix: 'e2e-perm-hide-hero-'.
  */
 
 import { test as setup } from '@playwright/test';

@@ -38,7 +38,7 @@ import { messageOf, messagesOf } from '../../utils/messages';
 import { expectCountInName } from '../../utils/resendCountdown';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import { createMultilingualTextField } from '../shared/multilingualTextFieldFixture.fixture';
+import { createMultilingualTextField } from '../shared/multilingualTextField.fixture';
 import type { Page } from '@playwright/test';
 
 /** The locale the party's name is required in: the project's default locale, in which the specs open every screen. */

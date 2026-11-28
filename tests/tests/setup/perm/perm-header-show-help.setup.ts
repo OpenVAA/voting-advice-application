@@ -2,8 +2,6 @@
  * perm-header-show-help data-setup project.
  *
  * UNAUTHENTICATED — the spec asserts on the voter intro Banner help-button + Help URL.
- *
- * Prefix: 'e2e-perm-header-help-'.
  */
 
 import { test as setup } from '@playwright/test';

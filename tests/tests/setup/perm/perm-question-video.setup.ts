@@ -4,8 +4,6 @@
  * Invokes setupFromTemplate('perm-question-video') then stores the seeded candidate's session through the shared session helper `registerAndStoreSession` (synthetic tokens fail server-side JWT validation).
  *
  * The spec consumes the storage state for the candidate `hideVideo` slice (navigate to /en/contestant/questions/[questionId] as an authenticated candidate and assert the question video shows with hideVideo=false, then is suppressed after re-seeding hideVideo=true). The voter slice runs unauthenticated.
- *
- * Prefix: 'e2e-perm-qvid-' (matches the template's `const P` in `perm-question-video.ts`).
  */
 
 import { test as setup } from '@playwright/test';

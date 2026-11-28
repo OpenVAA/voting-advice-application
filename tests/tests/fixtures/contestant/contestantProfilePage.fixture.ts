@@ -52,10 +52,10 @@
  */
 
 import { expect } from '@playwright/test';
-import { PROFILE_SAVE_TIMEOUT, TIMEOUTS } from '../../helpers';
+import { PROFILE_SAVE_TIMEOUT, TIMEOUTS, waitForHydration } from '../../helpers';
 import { buildEntityLessRoute, contestantUrlOutsideRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
-import { createMultilingualTextField } from '../shared/multilingualTextFieldFixture.fixture';
+import { createMultilingualTextField } from '../shared/multilingualTextField.fixture';
 import { createNavMenu } from '../shared/navMenu.fixture';
 import { createPageGeometry, MIN_TARGET_SIZE } from '../shared/pageGeometry.fixture';
 import type { ServedEntityType } from '@openvaa/app-shared';
@@ -175,11 +175,13 @@ export function createContestantProfilePage(page: Page) {
 
   return {
     /**
-     * Open the profile of the one entity the session's user edits, and wait until the entity's data is on the page.
+     * Open the profile of the one entity the session's user edits, and wait until the entity's data is on the page and the document has hydrated.
      */
     async open(): Promise<void> {
       await page.goto(buildEntityLessRoute({ route: 'ContestantAppProfile', locale: 'en' }));
       await expectEntityLoaded();
+      // Seen before any field takes focus, so that the menu can later be opened on this document.
+      await waitForHydration(page);
     },
 
     /**

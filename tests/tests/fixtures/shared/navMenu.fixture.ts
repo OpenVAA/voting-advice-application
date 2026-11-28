@@ -11,7 +11,7 @@
  * ## Surface
  *  - menu                       — the nav-menu root Locator.
  *  - items()                    — all nav-menu-item Locators inside the menu.
- *  - openMobileNav()            — click the hamburger toggle; the mobile-only open step before reading items.
+ *  - openMobileNav()            — once the document has hydrated, click the hamburger toggle; the mobile-only open step before reading items.
  *  - expectNavMenuItems(items)  — assert the menu contains EXACTLY the given item labels, in order.
  *  - closeNav()                  — close the open drawer through its own close item.
  *  - expectItemLeadsTo(name, path) — exactly one item has that name, and it is a link to that path.
@@ -40,7 +40,7 @@
 import { expect } from '@playwright/test';
 import { createPageGeometry } from './pageGeometry.fixture';
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
-import { TIMEOUTS } from '../../helpers';
+import { TIMEOUTS, waitForHydration } from '../../helpers';
 import { contestantAppRootUrlRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
@@ -136,11 +136,10 @@ export function createNavMenu(page: Page): NavMenuFixture {
     async openMobileNav(): Promise<void> {
       // The hamburger is mobile-only chrome (Header.svelte). Hard-assert it is visible before clicking, then hard-assert the menu opened — per the fixture rigidity contract (no best-effort swallowing).
       await expect(toggle).toBeVisible();
-      // Hydration-race guard: the toggle renders via SSR before its Svelte `onclick={openDrawer}` handler is hydrated. A click in the SSR→hydration gap is a no-op (the drawer never opens, the `nav-menu` keeps its `hidden` class). `toPass` retries the click+open-assert so a pre-hydration no-op click is retried once the handler is bound. Each inner step is still a HARD assertion (no swallowing) — `toPass` only governs the retry, and a genuine never-opening drawer still fails at the outer timeout.
-      await expect(async () => {
-        await toggle.click();
-        await expect(menu).toBeVisible({ timeout: 2_000 });
-      }).toPass({ timeout: 15_000 });
+      // The toggle is server-rendered before its `onclick` handler is bound, and a press before hydration does nothing, so the one press waits for the document to hydrate.
+      await waitForHydration(page, { timeout: TIMEOUTS.page });
+      await toggle.click();
+      await expect(menu).toBeVisible();
     },
 
     async expectNavMenuItems(expected: Array<RegExp | string>): Promise<void> {

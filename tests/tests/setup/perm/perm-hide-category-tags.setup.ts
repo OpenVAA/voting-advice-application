@@ -2,8 +2,6 @@
  * perm-hide-category-tags data-setup project.
  *
  * UNAUTHENTICATED — voter walk to /questions asserts absence of the category-tag testid.
- *
- * Prefix: 'e2e-perm-hide-cattags-'.
  */
 
 import { test as setup } from '@playwright/test';

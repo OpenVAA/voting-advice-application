@@ -1,16 +1,10 @@
 /**
  * perm-per-app-notifications data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-notif-' (matches the template's own externalIdPrefix).
+ * Clears only this scenario's prefix, the `externalIdPrefix` the `perm-per-app-notifications` template declares.
  */
 
 import { test as teardown } from '@playwright/test';
-import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { runTeardownAsserted } from '../shared/assertTeardown';
+import { runTemplateTeardownAsserted } from '../shared/assertTeardown';
 
-const PREFIX = 'e2e-perm-notif-';
-
-teardown('delete perm-per-app-notifications dataset', async () => {
-  const client = new SupabaseAdminClient();
-  await runTeardownAsserted(PREFIX, client);
-});
+teardown('delete perm-per-app-notifications dataset', () => runTemplateTeardownAsserted('perm-per-app-notifications'));

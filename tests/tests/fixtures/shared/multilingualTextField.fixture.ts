@@ -1,5 +1,5 @@
 /**
- * @file multilingualTextFieldFixture.
+ * @file multilingualTextField fixture.
  *
  * Function-fixture for the multilingual surface of `Input.svelte`.
  *

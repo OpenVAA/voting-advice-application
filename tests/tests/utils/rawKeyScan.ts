@@ -17,10 +17,7 @@
  *
  * Wired into `assertAxeScan` in `tests/tests/utils/axeScan.ts` — the shared scan core BOTH a11y specs import — so every axe-scanned surface is also raw-key-scanned. That is **18 routes and views x 2 themes = 36 surfaces**: the 7 voter routes of `specs/a11y/a11y-smoke.spec.ts` and the 11 Contestant App surfaces of `specs/a11y/contestant-a11y.spec.ts`. Each is already navigated, settled on its data-driven `contentTestId` anchor, and past `awaitAnimationsSettled`. The pages are loaded and quiescent at that point, so the marginal cost is a single DOM read.
  *
- * It once ran on the voter half alone (7 routes x 2 themes = 14 surfaces).
- * The candidate half was blind, and the negative control's `RK1-OLD` / `RK2-OLD` rows are the measurement of that blindness: two candidate-side matchers passed while the exact keys they guard rendered raw.
- *
- * The core calls `collectRawI18nKeyFindings` rather than `assertNoRawI18nKeys`, so a raw-key finding no longer suppresses the axe result on the same surface.
+ * The core collects rather than asserts — it calls `collectRawI18nKeyFindings`, not `assertNoRawI18nKeys` — so a raw-key finding and an axe finding on the same surface are both reported.
  * Both verdicts are reported; neither short-circuits the other.
  */
 
@@ -235,9 +232,9 @@ export interface RawI18nKeyVerdict {
  *
  * ## Why this is separate from the assertion
  *
- * The reporting rule is: compute both verdicts in one body, report both, neither short-circuiting the other. The defect that rule removes is THIS function's caller short-circuiting: `assertNoRawI18nKeys` terminates in a throwing `expect`, so a raw-key failure used to suppress the axe result on that surface entirely — the surface reported one defect when it may have had two. Splitting the DETECTION (here) from the ASSERTION (`assertNoRawI18nKeys`, below) lets the shared scan body take the verdict without taking the throw, and report both.
+ * The reporting rule is: compute both verdicts in one body, report both, neither short-circuiting the other. `assertNoRawI18nKeys` terminates in a throwing `expect`, which would end the scan body before the axe verdict is reported. This function collects rather than asserts: splitting the DETECTION (here) from the ASSERTION (`assertNoRawI18nKeys`, below) lets the shared scan body take the raw-key verdict without taking the throw, so a raw-key finding and an axe finding on the same surface are both reported.
  *
- * The detection itself — the key-set derivation, the sub-run walk, the sighting collection — is deliberately unchanged by that split: it is the instrument the `RK1-OLD` / `RK2-OLD` negative controls were taken with, and the same injections are re-run against it.
+ * The detection itself — the key-set derivation, the sub-run walk, the sighting collection — is shared by both entry points, so a negative control taken against one holds for the other.
  *
  * `label` names the surface (the a11y scan label) so a failure says WHICH of the
  * **36** scanned surfaces broke — 14 voter (`a11y-smoke.spec.ts`) and 22 contestant (`contestant-a11y.spec.ts`), each surface in both themes.

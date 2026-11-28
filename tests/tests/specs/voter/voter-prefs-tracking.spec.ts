@@ -52,7 +52,7 @@ import { createConsentPrompt } from '../../fixtures/voter/consentPrompt.fixture'
 import { createResultsPage } from '../../fixtures/voter/resultsPage.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { TIMEOUTS, waitForHydration, waitForNavigationFocusReset } from '../../helpers';
 import { assertAxeScan, assertDarkThemeApplied } from '../../utils/axeScan';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
@@ -93,6 +93,8 @@ function describeEvent(event: CapturedRelayEvent): string {
 async function openVoterHome(page: Page): Promise<void> {
   await page.goto('/en/');
   await expect(page.getByTestId(testIds.voter.home.page)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+  // Before the consent prompt is answered, which moves focus: the menu's toggle is pressed later on this document.
+  await waitForHydration(page, { timeout: TIMEOUTS.page });
 }
 
 /** From the front page, start and walk to the first question, whose choices must show. */
@@ -316,6 +318,8 @@ test.describe('voter-prefs-tracking (EFLOW-08)', () => {
     // A decline on the privacy page, then a menu opening, which is buffered while consent is declined and stays buffered until the next flush.
     await page.goto('/en/privacy');
     await expect(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    // Before the decline, which moves focus: the menu's toggle is pressed next.
+    await waitForHydration(page, { timeout: TIMEOUTS.page });
     await dismissConsentPrompt(page);
     await openAndCloseMenu(page);
     // The grant on the same document, through the page's own consent control; the grant must drop the buffered `menu_open`.

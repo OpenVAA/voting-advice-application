@@ -32,7 +32,7 @@ import { createContestantQuestionPage } from './contestantQuestionPage.fixture';
 import { createContestantQuestionsOverviewPage } from './contestantQuestionsOverviewPage.fixture';
 import { createContestantSettingsPage } from './contestantSettingsPage.fixture';
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
-import { SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS, waitForHydration, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { DRAFT_KEY_STEM } from '../../utils/contestantDrafts';
 import { messagesOf } from '../../utils/messages';
@@ -333,11 +333,13 @@ export function createContestantEntityPages(page: Page) {
     },
 
     /**
-     * Navigate to the editor of one question under an entity's URL and wait for its answer input.
+     * Navigate to the editor of one question under an entity's URL and wait for its answer input and for the document to hydrate.
      */
     async openQuestion(entity: SelectionEntity, questionId: string): Promise<void> {
       await page.goto(questionPath(entity, questionId));
       await this.expectOnQuestion(entity, questionId);
+      // Seen before an answer takes focus, so that the menu can later be opened on this document.
+      await waitForHydration(page);
     },
 
     /**

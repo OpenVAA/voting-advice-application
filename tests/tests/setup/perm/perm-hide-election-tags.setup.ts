@@ -2,8 +2,6 @@
  * perm-hide-election-tags data-setup project.
  *
  * UNAUTHENTICATED — voter walk to /questions asserts absence of the election-tag testid.
- *
- * Prefix: 'e2e-perm-hide-eltags-'.
  */
 
 import { test as setup } from '@playwright/test';

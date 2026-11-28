@@ -1,7 +1,7 @@
 /**
  * perm-closed-project data-setup project — the TERMINAL node's setup.
  *
- * Invokes setupFromTemplate('perm-closed-project'). Prefix: 'e2e-perm-closed-project-'.
+ * Invokes setupFromTemplate('perm-closed-project').
  *
  * The template's `openForVoters: false` makes the writer's last pass set `open_for_voters = false` on the E2E project, i.e. on the one project the dev server serves. That is why this setup's project runs after every leaf of the suite (see `CLOSED_PROJECT_DEPENDENCIES` in `tests/playwright.config.ts`): no other spec is running while the project is closed. Reopening is the job of the spec's `afterAll`, this node's teardown and the next run's global setup.
  *

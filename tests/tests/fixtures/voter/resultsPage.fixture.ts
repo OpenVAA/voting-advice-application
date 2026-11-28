@@ -7,7 +7,7 @@
  * - NO `expect.soft` in any helper.
  * - NO `try/catch` wrapping `expect(...)`.
  * - NO best-effort `.catch(() => null)` on assertion-bearing locator
- *   interactions. The sole exception is `dismissAllDialogs`, which is a purely best-effort cleanup helper and is explicitly documented as such; callers MUST follow it with a hard assertion on the desired post-state.
+ *   interactions.
  *
  * **Caller-supplied locators / regexes / indexers** (fixture coupling guard): every method that targets a specific entity / tab takes a `RegExp | string | ((count: number) => number)` from the caller. NO hardcoded base-specific strings (e.g. `'Party AA'`) in fixture bodies.
  */
@@ -134,27 +134,6 @@ export function createResultsPage(page: Page) {
         return cards.nth(target(count));
       }
       return cards.filter({ hasText: target as RegExp | string }).first();
-    },
-
-    /**
-     * Best-effort cleanup: press Escape, then if any role=dialog is still visible, click any visible close button. NOT a hard assertion — callers MUST follow this with their own hard assertion on the desired post-state (e.g. `expect(page.getByRole('dialog')).toBeHidden()`).
-     *
-     * Uses `Locator.waitFor` + `.catch(() => null)` because the helper is purely best-effort; assertion-bearing locator interactions in the fixture's API surface NEVER use `.catch(() => null)`.
-     */
-    async dismissAllDialogs(): Promise<void> {
-      await page.keyboard.press('Escape').catch(() => null);
-      const dialog = page.getByRole('dialog').first();
-      const stillVisible = await dialog
-        .waitFor({ state: 'visible', timeout: 500 })
-        .then(() => true)
-        .catch(() => false);
-      if (stillVisible) {
-        const closeBtn = page.getByRole('button', { name: /close|cancel|dismiss/i }).first();
-        const closeVisible = await closeBtn.isVisible({ timeout: 500 }).catch(() => false);
-        if (closeVisible) {
-          await closeBtn.click().catch(() => null);
-        }
-      }
     },
 
     /**

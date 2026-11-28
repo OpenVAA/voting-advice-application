@@ -2,7 +2,6 @@
  * perm-missing-nominations data-setup project.
  *
  * Invokes setupFromTemplate('perm-missing-nominations').
- * Prefix: 'e2e-perm-missnoms-'.
  *
  * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain leakage from base / contestant-journey / prior perm chains still mid-teardown when this setup starts.
  */
