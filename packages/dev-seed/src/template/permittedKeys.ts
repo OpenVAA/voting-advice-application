@@ -14,12 +14,11 @@
  *
  * **(4) RPC relationship references.** {@link RELATIONSHIP_REFS}, transcribed from the `CASE p_table_name` block of `_bulk_upsert_record` in `apps/supabase/supabase/schema/501-bulk-operations.sql` (note the doubled `supabase/` segment — that is the real path).
  *
- * ⚠ **Source (4) is the one source that is NOT derived.** Postgres cannot iterate a TypeScript const, so `RELATIONSHIP_REFS` is a transcription held honest by a PARITY TEST (`tests/template/permittedKeys.test.ts`) that reads the SQL from disk and fails in both directions when the two disagree. Omitting source (4) is not an option: it is present on 2,955 key occurrences across the built-in templates — every `nominations` row, plus `candidates.organization`, `questions.category` and `constituencies.parent` — so a three-source guard would fail every E2E setup project.
+ * ⚠ **Source (4) is the one source that is NOT derived.** Postgres cannot iterate a TypeScript const, so `RELATIONSHIP_REFS` is a transcription held honest by a PARITY TEST (`permittedKeys.test.ts`) that reads the SQL from disk and fails in both directions when the two disagree. Omitting source (4) is not an option: it is present on 2,955 key occurrences across the built-in templates — every `nominations` row, plus `candidates.organization`, `questions.category` and `constituencies.parent` — so a three-source guard would fail every E2E setup project.
  *
  * ## Canonical keying
  *
- * The canonical key is the **resolved snake_case table name**.
- * {@link resolveCollectionName} is exported from here and imported back by `supabaseAdminClient.ts`, so there is exactly one implementation.
+ * The canonical key is the **resolved snake_case table name**, from `resolveCollectionName` in `./collectionNames`, the one implementation the admin client and the link resolver also use.
  * {@link permittedKeys} resolves first and then looks up, and a lookup miss
  * **throws**. Returning an empty set (or `undefined`) on a miss would let a keying confusion permit everything — a guard that reports success while checking nothing.
  */
@@ -53,27 +52,31 @@ export type CollectionKey =
   | 'app_settings';
 
 /**
- * `COLLECTION_MAP` and `resolveCollectionName` live in `./collectionNames`, a leaf module, and are re-exported here. They live there because `linkSentinels.ts` needs the same primitive for `pickCollection`, and importing it from THIS module would close an ESM cycle whose entry through `linkSentinels.ts` throws a TDZ `ReferenceError` — see `./collectionNames`'s header.
- */
-export { COLLECTION_MAP, resolveCollectionName } from './collectionNames';
-
-/**
  * Maps camelCase field names to Supabase snake_case column names.
  * Extends `PROPERTY_MAP` with alias mappings.
  *
- * `supabaseAdminClient.ts` imports it for `resolveFieldName`, and this module derives source (1)'s camel forms from it, so the renaming and the permission decision read one map.
+ * {@link resolveFieldName} renames keys with it, and this module derives source (1)'s camel forms from it, so the renaming and the permission decision read one map.
  *
  * ⚠ **Two measured hazards make hand-writing a camel alias wrong.**
  *   - `sort_order`'s only legal camel form is `order`, never `sortOrder`.
  *   - An identity entry — a column whose camel form equals its snake form — is dropped by any "keys that differ" filter. `answers`, `color`, `image`, `info` and `subtype` are identity entries; `first_name` is not (its camel form is `firstName`).
  *
- * **No two `COLUMN_MAP` keys may map to one property.** Reversal into `PROPERTY_MAP` is last-wins, so the losing column's camel form would resolve to the other column and be admitted on the wrong tables. `organizationId` resolves to `organization_id`, which admits it on `nominations` and `factions`; `tests/template/permittedKeys.test.ts` asserts both that and the one-key-per-property rule.
+ * **No two `COLUMN_MAP` keys may map to one property.** Reversal into `PROPERTY_MAP` is last-wins, so the losing column's camel form would resolve to the other column and be admitted on the wrong tables. `organizationId` resolves to `organization_id`, which admits it on `nominations` and `factions`; `permittedKeys.test.ts` asserts both that and the one-key-per-property rule.
  */
 export const FIELD_MAP: Record<string, string> = {
   ...PROPERTY_MAP,
   // Aliases with no column of their own
   documentId: 'id'
 };
+
+/**
+ * Convert a camelCase field name to its snake_case column name using {@link FIELD_MAP}, or return it as-is when it is already snake_case.
+ *
+ * Uses `Object.hasOwn` so an inherited key such as `toString` resolves to itself, not to an `Object.prototype` member.
+ */
+export function resolveFieldName(field: string): string {
+  return Object.hasOwn(FIELD_MAP, field) ? FIELD_MAP[field] : field;
+}
 
 // -----------------------------------------------------------------------------
 // Source (1) — DB columns
@@ -294,11 +297,6 @@ type MissingColumns = {
 const COLUMN_COVERAGE_IS_COMPLETE: IsNever<MissingColumns> extends true ? true : MissingColumns = true;
 void COLUMN_COVERAGE_IS_COMPLETE;
 
-/**
- * The column source the runtime guard consults, keyed by RESOLVED table name.
- */
-const COLUMNS_BY_TABLE: Readonly<Record<CollectionKey, ReadonlyArray<string>>> = TABLE_COLUMNS;
-
 // -----------------------------------------------------------------------------
 // Source (3) — non-column fields
 // -----------------------------------------------------------------------------
@@ -473,76 +471,9 @@ export const SKIP_COLUMNS_NOT_DENIED: Readonly<Record<string, string>> = {
   updated_at: 'Zero in-tree rows emit it. Excluded for the same reason as created_at, and for symmetry with it.'
 };
 
-// (`deniedKeys` itself is declared below, after `PermittedKeySet` — the frozen set class it shares with the allow-list is a class declaration, so building the denied sets up here would read it inside its own temporal dead zone.)
-
 // -----------------------------------------------------------------------------
 // The union — runtime layer
 // -----------------------------------------------------------------------------
-
-/**
- * A `Set` that refuses to be widened after construction.
- *
- * {@link permittedKeys} memoizes one set per table and hands the same instance to every caller, so a caller that mutated it would silently widen the guard for the whole process. Mutating members throw instead.
- *
- * ## ⚠ The members are held in a PRIVATE set, not in this instance's own
- * `[[SetData]]`, and that is what makes the guarantee true
- *
- * `Object.freeze` does not protect a `Set`'s internal `[[SetData]]` slot — only its own properties. So overriding `add` / `delete` / `clear` alone blocks the ordinary spelling and nothing else: `Set.prototype.add.call(permittedKeys('elections'), 'smuggled')` would widen the memoized, process-wide allow-list.
- *
- * Every read is answered from `#values`, which no `Set.prototype.*.call` can reach. The class EXTENDS `Set`, so `instanceof Set` and the `ReadonlySet<string>` contract both hold; the superclass's own data is left empty and unread. A prototype-borrowed mutation therefore writes into a slot nothing consults — it cannot throw (the receiver is a genuine `Set`), but it cannot widen the guard either, which is the property that matters.
- *
- * Held by `permittedKeys.test.ts`, which performs the smuggle and asserts `has` still says no.
- */
-class PermittedKeySet extends Set<string> {
-  readonly #values: ReadonlySet<string>;
-
-  constructor(values: Iterable<string>) {
-    super();
-    this.#values = new Set<string>(values);
-    Object.freeze(this);
-  }
-
-  override has(value: string): boolean {
-    return this.#values.has(value);
-  }
-
-  override get size(): number {
-    return this.#values.size;
-  }
-
-  override [Symbol.iterator](): SetIterator<string> {
-    return this.#values[Symbol.iterator]();
-  }
-
-  override keys(): SetIterator<string> {
-    return this.#values.keys();
-  }
-
-  override values(): SetIterator<string> {
-    return this.#values.values();
-  }
-
-  override entries(): SetIterator<[string, string]> {
-    return this.#values.entries();
-  }
-
-  override forEach(callback: (value: string, value2: string, set: Set<string>) => void, thisArg?: unknown): void {
-    // Iterated rather than delegated, so the third argument is THIS set — the identity `Set.prototype.forEach` passes — and `#values` never escapes.
-    for (const value of this.#values) callback.call(thisArg, value, value, this);
-  }
-
-  override add(_value: string): never {
-    throw new Error('permittedKeys sets are immutable — derive a new set instead of widening this one');
-  }
-
-  override delete(_value: string): never {
-    throw new Error('permittedKeys sets are immutable — derive a new set instead of narrowing this one');
-  }
-
-  override clear(): never {
-    throw new Error('permittedKeys sets are immutable');
-  }
-}
 
 /**
  * Every camelCase key that `FIELD_MAP` resolves to `column`, minus the forms {@link CAMEL_FORMS_NOT_ADMITTED} withholds.
@@ -559,7 +490,7 @@ function derivePermittedKeys(collection: CollectionKey): ReadonlySet<string> {
   const keys = new Set<string>(AUTHORING_KEYS);
 
   // (1) DB columns and the camel forms FIELD_MAP actually resolves to them.
-  for (const column of COLUMNS_BY_TABLE[collection]) {
+  for (const column of TABLE_COLUMNS[collection]) {
     keys.add(column);
     for (const camel of camelFormsFor(column)) keys.add(camel);
   }
@@ -588,10 +519,10 @@ function derivePermittedKeys(collection: CollectionKey): ReadonlySet<string> {
   )[collection];
   for (const key of adjacent ?? []) keys.add(key);
 
-  return new PermittedKeySet([...keys].sort());
+  return new Set<string>([...keys].sort());
 }
 
-const COLLECTION_KEYS: ReadonlyArray<CollectionKey> = Object.keys(COLUMNS_BY_TABLE) as ReadonlyArray<CollectionKey>;
+const COLLECTION_KEYS: ReadonlyArray<CollectionKey> = Object.keys(TABLE_COLUMNS) as ReadonlyArray<CollectionKey>;
 
 /** Memoized per resolved table name, so the returned set has a stable identity. */
 const PERMITTED_KEYS: ReadonlyMap<string, ReadonlySet<string>> = new Map(
@@ -632,7 +563,7 @@ function deriveDeniedKeys(columns: ReadonlyArray<string>): ReadonlySet<string> {
     keys.add(column);
     for (const camel of camelFormsFor(column)) keys.add(camel);
   }
-  return new PermittedKeySet([...keys].sort());
+  return new Set<string>([...keys].sort());
 }
 
 /** Memoized denied sets, keyed by resolved table name. See {@link DENIED_BY_TABLE}. */
@@ -640,8 +571,8 @@ const DENIED_KEYS: ReadonlyMap<string, ReadonlySet<string>> = new Map(
   Object.entries(DENIED_BY_TABLE).map(([table, denied]) => [table, deriveDeniedKeys(denied)])
 );
 
-/** Empty, frozen and shared — the answer for every table with nothing denied. */
-const NO_DENIED_KEYS: ReadonlySet<string> = new PermittedKeySet([]);
+/** Empty and shared — the answer for every table with nothing denied. */
+const NO_DENIED_KEYS: ReadonlySet<string> = new Set<string>();
 
 /**
  * Keys of `collection` that ARE real columns but are discarded by the RPC's `skip_columns` — see {@link DENIED_BY_TABLE}.
@@ -657,11 +588,6 @@ export function deniedKeys(collection: string): ReadonlySet<string> {
 // -----------------------------------------------------------------------------
 // The type layer
 // -----------------------------------------------------------------------------
-
-/**
- * Value a sentinel key may carry in an authored row. The authoring-facing name for `SentinelPayload`, which is the resolver-facing one.
- */
-export type SentinelValue = SentinelPayload;
 
 /** An external-id reference, in each of the three shapes the RPC path accepts. */
 export type ExternalRef = { externalId: string } | { external_id: string } | string;
@@ -735,7 +661,7 @@ type ColumnsFor<TCollection extends CollectionKey> = TCollection extends keyof N
  */
 export type FixedRow<TCollection extends CollectionKey> = ColumnsFor<TCollection> & {
   external_id: string;
-} & Partial<Record<SentinelKeysFor<TCollection>, SentinelValue>> &
+} & Partial<Record<SentinelKeysFor<TCollection>, SentinelPayload>> &
   Partial<Record<NonColumnKeysFor<TCollection>, unknown>> &
   Partial<Record<RefKeysFor<TCollection>, ExternalRef>>;
 

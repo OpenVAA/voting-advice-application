@@ -76,7 +76,7 @@ const latentBlock = z
 /**
  * Accept any UUID-shaped string (8-4-4-4-12 hex groups).
  *
- * We deliberately do NOT use `z.string().uuid()` — zod v4's `.uuid()` enforces RFC 4122 version compliance (v1-v8 only, plus the nil/max sentinels). The `TEST_PROJECT_ID` fixture used throughout the codebase (`00000000-0000-0000-0000-000000000001`, from seed.sql bootstrap) carries a `0` version nibble and is rejected by the strict validator. Postgres' `uuid` column type accepts it fine — the value is a legitimate UUID-shaped identifier the database stores without complaint. Rejecting it in the template schema would mean the validator contradicts `buildCtx`'s documented default projectId.
+ * We deliberately do NOT use `z.string().uuid()` — zod v4's `.uuid()` enforces RFC 4122 version compliance (v1-v8 only, plus the nil/max sentinels). The `DEFAULT_PROJECT_ID` fixture used throughout the codebase (`00000000-0000-0000-0000-000000000001`, from seed.sql bootstrap) carries a `0` version nibble and is rejected by the strict validator. Postgres' `uuid` column type accepts it fine — the value is a legitimate UUID-shaped identifier the database stores without complaint. Rejecting it in the template schema would mean the validator contradicts `buildCtx`'s documented default projectId.
  *
  * The regex below is the 8-4-4-4-12 hex shape from RFC 9562 without the version nibble constraint — matches what Postgres actually accepts.
  */
@@ -100,9 +100,9 @@ export const TemplateSchema = z
      */
     generateTranslationsForAllLocales: z.boolean().optional(),
     /**
-     * When present, the writer sets the target project's `open_for_voters` to this value after seeding (its last pass). When absent, the project's openness is untouched.
+     * The writer sets the target project's `open_for_voters` to this value after seeding (its last pass). When absent, the writer sets it to `true`, so every seed resets the project's openness.
      *
-     * `false` makes the project's public data unreadable to anon, which is how the closed-project E2E state is reached. Teardown through the CLI (`yarn db:seed:teardown`) reopens the project.
+     * `false` makes the project's public data unreadable to anon, which is how the closed-project E2E state is reached. The next seed of a template without `false`, or teardown through the CLI (`yarn db:seed:teardown`), reopens the project.
      */
     openForVoters: z.boolean().optional(),
     elections: perEntityFragment.optional(),

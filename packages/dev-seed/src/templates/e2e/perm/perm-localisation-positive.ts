@@ -46,7 +46,7 @@ const base = buildMinimal({
   organizations: 1
 });
 
-export const permLocalizationPositiveTemplate: Template = {
+export const permLocalisationPositiveTemplate: Template = {
   ...base,
 
   // Two categories inline (qc-info + qc-opin) — same shape as buildQuestionCategories() but kept literal here to keep the question/category co-location explicit for the L10N positive perm.
@@ -161,4 +161,4 @@ export const permLocalizationPositiveTemplate: Template = {
   }
 };
 
-export default permLocalizationPositiveTemplate;
+export default permLocalisationPositiveTemplate;

@@ -9,7 +9,7 @@
  *   - `Writer` — env-enforced writer with routing.
  *   - `SupabaseAdminClient` — bulk-write base class. Consumed by the tests/subclass.
  *   - `createServiceRoleClient(url, key, options?)` — the one guarded supabase-js service-role client construction; refuses a non-local host unless opted out. The `SupabaseAdminClient` constructor and the E2E specs that need a raw client use it.
- *   - `TEST_PROJECT_ID` — bootstrap project UUID from seed.sql.
+ *   - `DEFAULT_PROJECT_ID` — the default project seed.sql creates, which a local `yarn dev` serves.
  *   - `E2E_PROJECT_ID` — the fixed project the E2E suite owns; deliberately not the bootstrap project.
  *   - `E2E_ACCOUNT_ID` — the account the E2E project belongs to, apart from the default account.
  *   - `resolveE2eProjectId()` — reads the `E2E_PROJECT_ID` override, falling back to that constant; throws on a value colliding with the bootstrap project or on a non-canonical uuid.
@@ -81,12 +81,13 @@ export { runPipeline, TOPO_ORDER } from './pipeline';
 export { resolveAppSettingsExternalIds, settingsContainsExternalIdRefs } from './resolveAppSettingsExternalIds';
 export {
   createServiceRoleClient,
+  DEFAULT_PROJECT_ID,
   E2E_ACCOUNT_ID,
   E2E_PROJECT_ID,
   resolveE2eProjectId,
-  SupabaseAdminClient,
-  TEST_PROJECT_ID
+  SupabaseAdminClient
 } from './supabaseAdminClient';
+export { resolveCollectionName } from './template/collectionNames';
 export { LINK_SENTINELS } from './template/linkSentinels';
 export {
   COLLECTION_NON_COLUMNS,
@@ -95,9 +96,8 @@ export {
   NON_COLUMN_FIELDS,
   permittedKeys,
   RELATIONSHIP_REFS,
-  resolveCollectionName,
-  SKIP_COLUMNS_NOT_DENIED,
-  SKIP_COLUMNS_SOURCE
+  resolveFieldName,
+  SKIP_COLUMNS_NOT_DENIED
 } from './template/permittedKeys';
 export { TemplateSchema, validateTemplate } from './template/schema';
 export {
@@ -124,7 +124,7 @@ export type {
   InvitationSeedItem,
   SeededInvitation
 } from './supabaseAdminClient';
-export type { LinkSentinelRule, LinkTarget, SentinelPayload } from './template/linkSentinels';
+export type { LinkSentinelRule } from './template/linkSentinels';
 export type {
   AlliancesFixedRow,
   AppSettingsFixedRow,
@@ -133,14 +133,12 @@ export type {
   ConstituenciesFixedRow,
   ConstituencyGroupsFixedRow,
   ElectionsFixedRow,
-  ExternalRef,
   FactionsFixedRow,
   FixedRow,
   NominationsFixedRow,
   OrganizationsFixedRow,
   QuestionCategoriesFixedRow,
-  QuestionsFixedRow,
-  SentinelValue
+  QuestionsFixedRow
 } from './template/permittedKeys';
 export type { Template } from './template/types';
 export type { Fragment, Overrides } from './types';

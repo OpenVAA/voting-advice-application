@@ -42,8 +42,8 @@
  * - `generateTranslationsForAllLocales: boolean` — when true, localized
  *   JSONB fields are expanded across every locale in `LOCALES`, which is read from `staticSettings.supportedLocales` (currently `en`, `fi`, `sv`). Default false / undefined. Set `true` in the default template; set `false` in the e2e template.
  *
- * - `openForVoters: boolean` — when present, the writer sets the target project's `open_for_voters` to this value after every other pass. Default undefined, which leaves the project's openness untouched.
- *   `false` makes the project's public data unreadable to anon; `perm-closed-project` uses it to reach the closed-project state. `yarn db:seed:teardown` reopens the project. dev-seed never creates a project row.
+ * - `openForVoters: boolean` — the writer sets the target project's `open_for_voters` to this value after every other pass. Default undefined, which the writer reads as `true`, so every seed resets the project's openness.
+ *   `false` makes the project's public data unreadable to anon; `perm-closed-project` uses it to reach the closed-project state. Any later seed of a template without `false`, or `yarn db:seed:teardown`, reopens the project. dev-seed never creates a project row.
  *
  * - `latent: LatentConfig` — latent-factor answer model
  *   configuration (per-organization centroids, question loadings, noise). See {@link LatentHooks} for the swappable per-sub-step seam. Its shape is read off {@link TemplateSchema} so it cannot drift.

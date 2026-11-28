@@ -66,7 +66,7 @@ export interface Ctx {
  *
  * Defaults:
  *  - `seed`: {@link DEFAULT_SEED}.
- *  - `projectId`: TEST_PROJECT_ID from seed.sql bootstrap (`00000000-0000-0000-0000-000000000001`).
+ *  - `projectId`: DEFAULT_PROJECT_ID from seed.sql bootstrap (`00000000-0000-0000-0000-000000000001`).
  *  - `externalIdPrefix`: {@link DEFAULT_EXTERNAL_ID_PREFIX}.
  *  - `refDate`: {@link SEED_REF_DATE}, parsed to a `Date` once per run so every date draw shares one anchor.
  *  - refs: empty arrays, populated as generators run in topo order.

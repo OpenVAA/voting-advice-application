@@ -74,7 +74,7 @@ describe('CandidatesGenerator', () => {
     });
   });
 
-  // TEST G — THE PAIR, and the pair is the whole point of 162-07b's reclassification of this key. Since that plan there is no `candidates.organization_id` column, so the reference must be PERMITTED ON THE ROW (the latent answer emitter reads it in memory, and an unresolved findOrganizationIndex falls back to random emission SILENTLY for every synthetic candidate) and ABSENT FROM THE PAYLOAD that reaches `bulk_import` (PostgREST would reject an unknown column name on every candidate row).
+  // TEST G — THE PAIR. There is no `candidates.organization_id` column, so the reference must be PERMITTED ON THE ROW (the latent answer emitter reads it in memory, and an unresolved findOrganizationIndex falls back to random emission SILENTLY for every synthetic candidate) and ABSENT FROM THE PAYLOAD that reaches `bulk_import` (PostgREST would reject an unknown column name on every candidate row).
   //
   // The one-sided version of this test would pass against a key stripped EVERYWHERE, including where the emitter reads it — which is the other way this can be wrong, and the way no gate in this repository would otherwise report.
   it('carries the organization ref on the emitted row AND declares it stripped before the write', () => {

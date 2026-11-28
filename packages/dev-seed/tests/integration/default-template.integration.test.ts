@@ -8,7 +8,7 @@
  * Covers:
  *   - Row counts across the bulk-import tables (in-memory + DB-level)
  *   - Relational wiring (candidates → their organization through the
- *     `parent_nomination_id` edge, which since 162-07b is the only statement of
+ *     `parent_nomination_id` edge, which is the only statement of
  *     that relationship; nominations → candidate_id × election_id ×
  *     constituency_id)
  *   - Portraits: 327 candidates with `image.path` populated; `public-assets` bucket has ≥327 objects under `${projectId}/candidates/`
@@ -30,46 +30,42 @@
  * Do NOT retighten this into a performance signal. Performance is guarded by the operation budget of the test body, where contention cannot reach it.
  */
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { afterEach, beforeAll, describe, expect, it, type MockInstance, vi } from 'vitest';
+import { createClient } from '@supabase/supabase-js';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   BUILT_IN_OVERRIDES,
   BUILT_IN_TEMPLATES,
+  DEFAULT_PROJECT_ID,
   fanOutLocales,
   runPipeline,
   SupabaseAdminClient,
-  TEST_PROJECT_ID,
   Writer
 } from '../../src';
+import { assertLiveTierAllowedToSkip, LOCAL_SUPABASE_API_PORT, localSupabaseIsReachable } from '../utils';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { MockInstance } from 'vitest';
 
 const hasSupabase = Boolean(process.env.SUPABASE_URL);
 
 /**
  * Guard-of-the-guard.
  *
- * `describe.skipIf(!hasSupabase)` below is deliberate and correct for a developer machine without `supabase start`. Its FAILURE MODE is that the skip is SILENT: while nothing asserted otherwise, this whole file — including the operation budget — skipped in CI and the job went green, so a guarantee recorded as repo-wide held only locally.
+ * `describe.skipIf(!hasSupabase)` below is deliberate and correct for a developer machine without `supabase start`. Its FAILURE MODE is that the skip is SILENT: unasserted, this whole file — including the operation budget — would skip in CI and the job would go green.
  *
- * The `dev-seed-integration` job in `.github/workflows/main.yaml` now provides Supabase and exports `SUPABASE_URL`, and sets this variable to declare "this file is REQUIRED to run here". Throwing at module scope fails collection, so if that wiring is ever removed or renamed, CI turns RED instead of silently reverting to a green skip. Without this, the wiring could regress invisibly.
+ * The `dev-seed-integration` job in `.github/workflows/main.yaml` provides Supabase and exports `SUPABASE_URL`, and sets `DEV_SEED_INTEGRATION_REQUIRED=1` to declare "this file is REQUIRED to run here". Throwing at module scope fails collection, so if that wiring is ever removed or renamed, CI turns RED instead of silently reverting to a green skip. Without this, the wiring could regress invisibly.
  *
  * Deliberately NOT keyed on `CI === 'true'`: the `frontend-and-shared-module-validation` job legitimately runs `yarn test:unit` with no Supabase, and must keep skipping this file rather than failing it.
  */
-if (process.env.DEV_SEED_INTEGRATION_REQUIRED === '1' && !hasSupabase) {
-  throw new Error(
-    'DEV_SEED_INTEGRATION_REQUIRED=1 but SUPABASE_URL is unset. This file carries the ' +
-      'operation budget and is required to EXECUTE in the `dev-seed-integration` CI job; ' +
-      'skipping it there would silently drop the guard. Start Supabase and export SUPABASE_URL, ' +
-      'or unset DEV_SEED_INTEGRATION_REQUIRED if this run is genuinely not the integration job.'
-  );
-}
+assertLiveTierAllowedToSkip(hasSupabase, 'the default-template integration tier, which carries the operation budget,');
 
 /**
  * LOCAL half of the guard-of-the-guard.
  *
- * The `DEV_SEED_INTEGRATION_REQUIRED` throw above closes the CI half: if the `dev-seed-integration` job ever loses its Supabase wiring, collection fails and the job reds instead of reverting to a green skip. Nothing closed the LOCAL half, and the two remaining states are not equally safe:
+ * The `DEV_SEED_INTEGRATION_REQUIRED` throw above closes the CI half: if the `dev-seed-integration` job ever loses its Supabase wiring, collection fails and the job reds instead of reverting to a green skip. The two LOCAL states are not equally safe:
  *
  *   1. `SUPABASE_URL` SET, instance DOWN — safe already. The tier runs and the file FAILS on the first client call (measured against a dead port: `Test Files 1 failed`, ~700ms). A dead instance cannot pass.
  *
- *   2. `SUPABASE_URL` UNSET — the hole this block closes. `src/cli/seed.ts` loads the repo-root `.env` on import and falls back to `PUBLIC_SUPABASE_URL`, so locally this state means NO `.env` at all: a fresh clone where `.env.example` has not been copied yet. `describe.skipIf` then drops this file to `2 skipped`, nothing fails, and `yarn test:unit` exits 0 having never touched the anon-RLS guard, the operation budget or the relational assertions. A skipped count inside a 558-test summary is easy to read straight past, and under this project's cardinal rule a did-not-run is a failure, not a pass.
+ *   2. `SUPABASE_URL` UNSET — the case this block covers. `src/cli/seed.ts` loads the repo-root `.env` on import and falls back to `PUBLIC_SUPABASE_URL`, so locally this state means NO `.env` at all: a fresh clone where `.env.example` has not been copied yet. `describe.skipIf` then drops this file to `2 skipped`, nothing fails, and `yarn test:unit` exits 0 having never touched the anon-RLS guard, the operation budget or the relational assertions. A skipped count inside a 558-test summary is easy to read straight past, and under this project's cardinal rule a did-not-run is a failure, not a pass.
  *
  * So state 2 is split in two, and only one half is allowed to be quiet:
  *
@@ -80,21 +76,6 @@ if (process.env.DEV_SEED_INTEGRATION_REQUIRED === '1' && !hasSupabase) {
  *
  * The probe is skipped entirely when `SUPABASE_URL` is set, so CI does no extra network work and this adds no flake surface to the integration job.
  */
-
-/** Local `supabase start` API port. Authority: `apps/supabase/supabase/config.toml` `[api] port`. */
-const LOCAL_SUPABASE_API_PORT = 54321;
-
-async function localSupabaseIsReachable(): Promise<boolean> {
-  try {
-    // Any HTTP response proves something is listening — Kong answers here without credentials, and any status is a "reachable" answer. Only a transport failure (connection refused / timeout) means genuinely absent.
-    await fetch(`http://127.0.0.1:${LOCAL_SUPABASE_API_PORT}/rest/v1/`, {
-      signal: AbortSignal.timeout(1500)
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 describe('integration tier wiring (always runs — never skipped)', () => {
   it('the integration tier either RUNS or is provably unavailable — it is never quietly dropped', async () => {
@@ -156,7 +137,7 @@ function makeAnonClient(): SupabaseClient {
 }
 
 /**
- * Pre-test cleanup. Removes any rows left over from a prior run at the `seed_` prefix plus all storage objects under `${TEST_PROJECT_ID}/candidates/`. `pg_net` is async, so we cannot trust the trigger-based cascade to complete before assertions run — delete storage explicitly.
+ * Pre-test cleanup. Removes any rows left over from a prior run at the `seed_` prefix plus all storage objects under `${DEFAULT_PROJECT_ID}/candidates/`. `pg_net` is async, so we cannot trust the trigger-based cascade to complete before assertions run — delete storage explicitly.
  */
 async function runTeardown(
   prefix: string,
@@ -182,17 +163,17 @@ async function runTeardown(
   //    asynchronously, so don't race the assertions.
   const { data: candidateFiles } = await readClient.storage
     .from('public-assets')
-    .list(`${TEST_PROJECT_ID}/candidates`, { limit: 1000 });
+    .list(`${DEFAULT_PROJECT_ID}/candidates`, { limit: 1000 });
   if (candidateFiles && candidateFiles.length > 0) {
     // Storage.list returns folder entries (one per candidate UUID dir). For each, list contents + remove.
     const removePaths: Array<string> = [];
     for (const entry of candidateFiles) {
       const { data: inner } = await readClient.storage
         .from('public-assets')
-        .list(`${TEST_PROJECT_ID}/candidates/${entry.name}`, { limit: 100 });
+        .list(`${DEFAULT_PROJECT_ID}/candidates/${entry.name}`, { limit: 100 });
       if (inner && inner.length > 0) {
         for (const f of inner) {
-          removePaths.push(`${TEST_PROJECT_ID}/candidates/${entry.name}/${f.name}`);
+          removePaths.push(`${DEFAULT_PROJECT_ID}/candidates/${entry.name}/${f.name}`);
         }
       }
     }
@@ -272,6 +253,9 @@ describe.skipIf(!hasSupabase)('default template integration', () => {
     expect(ops.updateAppSettings).toBe(rows.app_settings?.length ?? 0);
     expect(ops.selectQuestionExternalIds).toBeLessThanOrEqual(1);
 
+    // 1c-ii. Project openness: exactly one write, the writer's last pass, which opens the project because the default template declares no `openForVoters`.
+    expect(ops.setProjectOpenForVoters).toBe(1);
+
     // 1d. Nothing ELSE on the admin client is touched by the write path. This
     //     is what makes 1a-1c a budget rather than a checklist: a newly introduced call cannot go uncounted, it surfaces here by name.
     const unbudgeted = Object.entries(ops).filter(([name, count]) => count > 0 && !BUDGETED_WRITE_OPS.has(name));
@@ -314,12 +298,12 @@ describe.skipIf(!hasSupabase)('default template integration', () => {
     // -----------------------------------------------------------------------
     // 5. Candidates have a non-NULL image.path (the column is `image` JSONB, NOT `image_id`).
     //
-    //    THE ORGANIZATION ASSERTION THAT STOOD HERE IS RETIRED, not weakened. 162-07b removed `candidates.organization_id`; the candidate-to-organization association is the `parent_nomination_id` edge, and section 6 below already asserts that EVERY candidate-type nomination carries one. So the relationship this row-level check was proving is still proven, one join further out, by an assertion that was already here. The template-level `organization` reference the generator attaches survives as an emitter-only field.
+    //    No row-level organization check: there is no `candidates.organization_id` column. The candidate-to-organization association is the `parent_nomination_id` edge, which section 6 below asserts EVERY candidate-type nomination carries. The template-level `organization` reference the generator attaches is an emitter-only field.
     // -----------------------------------------------------------------------
     const { data: candidates, error: candErr } = await readClient
       .from('candidates')
       .select('id, external_id, image')
-      .eq('project_id', TEST_PROJECT_ID)
+      .eq('project_id', DEFAULT_PROJECT_ID)
       .like('external_id', `${prefix}%`);
     expect(candErr).toBeNull();
     expect(candidates?.length).toBe(327);
@@ -342,7 +326,7 @@ describe.skipIf(!hasSupabase)('default template integration', () => {
       .select(
         'id, external_id, candidate_id, organization_id, alliance_id, election_id, constituency_id, parent_nomination_id'
       )
-      .eq('project_id', TEST_PROJECT_ID)
+      .eq('project_id', DEFAULT_PROJECT_ID)
       .like('external_id', `${prefix}%`);
     expect(nomErr).toBeNull();
     // 327 + 40 + 10 = 377 total
@@ -396,7 +380,7 @@ describe.skipIf(!hasSupabase)('default template integration', () => {
     const { data: election, error: elErr } = await readClient
       .from('elections')
       .select('name')
-      .eq('project_id', TEST_PROJECT_ID)
+      .eq('project_id', DEFAULT_PROJECT_ID)
       .like('external_id', `${prefix}%`)
       .single();
     expect(elErr).toBeNull();
@@ -425,8 +409,8 @@ describe.skipIf(!hasSupabase)('default template integration', () => {
     const { data: svcAccounts } = await readClient.from('accounts').select('id');
     expect((svcAccounts ?? []).length, 'service_role accounts rowcount (role control)').toBeGreaterThan(0);
 
-    // --- The assertion itself. --------------------------------------------- `p_project_id` is the only argument passed, and it is required: the election, constituency and election-round filters all default NULL, so there is no UUID to resolve for them and none to hard-code. `constituencies.id` is `DEFAULT gen_random_uuid()` (apps/supabase/migrations 101-elections.sql:49), so any literal UUID would be valid only until the next `yarn db:reset`, whereas `TEST_PROJECT_ID` is the fixed bootstrap project seed.sql creates. The function is `SECURITY INVOKER`, so the caller's RLS applies to its joins — which is precisely what makes this call the voter app's path rather than a privileged restatement of the counts asserted above.
-    const { data: noms, error } = await anonClient.rpc('get_nominations', { p_project_id: TEST_PROJECT_ID });
+    // --- The assertion itself. --------------------------------------------- `p_project_id` is the only argument passed, and it is required: the election, constituency and election-round filters all default NULL, so there is no UUID to resolve for them and none to hard-code. `constituencies.id` is `DEFAULT gen_random_uuid()` (apps/supabase/migrations 101-elections.sql:49), so any literal UUID would be valid only until the next `yarn db:reset`, whereas `DEFAULT_PROJECT_ID` is the fixed bootstrap project seed.sql creates. The function is `SECURITY INVOKER`, so the caller's RLS applies to its joins — which is precisely what makes this call the voter app's path rather than a privileged restatement of the counts asserted above.
+    const { data: noms, error } = await anonClient.rpc('get_nominations', { p_project_id: DEFAULT_PROJECT_ID });
     expect(error).toBeNull();
 
     const byType = new Map<string, number>();
@@ -460,7 +444,8 @@ const BUDGETED_WRITE_OPS = new Set([
   'selectCandidatesForPortraitUpload',
   'uploadPortrait',
   'updateCandidateImage',
-  'updateAppSettings'
+  'updateAppSettings',
+  'setProjectOpenForVoters'
 ]);
 
 /**
@@ -489,32 +474,32 @@ async function countByPrefix(client: SupabaseClient, table: string, prefix: stri
   const { count, error } = await client
     .from(table)
     .select('*', { count: 'exact', head: true })
-    .eq('project_id', TEST_PROJECT_ID)
+    .eq('project_id', DEFAULT_PROJECT_ID)
     .like('external_id', `${prefix}%`);
   if (error) throw new Error(`countByPrefix(${table}) failed: ${error.message}`);
   return count ?? 0;
 }
 
 /**
- * Enumerate every portrait object under `${TEST_PROJECT_ID}/candidates/`.
- * Writer uploads to `${projectId}/candidates/${candidateId}/<random uuid>.jpg` (162.1 D-15; VERIFIED: `SupabaseAdminClient.uploadPortrait` path convention).
+ * Enumerate every portrait object under `${DEFAULT_PROJECT_ID}/candidates/`.
+ * Writer uploads to `${projectId}/candidates/${candidateId}/<random uuid>.jpg` (the `SupabaseAdminClient.uploadPortrait` path convention).
  * Each candidate gets one subdirectory holding its current portrait. The file name is random, so this helper lists folders and never matches on names; after a re-seed the superseded portrait is removed asynchronously by the storage cleanup trigger.
  */
 async function listCandidatePortraitPaths(client: SupabaseClient): Promise<Array<string>> {
   const paths: Array<string> = [];
   const { data: dirs, error } = await client.storage
     .from('public-assets')
-    .list(`${TEST_PROJECT_ID}/candidates`, { limit: 1000 });
+    .list(`${DEFAULT_PROJECT_ID}/candidates`, { limit: 1000 });
   if (error) throw new Error(`listCandidatePortraitPaths (dirs) failed: ${error.message}`);
   for (const entry of dirs ?? []) {
     const { data: files, error: innerErr } = await client.storage
       .from('public-assets')
-      .list(`${TEST_PROJECT_ID}/candidates/${entry.name}`, { limit: 100 });
+      .list(`${DEFAULT_PROJECT_ID}/candidates/${entry.name}`, { limit: 100 });
     if (innerErr) {
       throw new Error(`listCandidatePortraitPaths (inner ${entry.name}) failed: ${innerErr.message}`);
     }
     for (const file of files ?? []) {
-      paths.push(`${TEST_PROJECT_ID}/candidates/${entry.name}/${file.name}`);
+      paths.push(`${DEFAULT_PROJECT_ID}/candidates/${entry.name}/${file.name}`);
     }
   }
   return paths;

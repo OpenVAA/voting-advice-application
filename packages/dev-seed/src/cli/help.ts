@@ -34,6 +34,10 @@ Options:
                                     supabase_kong_<project>.
   -h, --help                        Show this help and exit.
 
+Every seed sets the project's open_for_voters to the template's openForVoters,
+or true when the template declares none, so a seed reopens a project an earlier
+seed closed.
+
 Built-in templates:
   default              Finnish-flavored election, 5 constituencies / 8 organizations /
                        327 candidates / 26 questions, every locale in LOCALES

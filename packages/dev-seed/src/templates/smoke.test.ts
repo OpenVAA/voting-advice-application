@@ -89,7 +89,7 @@ describe('smoke template', () => {
     expect(tables.some((table) => table.startsWith('auth'))).toBe(false);
   });
 
-  it('leaves project openness and the project id to the bootstrap', () => {
+  it('declares neither openness, so the seed opens the project, nor a project id', () => {
     expect(smokeTemplate.externalIdPrefix).toBe(PREFIX);
     expect('openForVoters' in smokeTemplate).toBe(false);
     expect('projectId' in smokeTemplate).toBe(false);

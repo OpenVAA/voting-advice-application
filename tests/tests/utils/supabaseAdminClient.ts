@@ -41,24 +41,25 @@
 
 import {
   ALLOWED_TEARDOWN_TABLES,
+  DEFAULT_PROJECT_ID,
   E2E_PROJECT_ID,
+  resolveCollectionName,
   resolveE2eProjectId,
-  SupabaseAdminClient as DevSeedAdminClient,
-  TEST_PROJECT_ID
+  resolveFieldName,
+  SupabaseAdminClient as DevSeedAdminClient
 } from '@openvaa/dev-seed';
-import { PROPERTY_MAP, TABLE_MAP } from '@openvaa/supabase-types';
 import { requestLink } from './accountAccessClient';
 import { TIMEOUTS } from '../helpers/timeouts';
 import type { ServedEntityType } from '@openvaa/app-shared';
 import type { FindDataResult, InvitationNominationSeed, SeededInvitation } from '@openvaa/dev-seed';
 // Direct import, the same shape `buildRoute.ts` uses. Type-only: the constant is consumed as `typeof ADMIN_GRANTS` below, which is a compile-time read of the application's own declaration and needs no runtime binding.
-import type { ADMIN_GRANTS, GrantClaim } from '../../../apps/frontend/src/lib/auth/roles';
+import type { ADMIN_GRANTS, GrantClaim } from '../../../apps/frontend/src/lib/auth/grants';
 
 // Re-exports for backward-compat with existing E2E imports.
 // `tests/seed-test-data.ts` + all tests/tests/**/*.spec.ts files may import
 // these from `./utils/supabaseAdminClient` — preserving the path + names.
-export { TEST_PROJECT_ID };
-// Re-exported beside `TEST_PROJECT_ID` so specs and setups can name the suite's own project without reaching into the dev-seed package for it.
+export { DEFAULT_PROJECT_ID };
+// Re-exported beside `DEFAULT_PROJECT_ID` so specs and setups can name the suite's own project without reaching into the dev-seed package for it.
 export { E2E_PROJECT_ID, resolveE2eProjectId };
 export type { FindDataResult };
 
@@ -112,43 +113,6 @@ const ENTITY_GRANT_TABLES: Readonly<Record<EntityGrantTarget['entityType'], 'can
     candidate: 'candidates',
     organization: 'organizations'
   });
-
-/**
- * Maps camelCase collection names to Supabase snake_case table names.
- * Extends TABLE_MAP with legacy/alias mappings for backward compatibility.
- *
- * Duplicated locally (mirrors the dev-seed base) so `findData` / `query` can translate camelCase collection names without re-exporting a private helper from the dev-seed package.
- */
-const COLLECTION_MAP: Record<string, string> = {
-  ...TABLE_MAP,
-  // Legacy aliases
-  parties: 'organizations',
-  questionTypes: 'question_types'
-};
-
-/**
- * Maps camelCase filter field names to Supabase snake_case column names.
- * Extends PROPERTY_MAP with legacy/alias mappings.
- */
-const FIELD_MAP: Record<string, string> = {
-  ...PROPERTY_MAP,
-  // Legacy aliases
-  documentId: 'id'
-};
-
-/**
- * Resolve a collection name: if it matches a COLLECTION_MAP entry, use that; otherwise return as-is (already snake_case).
- */
-function resolveCollectionName(collection: string): string {
-  return COLLECTION_MAP[collection] ?? collection;
-}
-
-/**
- * Convert a camelCase field name to snake_case using FIELD_MAP, or fall through as-is if already snake_case.
- */
-function resolveFieldName(field: string): string {
-  return FIELD_MAP[field] ?? field;
-}
 
 /**
  * Whether a failed insert was refused by `idx_grants_one_candidate_editor`, the unique index that admits one editor per candidate.
@@ -1224,7 +1188,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *
    * Exactly two mutations, through the same {@link registerWithGrants} as `forceRegister`, so a failed grant insert rolls the account back.
    *
-   * The shape is `TEST_ADMIN_GRANT` — a member of the application's own `ADMIN_GRANTS`, checked at compile time by that constant's declaration, not a pair picked here. The target is `TEST_PROJECT_ID`, because the RLS predicate guarding `admin_jobs` is `user_can('project', X, …)` and a project grant reaches only its own project. An admin scoped anywhere else logs in fine and then fails the job insert for a reason that has nothing to do with what a test is measuring.
+   * The shape is `TEST_ADMIN_GRANT` — a member of the application's own `ADMIN_GRANTS`, checked at compile time by that constant's declaration, not a pair picked here. The target is `DEFAULT_PROJECT_ID`, because the RLS predicate guarding `admin_jobs` is `user_can('project', X, …)` and a project grant reaches only its own project. An admin scoped anywhere else logs in fine and then fails the job insert for a reason that has nothing to do with what a test is measuring.
    *
    * Removal is `unregisterUser(email)`.
    *

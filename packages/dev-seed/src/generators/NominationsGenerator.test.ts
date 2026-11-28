@@ -90,7 +90,7 @@ describe('NominationsGenerator', () => {
     const gen = new NominationsGenerator(makeCtx({ refs: populatedRefs() }));
     const rows = gen.generate({ count: 2 });
     rows.forEach((r) => {
-      // Generated candidate-type nominations MUST NOT carry `organization` — the legacy tests/ admin-client workaround (CHECK num_nonnulls=1 fires otherwise) is intentionally dropped; the party-candidate relationship is the `parent_nomination` edge, and since 162-07b that is its only statement.
+      // Generated candidate-type nominations MUST NOT carry `organization` — the legacy tests/ admin-client workaround (CHECK num_nonnulls=1 fires otherwise) is intentionally dropped; the party-candidate relationship is the `parent_nomination` edge, its only statement.
       expect(r).not.toHaveProperty('organization');
     });
   });

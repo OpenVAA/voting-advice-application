@@ -23,7 +23,7 @@
  * Does NOT emit:
  *   - `id` (auto-generated UUID)
  *   - `entity_type` (GENERATED column; migration line 724–731 — would fail "cannot write to generated column")
- *   - Redundant `organization` ref on candidate-type rows. The legacy tests/admin-client "emit both, strip one" workaround is deliberately NOT reproduced: since dev-seed controls emission, it emits only the authoritative ref. The organization-candidate relationship is expressed by THIS row's `parent_nomination` edge — it used to be stated a second time on `candidates.organization_id`, and 162-07b removed that column precisely so there is one statement of it.
+ *   - Redundant `organization` ref on candidate-type rows. The legacy tests/admin-client "emit both, strip one" workaround is deliberately NOT reproduced: since dev-seed controls emission, it emits only the authoritative ref. The organization-candidate relationship is expressed by THIS row's `parent_nomination` edge — there is no `candidates.organization_id` column, so this edge is the one statement of it.
  *
  * Polymorphism variants NOT produced in the generated path:
  *   organization / faction / alliance nominations. The SHAPE supports them (PolymorphicRef union + `fixed[]` pass-through); templates that want them supply them via `fixed[]` or an override.

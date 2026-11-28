@@ -16,7 +16,8 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { E2E_PROJECT_ID, resolveE2eProjectId, SupabaseAdminClient, TEST_PROJECT_ID } from '../src';
+import { assertLiveTierAllowedToSkip, LOCAL_SUPABASE_API_PORT, localSupabaseIsReachable } from './utils';
+import { DEFAULT_PROJECT_ID, E2E_PROJECT_ID, resolveE2eProjectId, SupabaseAdminClient } from '../src';
 import { E2E_ACCOUNT_ID } from '../src/supabaseAdminClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -24,13 +25,10 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 /** `packages/dev-seed/tests` → repo root. */
 const REPO_ROOT = resolve(HERE, '../../..');
 
-/** Local `supabase start` API port. Authority: `apps/supabase/supabase/config.toml` `[api] port`. */
-const LOCAL_SUPABASE_API_PORT = 54321;
-
 /**
  * A project id used by the live tier and by nothing else in the repository.
  *
- * Deliberately neither {@link TEST_PROJECT_ID} nor {@link E2E_PROJECT_ID}: the live tier deletes the rows it creates, and it must never be able to delete a project some other run depends on.
+ * Deliberately neither {@link DEFAULT_PROJECT_ID} nor {@link E2E_PROJECT_ID}: the live tier deletes the rows it creates, and it must never be able to delete a project some other run depends on.
  */
 const SCRATCH_PROJECT_ID = '00000000-0000-0000-0000-0000000000ff';
 
@@ -59,17 +57,6 @@ function makeReadClient(): SupabaseClient {
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 }
 
-async function localSupabaseIsReachable(): Promise<boolean> {
-  const url = process.env.SUPABASE_URL ?? `http://127.0.0.1:${LOCAL_SUPABASE_API_PORT}`;
-  try {
-    // Any HTTP answer proves something is listening; only a transport failure means genuinely absent.
-    await fetch(`${url}/rest/v1/`, { signal: AbortSignal.timeout(1500) });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Remove the scratch project and its settings row, child-first.
  *
@@ -81,6 +68,7 @@ async function dropScratchProject(client: SupabaseClient): Promise<void> {
 }
 
 const supabaseReachable = await localSupabaseIsReachable();
+assertLiveTierAllowedToSkip(supabaseReachable, 'the ensureProject live tier');
 
 describe('resolveE2eProjectId', () => {
   const original = process.env.E2E_PROJECT_ID;
@@ -110,7 +98,7 @@ describe('resolveE2eProjectId', () => {
   });
 
   it('throws when the override is the default project id, naming the variable and the default project', () => {
-    process.env.E2E_PROJECT_ID = TEST_PROJECT_ID;
+    process.env.E2E_PROJECT_ID = DEFAULT_PROJECT_ID;
     let message = '';
     try {
       resolveE2eProjectId();
@@ -118,7 +106,7 @@ describe('resolveE2eProjectId', () => {
       message = (e as Error).message;
     }
     expect(message).toContain('E2E_PROJECT_ID');
-    expect(message).toContain(TEST_PROJECT_ID);
+    expect(message).toContain(DEFAULT_PROJECT_ID);
     expect(message.toLowerCase()).toContain('default project');
   });
 
@@ -128,13 +116,13 @@ describe('resolveE2eProjectId', () => {
   });
 
   it('is not the default project id', () => {
-    expect(E2E_PROJECT_ID).not.toBe(TEST_PROJECT_ID);
+    expect(E2E_PROJECT_ID).not.toBe(DEFAULT_PROJECT_ID);
   });
 });
 
 describe('project-id defaults at the two construction sites', () => {
   it('the dev-seed base class still defaults to the default project', () => {
-    expect(new ProbeClient().configuredProjectId).toBe(TEST_PROJECT_ID);
+    expect(new ProbeClient().configuredProjectId).toBe(DEFAULT_PROJECT_ID);
   });
 
   it('an explicit project id is honoured by the base constructor', () => {
@@ -160,7 +148,7 @@ describe('project-id defaults at the two construction sites', () => {
       .split('\n')
       .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
       .join('\n');
-    expect(code).toContain('projectId ?? TEST_PROJECT_ID');
+    expect(code).toContain('projectId ?? DEFAULT_PROJECT_ID');
   });
 });
 

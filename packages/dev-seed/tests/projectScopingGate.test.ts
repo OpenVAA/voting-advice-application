@@ -48,7 +48,7 @@ const FIXTURE_TAILS: Array<string> = [
 /**
  * Every shape in the fixture corpus whose whole job is to stay UNREPORTED, named here so deleting one is a named failure rather than a silence.
  *
- * The mutation harness further down proves that every admitted POSITION is held in place by a committed fixture shape whose disposition depends on it. That is the POSITIVE half of each pair only. The negative half is held by nothing at all, and necessarily so: a control contributes zero counted sites BY DEFINITION, so deleting it leaves every count identical, the self-test green and the whole suite green. `161-REVIEW.md` names that failure mode WR-04 and measured it — the three bucket shapes deleted from `violation.fixture.ts` left the self-test matching its committed expectation at exit 0. A control nothing asserts is not a control; it is a comment that happens to compile.
+ * The mutation harness further down proves that every admitted POSITION is held in place by a committed fixture shape whose disposition depends on it. That is the POSITIVE half of each pair only. The negative half is held by nothing at all, and necessarily so: a control contributes zero counted sites BY DEFINITION, so deleting it leaves every count identical, the self-test green and the whole suite green. A control nothing asserts is not a control; it is a comment that happens to compile.
  *
  * Membership below is MEASURED rather than reasoned. Each shape was deleted from its fixture on disk on its own, the guard's self-test re-run, and its summary line required back byte-identical at exit 0. Three shapes deliberately NOT on this list — `dispositionedRpc` and `snakeCaseProjectTermInvocation` in `clean.fixture.ts`, `subObjectAliasedClient` in `violation.fixture.ts` — were put through the identical measurement and each moved the counts to exit 1, which is what says the measurement was reading something rather than reporting a uniform silence.
  *
@@ -58,9 +58,9 @@ const NEGATIVE_CONTROLS: Array<{ fixture: string; shapes: Array<string> }> = [
   {
     fixture: 'clean.fixture.ts',
     shapes: [
-      // The live `auth.getUser()` destructure — 161-18's false-positive control, and the one shape CR-02's closure turns on: the promotion of the binding rule is only free of live cost while this stays unreported.
+      // The live `auth.getUser()` destructure — a false-positive control: the binding rule's reach over client sub-objects is only free of live cost while this stays unreported.
       'destructuredCallResult',
-      // 161-17's two computed-invocation near misses: an identifier that merely ENDS in `functions`, and a key that merely BEGINS with it.
+      // The two computed-invocation near misses: an identifier that merely ENDS in `functions`, and a key that merely BEGINS with it.
       'nearMissSuffixedFunctions',
       'nearMissFunctionsPrefixedKey',
       // A storage bucket is not a table, and a client call that reaches no table at all.
@@ -90,7 +90,7 @@ const NEGATIVE_CONTROLS: Array<{ fixture: string; shapes: Array<string> }> = [
   {
     fixture: 'violation.fixture.ts',
     shapes: [
-      // The three bucket shapes WR-04 deleted to make its point, and the sanctioned route beside them, inside the corpus the guard treats most strictly.
+      // The three bucket shapes and the sanctioned route beside them, inside the corpus the guard treats most strictly.
       'bucketUpload',
       'optionalChainedBucketUpload',
       'optionalCallBucketUpload',
@@ -116,7 +116,7 @@ function moduleDocblockOf(source: string = GUARD_SOURCE): string {
 /**
  * The docblock's STATED RESIDUALS section — its heading down to the blank line that ends the list.
  *
- * Scoped rather than whole, and that is what makes the count below mean something: the module docblock holds other bulleted lists, so counting list items across all of it would measure the wrong paragraphs and drift with every unrelated edit. It throws by name when the heading is absent, because a section that could not be found would otherwise turn every assertion over it into a zero from an instrument pointed at nothing.
+ * Scoped rather than whole: the module docblock holds other bulleted lists, so a phrase found elsewhere in it would not be a stated residual. It throws by name when the heading is absent, because a section that could not be found would otherwise turn every assertion over it into a zero from an instrument pointed at nothing.
  * @param source - The source text to read; the guard's own by default.
  * @returns The stated-residual section's source text.
  */
@@ -141,21 +141,6 @@ function residualProseOf(section: string): string {
     .replace(/\s+/g, ' ');
 }
 
-/** The line shape of one stated-residual BULLET, and of a CONTINUATION line belonging to the bullet above it. The second is what lets a WHOLE bullet be deleted below rather than only its first line, which would leave an orphaned half-sentence behind and measure a section nobody would ever write. */
-const RESIDUAL_BULLET_RE = /^ \* {3}- /;
-const RESIDUAL_CONTINUATION_RE = /^ \* {5}\S/;
-
-/**
- * How many bullets a stated-residual section holds.
- *
- * One counter read by both the case that pins the count and the case that deletes a bullet to show the count fall, so the demonstration cannot pass against a counter of its own that the pinning case has never used.
- * @param section - The section's source text, comment markers included.
- * @returns The number of bullet lines in it.
- */
-function residualBulletCountOf(section: string): number {
-  return section.split('\n').filter((line) => RESIDUAL_BULLET_RE.test(line)).length;
-}
-
 const RESIDUAL_SECTION = residualSectionOf();
 
 const RESIDUAL_SECTION_PROSE = residualProseOf(RESIDUAL_SECTION);
@@ -163,7 +148,7 @@ const RESIDUAL_SECTION_PROSE = residualProseOf(RESIDUAL_SECTION);
 /**
  * Every residual the guard's reach paragraph is allowed to state, and every residual a disposition below is allowed to name.
  *
- * The binding runs in BOTH directions and that is the point of it. A phrase here must appear in the module docblock, so a residual cannot be measured without being stated; and the docblock's stated-residual list must hold exactly this many entries, so a residual cannot be stated without being measured. A reach claim that no assertion measures is how this guard's docblock went false twice — the sentence was true the day it was written and stale at the next widening, and nothing anywhere failed.
+ * A phrase a disposition names must appear in the module docblock's stated residuals, so a residual cannot be measured without being stated.
  */
 const RESIDUAL_PHRASES: Array<string> = [
   'an interposed comment is not trivia the matchers admit',
@@ -706,7 +691,7 @@ interface CallShape {
 /**
  * The three spellings every operator position has in THIS language.
  *
- * `plain` and `optional` are JavaScript's. `non-null` is TypeScript's, and it is the one CR-01 found missing: `this.supabase!.from('elections')` puts the non-null assertion between the receiver and the punctuator, and no matcher admitted it at any position. It was UNCOUNTED rather than merely unreported — `collectAccesses` yielded no site, so check 3's "a site the guard cannot parse is a site it cannot cover" never fired and the per-family floor could not see the family go silent.
+ * `plain` and `optional` are JavaScript's. `non-null` is TypeScript's, and every matcher must admit it: `this.supabase!.from('elections')` puts the non-null assertion between the receiver and the punctuator, and a matcher that did not admit it would leave the site UNCOUNTED rather than merely unreported — `collectAccesses` would yield no site, so check 3 would never fire and the per-family floor could not see the family go silent.
  *
  * It is a SPELLING here rather than a fourth `PunctuatorKind`, because it is the same POSITION spelled differently — which is exactly what the kind/spelling split already models. Adding it as a spelling is what makes the closure by construction: every cell the matrix generates is now rendered in three spellings instead of two, and every disposition arm has to say what the third one does. A position a future matcher admits `.` and `?.` at but not `!.` is a named failure here rather than the ninth review's finding.
  */
@@ -988,7 +973,7 @@ const CALL_SHAPES: Array<CallShape> = [
         }
       },
       {
-        // The link CR-02 cost this matrix. Until it existed, `CLIENT_BINDING_RE`'s call shape had exactly ONE link, so no chain-link cell was ever generated and the bridge was satisfied by 1 link against 1 token — the links themselves being the hand-written list this matrix exists everywhere else to eliminate. A sub-object alias was therefore a position the matrix structurally could not see.
+        // The chain link. Without it `CLIENT_BINDING_RE`'s call shape would have one link, no chain-link cell would be generated and the bridge would be satisfied by 1 link against 1 token, so a sub-object alias would be a position the matrix could not see.
         id: 'client-to-chain-member',
         type: 'member',
         name: 'functions',
@@ -1149,7 +1134,7 @@ function occurrencesOutside(name: string, declaration: string): number {
  *
  * Derived here by walking the tree rather than read off the guard, so this is an INDEPENDENT statement of the same population the guard's own check 5 computes. Two derivations of one set is the point: deleting either leaves the invariant asserted.
  *
- * It used to skip `utils/`, mirroring the guard — and that mirroring is precisely why "two derivations" did NOT cover CR-02: both derivations carried the same exclusion, so both were blind at the same address, and a third assertion agreeing with two identical blind spots proves nothing. The skip is gone from both, and `it('partitions the frontend source tree exhaustively between its two corpora')` below is the assertion that makes the pair genuinely independent — it walks the tree ONCE and holds the union of the two corpora against it, so an exclusion added to either walk has to be added to a written predicate as well or the partition stops closing.
+ * It skips nothing the guard does not also write down: two derivations carrying the same exclusion are blind at the same address, and a third assertion agreeing with two identical blind spots proves nothing. `it('partitions the frontend source tree exhaustively between its two corpora')` below is the assertion that makes the pair genuinely independent — it walks the tree ONCE and holds the union of the two corpora against it, so an exclusion added to either walk has to be added to a written predicate as well or the partition stops closing.
  * @returns The repo-relative paths, sorted.
  */
 function adapterSourcesOnDisk(): Array<string> {
@@ -1248,7 +1233,7 @@ describe('the project-scoped query guard is wired into lint:check', () => {
   });
 
   it('keeps every negative control the fixtures rest on', () => {
-    // The instrument before the measurement, twice over. An unreadable fixture would turn every `toContain` below into a failure whose cause is the READ rather than a deleted control, and an empty `shapes` list would report a pass over nothing — which is the exact shape of the two assertions 161-16 had to replace because they could not go red.
+    // The instrument before the measurement, twice over. An unreadable fixture would turn every `toContain` below into a failure whose cause is the READ rather than a deleted control, and an empty `shapes` list would report a pass over nothing — which is an assertion that cannot go red.
     expect(NEGATIVE_CONTROLS.length).toBeGreaterThan(0);
     for (const { fixture, shapes } of NEGATIVE_CONTROLS) {
       const text = readFileSync(resolve(REPO_ROOT, `${FIXTURE_DIR}/${fixture}`), 'utf8');
@@ -1256,9 +1241,9 @@ describe('the project-scoped query guard is wired into lint:check', () => {
       expect(shapes.length, fixture).toBeGreaterThan(0);
       // Named one at a time rather than by a count, so the failure message says WHICH control went missing. A count would say only that the total fell, which is the least useful half of what is known here.
       //
-      // The assertion is over the DECLARATION rather than over the bare name, and that is WR-01's fix rather than a tidy-up. It read `expect(text).toContain(shape)` until here, over the fixture's whole text — and every control's name also appears in PROSE: in its own docblock, in a sibling's, or in a type member declared to make it self-describing. Deleting the control therefore left the assertion satisfied by a comment. The docblock two paragraphs up promised the opposite: "Presence is the half that has to survive a maintainer tidying the fixtures, and it is the half that goes red when one does." It did not.
+      // The assertion is over the DECLARATION rather than over the bare name: every control's name also appears in PROSE — in its own docblock, in a sibling's, or in a type member declared to make it self-describing — so a whole-text `toContain` would stay satisfied by a comment after the control was deleted.
       //
-      // MEASURED, by re-running 161-19's deletion sweep over all twenty entries against both spellings rather than over the two the review named. Each control's declaration (plus the docblock immediately above it) was deleted from its fixture on disk on its own, the guard's self-test re-run, and both assertions evaluated against the mutated text. All twenty are still controls — the guard's summary came back byte-identical at exit 0 for every one, which reproduces 161-19's measurement. FIVE of the twenty were un-held by `toContain`: `clean :: destructuredCallResult`, `clean :: scopedFrom`, `outside-boundary.clean :: bucketUpload`, `violation :: scopedFrom` and `violation :: scopedTableRead`. The review named the first and the third; the sweep it asked for found three more, which is why it asked for the sweep. The declaration-anchored form below reddens on all twenty.
+      // Deleting any one control's declaration from its fixture leaves the guard's summary byte-identical at exit 0, and the declaration-anchored form below reddens on every one of them.
       //
       // Every control is a class METHOD (indented exactly two spaces, the fixtures being Prettier-formatted) or a top-level `export function`. A docblock mention can satisfy neither alternative, because neither admits a leading `*` or `` ` `` before the name and both require the opening parenthesis of a parameter list after it.
       for (const shape of shapes) {
@@ -1306,7 +1291,7 @@ describe('the project-scoped query guard covers every adapter source', () => {
   });
 
   it('partitions the frontend source tree exhaustively between its two corpora', () => {
-    // CR-02's real closure. The guard walks the frontend source tree with TWO enumerators, and each one's exclusions are applied INSIDE it — so a file dropped by both is in neither corpus, and no check that iterates either list can ever see it. Check 5's "a source in neither GUARDED_SOURCES nor DEFERRED_SOURCES is a source nobody decided about" reads the output of the adapter walk, which is the very list the exclusion has already emptied.
+    // The guard walks the frontend source tree with TWO enumerators, and each one's exclusions are applied INSIDE it — so a file dropped by both is in neither corpus, and no check that iterates either list can ever see it. Check 5's "a source in neither GUARDED_SOURCES nor DEFERRED_SOURCES is a source nobody decided about" reads the output of the adapter walk, which is the very list the exclusion has already emptied.
     //
     // `apps/frontend/src/lib/api/adapters/supabase/utils/**` sat in that gap: skipped by the adapter walk's `utils` test and by the outside walk's `ADAPTER_DIR` prefix test. A probe file there carrying `this.supabase.from('elections')`, a raw `client.from('elections')` and an undispositioned Edge Function invocation produced ZERO violations and left every summary number byte-identical.
     //
@@ -1358,7 +1343,7 @@ describe('the project-scoped query guard covers every adapter source', () => {
     const expected = everySource.filter((file) => exclusionReasonFor(file) === null).sort();
     expect(
       expected.filter((file) => !union.includes(file)),
-      'sources in NEITHER corpus and covered by no written exclusion — this is the CR-02 shape'
+      'sources in NEITHER corpus and covered by no written exclusion'
     ).toEqual([]);
     expect(
       union.filter((file) => !expected.includes(file)),
@@ -1578,99 +1563,10 @@ describe('the project-scoped query guard leaves its near misses alone', () => {
     expect(binding.test('const db = this.supabase ?? someOtherClient;')).toBe(true);
     // The fourth input, added with the third committed alias shape: this rule's own RECEIVER operator position, which was widened in source and exercised by nothing.
     expect(binding.test('const db = this?.supabase;')).toBe(true);
-    // The two added with the promotion: a binding of a client SUB-OBJECT, which is the whole of CR-02, and the optional-CALL access bound to a local, which is the shape the widened lookahead's own call punctuator has to keep excluding.
+    // A binding of a client SUB-OBJECT, and the optional-CALL access bound to a local, which is the shape the widened lookahead's own call punctuator has to keep excluding.
     expect(binding.test('const fns = this.supabase.functions;')).toBe(true);
     expect(binding.test("const b = this.supabase?.from('candidates');")).toBe(false);
     expect(binding.test("const builder = this.supabase.from?.('constituencies');")).toBe(false);
-  });
-});
-
-/**
- * The SLICER, measured rather than trusted.
- *
- * Every number below this point is taken through `matcherSpanOf`, so an instrument that finds the wrong text or silently finds none reports a measurement of nothing as a pass. Two failure modes are worth reproducing on purpose, and both are reproduced against a SYNTHETIC source rather than described: a marker matched inside prose that quotes a declaration, and an opening delimiter borrowed from the next declaration down.
- */
-describe('the gate spec slices a matcher declaration from the declaration', () => {
-  it('reads the declaration rather than a docblock line quoting one', () => {
-    const synthetic = ['/** Explains the rule: const ACCESS_RE = /decoy/g; */', 'const ACCESS_RE = /real/g;', ''].join(
-      '\n'
-    );
-
-    // A first-textual-occurrence marker slices the explanation; a line-anchored one slices the code. The docblock line begins with a space and a star, so it can never be a line-anchored `const`.
-    expect(synthetic.indexOf('const ACCESS_RE =')).toBeLessThan(synthetic.indexOf('\nconst ACCESS_RE ='));
-    expect(regexDeclarationOf('ACCESS_RE', synthetic).source).toBe('real');
-  });
-
-  it('throws naming the constant rather than borrowing the next declaration s literal', () => {
-    // Absent altogether.
-    expect(() => regexDeclarationOf('NOT_A_DECLARED_MATCHER_RE')).toThrow(/NOT_A_DECLARED_MATCHER_RE/);
-
-    // Present, but carrying no literal of its own. An unbounded search for the opening delimiter takes the `/` of the docblock below it and then the pattern of whatever declaration follows; a bounded one throws by name, because a pattern that was not found is not a pattern that matched nothing.
-    const synthetic = [
-      'const NO_LITERAL_RE = 5;',
-      '',
-      '/** The next one. */',
-      'const OTHER_RE = /borrowed/g;',
-      ''
-    ].join('\n');
-    expect(() => regexDeclarationOf('NO_LITERAL_RE', synthetic)).toThrow(/NO_LITERAL_RE/);
-    expect(regexDeclarationOf('OTHER_RE', synthetic).source).toBe('borrowed');
-  });
-});
-
-/**
- * The CORPUS each matcher is exercised over, derived from the guard's own call graph.
- *
- * Until this block existed the corpus was an implicit property mentioned in prose in three docblocks and measured nowhere, and a `reported-by` disposition could therefore name a matcher that never runs at the address of the matcher it was disposing. That is not a hole somebody forgot to look at; it is a hole with a written certificate on it, which is worse, because the certificate is what the next reader plans against.
- *
- * The value is DERIVED rather than authored, and the difference is the whole point. A hand-written `corpus` field on each disposition would have to be edited in lockstep with the guard's call graph, and a constant that must be edited in lockstep with the code it describes is the defect class this whole spec exists to end. The derivation is possible here because the call graph is plain top-level function bodies: a function is a reader when it takes a property off a matcher, and its corpora are exactly the composers that call it.
- */
-describe('the gate spec derives each matcher s corpus from the guard s own source', () => {
-  it('derives each matcher s corpus from the guard s own call graph', () => {
-    // The instrument first: an empty reader set would make every corpus below an empty set, and an empty set is a superset of nothing — every `reported-by` assertion would then pass by vacuity.
-    expect(READER_FUNCTIONS.size).toBeGreaterThan(0);
-    for (const corpora of READER_FUNCTIONS.values()) expect(corpora.size).toBeGreaterThan(0);
-
-    // The second derivation, written out by hand, so deleting either leaves the fact asserted by the other. The three that run over both corpora are exactly the three the invocation check holds, which is the one check `checkSource` and `checkOutsideSource` each call.
-    const expected: Record<string, Array<Corpus>> = {
-      ACCESS_RE: ['adapter'],
-      SCHEMA_HOP_RE: ['adapter'],
-      COMPUTED_ACCESS_RE: ['adapter'],
-      COMPUTED_RECEIVER_RE: ['adapter'],
-      CLIENT_BINDING_RE: ['adapter'],
-      BOUNDARY_ACCESS_RE: ['outside'],
-      INVOKE_RE: ['adapter', 'outside'],
-      COMPUTED_INVOKE_RE: ['adapter', 'outside'],
-      COMPUTED_FUNCTIONS_RE: ['adapter', 'outside']
-    };
-
-    // Both directions, so a matcher added to one list and not the other fails here rather than going unmeasured. The derived map is read on the same footing as the hand-written one, so a matcher the derivation silently dropped fails here too.
-    expect(Object.keys(expected).sort()).toEqual([...MATCHER_NAMES].sort());
-    expect(Object.keys(CORPUS_OF).sort()).toEqual([...MATCHER_NAMES].sort());
-    for (const name of MATCHER_NAMES) {
-      expect(corpusListOf(CORPUS_OF, name), `${name}'s derived corpus`).toEqual(expected[name]);
-    }
-  });
-
-  it('reads the call graph rather than a table, measured against a synthetic source', () => {
-    // The negative control that makes the derivation a MEASUREMENT rather than a description. A hard-coded table would report the same answer for any source it was handed, so it is handed a source in which the answer is different: one where `checkOutsideSource` also composes the escape-hatch check, which is the single edit that would put `COMPUTED_ACCESS_RE` on both corpora.
-    const composition =
-      'return checkBoundary(relPath, text, violate, family) + checkEdgeFunctionInvocations(relPath, text, violate, family);';
-    // The instrument first: if the line were not found, the "synthetic" copy would be the guard verbatim and this case would assert the real derivation twice.
-    expect(GUARD_SOURCE).toContain(composition);
-    const synthetic = GUARD_SOURCE.replace(
-      composition,
-      `${composition.slice(0, -1)} + checkEscapeHatches(relPath, text, violate);`
-    );
-    expect(synthetic).not.toBe(GUARD_SOURCE);
-
-    const syntheticMap = deriveCorpusMap(synthetic);
-    expect(corpusListOf(syntheticMap, 'COMPUTED_ACCESS_RE')).toEqual(['adapter', 'outside']);
-    // And unmoved in the real one, which is the half that says the difference came from the source rather than from the derivation.
-    expect(corpusListOf(CORPUS_OF, 'COMPUTED_ACCESS_RE')).toEqual(['adapter']);
-
-    // The slicer under it throws by name rather than returning an empty body, for the reason every sibling slicer throws: an assertion over a body that was silently not found is a pass from an instrument pointed at nothing.
-    expect(() => functionBodyOf('checkNothingAtAllInThisGuard')).toThrow(/checkNothingAtAllInThisGuard/);
   });
 });
 
@@ -1695,9 +1591,9 @@ describe('every operator position every matcher declares is load-bearing, or is 
   it('names every matcher the guard declares that admits an optional punctuator', () => {
     // Every top-level constant the guard initialises with a REGULAR-EXPRESSION LITERAL, whatever it is named.
     //
-    // The scan read `^const ([A-Z][A-Z0-9_]*_RE) =` until this fix, which made the whole of the back-pressure below conditional on a NAMING CONVENTION nothing in this repository enforces. A matcher constant spelled `CLIENT_ACCESS_PATTERN` or `NON_NULL_ACCESS` was absent from `declared`, so it was neither required to be on `MATCHER_NAMES` nor required to admit no punctuator — enumerated by nothing, disposed by nothing, mutated by nothing, while every case in this block stayed green. `161-REVIEW.md` names that WR-05.
+    // The scan reads the initialiser, not a `_RE` name suffix, because nothing in this repository enforces that naming convention: a matcher constant spelled `CLIENT_ACCESS_PATTERN` would otherwise be absent from `declared`, so it would be neither required to be on `MATCHER_NAMES` nor required to admit no punctuator.
     //
-    // The discriminator is now the INITIALISER rather than the name: `=` followed by a regex literal. The `\s*` before the slash is load-bearing and measured, not decorative — `CLIENT_BINDING_RE` and `BOUNDARY_ACCESS_RE` both wrap their literal onto the next line, so the review's suggested `= \/` (a literal space) silently drops two of the nine matchers this list exists to hold. It fails loudly rather than silently, because the `toContain` loop below would then miss them; but a derivation that has to fail to be noticed is the defect, not the fix.
+    // The discriminator is now the INITIALISER rather than the name: `=` followed by a regex literal. The `\s*` before the slash is load-bearing and measured, not decorative — `CLIENT_BINDING_RE` and `BOUNDARY_ACCESS_RE` both wrap their literal onto the next line, so `= \/` (a literal space) would silently drop two of the nine matchers this list exists to hold. It fails loudly rather than silently, because the `toContain` loop below would then miss them; but a derivation that has to fail to be noticed is the defect, not the fix.
     const declared = [...GUARD_SOURCE.matchAll(/^const ([A-Z][A-Z0-9_]*) =\s*\//gm)].map((match) => match[1]);
 
     // The population proven before it is used, for the reason every other derivation here proves its own: an empty scan would make the loop below assert nothing while still reporting a pass.
@@ -1748,43 +1644,6 @@ describe('every operator position every matcher declares is load-bearing, or is 
     }
   });
 
-  it('enumerates four cells in the access matcher, in declaration order', () => {
-    const cells = optionalPunctuatorCellsOf('ACCESS_RE');
-
-    // Ordinals are assigned by the order a token appears in the declaration, which is what lets an exemption name a matcher and an ordinal and keep meaning the same position across edits.
-    expect(cells.length).toBe(4);
-    expect(cells.map((cell) => cell.ordinal)).toEqual([1, 2, 3, 4]);
-    expect(cells.map((cell) => cell.form)).toEqual(['member', 'member', 'member', 'computed-or-call']);
-    expect(cells.map((cell) => cell.plain)).toEqual(['\\.', '\\.', '\\.', '']);
-    for (const cell of cells) {
-      expect(GUARD_SOURCE.slice(cell.absoluteOffset, cell.absoluteOffset + cell.token.length)).toBe(cell.token);
-    }
-    expect(cells.map((cell) => cell.offset)).toEqual(
-      [...cells].sort((a, b) => a.offset - b.offset).map((cell) => cell.offset)
-    );
-  });
-
-  it('reverts each CLIENT_BINDING_RE cell to a different measured reading of the alias count', () => {
-    // The promoted rule's three positions, each proven load-bearing for the REASON it is load-bearing rather than merely by a red. The harness above requires each mutant to break the self-test; a mutant that breaks it for an unrelated reason — a syntax error in the copy, an unreadable fixture, a path that does not resolve — is indistinguishable from a proof there. So each revert is additionally required to redden on the ALIAS COUNT specifically, which is the same instrument-first discipline the harness's own unmutated control uses, applied one level down.
-    //
-    // The three mechanisms, measured rather than predicted: reverting cell 1 (the receiver operator) stops `optionalReceiverAliasedClient` being reported and the count falls 5 -> 4; reverting cell 2 (the member operator inside the lookahead's chain) makes the lookahead unable to read `?.from`, so `optionalChainedTableRead`'s bound access is reported a SECOND time as an alias and the count rises 5 -> 6; reverting cell 3 (the computed-or-call token inside the lookahead) makes it unable to reject the optional-CALL spelling, so `optionalCallTableRead`'s bound access is reported as an alias and the count rises 5 -> 6. Two of the three live INSIDE the lookahead and move the count in OPPOSITE directions, which is what says they are distinct positions rather than one position counted twice.
-    const cells = optionalPunctuatorCellsOf('CLIENT_BINDING_RE');
-    expect(cells.length).toBe(3);
-
-    // No exemption was added to make a position pass. An exemption is a CLAIM that a position cannot matter, and all three of these demonstrably can — so this rule may carry none, and a future edit that quiets a stubborn cell by exempting it fails here rather than in the next review.
-    expect(REDUNDANT_CELLS.some((entry) => entry.matcher === 'CLIENT_BINDING_RE')).toBe(false);
-
-    for (const cell of cells) {
-      const label = `CLIENT_BINDING_RE cell ${cell.ordinal} (${cell.form})`;
-      const result = selfTestOf(guardWithCellReverted(cell));
-
-      expect(result.status, `${label} must break the guard's self-test`).not.toBe(0);
-      expect(result.stderr, `${label} must redden on the alias count, not on an unrelated failure`).toContain(
-        'check-6 aliased-client violation(s)'
-      );
-    }
-  });
-
   for (const name of MATCHER_NAMES) {
     const cells = optionalPunctuatorCellsOf(name);
 
@@ -1796,9 +1655,9 @@ describe('every operator position every matcher declares is load-bearing, or is 
     it(`admits no punctuator in ${name} outside the three enumerated token forms`, () => {
       // What makes the vocabulary CLOSED. Strip every enumerated span from the declaration; whatever is left may not match a punctuator character LITERALLY. An author who admits one in a fourth form fails here, naming the matcher, rather than adding a cell nobody counts.
       //
-      // WR-02: this tested `not.toContain('\\?')` and nothing else, so it was closed only over QUESTION MARKS. It measured the three enumerated forms against themselves rather than the matcher against the language, and any admission not spelled with `?` passed silently — including the `!?\s*` form the review itself proposed for CR-01, which contains no `\?` at all. The assertion whose comment promised "a fourth form is a decision somebody has to make, not a spelling that can arrive unnoticed" would have stayed green through exactly that arrival.
+      // Both punctuator characters are tested: a check for `\?` alone would be closed only over QUESTION MARKS, and an admission spelled without one, such as `!?\s*`, would pass silently.
       //
-      // Both punctuator characters are tested now, and the difference between them is why the residual has to be reduced first. A literal `?` is spelled `\?` — escaped, because it is a regex metacharacter — so an unescaped `?` is a QUANTIFIER (`#?supabase`, a lazy `*?`) and must not be flagged. A literal `!` is spelled BARE, because `!` is not a metacharacter, so it is indistinguishable from the `!` in a lookaround opener `(?<!` / `(?!` or in a character class such as `[=!<>]`. `literalResidualOf` removes the regex STRUCTURE — escapes preserved, character classes dropped, group and assertion openers dropped — leaving only what the pattern matches literally. Measured against all nine committed matchers, which leave neither character behind, and against three counterfactual fourth-form admissions, each of which is caught.
+      // The difference between them is why the residual has to be reduced first. A literal `?` is spelled `\?` — escaped, because it is a regex metacharacter — so an unescaped `?` is a QUANTIFIER (`#?supabase`, a lazy `*?`) and must not be flagged. A literal `!` is spelled BARE, because `!` is not a metacharacter, so it is indistinguishable from the `!` in a lookaround opener `(?<!` / `(?!` or in a character class such as `[=!<>]`. `literalResidualOf` removes the regex STRUCTURE — escapes preserved, character classes dropped, group and assertion openers dropped — leaving only what the pattern matches literally. Measured against all nine committed matchers, which leave neither character behind, and against three counterfactual fourth-form admissions, each of which is caught.
       let remainder = matcherSpanOf(name).text;
       for (const { token } of PUNCTUATOR_TOKENS) remainder = remainder.split(token).join('');
       const literal = literalResidualOf(remainder);
@@ -1837,44 +1696,6 @@ describe('every punctuator at every operator position carries a written disposit
   it('commits a canonical call shape for every matcher on the list, and for no matcher off it', () => {
     for (const name of MATCHER_NAMES) expect(CALL_SHAPES.map((shape) => shape.matcher)).toContain(name);
     for (const shape of CALL_SHAPES) expect(MATCHER_NAMES).toContain(shape.matcher);
-  });
-
-  it('states exactly the residuals the matrix pins, and no others', () => {
-    // Both directions, which is the whole point. Every pinned phrase must be in the docblock, so a residual cannot be measured without being stated; and the docblock's stated-residual list must hold exactly as many entries as there are pinned phrases, so a residual cannot be stated without being measured.
-    for (const phrase of RESIDUAL_PHRASES) expect(RESIDUAL_SECTION_PROSE).toContain(phrase);
-    expect(residualBulletCountOf(RESIDUAL_SECTION)).toBe(RESIDUAL_PHRASES.length);
-
-    // The two sentences a reach paragraph must not carry: a universal claim about the punctuator set, and a claim that a fixture and a count already prove it for every matcher. Both were true the day they were written and false at the next widening, with nothing anywhere failing.
-    expect(GUARD_SOURCE).not.toContain('route past any of the nine checks');
-    expect(GUARD_SOURCE).not.toContain('count proving it rather than a sentence here saying so');
-
-    // And no matcher-local paragraph may carry a residual COUNT of its own — a numeral stated beside one matcher is wrong the moment the list above moves, which is the identical defect one scope down.
-    expect(GUARD_SOURCE).not.toContain('ONE RESIDUAL');
-  });
-
-  it('reddens when a stated residual is deleted from the docblock', () => {
-    // The both-directions invariant above, DEMONSTRATED rather than described. The sibling case says a residual cannot be stated without being measured, and rests that on a bullet count; this case deletes one whole bullet from a scratch copy of the guard's source and shows the count it rests on actually fall — at SIX phrases rather than the four the invariant was written against.
-    //
-    // The phrase is 161-17's, chosen because it is the newest and the least likely to be load-bearing anywhere else. The copy is never written to disk and never handed to `selfTestOf`: deleting a docblock bullet changes no BEHAVIOUR, so a self-test run over it would come back green and would be measuring the wrong thing entirely. The reading belongs where the sibling case does its own — in the spec's reading of the text.
-    const phrase = 'a computed member whose key is not a string literal is unreported';
-    const lines = GUARD_SOURCE.split('\n');
-    const bulletAt = lines.findIndex((line) => RESIDUAL_BULLET_RE.test(line) && line.includes(phrase));
-    // The instrument first: a phrase that was not found would delete nothing and leave every assertion below reading the unmutated guard, which is a pass that says nothing.
-    expect(bulletAt, `${phrase} must be a stated-residual bullet to be deleted`).toBeGreaterThan(-1);
-
-    // The WHOLE bullet — its own line plus the continuation lines that wrap it — because deleting only the first would leave an orphaned half-sentence the docblock could never have been written with.
-    let end = bulletAt + 1;
-    while (end < lines.length && RESIDUAL_CONTINUATION_RE.test(lines[end])) end++;
-    expect(end, 'the chosen bullet wraps, so its deletion must span more than one line').toBeGreaterThan(bulletAt + 1);
-
-    const mutated = lines.slice(0, bulletAt).concat(lines.slice(end)).join('\n');
-    const mutatedSection = residualSectionOf(mutated);
-
-    expect(mutated).not.toBe(GUARD_SOURCE);
-    expect(residualBulletCountOf(mutatedSection)).toBe(RESIDUAL_PHRASES.length - 1);
-    expect(residualProseOf(mutatedSection)).not.toContain(phrase);
-    // And the real source still carries it, so a failure above is a statement about the DELETION rather than about a phrase that had already gone.
-    expect(RESIDUAL_SECTION_PROSE).toContain(phrase);
   });
 
   it('binds every left-unanchored admitted position to a measured exemption', () => {
@@ -1924,7 +1745,7 @@ describe('every punctuator at every operator position carries a written disposit
     //
     // The binding rule decides from the member NAME alone, and no client-member disposition list is declared: `= this.supabase.functions;` and `= this.supabase.restUrl;` are the same source shape and the rule has nothing to separate them by. So the rule that reports `const fns = this.supabase.functions;` — the finding this whole axis exists for — necessarily reports a plain member read too, and for ANY such site the message is a false statement about what was bound. It is a decided limitation with a committed fixture shape (`boundClientMemberRead`) and a docblock line behind it, not an unstated hole.
     //
-    // WR-03 corrected the claim this used to rest on. It read "No source-level rule CAN tell a bound client SUB-OBJECT from a bound SCALAR member" — an impossibility, used to authorise moving a known false positive out of the negative corpus. One can: a `CLIENT_SUB_OBJECTS` disposition map does it at source level with no type information, exactly as `NON_PROJECT_SCOPED_TABLES` already does for a table literal. The map is not declared because it is a seventh mandatory-disposition list with its own arrival check, fixtures and mutation cells — a decided cost, filed rather than pretended away. WR-04 corrected the scope in the same edit: the false positive is EVERY `const x = this.supabase.<scalar-member>;` a guarded source writes, an unbounded class of which the fixture holds one instance, not "that one site".
+    // A source-level rule could tell a bound client SUB-OBJECT from a bound SCALAR member: a `CLIENT_SUB_OBJECTS` disposition map does it at source level with no type information, exactly as `NON_PROJECT_SCOPED_TABLES` already does for a table literal. The map is not declared because it is a seventh mandatory-disposition list with its own arrival check, fixtures and mutation cells — a decided cost, filed rather than pretended away. The false positive is EVERY `const x = this.supabase.<scalar-member>;` a guarded source writes, an unbounded class of which the fixture holds one instance, not "that one site".
     //
     // The two halves are asserted together on purpose. The first is the false positive the promotion accepts; the second is the nearest LIVE shape it must not reach — a destructure of a CALL RESULT, live at `apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts:166` — and if the second ever became true the limitation would have stopped being a stated cost and become a broken build.
     const binding = regexDeclarationOf('CLIENT_BINDING_RE');
@@ -1937,13 +1758,13 @@ describe('every punctuator at every operator position carries a written disposit
   });
 
   it("reads TypeScript's non-null assertion at every operator position, and holds each by a fixture", () => {
-    // CR-01. Every matcher spelled its member operator `\??\.`, which is JAVASCRIPT's optional-chaining set. This repository is TypeScript, whose member-access punctuator set additionally contains `!.` — 54 live occurrences under apps/frontend/src, an established house spelling. `this.supabase!.from('elections')` was UNCOUNTED at every position: no site yielded, so check 3 never fired, `tally.accesses` never moved, and the per-family floor could not see the family go silent.
+    // JavaScript's optional-chaining set is `\??\.`; TypeScript's member-access punctuator set additionally contains `!.`, an established house spelling under apps/frontend/src. A matcher missing it would leave `this.supabase!.from('elections')` UNCOUNTED at every position: no site yielded, so check 3 never fires, `tally.accesses` never moves, and the per-family floor cannot see the family go silent.
     //
     // The matrix above already requires the `non-null` SPELLING at every dispositioned cell, which is the by-construction half. This is the other half the phase's standard asks for: each admission is also held down by a COMMITTED FIXTURE whose disposition depends on it, so the closure is a count rather than only a rendering.
     const violation = readFileSync(resolve(REPO_ROOT, `${FIXTURE_DIR}/violation.fixture.ts`), 'utf8');
     const outside = readFileSync(resolve(REPO_ROOT, `${FIXTURE_DIR}/outside-boundary.violation.fixture.ts`), 'utf8');
 
-    // Declaration-anchored for WR-01's reason: these names appear in prose too, and a control a docblock mention can satisfy is not a control.
+    // Declaration-anchored: these names appear in prose too, and a control a docblock mention can satisfy is not a control.
     for (const [text, fixture, shapes] of [
       [
         violation,
@@ -1967,7 +1788,7 @@ describe('every punctuator at every operator position carries a written disposit
     expect(violation.match(/this\.supabase(\.functions)?!\s*[.[]/g)?.length ?? 0).toBeGreaterThanOrEqual(4);
     expect(outside.match(/locals\.supabase(\.functions)?!\s*\./g)?.length ?? 0).toBeGreaterThanOrEqual(2);
 
-    // THE PARENTHESISED RECEIVER, the decision the review asked for explicitly: a violating shape, or a stated residual. It is a residual, and it is MEASURED rather than asserted. A parenthesis is not a punctuator — it is a piece of the receiver's EXPRESSION GRAMMAR, and widening the receiver is the one widening this guard declines on principle, which is the same distinction the schema-hop docblock draws between a closed punctuator set and an open-ended receiver. There is no live instance.
+    // THE PARENTHESISED RECEIVER is a stated residual, not a violating shape, and it is MEASURED rather than asserted. A parenthesis is not a punctuator — it is a piece of the receiver's EXPRESSION GRAMMAR, and widening the receiver is the one widening this guard declines on principle, which is the same distinction the schema-hop docblock draws between a closed punctuator set and an open-ended receiver. There is no live instance.
     const parenthesised = "return (this.supabase).from('elections').select('*');";
     for (const name of [
       'ACCESS_RE',
@@ -1986,11 +1807,11 @@ describe('every punctuator at every operator position carries a written disposit
   });
 
   it('classifies a destructure by brace balance across the statement, not across the line', () => {
-    // WR-06. The alias and destructure counts are pinned separately, with the stated rationale that "a change that moved one into the other's family would leave a pooled total intact and fail here by name". That rationale is only worth something while the CLASSIFIER is right, and a line-scoped read of a statement that may wrap is not.
+    // The alias and destructure counts are pinned separately, with the stated rationale that "a change that moved one into the other's family would leave a pooled total intact and fail here by name". That rationale is only worth something while the CLASSIFIER is right, and a line-scoped read of a statement that may wrap is not.
     //
-    // Two shapes were misclassified, both in the same direction — reported as an ALIAS, counted in the wrong family, with a message that is a false statement about the site. The review named the first; the second was found by measuring it. A destructure a formatter has WRAPPED presents only `} ` before the `=` on the match's own line, which has no opening brace; and a NESTED pattern such as `const { a: { from } } = this.supabase;` is rejected because `[^{}]*` cannot cross the inner braces.
+    // Two shapes would be misclassified by a line-scoped read, both in the same direction — reported as an ALIAS, counted in the wrong family. A destructure a formatter has WRAPPED presents only `} ` before the `=` on the match's own line, which has no opening brace; and a NESTED pattern such as `const { a: { from } } = this.supabase;` is rejected because `[^{}]*` cannot cross the inner braces.
     //
-    // The guard now decides by brace BALANCE from the `=` leftward, which spans newlines and nests by construction. Asserted here over the guard's own exported behaviour surface — the MESSAGE it emits — because the classification is only observable through which of the two message texts a site gets.
+    // The guard decides by brace BALANCE from the `=` leftward, which spans newlines and nests by construction. Asserted here over the guard's own exported behaviour surface — the MESSAGE it emits — because the classification is only observable through which of the two message texts a site gets.
     const violation = readFileSync(resolve(REPO_ROOT, `${FIXTURE_DIR}/violation.fixture.ts`), 'utf8');
 
     // The two shapes are COMMITTED, in the spellings that make each repaired reading load-bearing. Presence is asserted the way every other negative-control declaration is, so tidying either away is a named failure rather than a count that quietly returns to the wrong family.
@@ -2006,7 +1827,7 @@ describe('every punctuator at every operator position carries a written disposit
     // The classifier itself is a function rather than a regex, precisely because brace balance is not a regular property — so it is exercised through the guard rather than re-implemented here. The guard's own self-test pins destructureCount at 4 and aliasCount at 5; this asserts the guard still SPELLS both families, so a refactor that collapsed them into one message would fail here rather than leaving a four-way discriminator reading a single text.
     expect(GUARD_SOURCE).toContain('destructures the raw client');
     expect(GUARD_SOURCE).toContain('aliases the raw client or one of its members');
-    // The line-scoped read is gone, and the absence is anchored on the DECLARATION rather than the bare name — the docblock that explains the repair quotes the old constant, and an absence assertion satisfied by prose fails on correct code, which is WR-01's defect class with its sign flipped.
+    // The absence of a line-scoped classifier is anchored on the DECLARATION rather than the bare name, so prose quoting the constant cannot fail correct code.
     expect(GUARD_SOURCE, 'the line-scoped destructure classifier must not return').not.toContain(
       'const DESTRUCTURING_LHS_RE'
     );
@@ -2014,7 +1835,7 @@ describe('every punctuator at every operator position carries a written disposit
   });
 
   it('leaves a client held in a parameter unread by every adapter-corpus matcher, and says so', () => {
-    // CR-03's residual, MEASURED in both directions rather than asserted in prose.
+    // A stated residual, MEASURED in both directions rather than asserted in prose.
     //
     // A client reached through a PARAMETER is past every anchor the adapter corpus has. There is no `=`, so the binding rule misses it; the receiver is `client` rather than `this.supabase`, so the table and rpc matcher misses it; and `BOUNDARY_ACCESS_RE`, whose receiver IS wide enough to read it, only ever runs over the corpus outside the adapter directory. The consequence generalises past the one live instance: any guarded source may hand `this.#supabase` to a function that then issues arbitrary unscoped queries, uncounted — so check 3's "a site the guard cannot parse is a site it cannot cover" never fires, and `tally.accesses` does not move.
     const access = regexDeclarationOf('ACCESS_RE');
@@ -2037,7 +1858,7 @@ describe('every punctuator at every operator position carries a written disposit
       'adapter'
     );
 
-    // And the LIVE counter-example, read off disk rather than quoted from the review, because the check-6 docblock's corrected sentence is a claim ABOUT THIS REPOSITORY. `tableBuilder` is an exported function taking the client as a parameter and calling `.from(` on it, inside a GUARDED source — which is what makes "a guarded adapter source has no legitimate need for any of the six" a sentence that had to lose its clause about the accessor RETURNING the client.
+    // And the LIVE counter-example, read off disk rather than quoted, because the check-6 docblock's corrected sentence is a claim ABOUT THIS REPOSITORY. `tableBuilder` is an exported function taking the client as a parameter and calling `.from(` on it, inside a GUARDED source — which is what makes "a guarded adapter source has no legitimate need for any of the six" a sentence that had to lose its clause about the accessor RETURNING the client.
     const adapter = readFileSync(resolve(REPO_ROOT, `${ADAPTER_DIR}/supabaseAdapter.ts`), 'utf8');
     expect(adapter.length).toBeGreaterThan(0);
     expect(adapter, 'the live param-held client the residual names').toMatch(
@@ -2108,7 +1929,7 @@ describe('every punctuator at every operator position carries a written disposit
 
           const plain = renderCell(shape, link.id, kind, 'plain');
           const optional = renderCell(shape, link.id, kind, 'optional');
-          // TypeScript's third spelling of the same position. Rendered for every cell and asserted in every arm below, so the CR-01 class — a punctuator the language has that no matcher admits — is a named failure per cell rather than a discovery.
+          // TypeScript's third spelling of the same position. Rendered for every cell and asserted in every arm below, so a punctuator the language has that no matcher admits is a named failure per cell rather than a discovery.
           const nonNull = renderCell(shape, link.id, kind, 'non-null');
 
           switch (disposition.verdict) {
@@ -2172,7 +1993,7 @@ describe('every punctuator at every operator position carries a written disposit
     });
 
     it(`bridges ${shape.matcher}'s admitted positions to its enumerated tokens`, () => {
-      // The lookahead exclusion is a MEASUREMENT rather than a number. Cells are partitioned by `inLookahead`, which `optionalPunctuatorCellsOf` derives from the declaration's own lookahead spans, so a lookahead widened with a new position moves the in-lookahead count and has to be accounted for — it cannot leave the link-to-token comparison trivially satisfied. That is what CR-02 cost the old shape: `CLIENT_BINDING_RE`'s links WERE the hand-written list this matrix exists to eliminate, so its bridge was satisfied by 1 link against 1 token and said nothing at all about a binding one link along the chain.
+      // The lookahead exclusion is a MEASUREMENT rather than a number. Cells are partitioned by `inLookahead`, which `optionalPunctuatorCellsOf` derives from the declaration's own lookahead spans, so a lookahead widened with a new position moves the in-lookahead count and has to be accounted for — it cannot leave the link-to-token comparison trivially satisfied.
       //
       // The in-lookahead half counts cells of EVERY form rather than the one form whose name says `lookahead`, because a widened lookahead reads the shape it rejects in the same tokens the pattern reads the shape it matches in. Neither half can absorb the other's positions.
       const cells = optionalPunctuatorCellsOf(shape.matcher);
@@ -2227,15 +2048,15 @@ describe('the project-scoped query guard fails closed when it examines nothing',
   /**
    * The access matcher's declaration, and a replacement that is valid, global, and matches no source text.
    *
-   * DERIVED from the guard rather than transcribed beside it. It was a hand-authored copy of the whole regex literal until CR-01 widened the operator, at which point it stopped matching the guard and this case went red — loudly, which is the good half, but it is the same defect class WR-05 names one scope over: a hand-authored constant that has to be edited in lockstep with the guard, and whose only back-pressure is a failure somebody has to interpret. The declaration is read out of the source now, so a widening of `ACCESS_RE` carries this reproduction with it.
+   * DERIVED from the guard rather than transcribed beside it, so a widening of `ACCESS_RE` carries this reproduction with it instead of leaving a hand-authored copy to edit in lockstep.
    */
   // The reader spans the STATEMENT rather than the LINE, and that is a measured correction rather than a tidy-up. It read `/^const ACCESS_RE = .*$/m` — a single-line pattern requiring content after the `= ` — until Prettier wrapped this declaration's literal onto its own line, at which point the marker line ends at the `=`, the match returned nothing, and the derivation yielded the empty string. The instrument assertion below caught it, which is the good half; but this is the SAME line-versus-statement defect the `declared` scan above already fixed for exactly this reason, recorded there as "`CLIENT_BINDING_RE` and `BOUNDARY_ACCESS_RE` both wrap their literal onto the next line". One site was left on the old reading, and a FORMATTING change was therefore enough to redden a case about matcher vacuity. Spanning to the literal's own terminator makes the wrapped and unwrapped spellings read identically, which is what the guard's other slicers already guarantee by balance.
   const ACCESS_RE_DECL = /^const ACCESS_RE =\s*\/[\s\S]*?\/[gimsuy]*;/m.exec(GUARD_SOURCE)?.[0] ?? '';
   const ACCESS_RE_BROKEN = 'const ACCESS_RE = /this\\.matches\\.absolutely\\.nothing\\.at\\.all\\(/g;';
 
   /** The widened walker's tail, and a replacement that walks nothing while still returning a list. */
-  const OUTSIDE_WALK_DECL = '  walk(FRONTEND_SRC_DIR);\n  return found.sort();';
-  const OUTSIDE_WALK_BROKEN = '  return [];';
+  const OUTSIDE_WALK_DECL = '  return listFiles(FRONTEND_SRC_DIR, {';
+  const OUTSIDE_WALK_BROKEN = '  return [] || listFiles(FRONTEND_SRC_DIR, {';
 
   it('exits non-zero when the access matcher has stopped matching', () => {
     // The instrument first: if the declaration were not found, the "mutated" copy would be the guard verbatim and this test would assert the ordinary green run instead of the broken one. `toContain` is no longer that instrument now the value is DERIVED from the same string — it would pass on the empty string — so the derivation is proven by what it holds: a global regex literal anchored on the client receiver.
@@ -2295,13 +2116,13 @@ describe('the project-scoped query guard fails closed when it examines nothing',
 });
 
 /**
- * The OWNER rule, which is CR-04's closure and the one matcher deliberately OFF `MATCHER_NAMES`.
+ * The OWNER rule, which reports a binding of the client's owner object, and the one matcher deliberately OFF `MATCHER_NAMES`.
  *
  * Why it is off that list, stated as the measured property it rests on rather than as a preference. `MATCHER_NAMES` drives two derivations, and both ask the same question: which optional PUNCTUATOR does this matcher admit at each of its member-access positions. `OWNER_BINDING_RE` has no member-access position at all — it matches a binding of the `this` keyword itself and stops — so every cell those derivations would generate for it is a cell about a position it does not contain. Registering it would mean authoring fake positions to satisfy an enumeration, which is the hand-maintained list the matrix exists to eliminate, wearing the matrix's own shape.
  *
- * The spec's back-pressure rule already ALLOWS this: a declared matcher off the list may admit no optional punctuator, and this one admits none. What that rule does not do is measure the matcher, and an unmeasured rule is how CR-01 through CR-04 each survived a pass. So the omission is not left as a silence — it is tied below to the two facts that justify it, and the rule is given the corpus derivation and the behavioural controls the listed matchers get from the matrix.
+ * The spec's back-pressure rule already ALLOWS this: a declared matcher off the list may admit no optional punctuator, and this one admits none. What that rule does not do is measure the matcher. So the omission is not left as a silence — it is tied below to the two facts that justify it, and the rule is given the corpus derivation and the behavioural controls the listed matchers get from the matrix.
  */
-describe('the owner rule closes CR-04 and is measured despite being off the matcher list', () => {
+describe('the owner rule reports a client read through its owner object, and is measured despite being off the matcher list', () => {
   it('is declared by the guard, so the assertions below are not reading an absent constant', () => {
     const declared = [...GUARD_SOURCE.matchAll(/^const ([A-Z][A-Z0-9_]*) =\s*\//gm)].map((match) => match[1]);
 
@@ -2321,7 +2142,7 @@ describe('the owner rule closes CR-04 and is measured despite being off the matc
   });
 
   it('derives its corpus from the guard s own call graph, so it is not a rule wired to nothing', () => {
-    // CR-01's lesson applied to the new rule on the day it lands rather than a pass later: a matcher read by a function no composer calls reports nothing forever, over a corpus nobody walks. The corpus is READ OUT of the call graph here exactly as `deriveCorpusMap` reads it for the listed matchers — never authored beside the claim that depends on it.
+    // A matcher read by a function no composer calls reports nothing forever, over a corpus nobody walks. The corpus is READ OUT of the call graph here exactly as `deriveCorpusMap` reads it for the listed matchers — never authored beside the claim that depends on it.
     const readers = [...READER_FUNCTIONS].filter(([reader]) =>
       readsConstant(functionBodyOf(reader), 'OWNER_BINDING_RE')
     );
@@ -2331,10 +2152,10 @@ describe('the owner rule closes CR-04 and is measured despite being off the matc
     expect([...corpora].sort()).toEqual(['adapter']);
   });
 
-  it('reports both shapes CR-04 named, and neither of its two near misses', () => {
+  it('reports the owner alias and the owner destructure, and neither of its two near misses', () => {
     const owner = regexDeclarationOf('OWNER_BINDING_RE');
 
-    // The two shapes the fourth re-verification injected and could not make the guard move on.
+    // The owner alias and the owner destructure.
     expect(owner.test('const self = this;'), 'the owner alias must be reported').toBe(true);
     expect(owner.test('const { supabase } = this;'), 'the owner destructure must be reported').toBe(true);
     // The chain-continuing spellings, each of which belongs to a sibling rule rather than to this one. Reported here would mean double-counting a site check 1 or check 6 already owns.

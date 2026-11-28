@@ -14,20 +14,18 @@
  * The file deletes exactly the rows it creates, asserts the deletion count, and never deletes a project row. It must therefore pass when run twice in a row.
  */
 
-import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createClient } from '@supabase/supabase-js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { E2E_PROJECT_ID, resolveE2eProjectId, SupabaseAdminClient, TEST_PROJECT_ID } from '../src';
+import { assertLiveTierAllowedToSkip, LOCAL_SUPABASE_API_PORT, localSupabaseIsReachable } from './utils';
+import { DEFAULT_PROJECT_ID, E2E_PROJECT_ID, resolveE2eProjectId, SupabaseAdminClient } from '../src';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 /** `packages/dev-seed/tests` → repo root. */
 const REPO_ROOT = resolve(HERE, '../../..');
-
-/** Local `supabase start` API port. Authority: `apps/supabase/supabase/config.toml` `[api] port`. */
-const LOCAL_SUPABASE_API_PORT = 54321;
 
 /**
  * The external-id prefix this file owns, and nothing else in the repository writes.
@@ -50,17 +48,6 @@ function makeReadClient(): SupabaseClient {
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
-}
-
-async function localSupabaseIsReachable(): Promise<boolean> {
-  const url = process.env.SUPABASE_URL ?? `http://127.0.0.1:${LOCAL_SUPABASE_API_PORT}`;
-  try {
-    // Any HTTP answer proves something is listening; only a transport failure means genuinely absent.
-    await fetch(`${url}/rest/v1/`, { signal: AbortSignal.timeout(1500) });
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /** The contamination rows, addressed at one project. `first_name` and `last_name` are the table's only non-defaulted text columns. */
@@ -89,6 +76,7 @@ async function deleteContamination(client: SupabaseClient): Promise<number> {
 }
 
 const supabaseReachable = await localSupabaseIsReachable();
+assertLiveTierAllowedToSkip(supabaseReachable, 'the project-scoped contamination isolation tier');
 
 describe('the contamination-isolation tier either RUNS or is provably unavailable', () => {
   it('records which of the two it was', () => {
@@ -132,7 +120,7 @@ describe.skipIf(!supabaseReachable)('default-project rows against an E2E-project
     // Both projects have to exist, or a zero from the scoped read could be a missing project rather than a working filter. The default project comes from `seed.sql`; the E2E project is created idempotently here.
     await new SupabaseAdminClient(undefined, undefined, resolveE2eProjectId()).ensureProject();
 
-    const { error } = await read.from('candidates').insert(contaminationRows(TEST_PROJECT_ID));
+    const { error } = await read.from('candidates').insert(contaminationRows(DEFAULT_PROJECT_ID));
     if (error) throw new Error(`failed to seed the contamination rows: ${error.message}`);
   });
 
@@ -146,9 +134,12 @@ describe.skipIf(!supabaseReachable)('default-project rows against an E2E-project
   });
 
   it('both projects exist, so a zero is a filtered read rather than a missing project', async () => {
-    const { data, error } = await read.from('projects').select('id').in('id', [TEST_PROJECT_ID, resolveE2eProjectId()]);
+    const { data, error } = await read
+      .from('projects')
+      .select('id')
+      .in('id', [DEFAULT_PROJECT_ID, resolveE2eProjectId()]);
     expect(error).toBeNull();
-    expect((data ?? []).map((row) => row.id as string).sort()).toEqual([TEST_PROJECT_ID, E2E_PROJECT_ID].sort());
+    expect((data ?? []).map((row) => row.id as string).sort()).toEqual([DEFAULT_PROJECT_ID, E2E_PROJECT_ID].sort());
   });
 
   it('a read scoped to the E2E project returns none of them', async () => {
@@ -168,7 +159,7 @@ describe.skipIf(!supabaseReachable)('default-project rows against an E2E-project
   });
 
   it('a read scoped to the default project returns all of them', async () => {
-    const defaultScoped = new SupabaseAdminClient(undefined, undefined, TEST_PROJECT_ID);
+    const defaultScoped = new SupabaseAdminClient(undefined, undefined, DEFAULT_PROJECT_ID);
     expect(await defaultScoped.selectCandidatesForPortraitUpload(CONTAMINATION_PREFIX)).toHaveLength(
       CONTAMINATION_ROWS
     );

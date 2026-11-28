@@ -10,7 +10,7 @@
  *   5. new Writer({ projectId: template.projectId }) — throws with messages on missing env, and refuses a non-local SUPABASE_URL unless `--allow-remote` or `DEV_SEED_ALLOW_REMOTE=1` opts out; CLI catches.
  *   6. runPipeline(template) — the generator orchestrator.
  *   7. fanOutLocales(rows, template, seed) — no-op if the flag is off.
- *   8. writer.write(rows, prefix, { openForVoters, templateName }). The third argument carries what the writer cannot read from rows: the template's `openForVoters`, which the writer's last pass applies to the project when the template declares it, and `templateName` (the `--template` argument), which a refusal of the template's settings names. Returns `{ portraits }`, the number of portraits uploaded.
+ *   8. writer.write(rows, prefix, { openForVoters, templateName }). The third argument carries what the writer cannot read from rows: the template's `openForVoters`, which the writer's last pass applies to the project (open when the template declares none, so a seed reopens a project an earlier seed closed), and `templateName` (the `--template` argument), which a refusal of the template's settings names. Returns `{ portraits }`, the number of portraits uploaded.
  *   9. formatSummary(...) => stdout.
  *   10. exit 0 on success, 1 on any error.
  *

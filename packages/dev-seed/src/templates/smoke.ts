@@ -10,7 +10,7 @@
  *   - the minimal application settings the perm datasets state, so the voter app has a settings tree to read on a project whose bootstrapped settings row is empty
  *   - a fixed seed and English only
  *
- * It creates no auth user, no account and no storage-configuration row, so a project seeded with it still passes a check that no seed user exists. It sets no `projectId`: the project comes from the seed CLI's `--project-id`, which a run with `--allow-remote` must pass, set to the deployment's `public_project_id`; without the flag a local run seeds the default project `00000000-0000-0000-0000-000000000001`. It does not change whether that project is open for voters: openness is set when the project is bootstrapped, and an anonymous read of these rows needs it open.
+ * It creates no auth user, no account and no storage-configuration row, so a project seeded with it still passes a check that no seed user exists. It sets no `projectId`: the project comes from the seed CLI's `--project-id`, which a run with `--allow-remote` must pass, set to the deployment's `public_project_id`; without the flag a local run seeds the default project `00000000-0000-0000-0000-000000000001`. It declares no `openForVoters`, so the seed leaves that project open for voters, which an anonymous read of these rows needs.
  *
  * Every row carries the external id prefix `smoke_`; `yarn db:seed:teardown --prefix smoke_` removes exactly its content rows. Like every teardown, it keeps the settings row it merged into and leaves the project open for voters.
  */

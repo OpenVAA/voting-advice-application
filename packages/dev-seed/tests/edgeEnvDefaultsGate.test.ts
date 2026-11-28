@@ -3,7 +3,7 @@
  *
  * ## Why a comment is not enough here
  *
- * Phase 155's durable deliverable is not the seven environment defaults it removed; it is `scripts/assert-edge-env-defaults.mjs`, running on the one command every local run and every CI pass goes through. Decision D-D2 rejected fixing the seven sites WITHOUT a guard precisely because the next Edge Function reopens the class. Unwire the guard and the phase becomes a snapshot: the tree still looks clean, the script still exists on disk, and nothing anywhere tells anybody it stopped running. That silent-green shape is what this file exists to prevent.
+ * The protection against environment defaults in the Edge Functions is `scripts/assert-edge-env-defaults.mjs`, running on the one command every local run and every CI pass goes through, because the next Edge Function can reopen the class. Unwire the guard and the tree still looks clean, the script still exists on disk, and nothing anywhere tells anybody it stopped running. That silent-green shape is what this file exists to prevent.
  *
  * The stakes are higher in this tree than the wording suggests. `turbo run lint --dry` reports the supabase workspace as having no `lint` task and no ESLint configuration reaches `apps/supabase/supabase/functions`. Besides Prettier and the vitest files beside the modules, the checks that reach that tree are this guard and `deno check` (through `yarn typecheck`), and `deno check` reads types alone, so a removed link ends the tree's check for environment defaults rather than degrading it.
  *
@@ -13,7 +13,7 @@
  *
  * ## Why it lives in packages/dev-seed
  *
- * `yarn test:unit` is `turbo run test:unit`, so a repo-meta spec needs a package to run in, and this package already reads repo-root files from its tests. It is a sibling of `ciTypecheckGate.test.ts` rather than an edit to it, so that phase 144's fix in that file is not disturbed and this phase's assertion has its own owner. The supabase workspace cannot host this spec: its vitest `include` is scoped to `supabase/functions/**`, so a root-manifest assertion placed there would never be collected.
+ * `yarn test:unit` is `turbo run test:unit`, so a repo-meta spec needs a package to run in, and this package already reads repo-root files from its tests. It is a sibling of `ciTypecheckGate.test.ts` rather than an edit to it, so each guard's wiring has its own owner. The supabase workspace cannot host this spec: its vitest `include` is scoped to `supabase/functions/**`, so a root-manifest assertion placed there would never be collected.
  */
 
 import { readFileSync } from 'node:fs';
@@ -32,7 +32,7 @@ const ROOT_PACKAGE_JSON = JSON.parse(readFileSync(resolve(REPO_ROOT, 'package.js
 describe('the Edge Function environment-default guard is wired so it actually runs', () => {
   it('keeps `yarn assert:edge-env-defaults` a blocking link of lint:check', () => {
     // The invariant asserted here is MEMBERSHIP of the `&&` chain, not terminal position: every link after a failing one is equally aborted, so guards may be appended freely.
-    // Asserting instead that this link comes LAST would fail the moment somebody appends a correct new guard — a correct change an over-specified assertion has no business rejecting. This is phase 144's fix (commit b410d3a90) carried across deliberately; do not reintroduce the ordering shape here.
+    // Asserting instead that this link comes LAST would fail the moment somebody appends a correct new guard — a correct change an over-specified assertion has no business rejecting. Do not introduce the ordering shape here.
     const links = ROOT_PACKAGE_JSON.scripts['lint:check'].split('&&').map((link) => link.trim());
     expect(links).toContain('yarn assert:edge-env-defaults');
     expect(ROOT_PACKAGE_JSON.scripts['assert:edge-env-defaults']).toBe('node scripts/assert-edge-env-defaults.mjs');
@@ -46,7 +46,7 @@ describe('the Edge Function environment-default guard is wired so it actually ru
   });
 
   it('keeps the shared comment classifier the guard depends on', () => {
-    // The guard excludes comments STRUCTURALLY rather than by regex approximation, because phase 155 deliberately wrote four docstrings quoting the forbidden `Deno.env.get('X') || fallback` shape in order to explain why it is abolished. Lose the classifier and the guard either reddens on that documentation, which makes it unkeepable, or gets tuned until it stops complaining, which makes it worthless.
+    // The guard excludes comments STRUCTURALLY rather than by regex approximation, because the Edge Functions carry docstrings quoting the forbidden `Deno.env.get('X') || fallback` shape in order to explain why it is abolished. Lose the classifier and the guard either reddens on that documentation, which makes it unkeepable, or gets tuned until it stops complaining, which makes it worthless.
     expect(readFileSync(resolve(REPO_ROOT, 'scripts/lib/comment-spans.mjs'), 'utf8')).toContain(
       'export function commentSpans'
     );

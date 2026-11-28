@@ -145,8 +145,9 @@ against it is caused by the closure, not by the access flag.
 
 > ⚠ `yarn db:seed --template perm-closed-project` closes the **default**
 > project (`00000000-0000-0000-0000-000000000001`), the one a local `yarn dev`
-> serves. `yarn db:seed:teardown --prefix e2e-perm-closed-project-` deletes its
-> rows and reopens the project (`open_for_voters = true`).
+> serves. Any later `yarn db:seed` of another template reopens the project, and
+> `yarn db:seed:teardown --prefix e2e-perm-closed-project-` deletes its rows and
+> reopens it too (`open_for_voters = true`).
 
 **`perm-contestant-nominations`** (prefix `e2e-perm-contestant-nominations-`) is the
 dataset on which an entity's editor defines, changes and removes the entity's
@@ -177,9 +178,9 @@ shell with `--allow-remote --project-id <the deployment's public_project_id>`:
 
 It creates **no auth user**, no account and no `storage_config` row, so a project
 seeded with it still passes a check that no seed user exists. It targets the
-default project (`00000000-0000-0000-0000-000000000001`) and does not change
-whether that project is open for voters: openness is set when the project is
-bootstrapped, and an anonymous read of these rows needs it open.
+default project (`00000000-0000-0000-0000-000000000001`) and declares no
+`openForVoters`, so the seed leaves that project open for voters, which an
+anonymous read of these rows needs.
 
 Every row carries the prefix `smoke_`, so
 `yarn db:seed:teardown --prefix smoke_` removes exactly its content rows. Like
@@ -319,10 +320,10 @@ in your IDE to see field-level docs. Key top-level fields:
 - `projectId: string` — bootstrap project UUID (defaults to seed.sql bootstrap).
 - `generateTranslationsForAllLocales: boolean` — expansion to every locale in
   `LOCALES`, read from `staticSettings.supportedLocales` (currently `en`, `fi`, `sv`).
-- `openForVoters: boolean` — when present, the writer sets the target project's
-  `open_for_voters` to this value as its last pass; when absent, openness is
-  untouched. dev-seed never creates a project row. Only `perm-closed-project`
-  sets it (`false`).
+- `openForVoters: boolean` — the writer sets the target project's
+  `open_for_voters` to this value as its last pass; when absent, it sets `true`,
+  so every seed resets the project's openness. dev-seed never creates a project
+  row. Only `perm-closed-project` sets it (`false`).
 - `latent: { dimensions, eigenvalues, centroids, spread, loadings, noise }` —
   latent-factor emitter config (see phase 57).
 - Per-entity `{ count?, fixed? }` fragments for each of the 11 content tables:

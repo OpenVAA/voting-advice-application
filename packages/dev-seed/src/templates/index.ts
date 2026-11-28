@@ -31,7 +31,7 @@ import { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
 import { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
 import { permIdentityProviderTemplate } from './e2e/perm/perm-identity-provider';
 import { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
-import { permLocalizationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
+import { permLocalisationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
 import { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
 import { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
 import { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
@@ -67,7 +67,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // missing-nominations perm template. Distinct externalIdPrefix 'e2e-perm-missnoms-' (parallel-safe across the perm chains).
   'perm-missing-nominations': permMissingNominationsTemplate,
   // localisation-positive perm template. Distinct externalIdPrefix 'e2e-perm-l10n-pos-'. Uses the 3-locale staticSettings base (en/fi/sv) directly — no runtime override. Spec exercises the langSelector visible-and-switching surface + Finnish-translation authoring on q1/q3.
-  'perm-localisation-positive': permLocalizationPositiveTemplate,
+  'perm-localisation-positive': permLocalisationPositiveTemplate,
 
   // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some of their setups sign a candidate in and save a Playwright storage-state file for the spec.
   'perm-answers-locked': permAnswersLockedTemplate,

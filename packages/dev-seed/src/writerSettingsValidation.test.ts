@@ -34,7 +34,7 @@ const mockState = vi.hoisted(() => {
 });
 
 vi.mock('./supabaseAdminClient', () => ({
-  TEST_PROJECT_ID: '00000000-0000-0000-0000-000000000001',
+  DEFAULT_PROJECT_ID: '00000000-0000-0000-0000-000000000001',
   // A `function` implementation, not an arrow: Writer calls this with `new`, and an arrow function cannot be constructed.
   SupabaseAdminClient: vi.fn().mockImplementation(function () {
     const instance = {

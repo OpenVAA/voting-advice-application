@@ -398,7 +398,7 @@ describe('runTeardown', () => {
     );
   });
 
-  describe('reopening the project (162.1 D-19)', () => {
+  describe('reopening the project', () => {
     it('reopens the project exactly once, after the portrait cleanup, when the caller passes reopenProject: true', async () => {
       const order: Array<string> = [];
       const client = makeFakeClient({

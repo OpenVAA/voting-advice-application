@@ -322,7 +322,7 @@ describe('SupabaseAdminClient.importAnswers — the answer-payload spelling', ()
 });
 
 // ---------------------------------------------------------------------------
-// setProjectOpenForVoters — the one projects column dev-seed writes (162.1 D-21, D-19)
+// setProjectOpenForVoters — the one projects column dev-seed writes
 // ---------------------------------------------------------------------------
 
 describe('SupabaseAdminClient.setProjectOpenForVoters', () => {

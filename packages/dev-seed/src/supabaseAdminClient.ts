@@ -11,13 +11,13 @@
 import { SETTINGS_REPLACED_WHOLE } from '@openvaa/app-shared';
 import { createClient } from '@supabase/supabase-js';
 import { assertLocalSupabaseUrl } from './localSupabaseUrl';
+import { resolveCollectionName } from './template/collectionNames';
 import { importLinkFor, planLinks } from './template/linkSentinels';
 import {
   ANSWERS_BY_EXTERNAL_ID_KEY,
   COLLECTION_NON_COLUMNS,
-  FIELD_MAP,
   NON_COLUMN_FIELDS,
-  resolveCollectionName
+  resolveFieldName
 } from './template/permittedKeys';
 import type { Enums } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -25,14 +25,14 @@ import type { LocalityGuardOptions } from './localSupabaseUrl';
 import type { JsonbRefTable, LinkPlanEntry } from './template/linkSentinels';
 
 /**
- * Stable UUID for the default test project, from seed.sql.
+ * The default project seed.sql creates, which a local `yarn dev` serves.
  */
-export const TEST_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
+export const DEFAULT_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
 
 /**
  * The fixed project the E2E suite owns.
  *
- * Deliberately distinct from {@link TEST_PROJECT_ID}: a harness sharing the default project reads and writes the same rows a local development session does, which is the condition per-project scoping exists to remove. The value is committed rather than configured so the harness is correct with no environment set up at all.
+ * Deliberately distinct from {@link DEFAULT_PROJECT_ID}: a harness sharing the default project reads and writes the same rows a local development session does, which is the condition per-project scoping exists to remove. The value is committed rather than configured so the harness is correct with no environment set up at all.
  *
  * It is NOT the default of the constructor below. Applying it there would re-point every argument-less client in the repository, `yarn db:seed` included.
  */
@@ -60,7 +60,7 @@ const DEFAULT_ACCOUNT_ID = '00000000-0000-0000-0000-000000000001';
  *
  * Returns {@link E2E_PROJECT_ID} when `E2E_PROJECT_ID` is unset or blank — the variable is an override, not a requirement. An override is trimmed and lower-cased before use, and is rejected in two cases:
  *
- *   - it equals {@link TEST_PROJECT_ID}, which would put the harness back inside the default project while every log line claimed otherwise;
+ *   - it equals {@link DEFAULT_PROJECT_ID}, which would put the harness back inside the default project while every log line claimed otherwise;
  *   - it is not a canonical uuid, which reaches the database as a malformed-input error at the first query rather than at the point the value was chosen.
  *
  * @returns the resolved project id, lower-cased.
@@ -69,9 +69,9 @@ const DEFAULT_ACCOUNT_ID = '00000000-0000-0000-0000-000000000001';
 export function resolveE2eProjectId(): string {
   const raw = (process.env.E2E_PROJECT_ID ?? '').trim().toLowerCase();
   if (raw === '') return E2E_PROJECT_ID;
-  if (raw === TEST_PROJECT_ID) {
+  if (raw === DEFAULT_PROJECT_ID) {
     throw new Error(
-      `E2E_PROJECT_ID is set to ${TEST_PROJECT_ID}, which is the default project. The E2E suite must ` +
+      `E2E_PROJECT_ID is set to ${DEFAULT_PROJECT_ID}, which is the default project. The E2E suite must ` +
         'own a project of its own; sharing the default project means its data and a local ' +
         "development session's data are the same rows. Unset E2E_PROJECT_ID to use the committed " +
         `default (${E2E_PROJECT_ID}), or set it to some other uuid.`
@@ -241,17 +241,6 @@ export interface CreateInvitationsOptions {
 }
 
 /**
- * Convert a camelCase field name to snake_case using FIELD_MAP, or fall through as-is if already snake_case.
- *
- * `FIELD_MAP` and `resolveCollectionName` now live in `./template/permittedKeys`, which derives the permitted-key sets from them.
- * Keeping a second copy here would let the map that renames keys drift from the map that decides which keys are legal.
- */
-function resolveFieldName(field: string): string {
-  // `Object.hasOwn`, not `??`: `FIELD_MAP` is a plain object literal, so a bare index also saw inherited members and `resolveFieldName('toString')` returned `Object.prototype.toString` — a function used one line later as a column name. Same defect and same fix as `resolveCollectionName`; `field` is template-controlled data here too.
-  return Object.hasOwn(FIELD_MAP, field) ? FIELD_MAP[field] : field;
-}
-
-/**
  * The {@link SETTINGS_REPLACED_WHOLE} paths that `settings` names, each as a payload that sets only that path to `null`.
  *
  * `jsonb_recursive_merge` replaces a non-object base whole, so merging one of these payloads before the settings themselves makes the stored value at that path exactly the one `settings` states.
@@ -363,13 +352,13 @@ export class SupabaseAdminClient {
    *
    * @param url - Supabase URL; defaults to `SUPABASE_URL` as read when this module loaded, else `http://localhost:54321`.
    * @param serviceRoleKey - service-role key; defaults to `SUPABASE_SERVICE_ROLE_KEY`, else the local demo key.
-   * @param projectId - project every scoped query targets; defaults to {@link TEST_PROJECT_ID}.
+   * @param projectId - project every scoped query targets; defaults to {@link DEFAULT_PROJECT_ID}.
    * @param options - locality guard options. The resolved URL must be local unless `allowRemote` is set or `DEV_SEED_ALLOW_REMOTE=1` is in the environment.
    * @throws Error when the resolved URL is not local and neither opt-out is set. Nothing is created in that case.
    */
   constructor(url?: string, serviceRoleKey?: string, projectId?: string, options: LocalityGuardOptions = {}) {
     this.client = createServiceRoleClient(url ?? SUPABASE_URL, serviceRoleKey ?? SUPABASE_SERVICE_ROLE_KEY, options);
-    this.projectId = projectId ?? TEST_PROJECT_ID;
+    this.projectId = projectId ?? DEFAULT_PROJECT_ID;
   }
 
   // ---------------------------------------------------------------------------
@@ -401,7 +390,7 @@ export class SupabaseAdminClient {
     for (const [collection, records] of Object.entries(data)) {
       // Convert collection name to snake_case table name
       const tableName = resolveCollectionName(collection);
-      // Own-property lookup for the same reason as `resolveFieldName` above: `COLLECTION_NON_COLUMNS` is an `Object.fromEntries` result and `tableName` is template-controlled, so a bare index could hand back an inherited member and `extraStrip?.has(key)` would throw a TypeError instead of stripping.
+      // Own-property lookup, as in `resolveFieldName`: `COLLECTION_NON_COLUMNS` is an `Object.fromEntries` result and `tableName` is template-controlled, so a bare index could hand back an inherited member and `extraStrip?.has(key)` would throw a TypeError instead of stripping.
       const extraStrip = Object.hasOwn(COLLECTION_NON_COLUMNS, tableName)
         ? COLLECTION_NON_COLUMNS[tableName]
         : undefined;
@@ -726,7 +715,7 @@ export class SupabaseAdminClient {
 
     // Open the project to voters, as a SEPARATE unconditional update rather than as a column on the upsert above.
     //
-    // The upsert passes `ignoreDuplicates: true` and must keep doing so, because it is also the path that must not clobber a name or a locale on a project that already exists. But `ignoreDuplicates` means the row it hands a pre-existing project is discarded entirely — including this column. And `tests/global-setup.ts` states in its own comment that nothing ever deletes the E2E project: "the per-family `teardown:` projects clear the run's content by external_id prefix, which is what makes back-to-back runs work without a reset." So a developer database carrying an E2E project created before 162-07 would keep `open_for_voters` at its default for ever, and the whole voter suite would go dark the moment 162-08 starts reading the column — on a developer machine, with no reset, and with the cause three plans back.
+    // The upsert passes `ignoreDuplicates: true` and must keep doing so, because it is also the path that must not clobber a name or a locale on a project that already exists. But `ignoreDuplicates` means the row it hands a pre-existing project is discarded entirely — including this column. And `tests/global-setup.ts` states in its own comment that nothing ever deletes the E2E project: "the per-family `teardown:` projects clear the run's content by external_id prefix, which is what makes back-to-back runs work without a reset." So an E2E project that already exists keeps whatever `open_for_voters` it has unless this update opens it, and a closed one would take the whole voter suite dark on a developer machine with no reset.
     //
     // This method is therefore simultaneously the E2E project's CREATION path and its UPGRADE path, and it has to be both. The update is unconditional and idempotent: a second caller re-performs it to the same result.
     const { error: opennessError } = await this.client.from('projects').update({ open_for_voters: true }).eq('id', id);
@@ -760,7 +749,7 @@ export class SupabaseAdminClient {
    *
    * This method only updates the one column. It never creates a project; {@link SupabaseAdminClient.ensureProject} is the creation path. Updating an id that has no row is a silent no-op, as with any PostgREST update.
    *
-   * Callers: the Writer's final pass when a template declares `openForVoters` (162.1 D-21), and the dev-seed teardown CLI, which reopens the project it targets (D-19).
+   * Callers: the Writer's final pass, which sets the template's `openForVoters` (open when the template declares none), and the dev-seed teardown CLI, which reopens the project it targets.
    *
    * @param open - the value to write; `false` closes the project's public data to anon.
    * @param projectId - the project to update; defaults to the client's configured project.
@@ -871,7 +860,7 @@ export class SupabaseAdminClient {
    * Upload a portrait JPEG to the `public-assets` bucket.
    *
    * Path: `${projectId}/candidates/${candidateId}/${filename}` — 3-segment RLS-compliant (VERIFIED at migration line 1934-1936).
-   * The writer passes `${crypto.randomUUID()}.jpg` as `filename`, the application's own upload convention (162.1 D-15): the storage cleanup trigger deletes only UUID object names, and a fixed name would be guessable.
+   * The writer passes `${crypto.randomUUID()}.jpg` as `filename`, the application's own upload convention: the storage cleanup trigger deletes only UUID object names, and a fixed name would be guessable.
    *
    * `upsert: true` lets a retried upload of the same path succeed; with random names a re-seed writes a new object rather than overwriting.
    * `contentType: 'image/jpeg'` keeps Storage metadata correct.
@@ -919,7 +908,7 @@ export class SupabaseAdminClient {
    * Storage layout, as written by `uploadPortrait`:
    *   `${projectId}/candidates/${candidateId}/${filename}`
    *
-   * The writer names each file `<random uuid>.jpg` (162.1 D-15). The enumeration lists folders and never depends on the file names.
+   * The writer names each file `<random uuid>.jpg`. The enumeration lists folders and never depends on the file names.
    *
    * Enumeration is 2-level: first list candidate-UUID directories, then list files under each. Returns a flat array of fully-qualified paths ready to hand to `.storage.from(...).remove(paths)`.
    *

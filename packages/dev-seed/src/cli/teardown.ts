@@ -10,7 +10,7 @@
  *   5. `bulkDelete({ nominations, candidates, ... 10 tables }, { prefix })`.
  *      RPC enforces reverse-dependency order server-side.
  *   6. Storage Path 2 cleanup: list + remove portraits (authoritative — the pg_net trigger, Path 1, is async-racy).
- *   6b. Reopen the targeted project to voters (`open_for_voters = true`, 162.1 D-19), which undoes `perm-closed-project`. The CLI asks for this through `runTeardown(prefix, client, { reopenProject: true })`; `runTeardown` never reopens on its own, so the E2E teardowns (`runTeardownAsserted`) cannot reopen the E2E project mid-run.
+ *   6b. Reopen the targeted project to voters (`open_for_voters = true`), which undoes `perm-closed-project`. The CLI asks for this through `runTeardown(prefix, client, { reopenProject: true })`; `runTeardown` never reopens on its own, so the E2E teardowns (`runTeardownAsserted`) cannot reopen the E2E project mid-run.
  *   7. Print summary to stdout (rows deleted + storage objects removed +
  *      echo the prefix used), exit 0.
  *   8. On any error: rephrase `fetch failed`/`ECONNREFUSED`/`ENOTFOUND` to actionable form, stderr + exit 1.
@@ -91,7 +91,7 @@ interface TeardownClient {
  */
 export interface TeardownOptions {
   /**
-   * Reopen the client's project to voters (`open_for_voters = true`) after the rows and portraits are gone (162.1 D-19). Only the CLI passes it; E2E teardowns must not, or a teardown running mid-suite would reopen a project another node closed.
+   * Reopen the client's project to voters (`open_for_voters = true`) after the rows and portraits are gone. Only the CLI passes it; E2E teardowns must not, or a teardown running mid-suite would reopen a project another node closed.
    */
   reopenProject?: boolean;
 }
@@ -148,7 +148,7 @@ export async function runTeardown(
   const portraitPaths = await client.listCandidatePortraitPaths(candidateIds);
   const storageRemoved = await client.removePortraitStorageObjects(portraitPaths);
 
-  // Step 4: reopen the project to voters (162.1 D-19) — only when the caller asks, so E2E teardowns never reopen the project mid-run.
+  // Step 4: reopen the project to voters — only when the caller asks, so E2E teardowns never reopen the project mid-run.
   if (options.reopenProject) {
     await client.setProjectOpenForVoters(true);
   }

@@ -3,7 +3,7 @@
  *
  * `Writer` composes `SupabaseAdminClient` (does NOT subclass) and routes pipeline output through the correct admin-client methods:
  *
- *   - `projects` — dev-seed never creates a project. The final pass sets `projects.open_for_voters` on the existing project through `setProjectOpenForVoters` when a template declares `openForVoters`.
+ *   - `projects` — dev-seed never creates a project. The final pass sets `projects.open_for_voters` on the existing project through `setProjectOpenForVoters`: to the template's `openForVoters`, or `true` when the template does not declare it.
  *   - `app_settings` — routed through `updateAppSettings` (merge_jsonb_column RPC). Direct `bulk_import` of `app_settings` fails with duplicate-key on the `UNIQUE(project_id)` constraint because `seed.sql` pre-inserts a row. Every row is parsed with the shared `StoredSettingsSchema`, the schema the application reads the stored settings with, before the writer writes anything at all; a row the schema refuses is a defect of the template, and the write stops with the database untouched.
  *   - 10 other tables (elections, constituency_groups, constituencies, organizations, alliances, factions, question_categories, questions,
  *     candidates, nominations) — flow through `bulkImport` → `importAnswers`
@@ -39,7 +39,7 @@ const PORTRAITS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'assets', 'p
 /**
  * Options passed to the `Writer` constructor.
  *
- *  - `projectId` — defaults to `TEST_PROJECT_ID` (`00000000-0000-0000-0000-000000000001`, the bootstrap project UUID from seed.sql).
+ *  - `projectId` — defaults to `DEFAULT_PROJECT_ID` (`00000000-0000-0000-0000-000000000001`, the bootstrap project UUID from seed.sql).
  *  - `allowRemote` — permits a non-local `SUPABASE_URL`. Defaults to refusing one.
  */
 export interface WriterOptions {
@@ -97,7 +97,7 @@ export class Writer {
    *   5. `importAnswers` — stitches `candidate.answersByExternalId` → `candidate.answers` JSONB by resolving question external_ids to UUIDs (separate transaction).
    *   6. `linkQuestionScopes` — processes the `_elections` / `_constituencies` sentinels of question categories and questions: updates their `election_ids` / `constituency_ids` JSONB (separate transaction). The constituency join tables are already written by step 4.
    *   7. **Pass 5** — the question references of every `app_settings` row are resolved to the ids of the questions written by step 4, and `updateAppSettings` writes each row (`merge_jsonb_column` RPC) — routes around the `UNIQUE(project_id)` conflict that `bulk_import` cannot handle for this table. The rows are written as the template states them, not as the schema's parse normalises them.
-   *   8. **Pass 6** — project openness: `setProjectOpenForVoters(options.openForVoters)`, ONLY when the caller passes the template's `openForVoters`. Absent, no `projects` write is issued. Runs last, so a closed project is closed only after every row is in place.
+   *   8. **Pass 6** — project openness: `setProjectOpenForVoters(options.openForVoters ?? true)`. Every write resets the project's openness to the template's value, so a project a previous seed closed is reopened unless this template closes it too. Runs last, so a closed project is closed only after every row is in place.
    *
    * @param options.openForVoters - the resolved template's `openForVoters`; both callers (`cli/seed.ts`, the E2E `setupFromTemplate`) pass it, because this method receives rows, not the template.
    * @param options.templateName - the template's name or path, which a refusal of its settings names.
@@ -165,11 +165,8 @@ export class Writer {
       }
     }
 
-    // Pass 6: project openness — only when the template declares it.
-    // Absent means untouched: every template without the slot leaves its project exactly as it found it.
-    if (options.openForVoters !== undefined) {
-      await this.client.setProjectOpenForVoters(options.openForVoters);
-    }
+    // Pass 6: project openness — the template's value, open when it declares none.
+    await this.client.setProjectOpenForVoters(options.openForVoters ?? true);
 
     return { portraits };
   }

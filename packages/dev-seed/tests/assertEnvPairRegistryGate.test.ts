@@ -1,9 +1,9 @@
 /**
  * The cross-runtime env-pair registry guard's WIRING, asserted rather than described.
  *
- * ## What went wrong, and why a comment is not enough
+ * ## The hazard, and why a comment is not enough
  *
- * Four variables exist twice — once under the un-prefixed name the Deno Edge Functions read, once under the `PUBLIC_`-prefixed name Vite exposes to the client bundle — and the two copies of the identity-provider configuration drifted apart twice, both times undetected. Nothing was red either time. The durable deliverable is therefore not the `.env.example` block that documents the pairs today; it is the guard that fails when the fifth pair appears undocumented, and a guard is only worth anything on the days it actually runs.
+ * A variable that exists twice — under the un-prefixed name the Deno Edge Functions read and under the `PUBLIC_`-prefixed name Vite exposes to the client bundle — can drift apart silently; the guard fails when a pair appears undocumented, and it is only worth anything on the days it actually runs.
  *
  * That makes the load-bearing property WIRING, not behaviour. A guard script sitting unreferenced on disk still exists, still passes when anyone runs it by hand, and reports nothing at all when the link that invoked it is deleted from the `lint:check` chain. The tree keeps looking clean and no signal says the check stopped happening. A comment beside the chain cannot hold that property, because deleting the link deletes the comment with it.
  *
@@ -11,7 +11,7 @@
  *
  * `yarn test:unit` is `turbo run test:unit`, so a repo-meta spec needs a package to run in, and this package already reads repo-root files from its tests. It sits beside `assertDeclaredBinariesGate.test.ts` and `ciTypecheckGate.test.ts` rather than in a new home of its own.
  *
- * ⚠ The invariant asserted here is MEMBERSHIP of the `&&` chain, never terminal position, never the whole string, never the link count. Every link after a failing one is equally aborted, so guards may be appended to the chain freely, and an assertion on position or length reddens a correct append. That over-specified shape has already had to be removed from a sibling spec in this directory once; do not reintroduce it here.
+ * ⚠ The invariant asserted here is MEMBERSHIP of the `&&` chain, never terminal position, never the whole string, never the link count. Every link after a failing one is equally aborted, so guards may be appended to the chain freely, and an assertion on position or length reddens a correct append.
  *
  * ⚠ This spec deliberately asserts nothing about `.env.example`'s CONTENTS. That is the guard's own job, and duplicating it here would create a second opinion about the pairing contract — which is the failure mode the pairs themselves demonstrate.
  *
@@ -27,7 +27,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 /** `packages/dev-seed/tests` → repo root. */
 const REPO_ROOT = resolve(HERE, '../../..');
 
-/** The part of `scripts/assert-env-pair-registry.mjs` this spec calls. */
+/** The part of `scripts/lib/env-pairs.mjs`, the derivation the registry guard uses, this spec calls. */
 interface EnvPairRegistryModule {
   derivePairs: () => {
     pairs: Array<{ name: string; kind: 'prefixed' | 'same-name'; deno: string; frontend: string }>;
@@ -35,9 +35,7 @@ interface EnvPairRegistryModule {
 }
 
 function loadRegistry(): Promise<EnvPairRegistryModule> {
-  return import(
-    pathToFileURL(resolve(REPO_ROOT, 'scripts/assert-env-pair-registry.mjs')).href
-  ) as Promise<EnvPairRegistryModule>;
+  return import(pathToFileURL(resolve(REPO_ROOT, 'scripts/lib/env-pairs.mjs')).href) as Promise<EnvPairRegistryModule>;
 }
 
 const ROOT_PACKAGE_JSON = JSON.parse(readFileSync(resolve(REPO_ROOT, 'package.json'), 'utf8')) as {
@@ -64,12 +62,12 @@ describe('the cross-runtime env-pair registry guard is wired so it actually runs
 
   it('keeps the runtime agreement checker present and OUT of the lint:check chain', () => {
     // The two scripts answer different questions and only one of them can run in CI. The registry guard proves the pairing CONTRACT from source and cannot see a value; the agreement checker compares VALUES and needs an env file CI does not have. Wiring the checker into `lint:check` would either fail every CI run or, worse, be "fixed" by making it pass when it can compare nothing — a gate that examines nothing and reports green. Its script key is deliberately `check:env-pairs-agree` rather than `assert:*`, because every existing `assert:*` key IS a chain link and a ninth one would read as an omission.
-    expect(readFileSync(resolve(REPO_ROOT, 'scripts/assert-env-pairs-agree.mjs'), 'utf8')).toContain(
+    expect(readFileSync(resolve(REPO_ROOT, 'scripts/check-env-pairs-agree.mjs'), 'utf8')).toContain(
       'CROSS-RUNTIME ENV-PAIR VALUE-AGREEMENT CHECKER'
     );
-    expect(ROOT_PACKAGE_JSON.scripts['check:env-pairs-agree']).toBe('node scripts/assert-env-pairs-agree.mjs');
+    expect(ROOT_PACKAGE_JSON.scripts['check:env-pairs-agree']).toBe('node scripts/check-env-pairs-agree.mjs');
     expect(ROOT_PACKAGE_JSON.scripts['lint:check']).not.toContain('env-pairs-agree');
-    expect(ROOT_PACKAGE_JSON.scripts['lint:check']).not.toContain('assert-env-pairs-agree');
+    expect(ROOT_PACKAGE_JSON.scripts['lint:check']).not.toContain('check-env-pairs-agree');
   });
 });
 

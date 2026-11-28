@@ -3,7 +3,7 @@
  *
  * acceptance criteria (a)–(e) + default count = 0 (templates must opt-in explicitly — factions are uncommon in VAA datasets).
  *
- * TEST F lives here: since 162-07b `factions.organization_id` is `NOT NULL`, so every generated row must name an organization and a template that asks for factions with none to attach them to must fail LOUDLY at generation time rather than as a bare not-null violation from inside `bulk_import`. Both halves are asserted, because the raise without the attach would be a generator that only ever fails, and the attach without the raise would be one that emits `undefined` and defers the error to Postgres.
+ * TEST F lives here: `factions.organization_id` is `NOT NULL`, so every generated row must name an organization and a template that asks for factions with none to attach them to must fail LOUDLY at generation time rather than as a bare not-null violation from inside `bulk_import`. Both halves are asserted, because the raise without the attach would be a generator that only ever fails, and the attach without the raise would be one that emits `undefined` and defers the error to Postgres.
  */
 
 import { describe, expect, it } from 'vitest';

@@ -23,7 +23,7 @@
  * JSONB-undefined safety: `mergeSettings` skips `undefined` members of the overlay. JSONB drops `undefined` keys at write time and the post-seed `toMatchObject` assertion in `setupFromTemplate` fails if an undefined key leaks into the merged settings tree.
  */
 
-import { mergeSettings } from '@openvaa/app-shared';
+import { getEffectiveSelectionBounds, mergeSettings } from '@openvaa/app-shared';
 import {
   buildCandidate,
   buildElectionConstituencyNoms,
@@ -339,8 +339,12 @@ export function defaultAnswerForQuestion(question: Record<string, unknown>, full
     const mcChoices = question.choices as Array<{ id: string }> | undefined;
     if (Array.isArray(mcChoices) && mcChoices.length > 0) {
       const cd = (question.custom_data ?? {}) as Record<string, unknown>;
-      const minSel = typeof cd.minSelections === 'number' ? cd.minSelections : 1;
-      const take = Math.min(Math.max(minSel, 1), mcChoices.length);
+      const { effectiveMin } = getEffectiveSelectionBounds({
+        minSelections: typeof cd.minSelections === 'number' ? cd.minSelections : undefined,
+        maxSelections: typeof cd.maxSelections === 'number' ? cd.maxSelections : undefined,
+        choiceCount: mcChoices.length
+      });
+      const take = Math.min(effectiveMin, mcChoices.length);
       return { value: mcChoices.slice(0, take).map((c) => c.id) };
     }
     return { value: [] };

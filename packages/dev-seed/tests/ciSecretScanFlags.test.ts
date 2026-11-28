@@ -1,7 +1,7 @@
 /**
  * The secret-scan gate's FLAGS, asserted rather than described.
  *
- * ## The incident this file exists for
+ * ## The hazard this file forbids
  *
  * The `secret-scan` job runs trufflehog with exactly one argument, `--config=.github/trufflehog-openvaa.yml`, and carries a long comment saying that a result-type filter must never be added. A comment is not enough here, because the flag that would silence this gate is the tool's own most-copied documentation line: trufflehog's README GitHub Action example passes a `--results=verified,unknown` filter. That configuration sets `notifyUnverifiedResults = false` (pkg/engine/engine.go:327-341), and the repo-private `OpenVAACIEvidenceToken` detector deliberately carries no `verify:` block, so every finding it can ever produce is classified `unverified`. Pasting the README line therefore does not narrow the gate -- it turns the gate off for our own detector, and the build goes green while the scanner saw the secret. That is a silent green, the worst failure shape a gate has, and it is one search-and-paste away at all times.
  *
@@ -19,7 +19,7 @@
  *
  * No YAML parser is a dependency of this workspace, and adding one to assert a handful of lines would be a worse trade -- again per `ciTypecheckGate.test.ts`. The uniqueness guards below exist so a renamed or duplicated job cannot make the later assertions measure the wrong region, or measure nothing and pass.
  *
- * There is one property this file deliberately does NOT assert: that the job carries no `dorny/paths-filter` step and no `if:` key. That check belongs on a PARSED workflow rather than on its text, for the same comment-versus-usage reason, and comment-stripping alone does not settle it because an `if:` is a key rather than a token. The plan's acceptance criteria run that one structurally against the parsed YAML instead.
+ * There is one property this file deliberately does NOT assert: that the job carries no `dorny/paths-filter` step and no `if:` key. That check belongs on a PARSED workflow rather than on its text, for the same comment-versus-usage reason, and comment-stripping alone does not settle it because an `if:` is a key rather than a token.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -109,7 +109,7 @@ describe('the CI secret-scan gate is wired so it can actually report our own det
   });
 
   it('keeps the detector config free of a verify: block', () => {
-    // Wired-but-neutered is the third failure mode. Adding `verify:` would make the detector's findings verifiable, which means the plant would have to be a working credential -- forbidden by D-L4 and by CLAUDE.md -- and it would also make this job issue a live request for every match.
+    // Wired-but-neutered is the third failure mode. Adding `verify:` would make the detector's findings verifiable, which means the plant would have to be a working credential -- forbidden by CLAUDE.md -- and it would also make this job issue a live request for every match.
     const detectorConfig = readFileSync(resolve(REPO_ROOT, DETECTOR_CONFIG), 'utf8');
     expect(detectorConfig).toContain('OpenVAACIEvidenceToken');
     expect(detectorConfig).toContain('OPENVAA_CI_EVIDENCE');
@@ -117,7 +117,7 @@ describe('the CI secret-scan gate is wired so it can actually report our own det
   });
 
   it('keeps the evidence trigger glob on on.push.branches', () => {
-    // Without this glob no push from a non-`main` branch produces a run at all, and a missing run is indistinguishable from a passing one. It is the mechanism every observed-run criterion in Phase 163 and every later one depends on, so its deletion must redden something.
+    // Without this glob no push from a non-`main` branch produces a run at all, and a missing run is indistinguishable from a passing one. Every observed-run check depends on it, so its deletion must redden something.
     expect(WORKFLOW).toContain('- "ci-evidence/**"');
   });
 });

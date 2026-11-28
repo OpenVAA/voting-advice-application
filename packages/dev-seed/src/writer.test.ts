@@ -19,7 +19,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Imported AFTER vi.mock — Writer's `import { SupabaseAdminClient } from './supabaseAdminClient'` now resolves to the mocked module.
 import { Writer } from './writer';
 
-/** A portrait object name in the application's upload convention: a random v4-shaped UUID plus `.jpg` (162.1 D-15). */
+/** A portrait object name in the application's upload convention: a random v4-shaped UUID plus `.jpg`. */
 const UUID_JPG = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.jpg$/;
 
 // vi.mock is HOISTED — runs before the Writer import below so Writer resolves `./supabaseAdminClient` to the mocked module. The factory returns a fresh module shape on every import, but instance tracking via `__getLastInstance` lets tests inspect the specific mocked admin client the Writer constructed.
@@ -30,7 +30,7 @@ vi.mock('./supabaseAdminClient', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const instances: Array<any> = [];
   return {
-    TEST_PROJECT_ID: '00000000-0000-0000-0000-000000000001',
+    DEFAULT_PROJECT_ID: '00000000-0000-0000-0000-000000000001',
     // A `function` implementation, not an arrow: Writer calls this with `new`, and an arrow function cannot be constructed.
     SupabaseAdminClient: vi.fn().mockImplementation(function () {
       const callOrder: Array<string> = [];
@@ -355,7 +355,7 @@ describe('Writer', () => {
         expect(uploadCalls[0][0]).toBe('uuid-1');
         expect(uploadCalls[1][0]).toBe('uuid-2');
         expect(uploadCalls[2][0]).toBe('uuid-3');
-        // Every upload is named `<random uuid>.jpg`, the convention the application's own uploads use (162.1 D-15): the storage cleanup whitelist accepts only UUID object names, and a fixed name would be guessable.
+        // Every upload is named `<random uuid>.jpg`, the convention the application's own uploads use: the storage cleanup whitelist accepts only UUID object names, and a fixed name would be guessable.
         const filename = uploadCalls[0][2];
         expect(filename).toMatch(UUID_JPG);
 
@@ -368,7 +368,7 @@ describe('Writer', () => {
         expect(updateCalls[0][2].path).toBe(`test-project/candidates/uuid-1/${filename}`);
       });
 
-      it('gives every candidate its own random UUID filename (162.1 D-15)', async () => {
+      it('gives every candidate its own random UUID filename', async () => {
         const candidates = [
           { id: 'uuid-1', external_id: 'seed_cand_0000', first_name: 'Alice', last_name: 'Smith' },
           { id: 'uuid-2', external_id: 'seed_cand_0001', first_name: 'Bob', last_name: 'Jones' }
@@ -497,7 +497,7 @@ describe('Writer', () => {
       });
     });
 
-    describe('project openness pass (162.1 D-21)', () => {
+    describe('project openness pass', () => {
       it('closes the project as the very last write when the template declares openForVoters: false', async () => {
         const writer = new Writer();
         await writer.write(
@@ -526,14 +526,16 @@ describe('Writer', () => {
         expect(instance.setProjectOpenForVoters).toHaveBeenCalledWith(true);
       });
 
-      it('issues no projects write at all when the caller passes no openForVoters', async () => {
+      it('opens the project as the very last write when the caller passes no openForVoters', async () => {
         const writer = new Writer();
         await writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p' }] });
         await writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p' }] }, 'seed_', {});
 
         const instance = await getMockedAdminClient();
-        expect(instance.setProjectOpenForVoters).not.toHaveBeenCalled();
-        expect(instance.callOrder).not.toContain('setProjectOpenForVoters');
+        expect(instance.setProjectOpenForVoters).toHaveBeenCalledTimes(2);
+        expect(instance.setProjectOpenForVoters).toHaveBeenNthCalledWith(1, true);
+        expect(instance.setProjectOpenForVoters).toHaveBeenNthCalledWith(2, true);
+        expect(instance.callOrder[instance.callOrder.length - 1]).toBe('setProjectOpenForVoters');
       });
 
       it('propagates a failing openness write instead of swallowing it', async () => {

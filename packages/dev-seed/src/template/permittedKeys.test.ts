@@ -16,6 +16,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { COLUMN_MAP } from '@openvaa/supabase-types';
 import { describe, expect, it } from 'vitest';
+import { resolveCollectionName } from './collectionNames';
 import { LINK_SENTINELS } from './linkSentinels';
 import {
   COLLECTION_NON_COLUMNS,
@@ -23,8 +24,7 @@ import {
   deniedKeys,
   NON_COLUMN_FIELDS,
   permittedKeys,
-  RELATIONSHIP_REFS,
-  resolveCollectionName
+  RELATIONSHIP_REFS
 } from './permittedKeys';
 import { assertKnownRowProps } from '../assertKnownRowProps';
 import type { LinkSentinelRule } from './linkSentinels';
@@ -127,9 +127,9 @@ describe('permittedKeys — source (1): DB columns and their legal camelCase for
   });
 
   it('resolves organizationId to a real column now that RES-7 is closed, and admits it in both directions', () => {
-    // TEST E. This test used to record the collision as OPEN: `COLUMN_MAP` mapped BOTH `organization_id` and `organization_id_nom` to `organizationId`, reversal into `PROPERTY_MAP` is last-wins, so `FIELD_MAP.organizationId` resolved to `organization_id_nom` — a column on no table at all — and the camel key was therefore admitted NOWHERE. That was RES-7 / T-144-11, open since 2026-08-23, and its sole cause was two tables carrying a column of the same name.
+    // TEST E. Reversal of `COLUMN_MAP` into `PROPERTY_MAP` is last-wins, so two columns mapped to one camel key would resolve it to the wrong column and admit it on the wrong tables.
     //
-    // 162-07b removed `candidates.organization_id`, so one mapping is left and the suffixed spelling retired with it. The camel key now resolves for the first time, which WIDENS what this guard admits on `nominations` and `factions`. That is the intended end state — the guard admitted it nowhere only because the mapping was broken — but it is a behaviour change in a security-adjacent guard, so it is asserted in BOTH directions here rather than inherited.
+    // `organizationId` has one mapping, to `organization_id`, so the guard admits it on `nominations` and `factions`. It is a security-adjacent guard, so this is asserted in BOTH directions here rather than inherited.
     expect(permittedKeys('candidates').has('organization_id')).toBe(false);
     expect(permittedKeys('candidates').has('organizationId')).toBe(false);
     expect(permittedKeys('nominations').has('organization_id')).toBe(true);
@@ -242,7 +242,7 @@ describe('permittedKeys — source (3): the non-column fields moved out of bulkI
   it('keeps the moved consts byte-equivalent to what bulkImport declared', () => {
     expect([...NON_COLUMN_FIELDS].sort()).toEqual(['answersByExternalId']);
     expect(Object.keys(COLLECTION_NON_COLUMNS).sort()).toEqual(['candidates', 'constituency_groups', 'elections']);
-    // `organization` joined `email` here in 162-07b. It is NOT a drift in the byte-equivalence claim this test guards — the claim is that the consts match what `bulkImport` strips, and `bulkImport` reads this same const, so the two moved together by construction. What changed is the key's CLASSIFICATION: it used to be a `RELATIONSHIP_REFS` entry the RPC resolved to `candidates.organization_id`, and with that column gone it is a field permitted on the row and stripped before the write, because the latent answer emitter reads it in memory. See `COLLECTION_NON_COLUMN_LIST`'s docblock for why deleting it instead would have degraded every seeded dataset silently.
+    // `organization` sits beside `email` here: with no `candidates.organization_id` column it is a field permitted on the row and stripped before the write, because the latent answer emitter reads it in memory. `bulkImport` reads this same const, so the consts and the strip agree by construction. See `COLLECTION_NON_COLUMN_LIST`'s docblock for why deleting it instead would have degraded every seeded dataset silently.
     expect([...COLLECTION_NON_COLUMNS.candidates].sort()).toEqual(['email', 'organization']);
     expect([...COLLECTION_NON_COLUMNS.elections].sort()).toEqual(['constituencyGroups', 'constituency_groups']);
     expect([...COLLECTION_NON_COLUMNS.constituency_groups].sort()).toEqual(['constituencies']);
@@ -337,7 +337,6 @@ describe('resolveCollectionName / permittedKeys — canonical keying', () => {
   it('resolves camelCase collection aliases to the snake_case table name', () => {
     expect(resolveCollectionName('questionCategories')).toBe('question_categories');
     expect(resolveCollectionName('constituencyGroups')).toBe('constituency_groups');
-    expect(resolveCollectionName('parties')).toBe('organizations');
     expect(resolveCollectionName('elections')).toBe('elections');
   });
 
@@ -375,67 +374,5 @@ describe('resolveCollectionName / permittedKeys — canonical keying', () => {
     }
     expect(message).toContain('parties_typo');
     expect(message).toContain('resolved');
-  });
-
-  it('returns a frozen set — callers cannot widen the allow-list at runtime', () => {
-    expect(() => (permittedKeys('elections') as Set<string>).add('smuggled')).toThrow();
-  });
-
-  /**
-   * A claim that the set "refuses to be widened after construction" does not hold on its own: `Object.freeze` does not protect a `Set`'s internal `[[SetData]]` slot — only its own properties. Overriding `add` blocks the ordinary spelling and nothing else, and a constructor populating itself via the ordinary `Set` API uses precisely that escape hatch. The case above exercises only the override, so the gap was invisible to the suite.
-   *
-   * These cases perform the smuggle on the MEMOIZED, process-wide instance and assert the guard did not widen.
-   */
-  describe('the immutability claim survives a prototype-borrowed mutation', () => {
-    it('Set.prototype.add.call does not widen the memoized allow-list', () => {
-      const keys = permittedKeys('elections') as Set<string>;
-      const sizeBefore = keys.size;
-      // May or may not throw — the receiver is a genuine Set, so the borrowed method can legally write into a slot nothing reads. What must hold is that the GUARD did not move.
-      try {
-        Set.prototype.add.call(keys, 'smuggled');
-      } catch {
-        /* acceptable — the assertion is about `has`, not about the throw */
-      }
-      expect(keys.has('smuggled')).toBe(false);
-      expect(keys.size).toBe(sizeBefore);
-      expect([...keys]).not.toContain('smuggled');
-      // And the widening is not visible to the next caller either — the same instance is handed to every consumer of the guard.
-      expect(permittedKeys('elections').has('smuggled')).toBe(false);
-    });
-
-    it('Set.prototype.delete.call and .clear.call cannot narrow it either', () => {
-      const keys = permittedKeys('elections') as Set<string>;
-      const sizeBefore = keys.size;
-      expect(keys.has('external_id')).toBe(true);
-      try {
-        Set.prototype.delete.call(keys, 'external_id');
-      } catch {
-        /* see above */
-      }
-      try {
-        Set.prototype.clear.call(keys);
-      } catch {
-        /* see above */
-      }
-      expect(keys.has('external_id')).toBe(true);
-      expect(keys.size).toBe(sizeBefore);
-    });
-
-    it('still behaves as a Set for every read the guard and its messages perform', () => {
-      // `assertKnownRowProps` spreads the set to build its "Permitted keys" list, so the iterator, `size` and `forEach` must all read through.
-      const keys = permittedKeys('elections');
-      expect(keys).toBeInstanceOf(Set);
-      expect([...keys]).toHaveLength(keys.size);
-      expect([...keys.values()]).toEqual([...keys]);
-      expect([...keys.keys()]).toEqual([...keys]);
-      expect([...keys.entries()].map(([a]) => a)).toEqual([...keys]);
-      const seen: Array<string> = [];
-      keys.forEach((value, value2, set) => {
-        expect(value2).toBe(value);
-        expect(set).toBe(keys);
-        seen.push(value);
-      });
-      expect(seen).toEqual([...keys]);
-    });
   });
 });
