@@ -175,7 +175,7 @@ jobs:
         run: cp .env.example apps/frontend/.env
 
       - name: "Type-check frontend (svelte-check, 0 errors / 0 warnings)"
-        run: yarn workspace @openvaa/frontend check
+        run: yarn workspace @openvaa/frontend typecheck
 
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build

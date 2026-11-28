@@ -78,7 +78,7 @@ From the repo root, `yarn dev` starts the whole development stack. See [Running 
 
 - `yarn workspace @openvaa/frontend dev`: the Vite dev server only.
 - `yarn workspace @openvaa/frontend build`: a production build into `build/`.
-- `yarn workspace @openvaa/frontend check`: `svelte-check`, failing on warnings.
+- `yarn workspace @openvaa/frontend typecheck`: `svelte-check`, failing on warnings.
 - `yarn workspace @openvaa/frontend test:unit`: the Vitest unit tests.
 - `yarn workspace @openvaa/frontend paraglide:compile`: compiles the messages into `src/lib/paraglide/` without a build.
 

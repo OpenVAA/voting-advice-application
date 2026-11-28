@@ -158,7 +158,7 @@ After completing any extension, verify:
 
 1. `cd packages/data && yarn test:unit` -- all existing tests pass (no regressions)
 2. New test file passes with expected assertions
-3. `yarn build:app-shared` -- builds without circular dependency errors
+3. `yarn turbo run build --filter=@openvaa/app-shared...` -- builds without circular dependency errors
 4. Check `internal.ts` export ordering: type file before class file, base types before dependent types
 5. Check that all `OBJECT_TYPE` values are unique strings (no collisions with existing values)
 6. Check that `typeGuards.ts` includes the new type where relevant (entity, question, nomination guards)

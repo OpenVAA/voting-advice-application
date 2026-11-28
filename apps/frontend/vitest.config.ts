@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vitest/config';
+import svelteConfig from './svelte.config.js';
 
 // `apps/frontend/package.json` declares `type: module`, so `__dirname` does not exist here and this file only ever saw one because Vite's config bundler injects a definition for it. That shim is an implementation detail of the loader, not a property of the module, so derive the directory from `import.meta.url` instead of depending on it.
 const here = fileURLToPath(new URL('.', import.meta.url));
@@ -23,11 +24,10 @@ export default defineConfig({
         find: '$lib/paraglide/messages',
         replacement: path.resolve(here, 'src/lib/testing/__mocks__/paraglide-messages.ts')
       },
-      // SvelteKit built-in aliases (not available via @sveltejs/vite-plugin-svelte)
+      // SvelteKit supplies `$lib` itself, so `kit.alias` does not list it.
       { find: '$lib', replacement: path.resolve(here, 'src/lib') },
-      { find: '$types', replacement: path.resolve(here, 'src/lib/types') },
-      { find: '$contestant', replacement: path.resolve(here, 'src/lib/contestant') },
-      { find: '$layouts', replacement: path.resolve(here, 'src/lib/layouts') },
+      // The project aliases, read from `svelte.config.js` so the app and the unit tests resolve the same list.
+      ...Object.entries(svelteConfig.kit?.alias ?? {}).map(([find, replacement]) => ({ find, replacement })),
       // SvelteKit env modules stub
       {
         find: '$env/dynamic/public',

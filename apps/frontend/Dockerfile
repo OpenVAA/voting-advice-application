@@ -25,7 +25,7 @@ FROM base AS shared
 WORKDIR /opt
 
 # Build all shared modules
-RUN yarn build
+RUN yarn turbo run build --filter='./packages/*'
 
 FROM base AS production
 

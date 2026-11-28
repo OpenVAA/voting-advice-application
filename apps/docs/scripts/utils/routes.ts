@@ -16,7 +16,7 @@ export interface RouteInfo {
 }
 
 /**
- * Discover all routes by finding +page.md and +page.svelte files Excludes generated documentation directories (COPY_TARGETS)
+ * Discover all routes by finding +page.md and +page.svelte files. Excludes generated documentation directories (COPY_TARGETS).
  */
 export async function discoverRoutes(routesDir: string): Promise<Array<RouteInfo>> {
   // Build ignore patterns for all COPY_TARGETS destinations
@@ -38,7 +38,7 @@ export async function discoverRoutes(routesDir: string): Promise<Array<RouteInfo
 
   for (const file of pageFiles) {
     const dir = path.dirname(file);
-    // Remove route groups (segments wrapped in parentheses) from the route path E.g., "(content)/about" becomes "/about"
+    // Remove route groups (segments wrapped in parentheses) from the route path. E.g., "(content)/about" becomes "/about".
     const route = dir === '.' ? '/' : normalizeRoutePath(dir);
     const fullPath = path.join(routesDir, dir);
 

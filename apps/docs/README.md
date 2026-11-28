@@ -33,7 +33,7 @@ apps/docs/
 ├── mdsvex.config.js                      # mdsvex options shared by the build and the link check
 ├── svelte.config.js                      # adapter-static, 404.html fallback
 ├── vite.config.ts                        # Dev server port
-└── eslint.config.js, prettier.config.mjs, tailwind.config.mjs, tsconfig.json
+└── eslint.config.js, prettier.config.mjs, tsconfig.json
 ```
 
 The generated pages live in `src/routes/(content)/developers-guide/frontend/components/generated/` and `src/routes/(content)/developers-guide/frontend/routing/generated/`. They are committed; never edit them by hand.

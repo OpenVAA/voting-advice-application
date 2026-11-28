@@ -81,11 +81,11 @@ export interface TrackedPaths {
 }
 
 /**
- * Extract all markdown links from content Matches [text](url) and [text](<url>) formats
+ * Extract all markdown links from content. Matches [text](url) and [text](<url>) formats.
  */
 export function extractMarkdownLinks(content: string): Array<MarkdownLink> {
   const links: Array<MarkdownLink> = [];
-  // Match both [text](url) and [text](<url>) formats The second format allows parentheses in the URL
+  // Match both [text](url) and [text](<url>) formats. The second format allows parentheses in the URL.
   const linkRegex = /\[([^\]]+)\]\((?:<([^>]+)>|([^)]+))\)/g;
   const lines = content.split('\n');
 

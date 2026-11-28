@@ -4,7 +4,7 @@ SvelteKit 2 frontend for OpenVAA Voting Advice Applications.
 
 ## Dev workflow
 
-`yarn dev` (from repo root) starts three processes concurrently via `concurrently`:
+`yarn dev` (from repo root) first starts local Supabase (`yarn db:start`), then runs the package watcher and the Vite dev server concurrently via `concurrently`:
 
 1. **Local Supabase** (`yarn db:start`) — Postgres, Auth, Storage, Edge Functions, Inbucket
 2. **Package watcher** (`yarn watch:shared`, which runs `turbo watch build --filter='./packages/*'`) — rebuilds shared `@openvaa/*` packages' `dist/` outputs whenever their source changes
@@ -44,4 +44,4 @@ If you see stale module errors after a fresh clone or after a long-running dev s
 ## Tests
 
 - `yarn workspace @openvaa/frontend test:unit` — Vitest unit tests
-- `yarn test:e2e` (from repo root, requires `yarn dev` running) — Playwright E2E tests
+- `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset` (from repo root) — Playwright E2E tests; to drive a server you started yourself, see [`tests/README.md` § Run](../../tests/README.md#run)

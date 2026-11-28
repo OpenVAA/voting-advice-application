@@ -6,7 +6,7 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/apps/frontend" # Location of package manifests
+    directory: "/" # The root manifest and yarn.lock cover every workspace
     schedule:
       interval: "monthly"
     target-branch: "main"
