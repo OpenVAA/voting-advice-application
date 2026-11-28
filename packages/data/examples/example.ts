@@ -41,7 +41,8 @@ for (const qc of questionCategories) {
   for (const q of qc.questions!.filter((q) => q.appliesTo(filters))) console.info(`- ${q.name}`);
 }
 
-// Get the nominations for the selected election in the selected constituency NB. We could pass the nominations to the matching algorith before showing them
+// Get the nominations for the selected election in the selected constituency.
+// NB. We could pass the nominations to the matching algorithm before showing them.
 console.info(`Nominations for ${election.name} in constituency ${constituency.name}`);
 
 console.info('Organizations:');

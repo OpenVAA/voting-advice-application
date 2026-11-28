@@ -12,16 +12,16 @@ test('ParseNominationTree should return one item per tree leaf, each carrying it
     .flatMap((byConstituency) => Object.values(byConstituency))
     .reduce((count, nominations) => count + nominations.length, 0);
 
-  // Non-vacuity guard on the DERIVATION itself. Without it an empty fixture would make `expectedCount` 0, and `toHaveLength(0)` would be satisfied by a parse that returned nothing — re-opening the exact hole the length assertion exists to close. Do not remove this line.
+  // Without this guard an empty fixture would make `expectedCount` 0, and `toHaveLength(0)` would pass on a parse that returned nothing.
   expect(expectedCount).toBeGreaterThan(0);
   expect(nominationData).toHaveLength(expectedCount);
 
   const electionIds = Object.keys(tree);
   nominationData.forEach((d) => {
-    // Membership, not definedness: a nomination carrying a defined-but-wrong id is exactly the regression the previous mere-definedness check could not see.
+    // Membership, not definedness: a nomination with a defined but wrong id must fail.
     //
     // The election-id assertion is also the GUARD for the dereference on the line below it, and both properties are load-bearing: it must stay FIRST and it must stay a hard `expect`.
-    // When an id is wrong, `tree[d.electionId]` is `undefined`, so a soft or reordered assertion would surface the regression as a `TypeError` on the wrong axis instead of as this assertion failing. Do not "tidy" these two lines into one soft block.
+    // A wrong id makes `tree[d.electionId]` `undefined`, so these two assertions stay hard and in this order: a wrong id then fails here rather than as a `TypeError`.
     expect(electionIds).toContain(d.electionId);
     expect(Object.keys(tree[d.electionId])).toContain(d.constituencyId);
   });

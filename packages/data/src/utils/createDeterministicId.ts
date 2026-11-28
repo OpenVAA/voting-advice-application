@@ -55,7 +55,8 @@ export function createDeterministicId<TType extends DynamicObjectType>({
 }
 
 /**
- * cyrb53 (c) 2018 bryc (github.com/bryc) License: Public domain (or MIT if needed). Attribution appreciated.
+ * cyrb53 (c) 2018 bryc (github.com/bryc)
+ * License: Public domain (or MIT if needed). Attribution appreciated.
  * A fast and simple 53-bit string hash function with decent collision resistance. Largely inspired by MurmurHash2/3, but with a focus on speed/simplicity.
  * Source: https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
  */
