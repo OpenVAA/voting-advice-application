@@ -1,10 +1,10 @@
 import { configureLogger, log } from '@openvaa/app-shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { invitationCodeLogin } from './invitationCodeLogin';
 import { CONTESTANT_GRANTS, readGrants } from './grants';
+import { invitationCodeLogin } from './invitationCodeLogin';
 import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
-import type { InvitationCodeLoginContext } from './invitationCodeLogin';
 import type { GrantClaim } from './grants';
+import type { InvitationCodeLoginContext } from './invitationCodeLogin';
 
 /**
  * The code-login helper: a code sign-in on the caller's context, then the admission every sign-in goes through.

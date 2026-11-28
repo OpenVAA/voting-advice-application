@@ -6,7 +6,7 @@
 
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fakeJob,FakeJobStates } from '$lib/testing/fakeJobStates.svelte';
+import { fakeJob, FakeJobStates } from '$lib/testing/fakeJobStates.svelte';
 
 let jobs!: FakeJobStates;
 
