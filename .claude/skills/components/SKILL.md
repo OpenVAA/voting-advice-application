@@ -133,6 +133,10 @@ The split is a dependency rule, not a filing convention: a base component that r
    `// svelte-warning: accepted — <one-sentence-rationale>` immediately above the offending line.
    The preferred outcome is still to fix the warning at source.
 
+8. **No hard-coded locale.** A default or fallback locale is `defaultLocale` from
+   `apps/frontend/src/lib/i18n/init.ts` (the `isDefault` entry of `staticSettings.supportedLocales`),
+   never a literal `'en'`; see `.agents/code-review-checklist.md`.
+
 ## Context reactivity — read this before wiring any data into a component
 
 This is the one rule in this skill an agent cannot recover by reading the code, because the failing
