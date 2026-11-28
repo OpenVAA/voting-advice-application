@@ -115,19 +115,16 @@
     <!-- Job metadata in a clean grid -->
     <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
       <div class="flex flex-col">
-        <span class="text-base-content/60 text-xs font-medium tracking-wide uppercase"
-          >{t('adminApp.jobs.author')}</span>
+        <span class="text-secondary text-xs font-medium tracking-wide uppercase">{t('adminApp.jobs.author')}</span>
         <span class="mt-1 text-sm font-medium">{job.author}</span>
       </div>
       <div class="flex flex-col">
-        <span class="text-base-content/60 text-xs font-medium tracking-wide uppercase"
-          >{t('adminApp.jobs.started')}</span>
+        <span class="text-secondary text-xs font-medium tracking-wide uppercase">{t('adminApp.jobs.started')}</span>
         <span class="mt-1 text-sm font-medium">{new Date(job.startTime).toLocaleString()}</span>
       </div>
       {#if job.endTime}
         <div class="flex flex-col">
-          <span class="text-base-content/60 text-xs font-medium tracking-wide uppercase"
-            >{t('adminApp.jobs.duration')}</span>
+          <span class="text-secondary text-xs font-medium tracking-wide uppercase">{t('adminApp.jobs.duration')}</span>
           <span class="mt-1 text-sm font-medium">{formatJobDuration(job)}</span>
         </div>
       {/if}
@@ -143,7 +140,7 @@
             <span class="loading loading-spinner loading-sm text-warning"></span>
             <span class="text-warning text-sm font-medium">{t('adminApp.jobs.aborting')}</span>
           </div>
-          <span class="text-base-content/60 text-xs">{Math.round(job.progress * 100)}%</span>
+          <span class="text-secondary text-xs">{Math.round(job.progress * 100)}%</span>
         </div>
         <ProgressBar progress={job.progress} label="" showPercentage={false} color="accent" size="md" />
         <div class="text-base-content/70 mt-2 text-xs">

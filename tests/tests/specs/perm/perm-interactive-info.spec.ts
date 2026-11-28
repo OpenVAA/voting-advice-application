@@ -66,7 +66,7 @@ test.describe('perm-interactive-info (EPERM-07)', () => {
 
     // The customData.infoSections render inside the modal (two sections seeded).
     await questionInfo.expectInfoSections([0, 1]);
-    // Close the modal before navigating — the open Drawer scrim intercepts the page-level question-next pointer events.
+    // Close the modal before navigating — the open drawer's backdrop intercepts the page-level question-next pointer events.
     await dismissInfoModal(page);
 
     // ARGUMENTS render per-type. Each carrier (qu-likert/boolean/categorical) is a SEPARATE question because argument rendering is type-dependent and the categorical layout groups by choiceId. Reach each via question-next, open its popup-info disclosure, assert its argument group, then dismiss the modal before the next nav.

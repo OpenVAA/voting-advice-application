@@ -85,7 +85,7 @@
       </h3>
       {#if !activeJob}
         <div class="border-base-300 bg-base-200/30 rounded-lg border-2 border-dashed py-8 text-center">
-          <div class="text-base-content/60">
+          <div class="text-secondary">
             <div class="text-sm">{t('adminApp.jobs.noActiveJobs')}</div>
           </div>
         </div>
@@ -120,7 +120,7 @@
 
       {#if pastJobs.length === 0}
         <div class="border-base-300 bg-base-200/30 rounded-lg border-2 border-dashed py-8 text-center">
-          <div class="text-base-content/60">
+          <div class="text-secondary">
             <div class="text-sm">{t('adminApp.jobs.noPastJobs')}</div>
           </div>
         </div>

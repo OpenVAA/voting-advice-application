@@ -26,7 +26,7 @@ import { supabaseUrl } from '../../utils/supabaseUrl';
 const SCRATCH_PROJECT_ID = '00000000-0000-0000-0000-0000000005c1';
 
 /**
- * The `external_id` prefix of every row this spec creates. Deliberately not named `PREFIX`: the config's teardown-prefix guard scans that name, and this spec owns no teardown project.
+ * The `external_id` prefix of every row this spec creates.
  */
 const STORAGE_CLEANUP_EXTERNAL_ID_PREFIX = 'e2e-storage-cleanup-';
 

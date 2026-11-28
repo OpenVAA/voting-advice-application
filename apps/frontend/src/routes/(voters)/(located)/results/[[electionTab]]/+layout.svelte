@@ -9,7 +9,7 @@ The outermost of the three results route levels. It owns the page chrome — the
 - URL is the single source of truth. The active election is `voterCtx.currentResultsElection`, derived from `page.params.electionTab` (name-disjoint from the search-side `?electionId=…` AVAILABLE-array surface, which keeps its `voterContext.selectedElections` semantics — that array drives nomination + question filtering and is set by the voter at `/elections`). No local `$state` twins for URL-derivable state; no `$effect`-based sync.
 - This level SURVIVES every in-results navigation, an election switch included: a tab switch, a drawer open and a drawer close change params below it, and an election switch changes only this level's own param, so SvelteKit reuses the component. The page-entry event therefore fires once per visit to the results page, on mount; an election switch is recorded by `results_changeElection` and does not re-fire it. The popup countdowns are likewise started once per visit; their effects re-run only when the app settings change, not on an election switch.
 - `{@render children()}` is rendered INSIDE the `fullWidth` snippet, so the descendant-owned list stays inside `MainContent`'s full-width region. Rendering it outside that snippet would take the list out of its container.
-- Chooser instead of children: when no election can be implied, this layout renders the select-an-election prompt INSTEAD of its children. The entity-tab layout below applies the same rule to its own param.
+- Chooser instead of children: when no election can be implied, this layout renders the select-an-election prompt INSTEAD of its children, unless the URL opens an entity drawer. The entity-tab layout below applies the same rule, with the same drawer carve-out, to its own param.
 
 Sibling tracking concerns:
 - `startFeedbackPopupCountdown` via `appSettings.results.showFeedbackPopup`
@@ -27,7 +27,7 @@ Sibling tracking concerns:
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { buildListRoute, narrowEntityPlural, pluralForEntityType } from '$lib/routes';
+  import { buildListRoute, hasEntityDrawer, narrowEntityPlural, pluralForEntityType } from '$lib/routes';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { DELAY } from '$lib/utils/timing';
   import type { Election } from '@openvaa/data';
@@ -39,7 +39,7 @@ Sibling tracking concerns:
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Reactive accessors are read as voterCtx.X, never destructured or aliased (CLAUDE.md § Context Destructuring Rule).
+  // Reactive accessors are read as voterCtx.X or through a $derived alias, never destructured; dataRoot is never aliased (CLAUDE.md § Context Destructuring Rule).
   const voterCtx = getVoterContext();
   const { answers, getRoute, track, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = voterCtx;
   const appSettings = $derived(voterCtx.appSettings);
@@ -54,13 +54,16 @@ Sibling tracking concerns:
   //   - SEARCH side: `?electionId=…` / `electionId[N]=…` (zero-or-more) — the AVAILABLE elections (voter scope set at `/elections`), surfaced via `voterContext.selectedElections`.
   // The two share NO key name (electionTab vs electionId) — different identifiers throughout the codebase. The server-side guard at `[[electionTab]]/+layout.ts` validates that `params.electionTab` is a member of the AVAILABLE array.
   //
-  // entityTab + entity + id are route params, gated by the entityTypePlural / entityTypeSingular short-name matchers. They are read at the levels that own them (the entity-tab layout and the innermost page), not here.
+  // entityTab + entity + id are route params, gated by the entityTypePlural / entityTypeSingular matchers. They are read at the levels that own them (the entity-tab layout and the innermost page), not here, except for the drawer carve-out below.
   //
   // The active election is `voterCtx.currentResultsElection`: the route segment, or the only available election when the segment is absent and exactly one is available. The server guard in `[[electionTab]]/+layout.ts` redirects that case to the canonical URL first, so the fallback is the client-side safety net.
 
   const _urlPlural = $derived(narrowEntityPlural(page.params.entityTab));
 
   const activeEntityType = $derived(voterCtx.currentResultsEntityType);
+
+  // The drawer is an overlay keyed on `entity` + `id`, so children render for an entity URL even when no election resolves, as the entity-tab layout does for an unresolved type. A bare `/results` card link carries no election segment, so SvelteKit slots its plural into the freeform `[[electionTab]]` and no election matches it.
+  const drawerVisible = $derived(hasEntityDrawer(page.params));
 
   ////////////////////////////////////////////////////////////////////
   // Start countdowns and track events
@@ -156,7 +159,7 @@ Sibling tracking concerns:
         class="bg-base-300 flex min-h-[120vh] flex-col items-center [content-visibility:auto]"
         style="content-visibility: auto;"
         data-testid="voter-results-list-container">
-        {#if voterCtx.currentResultsElection}
+        {#if voterCtx.currentResultsElection || drawerVisible}
           {@render children()}
         {:else}
           <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>

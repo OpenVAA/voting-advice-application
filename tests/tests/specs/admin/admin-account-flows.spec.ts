@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_ID } from '@openvaa/dev-seed';
 import {
   createAdminForgotPasswordPage,
   createAdminPasswordResetPage,
@@ -74,7 +75,7 @@ async function signInAsAdminWithPassword(page: Page): Promise<void> {
 }
 
 /** The project `seed.sql` creates on every stack, which is not the suite's project. */
-const OTHER_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
+const OTHER_PROJECT_ID = DEFAULT_PROJECT_ID;
 
 /** The candidate reserved for the spec, which an admin who uses both apps edits. */
 const ADMIN_FLOWS_CANDIDATE: EntityGrantTarget = {

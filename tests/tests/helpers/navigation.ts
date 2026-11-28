@@ -100,18 +100,9 @@ export async function readNavigationLandmarkText(page: Page): Promise<string | n
 }
 
 /**
- * The document of each page that {@link waitForNavigationFocusReset} or {@link waitForHydration} has seen hydrated, by its `performance.timeOrigin`, which is the same for the whole life of a document and new for each document a page loads.
- */
-const hydratedDocuments = new WeakMap<Page, number>();
-
-function documentTimeOrigin(page: Page): Promise<number> {
-  return page.evaluate(() => performance.timeOrigin);
-}
-
-/**
  * Wait until the root layout's post-navigation focus reset has landed: the page's `[data-focus-on-nav]` element, or its first `<h1>` when it has none, holds focus. The selector is the one {@link readNavigationLandmarkText} reads.
  *
- * On a page opened by its URL, the reset is the first sign that the page has hydrated. SvelteKit calls the root layout's `afterNavigate` once the page has mounted and starts its router in the same turn, and the reset moves focus in a later frame. Until the router has started, a press of a link the server rendered is followed by the browser itself and loads a new document, so a step whose press must be a navigation inside the application waits for this before it presses.
+ * On a page opened by its URL, the reset is the first sign that the page has hydrated. SvelteKit calls the root layout's `afterNavigate` once the page has mounted and starts its router in the same turn, and the reset moves focus in a later frame. Until the router has started, a press of a link the server rendered is followed by the browser itself and loads a new document, so a step whose press must be a navigation inside the application waits before it presses; one that needs only the hydration, and not the focus, waits with {@link waitForHydration}.
  *
  * The page must be one on which nothing has moved focus since the navigation that opened it: focus moved elsewhere keeps this wait open until it fails.
  *
@@ -137,13 +128,12 @@ export async function waitForNavigationFocusReset(
       }
     )
     .toBe(true);
-  hydratedDocuments.set(page, await documentTimeOrigin(page));
 }
 
 /**
  * Wait until the page's current document has hydrated, so that a press of a control the server rendered reaches its handler.
  *
- * A document hydrates once. When a {@link waitForNavigationFocusReset} or an earlier call of this function has already seen this document hydrated, this returns at once, whatever holds focus now. Otherwise it waits for either of two facts that only the page's script can produce: the post-navigation focus reset (see {@link waitForNavigationFocusReset}, whose precondition applies — nothing has moved focus since the navigation that opened the page), or an open modal dialog, which only `showModal()` opens and which makes the content under it inert, so that the focus reset cannot land while it is open. A step that moves focus before the first press that needs hydration calls this right after the navigation instead.
+ * The root layout sets `data-hydrated` on `<html>` when it mounts, in the same task in which SvelteKit starts its router, and every document a page loads starts without it. The wait therefore holds for any document, whether a client navigation, `page.goto`, a reload or a server redirect brought it, and whatever holds focus.
  *
  * @param page - Playwright Page.
  * @param options.timeout - The wait's budget; `TIMEOUTS.slowPage` when omitted.
@@ -152,22 +142,12 @@ export async function waitForHydration(
   page: Page,
   { timeout = TIMEOUTS.slowPage }: { timeout?: number } = {}
 ): Promise<void> {
-  if (hydratedDocuments.get(page) === (await documentTimeOrigin(page))) return;
   await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          if (document.querySelector(':modal') !== null) return true;
-          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
-          return target !== null && document.activeElement === target;
-        }),
-      {
-        message: `the page at ${page.url()} did not hydrate: neither the post-navigation focus reset landed nor a modal dialog opened`,
-        timeout
-      }
-    )
+    .poll(() => page.evaluate(() => document.documentElement.hasAttribute('data-hydrated')), {
+      message: `the page at ${page.url()} did not hydrate: the root layout never marked its document`,
+      timeout
+    })
     .toBe(true);
-  hydratedDocuments.set(page, await documentTimeOrigin(page));
 }
 
 /**

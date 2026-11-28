@@ -41,7 +41,6 @@
 
 import {
   ALLOWED_TEARDOWN_TABLES,
-  DEFAULT_PROJECT_ID,
   E2E_PROJECT_ID,
   resolveCollectionName,
   resolveE2eProjectId,
@@ -55,11 +54,7 @@ import type { FindDataResult, InvitationNominationSeed, SeededInvitation } from 
 // Direct import, the same shape `buildRoute.ts` uses. Type-only: the constant is consumed as `typeof ADMIN_GRANTS` below, which is a compile-time read of the application's own declaration and needs no runtime binding.
 import type { ADMIN_GRANTS, GrantClaim } from '../../../apps/frontend/src/lib/auth/grants';
 
-// Re-exports for backward-compat with existing E2E imports.
-// `tests/seed-test-data.ts` + all tests/tests/**/*.spec.ts files may import
-// these from `./utils/supabaseAdminClient` — preserving the path + names.
-export { DEFAULT_PROJECT_ID };
-// Re-exported beside `DEFAULT_PROJECT_ID` so specs and setups can name the suite's own project without reaching into the dev-seed package for it.
+// Re-exported so specs and setups can name the suite's own project without reaching into the dev-seed package for it.
 export { E2E_PROJECT_ID, resolveE2eProjectId };
 export type { FindDataResult };
 
@@ -1188,7 +1183,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *
    * Exactly two mutations, through the same {@link registerWithGrants} as `forceRegister`, so a failed grant insert rolls the account back.
    *
-   * The shape is `TEST_ADMIN_GRANT` — a member of the application's own `ADMIN_GRANTS`, checked at compile time by that constant's declaration, not a pair picked here. The target is `DEFAULT_PROJECT_ID`, because the RLS predicate guarding `admin_jobs` is `user_can('project', X, …)` and a project grant reaches only its own project. An admin scoped anywhere else logs in fine and then fails the job insert for a reason that has nothing to do with what a test is measuring.
+   * The shape is `TEST_ADMIN_GRANT` — a member of the application's own `ADMIN_GRANTS`, checked at compile time by that constant's declaration, not a pair picked here. The target is this client's project (`this.projectId`; the suite's E2E project for an argument-less client), because the RLS predicate guarding `admin_jobs` is `user_can('project', X, …)` and a project grant reaches only its own project. An admin scoped anywhere else logs in fine and then fails the job insert for a reason that has nothing to do with what a test is measuring.
    *
    * Removal is `unregisterUser(email)`.
    *

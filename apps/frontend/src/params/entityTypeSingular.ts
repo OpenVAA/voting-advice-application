@@ -1,7 +1,7 @@
 /**
  * SvelteKit param matcher for the singular entity-type segment `entity` of `/results/[[electionTab]]/[[entityTab=entityTypePlural]]/[[entity=entityTypeSingular]]/[[id]]`.
  *
- * Accepts `candidate` | `organization` | `alliance`. For any other value SvelteKit serves its 404 before the page mounts.
+ * Accepts `candidate` | `organization` | `alliance`. A value that fails the matcher leaves this optional segment empty and moves on to the next optional segment; the results leaf's +page.ts answers the resulting matcher fallthrough with a 404.
  *
  * The filename must equal the matcher name in the route brackets.
  */

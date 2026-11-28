@@ -13,10 +13,11 @@ import path from 'path';
 import { TIMEOUTS } from '../../helpers';
 import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { TESTS_DIR } from '../../utils/testsDir';
+import { templateTeardownPrefix } from '../shared/assertTeardown';
 import { registerAndStoreSession } from '../shared/registerAndStoreSession';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
-const PREFIX = 'e2e-perm-answers-locked-';
+const PREFIX = templateTeardownPrefix('perm-answers-locked');
 export const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-answers-locked.json');
 
 setup('import perm-answers-locked dataset + mint candidate session', async ({ page }) => {

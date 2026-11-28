@@ -54,7 +54,7 @@ When the active entity type cannot be resolved — no nominations for the active
 
   const activeEntityType = $derived(voterCtx.currentResultsEntityType);
 
-  // An open drawer is an OVERLAY keyed on `entity` + `id`, not a part of the list hierarchy, and it must mount even when the active entity type cannot be resolved. This carve-out guarantees that an entity URL whose type cannot be resolved still mounts the drawer, over an empty list, rather than a blank page. The reachable case is a bare `/results` whose card links carry no election segment: SvelteKit then slots the PLURAL into the freeform `[[electionTab]]`, no election resolves, and the type goes undefined. `perm-localisation-positive` opens a drawer from exactly that page.
+  // An open drawer is an OVERLAY keyed on `entity` + `id`, not a part of the list hierarchy, and it must mount even when the active entity type cannot be resolved. This carve-out guarantees that an entity URL whose type cannot be resolved still mounts the drawer, over an empty list, rather than a blank page. The reachable case is a bare `/results` whose card links carry no election segment: SvelteKit then slots the PLURAL into the freeform `[[electionTab]]`, no election resolves, and the type goes undefined. `perm-localisation-positive` opens a drawer from exactly that page. The election-tab layout above carries the same carve-out for the unresolved election, so the carve-out applies at both levels.
   const drawerVisible = $derived(hasEntityDrawer(page.params));
 
   ////////////////////////////////////////////////////////////////////

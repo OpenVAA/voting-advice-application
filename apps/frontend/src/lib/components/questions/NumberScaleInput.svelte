@@ -111,7 +111,9 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
     if (!isSet) commit(liveValue);
   }
 
+  /** Enter and Space save an unset slider. Space is kept from scrolling the page, its default on a range input. */
   function handleKeydown(event: KeyboardEvent): void {
+    if (event.key === ' ') event.preventDefault();
     if (event.key === 'Enter' || event.key === ' ') commitIfUnset();
   }
 

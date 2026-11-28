@@ -11,9 +11,10 @@
 import { test as setup } from '@playwright/test';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_PASSWORD } from '../../utils/testCredentials';
+import { templateTeardownPrefix } from '../shared/assertTeardown';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
-const PREFIX = 'e2e-perm-closed-project-';
+const PREFIX = templateTeardownPrefix('perm-closed-project');
 const CANDIDATE_EXTERNAL_ID = `${PREFIX}cand-1`;
 const CANDIDATE_EMAIL = `${CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
 

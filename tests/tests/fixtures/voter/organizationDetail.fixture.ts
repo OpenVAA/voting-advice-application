@@ -32,15 +32,16 @@ import { createResultsPage } from './resultsPage.fixture';
 import { answerAndAdvanceToResults, walkUntilQuestionsIntro } from './voter-journey.fixture';
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
 import { TIMEOUTS } from '../../helpers';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 /** A six-digit hex colour, the one form an avatar's colour property holds. */
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
-/** The English text of the marker the detail puts beside the choice an entity selected, built from the entity's short name. It is read by a screen reader as part of that choice's name. */
+/** The English text of the marker the detail puts beside the choice an entity selected, built from the catalogue's message and the entity's short name. It is read by a screen reader as part of that choice's name. */
 function entitySelectedMarker(shortName: string): string {
-  return `${shortName}'s answer:`;
+  return messageOf('questions', 'answers.entityAnswerMarker').replace('{entity}', shortName);
 }
 
 /**

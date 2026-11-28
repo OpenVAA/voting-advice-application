@@ -158,7 +158,7 @@ export function createEntityDetails(page: Page) {
     /**
      * Assert the number-scale dual-marker read-only display inside the question block matching `target`. Derived from NumberScaleInput.svelte's display-mode markup:
      *   - the disabled `question-number-slider` carries `value = voter ?? entity ?? midpoint` (voter wins) — asserted as the authoritative numeric.
-     *   - the voter and entity markers encode each value in a `left: {pct}%` inline style; when voter === entity a SINGLE combined voter marker renders (bothEqual), otherwise one marker per present value.
+     *   - the voter and entity markers encode each value in an `inset-inline-start: {pct}%` inline style; when voter === entity a SINGLE combined voter marker renders (bothEqual), otherwise one marker per present value.
      *
      * `min`/`max` default to the base number question's 0/10 range (used only to compute the expected marker offset).
      */
@@ -190,12 +190,15 @@ export function createEntityDetails(page: Page) {
       if (voterValue != null && entityValue != null && voterValue === entityValue) {
         // bothEqual → a single combined marker at the shared position.
         await expect(markers).toHaveCount(1);
-        await expect(markers.first()).toHaveAttribute('style', new RegExp(`left:\\s*${pct(voterValue)}%`));
+        await expect(markers.first()).toHaveAttribute(
+          'style',
+          new RegExp(`inset-inline-start:\\s*${pct(voterValue)}%`)
+        );
       } else {
         const expectedCount = (voterValue != null ? 1 : 0) + (entityValue != null ? 1 : 0);
         await expect(markers).toHaveCount(expectedCount);
         if (voterValue != null) {
-          await expect(voterMarker).toHaveAttribute('style', new RegExp(`left:\\s*${pct(voterValue)}%`));
+          await expect(voterMarker).toHaveAttribute('style', new RegExp(`inset-inline-start:\\s*${pct(voterValue)}%`));
         }
       }
     },

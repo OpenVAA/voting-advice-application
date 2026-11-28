@@ -46,7 +46,7 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // Reactive accessors are read as voterCtx.X, never destructured or aliased (CLAUDE.md § Context Destructuring Rule).
+  // Reactive accessors are read as voterCtx.X or through a $derived alias, never destructured; dataRoot is never aliased (CLAUDE.md § Context Destructuring Rule).
   const voterCtx = getVoterContext();
   const { track, t } = voterCtx;
   const constituencies = $derived(voterCtx.selectedConstituencies);

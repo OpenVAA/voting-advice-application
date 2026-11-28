@@ -480,7 +480,7 @@ export const testIds = {
       infoButton: 'voter-questions-info-button',
       // Extended-info / arguments / terms surface (consumed by the expectInfoMode / expectInfoSections / expectArguments readers).
       //  - popupInfoButton: the <Button> on QuestionExtendedInfoButton.svelte that opens the interactiveInfo modal/drawer (popup mode). Renders only when appSettings.questions.interactiveInfo.enabled && !customData.video.
-      //  - popupInfoModal: the modal/drawer body (QuestionExtendedInfo root rendered inside the Drawer) so expectInfoMode(q,'popup') can assert the open modal.
+      //  - popupInfoModal: the modal/drawer body (QuestionExtendedInfo root rendered inside the drawer host (DrawerHost)) so expectInfoMode(q,'popup') can assert the open modal.
       //  - infoSection: per-customData.infoSections section (keyed by index) on QuestionExtendedInfo.svelte so expectInfoSections([...]) can enumerate.
       //  - argumentsExpander: the collapsible Arguments block wrapper on QuestionExtendedInfo.svelte (sibling to the per-index infoSection blocks). Its content (the per-group blocks) mounts only when expanded, so expectArguments expands it before reading the group.
       //  - argumentGroup: per-argument group on QuestionArguments.svelte. For categorical questions the group is keyed by choiceId (mirrors the keyed feedback-rating-{value} pattern); non-categorical groups fall back to the argument type. So expectArguments(q,type) can target a group.

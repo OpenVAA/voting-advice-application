@@ -168,6 +168,7 @@ export async function followCategoryStart(page: Page): Promise<void> {
   const href = await link.getAttribute('href');
   if (!href) throw new Error(`voter walk: the category intro start link lost its href at ${page.url()}`);
   await page.goto(href);
+  await waitForHydration(page, { timeout: STAGE_BUDGET });
 }
 
 /**

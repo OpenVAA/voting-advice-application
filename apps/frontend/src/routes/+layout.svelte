@@ -8,6 +8,7 @@
 - Starts a page view on every navigation, and flushes analytics on navigation, on the tab becoming hidden and on page hide.
 - Settles the logout modal's count when a document loads or comes back from the back-forward cache, and after every navigation: on the value the server writes once it has signed the browser out, the Contestant App's drafts and both cookies of the count are removed; a fresh document of the tab that held the modal also removes a count still running, which a page of another tab and a restored page still counting leave.
 - Sends analytics only to the application's own relay; it mounts no third-party script.
+- Marks the document as hydrated with a `data-hydrated` attribute on `<html>` once it has mounted.
 
 ### Settings
 
@@ -223,6 +224,11 @@
   ////////////////////////////////////////////////////////////////////
   // Other global effects
   ////////////////////////////////////////////////////////////////////
+
+  // The hydration marker. SvelteKit mounts the root during its hydration task and starts its router in the same task, before any later task can read the DOM, so once this attribute is visible a press of a server-rendered link is a navigation inside the application. Each document a page loads starts without it.
+  onMount(() => {
+    document.documentElement.dataset.hydrated = '';
+  });
 
   let feedbackModalRef = $state<{ openFeedback: () => void }>();
 

@@ -58,26 +58,26 @@
 
             <div class="stats stats-horizontal shadow">
               <div class="stat">
-                <div class="stat-title">{t('adminApp.jobs.activeJobs')}</div>
+                <div class="stat-title text-secondary">{t('adminApp.jobs.activeJobs')}</div>
                 <div class="stat-value {activeJobsCount > 0 ? 'text-primary' : 'text-success'}">{activeJobsCount}</div>
               </div>
 
               <div class="stat">
-                <div class="stat-title">{t('adminApp.jobs.successfulJobs')}</div>
+                <div class="stat-title text-secondary">{t('adminApp.jobs.successfulJobs')}</div>
                 <div class="stat-value text-success">
                   {ctx.jobs.pastJobs.filter((job) => job.status === 'completed').length}
                 </div>
               </div>
 
               <div class="stat">
-                <div class="stat-title">{t('adminApp.jobs.failedJobs')}</div>
+                <div class="stat-title text-secondary">{t('adminApp.jobs.failedJobs')}</div>
                 <div class="stat-value text-error">
                   {ctx.jobs.pastJobs.filter((job) => job.status === 'failed').length}
                 </div>
               </div>
 
               <div class="stat">
-                <div class="stat-title">{t('adminApp.jobs.abortedJobs')}</div>
+                <div class="stat-title text-secondary">{t('adminApp.jobs.abortedJobs')}</div>
                 <div class="stat-value text-warning">
                   {ctx.jobs.pastJobs.filter((job) => job.status === 'aborted').length}
                 </div>

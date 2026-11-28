@@ -34,14 +34,14 @@
 </script>
 
 {#snippet list(shown: Array<MaybeWrappedEntityVariant>)}
+  <h3 class="m-md">
+    {t(`results.${entityType}.numShown`, { numShown: shown.length })}
+  </h3>
   <EntityList cards={shown.map(getCardProps)} class="mb-lg" scrollIntoView={false} />
 {/snippet}
 
 <div class="px-md py-lg pb-safelgb grow" class:bg-base-300={!!entities.length}>
   {#if entities.length}
-    <h3 class="m-md">
-      {t(`results.${entityType}.numShown`, { numShown: entities.length })}
-    </h3>
     {#if entities.length > 5}
       <EntityListControls {entities} class="mb-md mx-10">
         {#snippet children(filtered)}

@@ -69,6 +69,26 @@ describe('NumberScaleInput — answer mode', () => {
     expect(onChange).toHaveBeenCalledExactlyOnceWith({ question: QUESTION, value: 5 });
   });
 
+  it('saves the midpoint when Space is pressed on an unset slider, without scrolling the page', () => {
+    const onChange = vi.fn();
+    mountSubject({ onChange });
+    const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    slider().dispatchEvent(event);
+    flushSync();
+    expect(event.defaultPrevented).toBe(true);
+    expect(onChange).toHaveBeenCalledExactlyOnceWith({ question: QUESTION, value: 5 });
+  });
+
+  it('keeps Space from scrolling the page on a set slider', () => {
+    const onChange = vi.fn();
+    mountSubject({ value: 3, onChange });
+    const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    slider().dispatchEvent(event);
+    flushSync();
+    expect(event.defaultPrevented).toBe(true);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('does not save again when a set slider is clicked', () => {
     const onChange = vi.fn();
     mountSubject({ value: 3, onChange });

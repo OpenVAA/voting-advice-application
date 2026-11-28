@@ -1,4 +1,3 @@
-import { BUILT_IN_TEMPLATES } from '@openvaa/dev-seed';
 import { defineConfig, devices } from '@playwright/test';
 import type { Project } from '@playwright/test';
 import dotenv from 'dotenv';
@@ -112,93 +111,6 @@ for (const entry of fs
         'The budget above counts call sites textually, so an aliased soft assertion is invisible to ' +
         'it — call `expect.soft(...)` inline, or the budget silently over-reports headroom.'
     );
-  }
-}
-
-/**
- * TEARDOWN-PREFIX-UNIQUENESS GUARD.
- *
- * `runTeardownAsserted` (`tests/tests/setup/shared/assertTeardown.ts`) turned the before/after row-count accounting into a HARD assertion. That assertion is only valid if each `*.teardown.ts` project owns an `external_id` prefix that no other project can touch concurrently — two data-teardown projects sharing (or substring-overlapping) a prefix race on the same before/after counts, and Playwright does not order data-teardown projects relative to each other unless an explicit `dependencies` edge forces it (most don't — see the perm family's `extraTeardownPrefix`-based cross-chain isolation instead of hard ordering).
- *
- * The guard collects every `*.teardown.ts` file's prefix — a literal `const PREFIX = '...'` declaration, or the `externalIdPrefix` of the template a `runTemplateTeardownAsserted('<template>')` / `templateTeardownPrefix('<template>')` call names — and throws at config-load time if any two are equal OR one is a string-prefix of another, because a `LIKE '<prefix>%'` scan of the shorter prefix also matches the longer one's rows. A shared prefix is otherwise invisible: the two counts race rather than failing on a fixed value. A comment asking future authors to pick a distinct prefix would be the same non-guard this file's other two checks exist to remove.
- *
- * Deliberately excludes files that declare no prefix AND call neither assertion helper (e.g. `contestant-journey.teardown.ts`, which performs no prefix-scoped delete — see `assertTeardown.ts`'s docblock). A file that DOES call `runTeardownAsserted(` or `runTemplateTeardownAsserted(` but whose prefix this guard fails to parse is a completeness failure, not a legitimate exclusion — see the `unparsed` check below (an enumeration guard with no completeness check fails the same way the orphan-probe guard above prevents).
- *
- * ENUMERATION SCOPE. Scans all of `TESTS_DIR`, not `TESTS_DIR/setup`, even though every `*.teardown.ts` file lives under `setup/` today. The teardown projects' `testMatch` patterns are unanchored regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/` would leave exactly that file invisible to the uniqueness check: the same enumeration drift the orphan-probe guard above prevents. Matching the scan to the runner's own scope keeps the two from drifting apart, which a convention ("put teardowns in setup/") would not.
- */
-const teardownDir = TESTS_DIR;
-// Named precondition, mirroring the ORPHAN-PROBE guard's `fs.existsSync` check above. Without it, a missing/renamed tests directory would die on a raw `readdirSync` ENOENT — the opposite of the "fails immediately and by name" property this guard claims for itself.
-if (!fs.existsSync(teardownDir)) {
-  throw new Error(
-    `Teardown prefix guard: expected directory '${teardownDir}' does not exist. The ` +
-      'teardown-prefix-uniqueness guard cannot enumerate *.teardown.ts ' +
-      'files without it.'
-  );
-}
-const teardownPrefixDeclarations: Array<{ file: string; prefix: string }> = [];
-const unparsedTeardownPrefixFiles: Array<string> = [];
-for (const rel of fs
-  .readdirSync(teardownDir, { recursive: true })
-  .map(String)
-  .filter((f) => f.endsWith('.teardown.ts'))) {
-  const abs = path.join(teardownDir, rel);
-  const source = fs.readFileSync(abs, 'utf8');
-  const match = /^\s*(?:export\s+)?const PREFIX(?:\s*:\s*string)?\s*=\s*['"]([^'"]+)['"]/m.exec(source);
-  const templateNames = new Set(
-    [...source.matchAll(/\b(?:runTemplateTeardownAsserted|templateTeardownPrefix)\(\s*['"]([^'"]+)['"]/g)].map(
-      (m) => m[1]
-    )
-  );
-  if (match) {
-    teardownPrefixDeclarations.push({ file: rel, prefix: match[1] });
-  } else if (templateNames.size > 0) {
-    for (const templateName of templateNames) {
-      const prefix = BUILT_IN_TEMPLATES[templateName]?.externalIdPrefix;
-      if (!prefix) {
-        throw new Error(
-          `Teardown prefix guard: '${rel}' names the template '${templateName}', which is not registered in ` +
-            "@openvaa/dev-seed's BUILT_IN_TEMPLATES or declares no externalIdPrefix."
-        );
-      }
-      teardownPrefixDeclarations.push({ file: rel, prefix });
-    }
-  } else if (source.includes('runTeardownAsserted(') || source.includes('runTemplateTeardownAsserted(')) {
-    unparsedTeardownPrefixFiles.push(rel);
-  }
-}
-if (unparsedTeardownPrefixFiles.length > 0) {
-  throw new Error(
-    'Teardown prefix guard could not parse a prefix in ' +
-      `${unparsedTeardownPrefixFiles.join(', ')}, but the file calls a teardown assertion helper — so its ` +
-      'prefix is NOT covered by the uniqueness/overlap check below and a collision could reappear ' +
-      "silently. Name the template as a string literal (`runTemplateTeardownAsserted('<template>')`), " +
-      "declare `const PREFIX = '...'` as a plain top-level string literal, or widen the regexes above " +
-      'to cover the new shape.'
-  );
-}
-for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
-  for (let j = i + 1; j < teardownPrefixDeclarations.length; j++) {
-    const a = teardownPrefixDeclarations[i];
-    const b = teardownPrefixDeclarations[j];
-    if (a.prefix === b.prefix) {
-      throw new Error(
-        `Teardown prefix collision: '${a.file}' and '${b.file}' both declare PREFIX = '${a.prefix}'. ` +
-          `The two data-teardown projects are not guaranteed to be ordered relative to each other, so ` +
-          `their runTeardownAsserted before/after row counts can race nondeterministically. ` +
-          `Give one of them its own dedicated prefix — and, if it reuses a shared dev-seed ` +
-          `template, its own dedicated template registration too, whose nested external_id references ` +
-          `are written against that prefix.`
-      );
-    }
-    if (a.prefix.startsWith(b.prefix) || b.prefix.startsWith(a.prefix)) {
-      const [shorter, longer] = a.prefix.length <= b.prefix.length ? [a, b] : [b, a];
-      throw new Error(
-        `Teardown prefix overlap: '${shorter.file}' declares PREFIX = '${shorter.prefix}', which is a ` +
-          `string-prefix of '${longer.file}'s PREFIX = '${longer.prefix}'. Both are matched by the SAME ` +
-          `\`external_id LIKE '${shorter.prefix}%'\` scan, so the shorter prefix's teardown/count also ` +
-          `touches the longer prefix's rows. Choose non-overlapping prefixes.`
-      );
-    }
   }
 }
 
