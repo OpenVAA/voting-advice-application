@@ -12,7 +12,10 @@
  * Default count = 4: enough questions to exercise the answer emitter & matching across a few dimensions; `i % 4` rotation ensures coverage of the 4 representative question_type variants (`singleChoiceOrdinal`, `boolean`, `singleChoiceCategorical`, `text`).
  */
 
+import { passThroughFixed } from './passThroughFixed';
+import type { LocalizedChoice } from '@openvaa/app-shared';
 import type { Enums, TablesInsert } from '@openvaa/supabase-types';
+import type { OrdinalChoice } from '../emitters/choices';
 import type { Ctx, Fragment } from '../types';
 
 export type QuestionsFragment = Fragment<TablesInsert<'questions'>>;
@@ -31,7 +34,7 @@ type QuestionRow = Omit<TablesInsert<'questions'>, 'category_id' | 'type'> & {
 /**
  * Standard Likert choices (5-point scale). The DB trigger validate_question_choices (`103-questions.sql`) requires ≥2 entries each with a string `id` key.
  */
-const LIKERT_5: Array<{ id: string; label: { en: string }; normalizableValue: number }> = [
+const LIKERT_5: Array<OrdinalChoice> = [
   { id: '1', label: { en: 'Strongly disagree' }, normalizableValue: 1 },
   { id: '2', label: { en: 'Disagree' }, normalizableValue: 2 },
   { id: '3', label: { en: 'Neutral' }, normalizableValue: 3 },
@@ -43,7 +46,7 @@ const LIKERT_5: Array<{ id: string; label: { en: string }; normalizableValue: nu
  * Simple categorical choices (for singleChoiceCategorical / multipleChoiceCategorical).
  * A minimal 3-option set; templates can supply richer ones.
  */
-const CATEGORICAL_3: Array<{ id: string; label: { en: string } }> = [
+const CATEGORICAL_3: Array<LocalizedChoice> = [
   { id: 'a', label: { en: 'Option A' } },
   { id: 'b', label: { en: 'Option B' } },
   { id: 'c', label: { en: 'Option C' } }
@@ -62,23 +65,10 @@ const TYPE_ROTATION = [
 export class QuestionsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // `defaults` ignores ctx here; reading `ctx.refs` is how a generator would scale its counts.
-
-  defaults(ctx: Ctx): QuestionsFragment {
-    return { count: 4 };
-  }
-
   generate(fragment: QuestionsFragment): Array<TablesInsert<'questions'>> {
     const { faker, projectId, externalIdPrefix, refs } = this.ctx;
-    const rows: Array<QuestionRow> = [];
 
-    for (const fx of fragment.fixed ?? []) {
-      rows.push({
-        ...fx,
-        external_id: `${externalIdPrefix}${fx.external_id}`,
-        project_id: fx.project_id ?? projectId
-      });
-    }
+    const rows: Array<QuestionRow> = passThroughFixed<QuestionRow>(fragment.fixed, this.ctx);
 
     // Pick a category external_id to attach; rotate across available categories so multiple questions land in each. If no categories exist yet (edge case: template supplies questions but no categories), emit rows WITHOUT `category` — bulk_import will then fail loudly with a clear "missing category_id" error rather than this generator silently producing orphans.
     const categoryExtIds = refs.question_categories.map((c) => c.external_id);

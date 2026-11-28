@@ -14,7 +14,7 @@ import { fanOutLocales } from '../src/locales';
 import { runPipeline } from '../src/pipeline';
 import type { Template } from '../src/template/types';
 
-describe('determinism (TMPL-08)', () => {
+describe('determinism', () => {
   it('same seed (42) produces byte-identical output across two fresh runs', () => {
     const run1 = runPipeline({ seed: 42 });
     const run2 = runPipeline({ seed: 42 });

@@ -15,54 +15,6 @@
  * Pure / synchronous / SSR-safe. No Supabase dependency.
  */
 
-const CARD_CONTENTS_KEYS = ['candidate', 'organization', 'alliance'] as const;
-
-type CardContentsKey = (typeof CARD_CONTENTS_KEYS)[number];
-
-interface ExternalIdRef {
-  externalId: string;
-}
-
-function isExternalIdRef(value: unknown): value is ExternalIdRef {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    !Array.isArray(value) &&
-    'externalId' in value &&
-    typeof (value as Record<string, unknown>).externalId === 'string'
-  );
-}
-
-function getCardContentsArray(settings: Record<string, unknown>, key: CardContentsKey): Array<unknown> | undefined {
-  const results = settings.results;
-  if (!results || typeof results !== 'object' || Array.isArray(results)) return undefined;
-  const cardContents = (results as Record<string, unknown>).cardContents;
-  if (!cardContents || typeof cardContents !== 'object' || Array.isArray(cardContents)) return undefined;
-  const arr = (cardContents as Record<string, unknown>)[key];
-  if (!Array.isArray(arr)) return undefined;
-  return arr;
-}
-
-/**
- * Returns `true` when at least one `{ externalId: '<id>' }` shape is present inside `results.cardContents.{candidate,organization,alliance}[*].question`.
- *
- * Cheap pre-walk used by the Writer to gate the questions-table SELECT — payloads without externalId references pay zero overhead.
- */
-export function settingsContainsExternalIdRefs(settings: unknown): boolean {
-  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return false;
-  for (const key of CARD_CONTENTS_KEYS) {
-    const arr = getCardContentsArray(settings as Record<string, unknown>, key);
-    if (!arr) continue;
-    for (const entry of arr) {
-      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-        const q = (entry as Record<string, unknown>).question;
-        if (isExternalIdRef(q)) return true;
-      }
-    }
-  }
-  return false;
-}
-
 /**
  * Resolve every `{ externalId: '<id>' }` reference inside the settings payload to its plain UUID string using the provided map.
  *
@@ -111,3 +63,51 @@ export function resolveAppSettingsExternalIds(
     }
   };
 }
+
+/**
+ * Returns `true` when at least one `{ externalId: '<id>' }` shape is present inside `results.cardContents.{candidate,organization,alliance}[*].question`.
+ *
+ * Cheap pre-walk used by the Writer to gate the questions-table SELECT — payloads without externalId references pay zero overhead.
+ */
+export function settingsContainsExternalIdRefs(settings: unknown): boolean {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return false;
+  for (const key of CARD_CONTENTS_KEYS) {
+    const arr = getCardContentsArray(settings as Record<string, unknown>, key);
+    if (!arr) continue;
+    for (const entry of arr) {
+      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        const q = (entry as Record<string, unknown>).question;
+        if (isExternalIdRef(q)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function getCardContentsArray(settings: Record<string, unknown>, key: CardContentsKey): Array<unknown> | undefined {
+  const results = settings.results;
+  if (!results || typeof results !== 'object' || Array.isArray(results)) return undefined;
+  const cardContents = (results as Record<string, unknown>).cardContents;
+  if (!cardContents || typeof cardContents !== 'object' || Array.isArray(cardContents)) return undefined;
+  const arr = (cardContents as Record<string, unknown>)[key];
+  if (!Array.isArray(arr)) return undefined;
+  return arr;
+}
+
+function isExternalIdRef(value: unknown): value is ExternalIdRef {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    'externalId' in value &&
+    typeof (value as Record<string, unknown>).externalId === 'string'
+  );
+}
+
+interface ExternalIdRef {
+  externalId: string;
+}
+
+const CARD_CONTENTS_KEYS = ['candidate', 'organization', 'alliance'] as const;
+
+type CardContentsKey = (typeof CARD_CONTENTS_KEYS)[number];

@@ -28,6 +28,7 @@
 import { COORDINATE } from '@openvaa/core';
 import { boxMuller } from './gaussian';
 import { defaultRandomValidEmit } from '../answers';
+import { readChoiceIds, readOrdinalChoices } from '../choices';
 import type { Enums, TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../../ctx';
 import type { LatentHooks, LoadingMatrix } from './latentTypes';
@@ -122,7 +123,7 @@ function computeZ(position: Array<number>, qLoading: Array<number>, noiseStdDev:
  * inverse-normalize `z` through `@openvaa/core`'s `COORDINATE` semantics. `z` is clipped to `[COORDINATE.Min, COORDINATE.Max]`: unbounded z from noise would otherwise land outside the normalizable range and produce NaN target values. The inverse of `normalizeCoordinate({ value, min: vmin, max: vmax })` is `targetValue = vmin + ((zClipped - COORDINATE.Min) / COORDINATE.Extent) * (vmax - vmin)`.
  */
 function mapOrdinal(q: TablesInsert<'questions'>, z: number): string | null {
-  const choices = extractOrdinalChoices(q);
+  const choices = readOrdinalChoices(q);
   if (choices.length === 0) return null;
   const zClipped = Math.max(COORDINATE.Min, Math.min(COORDINATE.Max, z));
   const values = choices.map((c) => c.normalizableValue);
@@ -149,7 +150,7 @@ function mapSingleCategorical(
   ctx: Ctx,
   qExtId: string
 ): string | null {
-  const choices = extractChoiceIds(q);
+  const choices = readChoiceIds(q);
   if (choices.length === 0) return null;
   const cls = getOrSampleChoiceLoadings(getChoiceLoadings(ctx), qExtId, choices.length, position.length, ctx);
   let bestIdx = 0;
@@ -170,7 +171,7 @@ function mapMultiCategorical(
   ctx: Ctx,
   qExtId: string
 ): Array<string> {
-  const choices = extractChoiceIds(q);
+  const choices = readChoiceIds(q);
   if (choices.length === 0) return [];
   const cls = getOrSampleChoiceLoadings(getChoiceLoadings(ctx), qExtId, choices.length, position.length, ctx);
   const picked: Array<string> = [];
@@ -211,46 +212,6 @@ function dot(a: Array<number>, b: Array<number>): number {
   const L = Math.min(a.length, b.length);
   for (let i = 0; i < L; i++) s += a[i] * b[i];
   return s;
-}
-
-/**
- * Extract ordinal choices with `normalizableValue`. Follows the S-5 defensive narrowing pattern from `extractChoiceIds` in answers.ts: treats `q.choices` as JSONB-unsafe, narrows entry-by-entry, drops malformed shapes.
- *
- * When the choice entry lacks an explicit `normalizableValue`, falls back to parsing the `id` as a number (the Likert convention — `id`s were `'1'..'5'`). QuestionsGenerator emits the explicit field, which is the primary path; the parseInt fallback keeps older templates / fixtures backwards-compatible.
- */
-function extractOrdinalChoices(q: TablesInsert<'questions'>): Array<{ id: string; normalizableValue: number }> {
-  const choices = q.choices;
-  if (!Array.isArray(choices)) return [];
-  return choices
-    .map((c) => {
-      if (c && typeof c === 'object' && 'id' in c) {
-        const id = String((c as { id: unknown }).id);
-        const nv =
-          typeof (c as { normalizableValue?: unknown }).normalizableValue === 'number'
-            ? (c as { normalizableValue: number }).normalizableValue
-            : Number.isFinite(Number(id))
-              ? Number(id)
-              : NaN;
-        if (!Number.isFinite(nv)) return null;
-        return { id, normalizableValue: nv };
-      }
-      return null;
-    })
-    .filter((v): v is { id: string; normalizableValue: number } => v !== null);
-}
-
-function extractChoiceIds(q: TablesInsert<'questions'>): Array<string> {
-  const choices = q.choices;
-  if (!Array.isArray(choices)) return [];
-  return choices
-    .map((c) => {
-      if (c && typeof c === 'object' && 'id' in c) {
-        const id = (c as { id: unknown }).id;
-        if (typeof id === 'string') return id;
-      }
-      return null;
-    })
-    .filter((v): v is string => v !== null);
 }
 
 // Compile-time contract assertion — if the `LatentHooks.project` signature drifts in latentTypes.ts, TypeScript reports the incompatibility here. The one seam, one place to audit — the convention from answers.ts.

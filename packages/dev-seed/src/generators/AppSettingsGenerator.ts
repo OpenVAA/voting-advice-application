@@ -18,6 +18,7 @@
  * Default count = 0: the seed.sql bootstrap row is already usable out of the box. Generating a second row adds no value unless the user wants to stamp dev-specific settings keys — which templates express explicitly via `count: 1` or `fixed: [{ settings: {...} }]`.
  */
 
+import { passThroughFixed } from './passThroughFixed';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx, Fragment } from '../types';
 
@@ -26,25 +27,15 @@ export type AppSettingsFragment = Fragment<TablesInsert<'app_settings'>>;
 export class AppSettingsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // `defaults` ignores ctx here; it is kept on the signature for consistency.
-
-  defaults(ctx: Ctx): AppSettingsFragment {
-    return { count: 0 };
-  }
-
   generate(fragment: AppSettingsFragment): Array<TablesInsert<'app_settings'>> {
     const { projectId, externalIdPrefix } = this.ctx;
-    const rows: Array<TablesInsert<'app_settings'>> = [];
 
     // fixed[] pass-through — typically at most one hand-authored row per project.
     // external_id prefixed for idempotent teardown (teardown filters by prefix); project_id defaulted. Per-project UNIQUE means users supplying multiple fixed entries MUST target distinct project_ids — otherwise the writer's updateAppSettings sequence merges them all into the same row (last-write-wins semantics at the JSONB merge layer).
-    for (const fx of fragment.fixed ?? []) {
-      rows.push({
-        ...fx,
-        external_id: `${externalIdPrefix}${fx.external_id}`,
-        project_id: fx.project_id ?? projectId
-      });
-    }
+    const rows: Array<TablesInsert<'app_settings'>> = passThroughFixed<TablesInsert<'app_settings'>>(
+      fragment.fixed,
+      this.ctx
+    );
 
     // Synthetic row: emit exactly one if count >= 1 (per-project UNIQUE).
     const n = Math.min(fragment.count ?? 0, 1);

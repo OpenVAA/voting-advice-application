@@ -3,7 +3,7 @@
  *
  * Downstream consumers import `validateTemplate` + `Template` + `TemplateSchema` from `./template` instead of reaching into `./schema` vs `./types`.
  *
- * This barrel also carries the single permitted-key declaration: `LINK_SENTINELS` (what the join-table resolver reads) and `permittedKeys` plus the twelve `FixedRow` aliases (what the type layer and the runtime guard both consume).
+ * This barrel also carries the single permitted-key declaration: `LINK_SENTINELS` (what the join-table resolver reads) and `permittedKeys` plus the eleven `FixedRow` aliases (what the type layer and the runtime guard both consume).
  */
 export type { LinkSentinelRule, LinkTarget, SentinelPayload } from './linkSentinels';
 export { LINK_SENTINELS } from './linkSentinels';
@@ -17,12 +17,9 @@ export type {
   ElectionsFixedRow,
   ExternalRef,
   FactionsFixedRow,
-  FeedbackFixedRow,
   FixedRow,
-  GuardedCollectionKey,
   NominationsFixedRow,
   OrganizationsFixedRow,
-  PassThroughCollectionKey,
   QuestionCategoriesFixedRow,
   QuestionsFixedRow,
   SentinelValue

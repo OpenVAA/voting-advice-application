@@ -38,9 +38,9 @@ import { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
 import { permOrganizationEditingTemplate } from './e2e/perm/perm-organization-editing';
 import { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
 import { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
+import { permShowFeedbackSurveyTemplate } from './e2e/perm/perm-show-feedback-survey';
 import { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
 import { permUnnominatedEntitiesTemplate } from './e2e/perm/perm-unnominated-entities';
-import { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';
 import { smokeTemplate } from './smoke';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
@@ -72,8 +72,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some of their setups sign a candidate in and save a Playwright storage-state file for the spec.
   'perm-answers-locked': permAnswersLockedTemplate,
   'perm-hide-hero': permHideHeroTemplate,
-  // renamed from the former perm-header-show-feedback key. Keeps header.showFeedback and extends with the survey/feedback-popup result-view surfaces.
-  'show-feedback-survey': showFeedbackSurveyTemplate,
+  'perm-show-feedback-survey': permShowFeedbackSurveyTemplate,
   'perm-header-show-help': permHeaderShowHelpTemplate,
   'perm-hide-all-nominations': permHideAllNominationsTemplate,
   'perm-hide-if-missing-answers': permHideIfMissingAnswersTemplate,
@@ -102,7 +101,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // Distinct externalIdPrefix 'e2e-perm-analytics-'. Consent NOT seeded — toggled at runtime by the spec.
   'perm-analytics-tracking': permAnalyticsTrackingTemplate,
 
-  // Closed-project perm (162.1 D-21): leaves its project with open_for_voters = false. Distinct externalIdPrefix 'e2e-perm-closed-project-'.
+  // Closed-project perm: leaves its project with open_for_voters = false. Distinct externalIdPrefix 'e2e-perm-closed-project-'.
   'perm-closed-project': permClosedProjectTemplate,
 
   // Hosted-project smoke dataset: 1001 candidates and 1001 nominations in one project, no auth user. Prefix 'smoke_'.
@@ -120,37 +119,5 @@ export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {
   default: defaultOverrides
 };
 
-// Re-exports for explicit consumer imports.
 export { defaultOverrides, defaultTemplate } from './default';
 export { BASE_APP_SETTINGS, baseTemplate } from './e2e/base';
-export { perm1e1cg1coTemplate } from './e2e/perm/perm-1e1cg1co';
-export { perm2eAsymmetricTemplate } from './e2e/perm/perm-2e-asymmetric';
-export { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
-export { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
-export { permAnalyticsTrackingTemplate } from './e2e/perm/perm-analytics-tracking';
-export { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
-export { permClosedProjectTemplate } from './e2e/perm/perm-closed-project';
-export { permContestantNominationsTemplate } from './e2e/perm/perm-contestant-nominations';
-export { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
-export { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';
-export { permDisableElection2coTemplate } from './e2e/perm/perm-disable-election-2co';
-export { permDisjoint1coTemplate } from './e2e/perm/perm-disjoint-1co';
-export { permHeaderShowHelpTemplate } from './e2e/perm/perm-header-show-help';
-export { permHideAllNominationsTemplate } from './e2e/perm/perm-hide-all-nominations';
-export { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags';
-export { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags';
-export { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
-export { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
-export { permIdentityProviderTemplate } from './e2e/perm/perm-identity-provider';
-export { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
-export { permLocalizationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
-export { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
-export { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
-export { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
-export { permOrganizationEditingTemplate } from './e2e/perm/perm-organization-editing';
-export { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
-export { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
-export { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
-export { permUnnominatedEntitiesTemplate } from './e2e/perm/perm-unnominated-entities';
-export { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';
-export { smokeTemplate } from './smoke';

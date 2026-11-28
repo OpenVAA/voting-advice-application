@@ -9,7 +9,7 @@
  *
  * Emitter seam (critical): `const emit = ctx.answerEmitter ?? defaultRandomValidEmit` is the SINGLE hook point the latent-factor emitter overrides. The default is the random-valid-per-question-type stub in emitters/answers.ts. Swapping emitters populates `ctx.answerEmitter` and leaves this file unchanged.
  *
- * The default emitter produces shape-valid random answers per question type, and shape-valid ONLY. Subdimension / MISSING_VALUE projection stays in `@openvaa/matching`; correlated / clustered answers are the latent emitter's concern, never this file's. ctx is captured at construction; `defaults(ctx)` is per-call.
+ * The default emitter produces shape-valid random answers per question type, and shape-valid ONLY. Subdimension / MISSING_VALUE projection stays in `@openvaa/matching`; correlated / clustered answers are the latent emitter's concern, never this file's. ctx is captured at construction.
  *
  * Ref dependencies (the pipeline must run generators in topological order):
  *   - `ctx.refs.organizations` — candidates round-robin pick an organization
@@ -22,6 +22,7 @@
  * Default count = 8: enough candidates per organization (4 orgs × 2) for visible matching patterns without stressing the <10s seed budget. Tune it upward when the latent emitter drives clustering.
  */
 
+import { passThroughFixed } from './passThroughFixed';
 import { defaultRandomValidEmit } from '../emitters/answers';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx, Fragment } from '../types';
@@ -41,25 +42,12 @@ type CandidateRow = TablesInsert<'candidates'> & {
 export class CandidatesGenerator {
   constructor(private ctx: Ctx) {}
 
-  // `defaults` ignores ctx here. Reading `ctx.refs.organizations` is what would let the count scale proportionally (candidates per organization).
-
-  defaults(ctx: Ctx): CandidatesFragment {
-    return { count: 8 };
-  }
-
   generate(fragment: CandidatesFragment): Array<TablesInsert<'candidates'>> {
     const { faker, projectId, externalIdPrefix, refs } = this.ctx;
-    const rows: Array<CandidateRow> = [];
 
     // fixed[] pass-through — external_id prefixed, project_id defaulted.
     // first_name / last_name are DB NOT NULL but Fragment's Partial relaxes them. Users supplying fixed[] are responsible for providing required fields; Postgres surfaces any omission with a clear NOT NULL error.
-    for (const fx of fragment.fixed ?? []) {
-      rows.push({
-        ...fx,
-        external_id: `${externalIdPrefix}${fx.external_id}`,
-        project_id: fx.project_id ?? projectId
-      } as CandidateRow);
-    }
+    const rows: Array<CandidateRow> = passThroughFixed<CandidateRow>(fragment.fixed, this.ctx);
 
     // Emitter seam: resolve the answer emitter ONCE per run. An override drops in here via `ctx.answerEmitter = latentEmitter`, with zero changes to this generator.
     const emit = this.ctx.answerEmitter ?? defaultRandomValidEmit;

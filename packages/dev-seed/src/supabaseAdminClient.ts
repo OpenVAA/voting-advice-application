@@ -5,7 +5,7 @@
  *
  * Env-var handling: the module-level fallbacks below let the tests/ E2E harness construct a client with no arguments. The Writer (packages/dev-seed/src/writer.ts) enforces that `SUPABASE_URL` and the service-role key are present; `createServiceRoleClient`, which this constructor calls, enforces that the URL it hands to `createClient` is local (see `./localSupabaseUrl`). Pure generators never construct this client, so `yarn test:unit` needs no env fixture.
  *
- * Bulk-import routing note: `bulk_import` RPC's `processing_order` accepts exactly 11 of 16 non-system tables. `accounts`, `projects`, `feedback`, `constituency_group_constituencies`, `election_constituency_groups` are NOT in that list. The two join tables arrive as link keys of `elections` and `constituency_groups` items, which `bulk_import` writes before any nomination and `bulkImport` below sends; callers route the other three elsewhere (writer strips accounts/projects, feedback via direct upsert). This file does not enforce the routing — it is a thin RPC wrapper.
+ * Bulk-import routing note: `bulk_import` RPC's `processing_order` accepts exactly 11 of 16 non-system tables. `accounts`, `projects`, `feedback`, `constituency_group_constituencies`, `election_constituency_groups` are NOT in that list. The two join tables arrive as link keys of `elections` and `constituency_groups` items, which `bulk_import` writes before any nomination and `bulkImport` below sends; dev-seed writes none of the other three. This file does not enforce the routing — it is a thin RPC wrapper.
  */
 
 import { SETTINGS_REPLACED_WHOLE } from '@openvaa/app-shared';

@@ -1,18 +1,18 @@
 /**
  * @openvaa/dev-seed pipeline orchestrator.
  *
- * `runPipeline(template, overrides?, ctx?)` drives all 14 generators in a topological order, populates `ctx.refs` between steps, bridges the `(fragment, ctx) => Rows ` override signature with the class-based built-in generators, and performs a post-topo sentinel enrichment pass.
+ * `runPipeline(template, overrides?, ctx?)` drives all 11 generators in a topological order, populates `ctx.refs` between steps, bridges the `(fragment, ctx) => Rows ` override signature with the class-based built-in generators, and performs a post-topo sentinel enrichment pass.
  *
  * topo order with one refinement — `question_categories` / `questions` run BEFORE `candidates` so `ctx.refs.questions` is populated when CandidatesGenerator's answer emitter (seam) iterates questions.
  * This diverges from `bulk_import`'s own `processing_order` (migration line
  * 2751), which runs `candidates` before `question_categories`. The database does not care about the `ctx.refs.questions` contract; the pipeline does.
  *
  * every generator's `generate(fragment)` receives a fragment formed by
- *       `{ ...gen.defaults(ctx), ...(template[table] ?? {}) }` so the template wins field-by-field over the generator's smart defaults.
+ *       `{ count: DEFAULT_COUNTS[table], ...(template[table] ?? {}) }` so the template wins field-by-field over the default count.
  *
  * bridge:
  *   const gen = new Gen(ctx);
- *   const fragment = { ...gen.defaults(ctx), ...(template[table] ?? {}) };
+ *   const fragment = { count: DEFAULT_COUNTS[table], ...(template[table] ?? {}) };
  *   const rows = overrides[table]?.(fragment, ctx) ?? gen.generate(fragment);
  *
  * `ctx.refs[table]` carries the FULL emitted rows after each step. The public `Ctx` type in `ctx.ts` narrows each ref to `Array<{ external_id: string }>` as a MINIMAL contract — generators that need more (CandidatesGenerator's answer emitter reads `question.type` / `question.choices`) cast up explicitly. The narrower public type keeps consumers untyped-accident-free while the pipeline uses a wider internal view.
@@ -22,7 +22,6 @@
 
 import { buildCtx } from './ctx';
 import { latentAnswerEmitter } from './emitters/latent/latentEmitter';
-import { AccountsGenerator } from './generators/AccountsGenerator';
 import { AlliancesGenerator } from './generators/AlliancesGenerator';
 import { AppSettingsGenerator } from './generators/AppSettingsGenerator';
 import { CandidatesGenerator } from './generators/CandidatesGenerator';
@@ -30,10 +29,8 @@ import { ConstituenciesGenerator } from './generators/ConstituenciesGenerator';
 import { ConstituencyGroupsGenerator } from './generators/ConstituencyGroupsGenerator';
 import { ElectionsGenerator } from './generators/ElectionsGenerator';
 import { FactionsGenerator } from './generators/FactionsGenerator';
-import { FeedbackGenerator } from './generators/FeedbackGenerator';
 import { NominationsGenerator } from './generators/NominationsGenerator';
 import { OrganizationsGenerator } from './generators/OrganizationsGenerator';
-import { ProjectsGenerator } from './generators/ProjectsGenerator';
 import { QuestionCategoriesGenerator } from './generators/QuestionCategoriesGenerator';
 import { QuestionsGenerator } from './generators/QuestionsGenerator';
 import { sentinelKeysFor } from './template/linkSentinels';
@@ -43,14 +40,8 @@ import type { Ctx, Overrides, Template } from './types';
  * Topological order of generator execution.
  *
  * Source: (`bulk_import`'s `processing_order`, migration line 2751) with one refinement — `question_categories` / `questions` run BEFORE `candidates` so `ctx.refs.questions` is populated when the answer emitter (seam) iterates questions.
- *
- * Accounts and projects lead the order: they are pass-through (the seed.sql bootstrap owns those rows). Keeping them in the ordering means the pipeline's generator-class map does not need a special branch for bootstrap-only tables.
- *
- * `feedback` runs last — no downstream ref consumers; writer routes it separately.
  */
 export const TOPO_ORDER = [
-  'accounts',
-  'projects',
   'elections',
   'constituency_groups',
   'constituencies',
@@ -61,20 +52,35 @@ export const TOPO_ORDER = [
   'questions', // before candidates, so the answer-emitter seam sees them
   'candidates', // reads ctx.refs.questions for the answer emitter
   'nominations',
-  'app_settings',
-  'feedback'
+  'app_settings'
 ] as const;
 
 export type TableName = (typeof TOPO_ORDER)[number];
 
 /**
- * Shared shape every generator class satisfies. The pipeline instantiates each class once with `ctx` captured at construction, then calls `generate(fragment)`. Each class also exposes `defaults(ctx)`.
+ * The number of synthetic rows each table's generator emits when the template's fragment sets no `count`.
+ */
+export const DEFAULT_COUNTS: Readonly<Record<TableName, number>> = {
+  elections: 1,
+  constituency_groups: 1,
+  constituencies: 2,
+  organizations: 4,
+  alliances: 0,
+  factions: 0,
+  question_categories: 2,
+  questions: 4,
+  candidates: 8,
+  nominations: 0,
+  app_settings: 0
+};
+
+/**
+ * Shared shape every generator class satisfies. The pipeline instantiates each class once with `ctx` captured at construction, then calls `generate(fragment)`.
  *
  * `fragment` / rows are typed at `unknown` / `Record<string, unknown>` on the boundary because different generator classes consume narrower `Fragment<T>` shapes and emit narrower `TablesInsert<T>[]` shapes. The pipeline does not reason about those per-table shapes — it only orchestrates.
  */
 interface GeneratorClass {
   new (ctx: Ctx): {
-    defaults: (ctx: Ctx) => unknown;
     generate: (fragment: unknown) => Array<Record<string, unknown>>;
   };
 }
@@ -83,8 +89,6 @@ interface GeneratorClass {
  * Map from table name to generator class. Pipeline iterates TOPO_ORDER and instantiates each class uniformly.
  */
 const GENERATOR_CLASSES: Record<TableName, GeneratorClass> = {
-  accounts: AccountsGenerator as unknown as GeneratorClass,
-  projects: ProjectsGenerator as unknown as GeneratorClass,
   elections: ElectionsGenerator as unknown as GeneratorClass,
   constituency_groups: ConstituencyGroupsGenerator as unknown as GeneratorClass,
   constituencies: ConstituenciesGenerator as unknown as GeneratorClass,
@@ -95,8 +99,7 @@ const GENERATOR_CLASSES: Record<TableName, GeneratorClass> = {
   questions: QuestionsGenerator as unknown as GeneratorClass,
   candidates: CandidatesGenerator as unknown as GeneratorClass,
   nominations: NominationsGenerator as unknown as GeneratorClass,
-  app_settings: AppSettingsGenerator as unknown as GeneratorClass,
-  feedback: FeedbackGenerator as unknown as GeneratorClass
+  app_settings: AppSettingsGenerator as unknown as GeneratorClass
 };
 
 /**
@@ -115,7 +118,7 @@ const GENERATOR_CLASSES: Record<TableName, GeneratorClass> = {
  * override signature class bridge:
  * ```ts
  * const gen = new Gen(ctx);
- * const fragment = { ...gen.defaults(ctx), ...(template[table] ?? {}) };
+ * const fragment = { count: DEFAULT_COUNTS[table], ...(template[table] ?? {}) };
  * const rows = overrides[table]?.(fragment, ctx) ?? gen.generate(fragment);
  * ```
  *
@@ -142,9 +145,8 @@ export function runPipeline(
   for (const table of TOPO_ORDER) {
     const Gen = GENERATOR_CLASSES[table];
     const gen = new Gen(ctx);
-    const fragmentBase = gen.defaults(ctx) as Record<string, unknown>;
     const templateFragment = (templateFragments[table] ?? {}) as Record<string, unknown>;
-    const fragment = { ...fragmentBase, ...templateFragment };
+    const fragment = { count: DEFAULT_COUNTS[table], ...templateFragment };
 
     // override signature class bridge.
     // `overrides[table]?.(fragment, ctx)` fully replaces the built-in output for that table. Falls back to the class-based built-in.

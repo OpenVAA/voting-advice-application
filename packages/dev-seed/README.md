@@ -6,7 +6,7 @@ Populates a freshly-reset local Supabase with realistic OpenVAA data
 (candidates, organizations, elections, questions, nominations, portraits) in one
 command. Designed for contributor ergonomics: a `{}` template produces a valid
 trivial dataset; the `default` template produces a browseable Finnish-flavored
-VAA demo across four locales.
+VAA demo in every locale of `LOCALES` (currently `en`, `fi`, `sv`).
 
 ## Quick Start
 
@@ -67,7 +67,7 @@ Template argument resolution (name-first, path-fallback):
 Teardown is permissive by design: it trusts the `external_id` prefix
 as the contract and does NOT shape-check individual rows. A user who mixes
 hand-curated data with the same prefix gets it deleted. Use a distinct prefix
-for hand-curated data to keep it safe. The 2-char minimum (T-58-07-02) prevents
+for hand-curated data to keep it safe. The 2-char minimum prevents
 accidental mass-delete from a single-character prefix.
 
 After the rows and portraits are gone, the CLI **reopens the project it targets**
@@ -90,8 +90,8 @@ A realistic Finnish-flavored parliamentary election:
   `[61, 56, 49, 43, 38, 33, 26, 21]` — sorted descending, realistic feel)
 - 26 questions (18 ordinal Likert + 5 single-choice categorical + 1 boolean +
   1 number + 1 multiple-choice categorical) across 4 opinion categories
-- All 4 locales populated (`generateTranslationsForAllLocales: true` —
-  en / fi / sv / da)
+- Every locale in `LOCALES` populated (`generateTranslationsForAllLocales: true`
+  — currently `en`, `fi`, `sv`)
 - Seed `42` (deterministic — same run produces byte-identical rows, except
   `candidates.image.path`, whose object name is random; see below)
 - 327 portraits cycled from the committed `src/assets/portraits/` pool
@@ -125,7 +125,7 @@ The invocation name is `e2e/base`, not a bare `e2e` — the bare name was retire
 when the canonical base dataset moved under `src/templates/e2e/`, and
 `--template e2e` now errors with the built-in list.
 
-### `perm-*` and `show-feedback-survey`
+### `perm-*`
 
 Minimal-data settings- and topology-permutation fixtures consumed by the
 Playwright suite — every built-in other than `default`, `e2e/base` and `smoke`. Each carries its own distinct
@@ -192,7 +192,7 @@ Custom templates are plain TypeScript, JavaScript, or JSON files. The
 `--template` flag loads any file with a `.ts`, `.js`, or `.json` extension OR
 any path starting with `./`, `/`, or `../`.
 
-### Worked example: mixing `fixed[]` + `count` (TMPL-03)
+### Worked example: mixing `fixed[]` + `count`
 
 Create a file `my-template.ts`:
 
@@ -202,7 +202,7 @@ import type { Template } from '@openvaa/dev-seed';
 const template: Template = {
   seed: 100, // deterministic — same seed = same rows
   externalIdPrefix: 'demo_', // teardown filters on this
-  generateTranslationsForAllLocales: false, // single-locale; expand to true for full 4-locale
+  generateTranslationsForAllLocales: false, // single-locale; true expands to every locale in LOCALES
 
   elections: {
     count: 0, // suppress synthetic; fixed[] fully describes
@@ -262,7 +262,7 @@ yarn db:seed --template ./my-template.ts
 
 Check the terminal summary for the rows-per-table breakdown and elapsed time.
 
-### TMPL-03 mixing rule
+### Mixing rule
 
 When both `count` and `fixed` are provided on a collection:
 
@@ -310,25 +310,26 @@ Every `Template` field is documented via JSDoc on the
 [`Template` TypeScript type](./src/template/types.ts). Hover over `Template`
 in your IDE to see field-level docs. Key top-level fields:
 
-- `seed: number` — deterministic RNG seed (NF-04).
+- `seed: number` — deterministic RNG seed.
 - `refDate: string` — ISO datetime anchoring every generated date; defaults to
   the exported `SEED_REF_DATE`. Dates are drawn relative to this anchor rather
   than to the system clock, so the same seed emits the same dates on any
   calendar day.
-- `externalIdPrefix: string` — teardown filter + row prefix (GEN-04).
+- `externalIdPrefix: string` — teardown filter + row prefix.
 - `projectId: string` — bootstrap project UUID (defaults to seed.sql bootstrap).
-- `generateTranslationsForAllLocales: boolean` — 4-locale expansion
-  (en / fi / sv / da per `staticSettings.supportedLocales`).
+- `generateTranslationsForAllLocales: boolean` — expansion to every locale in
+  `LOCALES`, read from `staticSettings.supportedLocales` (currently `en`, `fi`, `sv`).
 - `openForVoters: boolean` — when present, the writer sets the target project's
   `open_for_voters` to this value as its last pass; when absent, openness is
   untouched. dev-seed never creates a project row. Only `perm-closed-project`
   sets it (`false`).
 - `latent: { dimensions, eigenvalues, centroids, spread, loadings, noise }` —
   latent-factor emitter config (see phase 57).
-- Per-entity `{ count?, fixed? }` fragments for each of the 12 non-system
-  public tables: `elections`, `constituency_groups`, `constituencies`,
-  `organizations`, `alliances`, `factions`, `candidates`, `question_categories`,
-  `questions`, `nominations`, `app_settings`, `feedback`.
+- Per-entity `{ count?, fixed? }` fragments for each of the 11 content tables:
+  `elections`, `constituency_groups`, `constituencies`, `organizations`,
+  `alliances`, `factions`, `candidates`, `question_categories`, `questions`,
+  `nominations`, `app_settings`. A fragment without `count` takes the table's
+  entry in `DEFAULT_COUNTS` (`src/pipeline.ts`).
 
 #### The nomination shape and the nominations it admits
 
@@ -405,7 +406,7 @@ Optional:
   repo-root `.env`.
 
 Missing env → `seed` exits 1 with an actionable message: the `Writer`
-constructor enforces both at construction time (NF-02), before any client is
+constructor enforces both at construction time, before any client is
 built. **`seed:teardown` does not go through the `Writer`** — it constructs
 `SupabaseAdminClient` directly, and that module falls back to
 `http://localhost:54321` and the published Supabase CLI demo service-role key
@@ -423,8 +424,7 @@ commands act on.
 with a `.ts` or `.js` file loads the module via dynamic `import()`, which
 executes any top-level code in the file. This is the SAME trust model as
 `tsx` / `ts-node`: do NOT pass `--template` with paths to untrusted files.
-JSON templates (`.json` extension) parse as pure data and cannot execute code
-(T-58-05-02).
+JSON templates (`.json` extension) parse as pure data and cannot execute code.
 
 **The service-role client only talks to a local Supabase.** The key bypasses
 RLS, `db:seed` writes in bulk, and `db:seed:teardown` deletes every row whose
@@ -459,7 +459,7 @@ The guards, so you know what you are relying on:
   without an explicit opt-out.
 - The `external_id` prefix scopes teardown; nothing outside it is touched.
 - `assertTeardownPrefix` refuses a prefix shorter than 2 characters, which is
-  what stops a `LIKE '%'`-adjacent mass delete (T-58-07-02).
+  what stops a `LIKE '%'`-adjacent mass delete.
 - `accounts`, `projects`, `feedback` and `app_settings` are not in the teardown
   set at all, so bootstrap rows survive.
 
@@ -494,12 +494,12 @@ lands here.
 
 **`Template validation failed: template.candidates.count: Expected number, received string`**
 The field path tells you the offending key. Fix the type and re-run.
-Zod errors (TMPL-09) include field paths for every violation.
+Zod errors include field paths for every violation.
 
 **Teardown leaves rows behind.**
 Check the `external_id` prefix — teardown filters on `external_id LIKE ${prefix}%`.
 If your rows use a different prefix, pass `--prefix <your-prefix>`. The
-2-char minimum guard (T-58-07-02) prevents accidental mass-delete from a
+2-char minimum guard prevents accidental mass-delete from a
 single-character prefix.
 
 **Portrait upload fails mid-run.**
@@ -509,9 +509,8 @@ aborts (exit 1). Re-run after fixing the Storage bucket state
 
 ## Related Docs
 
-- `@openvaa/dev-seed` pipeline foundations — see phase 56
-- Latent-factor answer model — see phase 57
-- Templates, CLI and default dataset — see phase 58
+- Developers' guide, seed data:
+  [`apps/docs/src/routes/(content)/developers-guide/development/seed-data/+page.md`](<../../apps/docs/src/routes/(content)/developers-guide/development/seed-data/+page.md>)
 - Portrait licensing: [`./src/assets/portraits/LICENSE.md`](./src/assets/portraits/LICENSE.md)
 - CLAUDE.md, "Seeding local data" — short snippet in root `CLAUDE.md` Common
-  Workflows section (DX-04 entry point for AI pair-programmers).
+  Workflows section (the entry point for AI pair-programmers).

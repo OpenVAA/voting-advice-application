@@ -44,8 +44,6 @@ function buildClusteringCtx(
     externalIdPrefix: 'seed_',
     refDate: new Date(SEED_REF_DATE),
     refs: {
-      accounts: [{ id: PROJECT_UUID }],
-      projects: [{ id: PROJECT_UUID }],
       elections: [],
       constituency_groups: [],
       constituencies: [],
@@ -56,8 +54,7 @@ function buildClusteringCtx(
       question_categories: [],
       questions: questions as unknown as Array<{ external_id: string }>,
       nominations: [],
-      app_settings: [],
-      feedback: []
+      app_settings: []
     },
     logger: () => {}
   };

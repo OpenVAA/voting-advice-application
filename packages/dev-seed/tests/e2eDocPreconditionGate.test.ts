@@ -95,7 +95,7 @@ const ALLOWLIST: ReadonlyArray<{ file: string; text: string; reason: string }> =
   },
   {
     file: 'CLAUDE.md',
-    text: 'yarn db:reset-with-data # db:reset + default template (Finnish demo, 4 locales); DB only',
+    text: 'yarn db:reset-with-data # db:reset + default template (Finnish demo, every supported locale); DB only',
     reason: 'Local-seeding command map — a development workflow, unrelated to running the suite.'
   },
   {

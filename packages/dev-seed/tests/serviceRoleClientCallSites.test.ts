@@ -13,7 +13,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -106,7 +106,8 @@ function census(): { files: Array<string>; constructions: Array<Construction>; s
     encoding: 'utf8'
   })
     .split('\n')
-    .filter((file) => file.endsWith('.ts'));
+    // `git ls-files` lists the index, so a file deleted in the working tree but not yet staged is skipped.
+    .filter((file) => file.endsWith('.ts') && existsSync(resolve(REPO_ROOT, file)));
   const constructions: Array<Construction> = [];
   let strippedFactoryFile = '';
   for (const file of files) {

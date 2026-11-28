@@ -28,9 +28,10 @@
  * Polymorphism variants NOT produced in the generated path:
  *   organization / faction / alliance nominations. The SHAPE supports them (PolymorphicRef union + `fixed[]` pass-through); templates that want them supply them via `fixed[]` or an override.
  *
- * ctx captured at construction; `defaults(ctx)` is per-call.
+ * ctx captured at construction.
  */
 
+import { passThroughFixed } from './passThroughFixed';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx, Fragment } from '../types';
 
@@ -54,26 +55,12 @@ type NominationRow = Omit<TablesInsert<'nominations'>, 'election_id' | 'constitu
 export class NominationsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // `defaults` ignores ctx here; templates drive counts via `nominations: (fragment, ctx) => rows[]` overrides.
-
-  defaults(ctx: Ctx): NominationsFragment {
-    // Default 0 — a template supplies `fixed[]` or an explicit count.
-    return { count: 0 };
-  }
-
   generate(fragment: NominationsFragment): Array<TablesInsert<'nominations'>> {
     const { projectId, externalIdPrefix, refs } = this.ctx;
-    const rows: Array<NominationRow> = [];
 
     // fixed[] pass-through — user-authored nominations, prefix applied.
     // Users supplying fixed[] are responsible for polymorphism + hierarchy correctness (pure-I/O contract). bulk_import's CHECK constraint and validate_nomination trigger catch any violations DB-side.
-    for (const fx of fragment.fixed ?? []) {
-      rows.push({
-        ...(fx as NominationRow),
-        external_id: `${externalIdPrefix}${fx.external_id}`,
-        project_id: fx.project_id ?? projectId
-      });
-    }
+    const rows: Array<NominationRow> = passThroughFixed<NominationRow>(fragment.fixed, this.ctx);
 
     // Generated rows: one candidate-type nomination per candidate in ctx.refs.candidates, capped at fragment.count.
     const n = fragment.count ?? 0;

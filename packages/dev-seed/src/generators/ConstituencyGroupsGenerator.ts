@@ -6,6 +6,7 @@
  * Follows the generator pattern described in ElectionsGenerator.ts.
  */
 
+import { passThroughFixed } from './passThroughFixed';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx, Fragment } from '../types';
 
@@ -14,23 +15,13 @@ export type ConstituencyGroupsFragment = Fragment<TablesInsert<'constituency_gro
 export class ConstituencyGroupsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // `defaults` ignores ctx here; reading `ctx.refs` is how a generator would scale its counts.
-
-  defaults(ctx: Ctx): ConstituencyGroupsFragment {
-    return { count: 1 };
-  }
-
   generate(fragment: ConstituencyGroupsFragment): Array<TablesInsert<'constituency_groups'>> {
     const { faker, projectId, externalIdPrefix } = this.ctx;
-    const rows: Array<TablesInsert<'constituency_groups'>> = [];
 
-    for (const fx of fragment.fixed ?? []) {
-      rows.push({
-        ...fx,
-        external_id: `${externalIdPrefix}${fx.external_id}`,
-        project_id: fx.project_id ?? projectId
-      });
-    }
+    const rows: Array<TablesInsert<'constituency_groups'>> = passThroughFixed<TablesInsert<'constituency_groups'>>(
+      fragment.fixed,
+      this.ctx
+    );
 
     const n = fragment.count ?? 0;
     for (let i = 0; i < n; i++) {

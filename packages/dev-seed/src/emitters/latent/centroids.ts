@@ -3,7 +3,7 @@
  *
  * Given `dims`, `eigenvalues`, and a list of organizations, produce one centroid vector per organization so the resulting positions are spread across the latent space — driving the visible organization clustering the latent-factor emitter is designed to produce. Called once per pipeline run by the `latentAnswerEmitter` closure and memoized in `SpaceBundle`.
  *
- * Pattern analog: `packages/dev-seed/src/emitters/answers.ts` — named-default export + file-local helpers (`extractChoiceIds` style). Compile-time contract assertion mirrors `_typecheckDefaultEmit` in `answers.ts`.
+ * Pattern analog: `packages/dev-seed/src/emitters/answers.ts` — named-default export + file-local helpers (`pickOneChoiceId` style). Compile-time contract assertion mirrors `_typecheckDefaultEmit` in `answers.ts`.
  *
  * ## Algorithm (farthest-point sampling)
  *
@@ -109,7 +109,7 @@ export function defaultCentroids(
 }
 
 /**
- * Squared Euclidean distance between two equal-length vectors. File-local helper — not exported (mirrors `extractChoiceIds` visibility in `answers.ts`).
+ * Squared Euclidean distance between two equal-length vectors. File-local helper — not exported (mirrors `pickOneChoiceId` visibility in `answers.ts`).
  * Squared (not sqrt'd) because the max-min loop only needs a monotonic ordering — skipping the sqrt saves `O(poolSize * N)` calls per run.
  */
 function euclideanSq(a: Array<number>, b: Array<number>): number {

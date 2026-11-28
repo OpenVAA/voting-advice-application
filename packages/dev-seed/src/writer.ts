@@ -3,8 +3,7 @@
  *
  * `Writer` composes `SupabaseAdminClient` (does NOT subclass) and routes pipeline output through the correct admin-client methods:
  *
- *   - `accounts` / `projects` — stripped from payload (bootstrap-only; dev-seed never CREATES rows in those tables). The one exception is `projects.open_for_voters` on an existing project, which the final pass sets through `setProjectOpenForVoters` when a template declares `openForVoters` (162.1 D-21).
- *   - `feedback` — SKIPPED with a `ctx.logger` warning. Writer uses ONLY the public `SupabaseAdminClient` methods, and no `feedback` helper exists on the admin client. Feedback has no `external_id`, so it is not teardown-friendly either way; a narrow `insertFeedback` helper could be added if demand surfaces.
+ *   - `projects` — dev-seed never creates a project. The final pass sets `projects.open_for_voters` on the existing project through `setProjectOpenForVoters` when a template declares `openForVoters`.
  *   - `app_settings` — routed through `updateAppSettings` (merge_jsonb_column RPC). Direct `bulk_import` of `app_settings` fails with duplicate-key on the `UNIQUE(project_id)` constraint because `seed.sql` pre-inserts a row. Every row is parsed with the shared `StoredSettingsSchema`, the schema the application reads the stored settings with, before the writer writes anything at all; a row the schema refuses is a defect of the template, and the write stops with the database untouched.
  *   - 10 other tables (elections, constituency_groups, constituencies, organizations, alliances, factions, question_categories, questions,
  *     candidates, nominations) — flow through `bulkImport` → `importAnswers`
@@ -26,6 +25,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { StoredSettingsSchema } from '@openvaa/app-shared';
 import { assertKnownRowProps } from './assertKnownRowProps';
+import { DEFAULT_EXTERNAL_ID_PREFIX } from './ctx';
 import { resolveAppSettingsExternalIds, settingsContainsExternalIdRefs } from './resolveAppSettingsExternalIds';
 import { SupabaseAdminClient } from './supabaseAdminClient';
 
@@ -40,19 +40,16 @@ const PORTRAITS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'assets', 'p
  * Options passed to the `Writer` constructor.
  *
  *  - `projectId` — defaults to `TEST_PROJECT_ID` (`00000000-0000-0000-0000-000000000001`, the bootstrap project UUID from seed.sql).
- *  - `logger` — sink for writer warnings (currently the feedback-skip notice). Defaults to a no-op so production usage doesn't need to wire one.
  *  - `allowRemote` — permits a non-local `SUPABASE_URL`. Defaults to refusing one.
  */
 export interface WriterOptions {
   projectId?: string;
-  logger?: (msg: string) => void;
   /** Permit a non-local `SUPABASE_URL` for the service-role client. The seed CLI sets it from `--allow-remote`. */
   allowRemote?: boolean;
 }
 
 export class Writer {
   private client: SupabaseAdminClient;
-  private logger: (msg: string) => void;
 
   /**
    * Construct a Writer.
@@ -84,7 +81,6 @@ export class Writer {
       opts.projectId,
       { allowRemote: opts.allowRemote }
     );
-    this.logger = opts.logger ?? (() => {});
   }
 
   /**
@@ -93,17 +89,15 @@ export class Writer {
    * Accepts the raw output of `runPipeline` (`Record<string, Array<Record<string, unknown>>>`).
    *
    * Sequence:
-   *   1. Strip routing-exempt tables (`accounts`, `projects`) from the bulk payload.
-   *   2. Remove `feedback` and `app_settings` — handled separately.
-   *   2b. **Pass 0** — `assertKnownRowProps`, called on the pre-deletion `data` Throws on the first row property the pipeline does not read, or that the RPC's `skip_columns` would discard, naming the key, the collection and the row's `external_id`. Runs on the PRE-DELETION `data`, so `app_settings`, `feedback`, `accounts` and `projects` are guarded rather than silently exempt — see the call site.
-   *   2c. **Pass 0b** — every `app_settings` row is parsed with `StoredSettingsSchema`, its question references stood in for by a placeholder id, since the questions are not written yet. A refused row throws, naming the template and each refused path, before anything is written.
-   *   3. `bulkImport` — single transaction write of 10 tables (rollback is atomic; `bulk_import` runs inside a single transaction, so any collection-level failure rolls back the entire batch).
+   *   1. Remove `app_settings` from the bulk payload — handled separately.
+   *   2. **Pass 0** — `assertKnownRowProps`, called on the pre-deletion `data`. Throws on the first row property the pipeline does not read, or that the RPC's `skip_columns` would discard, naming the key, the collection and the row's `external_id`. Runs on the PRE-DELETION `data`, so `app_settings` is guarded rather than silently exempt — see the call site.
+   *   3. **Pass 0b** — every `app_settings` row is parsed with `StoredSettingsSchema`, its question references stood in for by a placeholder id, since the questions are not written yet. A refused row throws, naming the template and each refused path, before anything is written.
+   *   4. `bulkImport` — single transaction write of 10 tables (rollback is atomic; `bulk_import` runs inside a single transaction, so any collection-level failure rolls back the entire batch).
    *      `bulk_import`'s internal `processing_order` resolves ref sentinels between collections. An election's constituency groups and a constituency group's constituencies travel as the items' link keys, and `bulk_import` writes `election_constituency_groups` and `constituency_group_constituencies` after the constituencies and before the first nomination, in the same transaction.
-   *   4. `importAnswers` — stitches `candidate.answersByExternalId` → `candidate.answers` JSONB by resolving question external_ids to UUIDs (separate transaction).
-   *   5. `linkQuestionScopes` — processes the `_elections` / `_constituencies` sentinels of question categories and questions: updates their `election_ids` / `constituency_ids` JSONB (separate transaction). The constituency join tables are already written by step 3.
-   *   6. **Pass 5** — the question references of every `app_settings` row are resolved to the ids of the questions written by step 3, and `updateAppSettings` writes each row (`merge_jsonb_column` RPC) — routes around the `UNIQUE(project_id)` conflict that `bulk_import` cannot handle for this table. The rows are written as the template states them, not as the schema's parse normalises them.
-   *   7. `feedback` rows are SKIPPED with a logger warning.
-   *   8. **Pass 7** — project openness: `setProjectOpenForVoters(options.openForVoters)`, ONLY when the caller passes the template's `openForVoters`. Absent, no `projects` write is issued. Runs last, so a closed project is closed only after every row is in place (162.1 D-21).
+   *   5. `importAnswers` — stitches `candidate.answersByExternalId` → `candidate.answers` JSONB by resolving question external_ids to UUIDs (separate transaction).
+   *   6. `linkQuestionScopes` — processes the `_elections` / `_constituencies` sentinels of question categories and questions: updates their `election_ids` / `constituency_ids` JSONB (separate transaction). The constituency join tables are already written by step 4.
+   *   7. **Pass 5** — the question references of every `app_settings` row are resolved to the ids of the questions written by step 4, and `updateAppSettings` writes each row (`merge_jsonb_column` RPC) — routes around the `UNIQUE(project_id)` conflict that `bulk_import` cannot handle for this table. The rows are written as the template states them, not as the schema's parse normalises them.
+   *   8. **Pass 6** — project openness: `setProjectOpenForVoters(options.openForVoters)`, ONLY when the caller passes the template's `openForVoters`. Absent, no `projects` write is issued. Runs last, so a closed project is closed only after every row is in place.
    *
    * @param options.openForVoters - the resolved template's `openForVoters`; both callers (`cli/seed.ts`, the E2E `setupFromTemplate`) pass it, because this method receives rows, not the template.
    * @param options.templateName - the template's name or path, which a refusal of its settings names.
@@ -111,18 +105,10 @@ export class Writer {
    */
   async write(
     data: Record<string, Array<Record<string, unknown>>>,
-    externalIdPrefix = 'seed_',
+    externalIdPrefix = DEFAULT_EXTERNAL_ID_PREFIX,
     options: { openForVoters?: boolean; templateName?: string } = {}
   ): Promise<{ portraits: number }> {
     const bulkData: Record<string, Array<Record<string, unknown>>> = { ...data };
-
-    // strip pass-through tables. `accounts` / `projects` are bootstrapped by seed.sql; dev-seed never writes them.
-    delete bulkData.accounts;
-    delete bulkData.projects;
-
-    // Hold feedback aside — deliberately out of the write path.
-    const feedbackRows = bulkData.feedback;
-    delete bulkData.feedback;
 
     // Hold app_settings aside — routed through updateAppSettings.
     const appSettingsRows = bulkData.app_settings;
@@ -130,7 +116,7 @@ export class Writer {
 
     // Pass 0: unknown-property guard.
     //
-    // ⚠ Deliberately reads `data`, the PRE-DELETION map, not `bulkData`. The four `delete bulkData.*` statements above have already removed `accounts`, `projects`, `feedback` and `app_settings`, so a guard reading `bulkData` here cannot see any of them. `app_settings` is the one that matters: it is a first-class, template-authorable fragment and every built-in template emits exactly one row of it, so reading `bulkData` would leave the guard blind to a collection every single template uses. Guarding `data` covers all twelve template-declarable collections and picks up `accounts` / `projects` for free.
+    // ⚠ Deliberately reads `data`, the PRE-DELETION map, not `bulkData`. The `delete bulkData.app_settings` above has already removed `app_settings`, a first-class, template-authorable fragment that every built-in template emits exactly one row of, so a guard reading `bulkData` would be blind to a collection every single template uses. Guarding `data` covers all eleven template-declarable collections.
     //
     // Placed above Pass 0b and Pass 1, so nothing reaches `bulkImport`'s two silent-strip rules unrecognised.
     assertKnownRowProps(data);
@@ -179,15 +165,7 @@ export class Writer {
       }
     }
 
-    // Pass 6: feedback — SKIPPED; see the class docblock for why.
-    if (feedbackRows && feedbackRows.length > 0) {
-      this.logger(
-        `[dev-seed] Writer: feedback writes skipped (${feedbackRows.length} rows ignored). ` +
-          'Feedback has no external_id column and is not teardown-friendly; direct upsert support may be added later.'
-      );
-    }
-
-    // Pass 7: project openness — only when the template declares it.
+    // Pass 6: project openness — only when the template declares it.
     // Absent means untouched: every template without the slot leaves its project exactly as it found it.
     if (options.openForVoters !== undefined) {
       await this.client.setProjectOpenForVoters(options.openForVoters);
@@ -204,7 +182,7 @@ export class Writer {
    *   2. Select generator-produced candidates by external_id prefix — `bulk_import` does not return UUIDs inline.
    *   3. If no candidates, skip silently (templates with count=0 are valid).
    *   4. For each candidate, upload `portraits[i % portraits.length]` to `${projectId}/candidates/${id}/${crypto.randomUUID()}.jpg` and write the image JSONB.
-   *      The random UUID name is the convention the application's own uploads use (`supabaseDataWriter.#uploadCandidateFile`), for two reasons (162.1 D-15): the storage cleanup trigger deletes only object names on its UUID whitelist (D-20), and a fixed name would be guessable.
+   *      The random UUID name is the convention the application's own uploads use (`supabaseDataWriter.#uploadCandidateFile`), for two reasons: the storage cleanup trigger deletes only object names on its UUID whitelist, and a fixed name would be guessable.
    *      A re-seed therefore uploads a fresh object per candidate, and the cleanup trigger deletes the one the `image` update just unreferenced.
    *
    * Failure modes:

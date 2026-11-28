@@ -1,5 +1,5 @@
 /**
- * DX-03 integration test — applies `defaultTemplate` + `defaultOverrides` to a live local Supabase and asserts end-to-end correctness.
+ * Integration test — applies `defaultTemplate` + `defaultOverrides` to a live local Supabase and asserts end-to-end correctness.
  *
  * gating: `describe.skipIf(!process.env.SUPABASE_URL)` — the test skips in envs without `supabase start`. Developers run `yarn db:start` (or `supabase start` directly) before `yarn test:unit` to exercise it.
  *
@@ -56,7 +56,7 @@ const hasSupabase = Boolean(process.env.SUPABASE_URL);
 if (process.env.DEV_SEED_INTEGRATION_REQUIRED === '1' && !hasSupabase) {
   throw new Error(
     'DEV_SEED_INTEGRATION_REQUIRED=1 but SUPABASE_URL is unset. This file carries the ' +
-      'NF-01 operation budget and is required to EXECUTE in the `dev-seed-integration` CI job; ' +
+      'operation budget and is required to EXECUTE in the `dev-seed-integration` CI job; ' +
       'skipping it there would silently drop the guard. Start Supabase and export SUPABASE_URL, ' +
       'or unset DEV_SEED_INTEGRATION_REQUIRED if this run is genuinely not the integration job.'
   );
@@ -109,7 +109,7 @@ describe('integration tier wiring (always runs — never skipped)', () => {
     expect(
       reachable,
       `A local Supabase is answering on port ${LOCAL_SUPABASE_API_PORT}, but SUPABASE_URL is unset, so ` +
-        'this file just skipped — the anon-RLS guard (TMPL-03), the NF-01 operation budget and the ' +
+        'this file just skipped — the anon-RLS guard, the operation budget and the ' +
         'relational assertions did NOT run, and the suite would still have exited 0. Copy `.env.example` ' +
         'to `.env` at the repo root (dev-seed reads PUBLIC_SUPABASE_URL from it), or export SUPABASE_URL, ' +
         'then re-run. This assertion exists because a did-not-run is a failure, not a pass.'
@@ -118,7 +118,7 @@ describe('integration tier wiring (always runs — never skipped)', () => {
     // reachable === false: no local instance at all. The skip is legitimate, and this passing test is the record that it was legitimate.
     console.warn(
       '[dev-seed] integration tier SKIPPED: no SUPABASE_URL and nothing listening on ' +
-        `127.0.0.1:${LOCAL_SUPABASE_API_PORT}. TMPL-03's anon-RLS guard and the NF-01 budget did not run. ` +
+        `127.0.0.1:${LOCAL_SUPABASE_API_PORT}. The anon-RLS guard and the operation budget did not run. ` +
         'Start Supabase (`yarn db:start`) and provide a repo-root `.env` to include them.'
     );
   });
@@ -202,7 +202,7 @@ async function runTeardown(
   }
 }
 
-describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
+describe.skipIf(!hasSupabase)('default template integration', () => {
   let adminClient: SupabaseAdminClient;
   let readClient: SupabaseClient;
 
@@ -217,7 +217,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     vi.restoreAllMocks();
   });
 
-  it('applies default template and meets the NF-01 operation budget + assertions', async () => {
+  it('applies default template and meets the operation budget + assertions', async () => {
     const template = BUILT_IN_TEMPLATES.default;
     const overrides = BUILT_IN_OVERRIDES.default;
     const seed = (template as { seed?: number }).seed ?? 42;
@@ -243,7 +243,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     // -----------------------------------------------------------------------
 
     // Elapsed is reported for the record and deliberately NOT asserted on. The log line is the whole of the wall-clock treatment now: a number a human can watch drift, never a condition the suite passes or fails on.
-    console.info(`[NF-01] seed step elapsed: ${elapsedMs} ms (observability only — not asserted)`);
+    console.info(`[dev-seed] seed step elapsed: ${elapsedMs} ms (observability only — not asserted)`);
 
     // 1a. Row writes stay BATCHED: three fixed passes (bulk_import →
     //     importAnswers → linkQuestionScopes) no matter how many rows the template
@@ -416,7 +416,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
   //
   // `afterEach(() => vi.restoreAllMocks())` has already removed the `SupabaseAdminClient.prototype` spies by the time this runs, so nothing here is observed by the operation budget above — and nothing here goes through `SupabaseAdminClient` anyway.
   // -------------------------------------------------------------------------
-  it('the seeded dataset is readable by the ANON client — the voter app path (TMPL-03)', async () => {
+  it('the seeded dataset is readable by the ANON client — the voter app path', async () => {
     const anonClient = makeAnonClient();
 
     // --- Guard-of-the-guard: prove this client is really anon. ------------- The failure mode this closes: if `SUPABASE_ANON_KEY` were ever set to the service-role key — a copy-paste from the factory three functions above, or a CI export that silently picked up the wrong variable — every assertion below would pass FOREVER without ever crossing the RLS boundary. That is the exact blindness class this test exists to end, and reproducing it inside the check built to prevent it would be worse than having no check at all. `accounts` carries no anon SELECT policy, so a genuinely-anon credential must see zero rows there while service_role sees the bootstrap row. Measured pre-fix: anon 0, service_role 1.

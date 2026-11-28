@@ -36,11 +36,11 @@ Options:
 
 Built-in templates:
   default              Finnish-flavored election, 5 constituencies / 8 organizations /
-                       327 candidates / 26 questions, 4-locale (en/fi/sv/da).
+                       327 candidates / 26 questions, every locale in LOCALES
+                       (currently en, fi, sv).
   e2e/base             Canonical Playwright base dataset, single-locale.
   perm-*               Settings/topology-permutation fixtures
                        (see packages/dev-seed/src/templates/index.ts).
-  show-feedback-survey Results feedback + survey popup permutation.
   smoke                1001 candidates + 1001 nominations in one project, no auth
                        user; for a hosted project (--allow-remote --project-id),
                        prefix smoke_.

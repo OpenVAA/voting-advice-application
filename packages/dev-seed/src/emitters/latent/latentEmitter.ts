@@ -81,7 +81,7 @@ export function latentAnswerEmitter(template: Template): AnswerEmitter {
  * Resolve a candidate's organization index from its `organization.external_id` ref.
  * Returns `-1` when the ref is absent, malformed, or does not match any known organization. The caller treats any negative return as a fallback signal.
  *
- * Defensive narrowing mirrors `extractChoiceIds` in answers.ts — the candidate literal in CandidatesGenerator may carry `organization?: { external_id }` as a sentinel that's not strictly on `TablesInsert<'candidates'>`.
+ * Defensive narrowing mirrors `readChoiceIds` in `emitters/choices.ts` — the candidate literal in CandidatesGenerator may carry `organization?: { external_id }` as a sentinel that's not strictly on `TablesInsert<'candidates'>`.
  */
 function findOrganizationIndex(
   candidate: TablesInsert<'candidates'>,

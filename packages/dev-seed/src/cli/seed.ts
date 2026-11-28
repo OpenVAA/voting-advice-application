@@ -10,7 +10,7 @@
  *   5. new Writer({ projectId: template.projectId }) — throws with messages on missing env, and refuses a non-local SUPABASE_URL unless `--allow-remote` or `DEV_SEED_ALLOW_REMOTE=1` opts out; CLI catches.
  *   6. runPipeline(template) — the generator orchestrator.
  *   7. fanOutLocales(rows, template, seed) — no-op if the flag is off.
- *   8. writer.write(rows, prefix, { openForVoters, templateName }). The third argument carries what the writer cannot read from rows: the template's `openForVoters`, which the writer's last pass applies to the project when the template declares it, and `templateName` (the `--template` argument), which a refusal of the template's settings names. Optionally returns `{ portraits }`. This CLI tolerates both a `void` return and the `{ portraits: number }` shape, so the writer's signature can move without re-touching it.
+ *   8. writer.write(rows, prefix, { openForVoters, templateName }). The third argument carries what the writer cannot read from rows: the template's `openForVoters`, which the writer's last pass applies to the project when the template declares it, and `templateName` (the `--template` argument), which a refusal of the template's settings names. Returns `{ portraits }`, the number of portraits uploaded.
  *   9. formatSummary(...) => stdout.
  *   10. exit 0 on success, 1 on any error.
  *
@@ -28,6 +28,7 @@ import { parseArgs } from 'node:util';
 import { USAGE } from './help';
 import { resolveTemplate } from './resolve-template';
 import { formatSummary } from './summary';
+import { DEFAULT_EXTERNAL_ID_PREFIX, DEFAULT_SEED } from '../ctx';
 import { fanOutLocales } from '../locales';
 import { isLocalSupabaseUrl } from '../localSupabaseUrl';
 import { runPipeline } from '../pipeline';
@@ -89,12 +90,12 @@ try {
       process.exit(1);
     }
     const parsed = Number.parseInt(values.seed, 10);
-    (template as Template & { seed?: number }).seed = parsed;
+    template.seed = parsed;
   }
 
   // Apply --external-id-prefix override.
   if (values['external-id-prefix'] !== undefined) {
-    (template as Template & { externalIdPrefix?: string }).externalIdPrefix = values['external-id-prefix'];
+    template.externalIdPrefix = values['external-id-prefix'];
   }
 
   // Apply --project-id override. The template schema's UUID-shape check is not re-run after resolveTemplate, so the flag is checked here.
@@ -106,7 +107,7 @@ try {
     template.projectId = values['project-id'];
   }
 
-  const seed = (template as Template & { seed?: number }).seed ?? 42;
+  const seed = template.seed ?? DEFAULT_SEED;
 
   // Writer constructor reads env + throws messages if missing or non-local.
   const writer = new Writer({ allowRemote: values['allow-remote'] === true, projectId: template.projectId });
@@ -118,15 +119,10 @@ try {
   const rows = runPipeline(template, overrides);
   fanOutLocales(rows, template, seed);
 
-  // Writer.write has two tolerated signatures:
-  //   write(rows) => Promise<void> write(rows, prefix?) => Promise<{ portraits: number }> The CLI defers to runtime inspection of the resolved value so the writer's signature can move without re-editing this file.
-
-  const writeResult: unknown = await (writer.write as (...args: Array<unknown>) => Promise<unknown>)(
-    rows,
-    (template as Template & { externalIdPrefix?: string }).externalIdPrefix ?? 'seed_',
-    { openForVoters: template.openForVoters, templateName: templateArg }
-  );
-  const portraits = extractPortraitCount(writeResult);
+  const { portraits } = await writer.write(rows, template.externalIdPrefix ?? DEFAULT_EXTERNAL_ID_PREFIX, {
+    openForVoters: template.openForVoters,
+    templateName: templateArg
+  });
 
   const elapsedMs = Date.now() - start;
 
@@ -183,22 +179,6 @@ async function loadBuiltIns(): Promise<{
 function describeTemplateSource(arg: string, builtIns: Record<string, Template>): string {
   if (arg in builtIns) return `${arg} (built-in)`;
   return `custom (${arg})`;
-}
-
-/**
- * Extract `portraits` count from a Writer.write return value.
- *
- * - write returns `undefined` / `void` => 0 portraits.
- * - write returns `{ portraits: number }` => pass through.
- *
- * Accepts any shape defensively; anything that's not `{ portraits: <number> }` is reported as 0. Keeps the CLI forward-compatible without coupling to the exact Writer signature.
- */
-function extractPortraitCount(result: unknown): number {
-  if (result && typeof result === 'object' && 'portraits' in result) {
-    const p = (result as { portraits: unknown }).portraits;
-    if (typeof p === 'number' && Number.isFinite(p)) return p;
-  }
-  return 0;
 }
 
 function normalizeError(err: unknown): string {

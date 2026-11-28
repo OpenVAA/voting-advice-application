@@ -1,13 +1,13 @@
 /**
  * Template schema — zod v4 declarative shape for the `@openvaa/dev-seed` input template.
  *
- * The core covers top-level `seed` / `externalIdPrefix` / `projectId`, plus per-entity fragments for each of the 12 non-system public tables ({@link https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/migrations}).
+ * The core covers top-level `seed` / `externalIdPrefix` / `projectId`, plus per-entity fragments for each of the 11 content tables ({@link https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/migrations}).
  *
  * Extensions — the latent-factor emitter fields, and the localization / portrait / default-dataset fields — attach via `.extend()`, NOT `.merge()`, which is deprecated in zod v4.
  *
  * Design contract:
  *  - Every field is `.optional()` — a `{}` template MUST pass validation.
- *  - Defaults (count, prefix, UUIDs) live in per-generator `defaults(ctx)` methods, NOT in the schema. Keeping the schema declarative means extending generators later doesn't require schema churn.
+ *  - Defaults live outside the schema: the per-table counts in `DEFAULT_COUNTS` (`pipeline.ts`), the seed, prefix and project in `buildCtx` (`ctx.ts`). Keeping the schema declarative means extending generators later doesn't require schema churn.
  *  - Hand-authored `fixed[]` rows are partial records (`z.record(z.string(), z.unknown())`).
  *    `unknown`-style escape hatches that accept arbitrary `any` are forbidden; `z.unknown()` forces consumers to narrow before use.
  */
@@ -16,7 +16,7 @@ import { z } from 'zod';
 import type { Template } from './types';
 
 /**
- * Per-entity fragment. Used for all 12 non-system public tables.
+ * Per-entity fragment. Used for all 11 content tables.
  *
  * `count` — target number of synthetic rows the generator emits.
  * `fixed` — explicit hand-authored partial rows (merged with synthetic ones).
@@ -94,15 +94,15 @@ export const TemplateSchema = z
     externalIdPrefix: z.string().optional(),
     projectId: z.string().regex(UUID_SHAPE, 'Invalid UUID').optional(),
     /**
-     * when `true`, the pipeline post-processes every localized JSONB field (`name`, `short_name`, `info`, question `choices[].label`, etc.) to contain keys for every locale in `staticSettings.supportedLocales` (`en`, `fi`, `sv`, `da`). When `false` or `undefined`, only the default locale (`en`) is populated.
+     * when `true`, the pipeline post-processes every localized JSONB field (`name`, `short_name`, `info`, question `choices[].label`, etc.) to contain keys for every locale in `LOCALES`, which is read from `staticSettings.supportedLocales` (currently `en`, `fi`, `sv`). When `false` or `undefined`, only the default locale (`en`) is populated.
      *
-     * The default template sets this to `true` so first-run developers see the app in all four locales. The e2e template sets it to `false` per — Playwright specs run against a single locale and the 4x JSONB payload is pure overhead for them.
+     * The default template sets this to `true` so first-run developers see the app in every supported locale. The e2e template sets it to `false` — Playwright specs run against a single locale and the multiplied JSONB payload is pure overhead for them.
      */
     generateTranslationsForAllLocales: z.boolean().optional(),
     /**
      * When present, the writer sets the target project's `open_for_voters` to this value after seeding (its last pass). When absent, the project's openness is untouched.
      *
-     * `false` makes the project's public data unreadable to anon, which is how the closed-project E2E state is reached (162.1 D-21). Teardown through the CLI (`yarn db:seed:teardown`) reopens the project (D-19).
+     * `false` makes the project's public data unreadable to anon, which is how the closed-project E2E state is reached. Teardown through the CLI (`yarn db:seed:teardown`) reopens the project.
      */
     openForVoters: z.boolean().optional(),
     elections: perEntityFragment.optional(),
@@ -115,8 +115,7 @@ export const TemplateSchema = z
     question_categories: perEntityFragment.optional(),
     questions: perEntityFragment.optional(),
     nominations: perEntityFragment.optional(),
-    app_settings: perEntityFragment.optional(),
-    feedback: perEntityFragment.optional()
+    app_settings: perEntityFragment.optional()
   })
   /**
    * ORDERING CHOICE: `.strict()` goes AFTER the `.extend()` chain link, so the strict setting is applied to the object that actually ships — the extended one — and no reader has to reason about whether `.extend()` preserved it.

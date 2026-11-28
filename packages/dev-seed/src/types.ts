@@ -33,7 +33,7 @@ export type Fragment<TRow> = {
  *
  *   `const rows = overrides[table]?.(fragment, ctx) ?? gen.generate(fragment);`
  *
- * NOT typed narrowly per-table because overrides are user-supplied — the pipeline passes whatever fragment shape the template has. Narrower typing would couple `Overrides` to the 14 generator classes and make user-authored overrides more painful. `Record<string, unknown>` is the correct granularity at this seam.
+ * NOT typed narrowly per-table because overrides are user-supplied — the pipeline passes whatever fragment shape the template has. Narrower typing would couple `Overrides` to the 11 generator classes and make user-authored overrides more painful. `Record<string, unknown>` is the correct granularity at this seam.
  */
 export type Overrides = {
   [table: string]: (fragment: unknown, ctx: Ctx) => Array<Record<string, unknown>>;

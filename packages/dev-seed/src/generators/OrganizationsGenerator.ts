@@ -8,6 +8,7 @@
  * Default count = 4: enough organizations for matching/filtering sanity-checks (candidates' organization ref picks round-robin over the CandidatesGenerator sample) without bloating the <10s seed budget.
  */
 
+import { passThroughFixed } from './passThroughFixed';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx, Fragment } from '../types';
 
@@ -16,23 +17,13 @@ export type OrganizationsFragment = Fragment<TablesInsert<'organizations'>>;
 export class OrganizationsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // `defaults` ignores ctx here; reading `ctx.refs` is how a generator would scale its counts.
-
-  defaults(ctx: Ctx): OrganizationsFragment {
-    return { count: 4 };
-  }
-
   generate(fragment: OrganizationsFragment): Array<TablesInsert<'organizations'>> {
     const { faker, projectId, externalIdPrefix } = this.ctx;
-    const rows: Array<TablesInsert<'organizations'>> = [];
 
-    for (const fx of fragment.fixed ?? []) {
-      rows.push({
-        ...fx,
-        external_id: `${externalIdPrefix}${fx.external_id}`,
-        project_id: fx.project_id ?? projectId
-      });
-    }
+    const rows: Array<TablesInsert<'organizations'>> = passThroughFixed<TablesInsert<'organizations'>>(
+      fragment.fixed,
+      this.ctx
+    );
 
     const n = fragment.count ?? 0;
     for (let i = 0; i < n; i++) {

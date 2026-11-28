@@ -4,7 +4,7 @@
  * Public API (stable):
  *
  * Runtime values:
- *   - `runPipeline(template, overrides?, ctx?)` — orchestrate all 14 generators in topo order; bridges (fragment, ctx) => Rows overrides with the class-based built-ins; performs post-topo sentinel enrichment.
+ *   - `runPipeline(template, overrides?, ctx?)` — orchestrate all 11 generators in topo order; bridges (fragment, ctx) => Rows overrides with the class-based built-ins; performs post-topo sentinel enrichment.
  *   - `TOPO_ORDER` — generator execution order (questions before candidates, for the answer-emitter seam).
  *   - `Writer` — env-enforced writer with routing.
  *   - `SupabaseAdminClient` — bulk-write base class. Consumed by the tests/subclass.
@@ -22,7 +22,7 @@
  *     Installed by the pipeline via `ctx.answerEmitter ??= latentAnswerEmitter(template)` — customizable per-sub-step via `ctx.latent` (swappable seam).
  *
  * Built-in templates:
- *   - `BUILT_IN_TEMPLATES` — name => Template for every built-in the CLI resolves. `default`, `e2e/base`, and the `perm-*` / `show-feedback-survey` permutation fixtures.
+ *   - `BUILT_IN_TEMPLATES` — name => Template for every built-in the CLI resolves. `default`, `e2e/base`, `smoke` and the `perm-*` permutation fixtures.
  *   - `BUILT_IN_OVERRIDES` — name => Overrides, paired 1:1 with the above.
  *     Consulted only after a built-in name matches.
  *   - `defaultTemplate` / `defaultOverrides` — the `default` built-in and its non-uniform candidate / question-type shaping.
@@ -38,8 +38,8 @@
  *   - `SEED_CLI_USAGE` / `TEARDOWN_USAGE` — the two `--help` texts.
  *
  * Locales:
- *   - `LOCALES` — the supported locale codes the fan-out expands to.
- *   - `fanOutLocales(rows, template, seed)` — 4-locale JSONB expansion; a no-op when `generateTranslationsForAllLocales` is off.
+ *   - `LOCALES` — the locale codes of `staticSettings.supportedLocales`, which the fan-out expands to.
+ *   - `fanOutLocales(rows, template, seed)` — JSONB expansion to every locale in `LOCALES`; a no-op when `generateTranslationsForAllLocales` is off.
  *
  * app_settings external-id resolution:
  *   - `settingsContainsExternalIdRefs(settings)` — does this settings tree carry any `{ externalId }` shape?
@@ -53,9 +53,9 @@
  *   - `Overrides` — override map shape.
  *   - `FindDataResult` — admin-client query result (consumed by the tests/subclass).
  *   - `InvitationSeedItem`, `InvitationNominationSeed`, `SeededInvitation` — the argument and return shapes of `SupabaseAdminClient.createInvitations`.
- *   - `TableName` — union of the 14 table names in TOPO_ORDER.
+ *   - `TableName` — union of the 11 table names in TOPO_ORDER.
  *   - `LatentHooks` — swappable seam on `ctx.latent`.
- *   - `LocaleCode` — union of the `LOCALES` entries.
+ *   - `LocaleCode` — a locale code of `LOCALES`.
  *   - `SummaryInput` — argument shape of `formatSummary`.
  *   - `TeardownResult` — `{ rowsDeleted, storageRemoved }` from `runTeardown`.
  *
@@ -135,12 +135,9 @@ export type {
   ElectionsFixedRow,
   ExternalRef,
   FactionsFixedRow,
-  FeedbackFixedRow,
   FixedRow,
-  GuardedCollectionKey,
   NominationsFixedRow,
   OrganizationsFixedRow,
-  PassThroughCollectionKey,
   QuestionCategoriesFixedRow,
   QuestionsFixedRow,
   SentinelValue

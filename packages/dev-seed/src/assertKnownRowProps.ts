@@ -21,7 +21,7 @@
  *
  * ## The `external_id` it does NOT require
  *
- * `feedback`, `accounts` and `projects` have no `external_id` column at all, and the writer's own spec passes rows without one. The guard therefore never reports a missing `external_id` — the RPC hard-requires it for the ten bulk-import tables and raises by name three passes later, and pre-empting that with a worse message would change the failure mode for every such row. When a row has none, the message falls back to the row's index within its collection.
+ * The writer's own spec passes rows without one. The guard therefore never reports a missing `external_id` — the RPC hard-requires it for the ten bulk-import tables and raises by name three passes later, and pre-empting that with a worse message would change the failure mode for every such row. When a row has none, the message falls back to the row's index within its collection.
  */
 
 import { deniedKeys, permittedKeys, resolveCollectionName, SKIP_COLUMNS_SOURCE } from './template/permittedKeys';
@@ -71,7 +71,7 @@ function deniedPropertyMessage(key: string, collection: string, table: string, r
 /**
  * Assert that every property of every row is one the pipeline actually reads.
  *
- * @param data collection → rows, as `runPipeline` emits it. `Writer.write()` passes its **pre-deletion** `data` parameter, not `bulkData`: by the time Pass 1 runs, `accounts`, `projects`, `feedback` and `app_settings` have been removed from `bulkData`, and `app_settings` is a template-authorable fragment that every built-in emits a row of.
+ * @param data collection → rows, as `runPipeline` emits it. `Writer.write()` passes its **pre-deletion** `data` parameter, not `bulkData`: by the time Pass 1 runs, `app_settings` has been removed from `bulkData`, and it is a template-authorable fragment that every built-in emits a row of.
  * @throws on the FIRST offending property: an unknown key, a key that is a real column the RPC discards, or a collection this module does not model. An unrecognised collection is loud even when it carries zero rows, because returning quietly would let a keying confusion permit every key on every row.
  */
 export function assertKnownRowProps(data: Record<string, Array<Record<string, unknown>>>): void {

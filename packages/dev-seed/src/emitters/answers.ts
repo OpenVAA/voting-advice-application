@@ -8,6 +8,7 @@
  * shape-valid ONLY. Subdimension projection / MISSING_VALUE handling stays in `@openvaa/matching`. This emitter does NOT produce correlated or clustered answers — the latent-factor emitter does that.
  */
 
+import { readChoiceIds } from './choices';
 import type { Faker } from '@faker-js/faker';
 import type { Enums, TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../ctx';
@@ -93,7 +94,7 @@ function emitValueFor(q: TablesInsert<'questions'>, faker: Faker, refDate: Date)
 
 /**
  * The span used for a `number` question that declares no range of its own.
- * Pinned by `tests/emitters/answers.test.ts` so it cannot be dropped silently.
+ * Pinned by `answers.test.ts` so it cannot be dropped silently.
  */
 const NUMBER_FALLBACK_RANGE = { min: 0, max: 100 } as const;
 
@@ -114,13 +115,13 @@ function emitNumberInDeclaredRange(q: TablesInsert<'questions'>, faker: Faker): 
 }
 
 function pickOneChoiceId(q: TablesInsert<'questions'>, faker: Faker): string | null {
-  const choices = extractChoiceIds(q);
+  const choices = readChoiceIds(q);
   if (choices.length === 0) return null;
   return choices[faker.number.int({ min: 0, max: choices.length - 1 })];
 }
 
 function pickMultipleChoiceIds(q: TablesInsert<'questions'>, faker: Faker): Array<string> {
-  const choices = extractChoiceIds(q);
+  const choices = readChoiceIds(q);
   if (choices.length === 0) return [];
   const picked: Array<string> = [];
   for (const c of choices) {
@@ -131,17 +132,4 @@ function pickMultipleChoiceIds(q: TablesInsert<'questions'>, faker: Faker): Arra
     picked.push(choices[faker.number.int({ min: 0, max: choices.length - 1 })]);
   }
   return picked;
-}
-
-function extractChoiceIds(q: TablesInsert<'questions'>): Array<string> {
-  const choices = q.choices;
-  if (!Array.isArray(choices)) return [];
-  return choices
-    .map((c) => {
-      if (c && typeof c === 'object' && 'id' in c && typeof (c as { id: unknown }).id === 'string') {
-        return (c as { id: string }).id;
-      }
-      return null;
-    })
-    .filter((v): v is string => v !== null);
 }

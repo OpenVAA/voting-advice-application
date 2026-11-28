@@ -20,9 +20,10 @@
  * Per-perm `externalIdPrefix` invariant is preserved: the value passed via {@link BuildMinimalOptions.externalIdPrefix} is the EXACT `template.externalIdPrefix` returned (no mutation, no normalisation).
  * Every generator prepends this prefix to each bare row external_id when it emits the row.
  *
- * JSONB-undefined safety: the deep-merge utility strips `undefined` values before merging. JSONB drops `undefined` keys at write time and the post-seed `toMatchObject` assertion in `setupFromTemplate` fails if an undefined key leaks into the merged settings tree.
+ * JSONB-undefined safety: `mergeSettings` skips `undefined` members of the overlay. JSONB drops `undefined` keys at write time and the post-seed `toMatchObject` assertion in `setupFromTemplate` fails if an undefined key leaks into the merged settings tree.
  */
 
+import { mergeSettings } from '@openvaa/app-shared';
 import {
   buildCandidate,
   buildElectionConstituencyNoms,
@@ -83,7 +84,7 @@ export interface BuildMinimalOptions {
    * Per-candidate answer overrides. Keyed by BARE candidate external_id (e.g. `'cand-1'`).
    */
   answersByCandidate?: Record<string, CandidateAnswerOverride>;
-  /** Settings overlay applied via deep-merge onto MINIMAL_BASE_APP_SETTINGS. */
+  /** Settings overlay merged onto MINIMAL_BASE_APP_SETTINGS with `mergeSettings`. */
   settingsOverlay?: Record<string, unknown>;
   /**
    * When `elections > 1`, controls which elections receive nominations.
@@ -94,86 +95,6 @@ export interface BuildMinimalOptions {
    * Global default answer-fill behaviour. `'all'` (default) — every candidate carries an answer to every seeded question. `'none'` — every candidate is clean. Per-candidate `answersByCandidate[<id>]` still overrides this global default.
    */
   candidateAnswersDefault?: 'all' | 'none';
-}
-
-/**
- * JSONB-safe deep merge. Recursively merges `overlay` into `base`. Strips `undefined` values from the overlay before each merge step.
- *
- * Returns a fresh object — does not mutate either argument.
- */
-function deepMerge<TRow extends Record<string, unknown>>(
-  base: TRow,
-  overlay: Record<string, unknown> | undefined
-): TRow {
-  if (overlay == null) return JSON.parse(JSON.stringify(base)) as TRow;
-  const out: Record<string, unknown> = JSON.parse(JSON.stringify(base));
-  for (const key of Object.keys(overlay)) {
-    const overlayVal = overlay[key];
-    if (overlayVal === undefined) continue; // Strip undefined for JSONB safety.
-    const baseVal = out[key];
-    const overlayIsPlainObj = overlayVal != null && typeof overlayVal === 'object' && !Array.isArray(overlayVal);
-    const baseIsPlainObj = baseVal != null && typeof baseVal === 'object' && !Array.isArray(baseVal);
-    if (overlayIsPlainObj && baseIsPlainObj) {
-      out[key] = deepMerge(baseVal as Record<string, unknown>, overlayVal as Record<string, unknown>);
-    } else {
-      out[key] = overlayVal;
-    }
-  }
-  return out as TRow;
-}
-
-/**
- * Build the default answer entry for a question of the given shape:
- *   - info (`text`) → `{ value: { en: '[<extId>] desc' } }`
- *   - opinion (`singleChoiceOrdinal` / Likert5) → `{ value: choices[middle].id }` (median; Likert-5 resolves to `'3'`)
- *   - opinion (`boolean`) → `{ value: true }`
- *   - opinion categorical → `{ value: <first-category-id> }`
- */
-export function defaultAnswerForQuestion(question: Record<string, unknown>, fullExtId: string): AnswerEntry {
-  const type = question.type as string;
-  if (type === 'text') {
-    return { value: { en: `[${fullExtId}] desc` } };
-  }
-  if (type === 'singleChoiceOrdinal') {
-    // Pick the median (middle) ordinal choice so the default lands on the neutral option regardless of the scale length; Likert-5 resolves to id '3'.
-    const choices = question.choices as Array<{ id: string }> | undefined;
-    if (Array.isArray(choices) && choices.length > 0) {
-      return { value: choices[Math.floor((choices.length - 1) / 2)].id };
-    }
-    return { value: '3' };
-  }
-  if (type === 'boolean') {
-    return { value: true };
-  }
-  if (type === 'number') {
-    // The backend validate_answer_value 'number' branch requires a JSON number. Return the midpoint of the question's min/max (read from custom_data, falling back to top-level min/max), else 0. Never a string.
-    const cd = (question.custom_data ?? {}) as Record<string, unknown>;
-    const min =
-      typeof cd.min === 'number' ? cd.min : typeof question.min === 'number' ? (question.min as number) : undefined;
-    const max =
-      typeof cd.max === 'number' ? cd.max : typeof question.max === 'number' ? (question.max as number) : undefined;
-    if (min !== undefined && max !== undefined) {
-      return { value: Math.round((min + max) / 2) };
-    }
-    return { value: 0 };
-  }
-  if (type === 'multipleChoiceCategorical') {
-    // The validate_answer_value 'multipleChoiceCategorical' branch requires an array of valid choice ids — a scalar choice id is invalid. Return the first max(minSelections ?? 1, 1) choice ids.
-    const mcChoices = question.choices as Array<{ id: string }> | undefined;
-    if (Array.isArray(mcChoices) && mcChoices.length > 0) {
-      const cd = (question.custom_data ?? {}) as Record<string, unknown>;
-      const minSel = typeof cd.minSelections === 'number' ? cd.minSelections : 1;
-      const take = Math.min(Math.max(minSel, 1), mcChoices.length);
-      return { value: mcChoices.slice(0, take).map((c) => c.id) };
-    }
-    return { value: [] };
-  }
-  // Categorical (or any other choice-based question): pick the first choice's id when available; otherwise fall back to empty string.
-  const choices = question.choices as Array<{ id: string }> | undefined;
-  if (Array.isArray(choices) && choices.length > 0) {
-    return { value: choices[0].id };
-  }
-  return { value: '' };
 }
 
 /**
@@ -353,7 +274,7 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
   }
 
   // --- App settings ------------------------------------------------------
-  const settings = deepMerge(MINIMAL_BASE_APP_SETTINGS, settingsOverlay);
+  const settings: typeof MINIMAL_BASE_APP_SETTINGS = mergeSettings(MINIMAL_BASE_APP_SETTINGS, settingsOverlay ?? {});
 
   // --- Assemble Template -------------------------------------------------
   const tpl: Template = {
@@ -376,6 +297,60 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
   };
 
   return tpl;
+}
+
+/**
+ * Build the default answer entry for a question of the given shape:
+ *   - info (`text`) → `{ value: { en: '[<extId>] desc' } }`
+ *   - opinion (`singleChoiceOrdinal` / Likert5) → `{ value: choices[middle].id }` (median; Likert-5 resolves to `'3'`)
+ *   - opinion (`boolean`) → `{ value: true }`
+ *   - opinion categorical → `{ value: <first-category-id> }`
+ */
+export function defaultAnswerForQuestion(question: Record<string, unknown>, fullExtId: string): AnswerEntry {
+  const type = question.type as string;
+  if (type === 'text') {
+    return { value: { en: `[${fullExtId}] desc` } };
+  }
+  if (type === 'singleChoiceOrdinal') {
+    // Pick the median (middle) ordinal choice so the default lands on the neutral option regardless of the scale length; Likert-5 resolves to id '3'.
+    const choices = question.choices as Array<{ id: string }> | undefined;
+    if (Array.isArray(choices) && choices.length > 0) {
+      return { value: choices[Math.floor((choices.length - 1) / 2)].id };
+    }
+    return { value: '3' };
+  }
+  if (type === 'boolean') {
+    return { value: true };
+  }
+  if (type === 'number') {
+    // The backend validate_answer_value 'number' branch requires a JSON number. Return the midpoint of the question's min/max (read from custom_data, falling back to top-level min/max), else 0. Never a string.
+    const cd = (question.custom_data ?? {}) as Record<string, unknown>;
+    const min =
+      typeof cd.min === 'number' ? cd.min : typeof question.min === 'number' ? (question.min as number) : undefined;
+    const max =
+      typeof cd.max === 'number' ? cd.max : typeof question.max === 'number' ? (question.max as number) : undefined;
+    if (min !== undefined && max !== undefined) {
+      return { value: Math.round((min + max) / 2) };
+    }
+    return { value: 0 };
+  }
+  if (type === 'multipleChoiceCategorical') {
+    // The validate_answer_value 'multipleChoiceCategorical' branch requires an array of valid choice ids — a scalar choice id is invalid. Return the first max(minSelections ?? 1, 1) choice ids.
+    const mcChoices = question.choices as Array<{ id: string }> | undefined;
+    if (Array.isArray(mcChoices) && mcChoices.length > 0) {
+      const cd = (question.custom_data ?? {}) as Record<string, unknown>;
+      const minSel = typeof cd.minSelections === 'number' ? cd.minSelections : 1;
+      const take = Math.min(Math.max(minSel, 1), mcChoices.length);
+      return { value: mcChoices.slice(0, take).map((c) => c.id) };
+    }
+    return { value: [] };
+  }
+  // Categorical (or any other choice-based question): pick the first choice's id when available; otherwise fall back to empty string.
+  const choices = question.choices as Array<{ id: string }> | undefined;
+  if (Array.isArray(choices) && choices.length > 0) {
+    return { value: choices[0].id };
+  }
+  return { value: '' };
 }
 
 /**

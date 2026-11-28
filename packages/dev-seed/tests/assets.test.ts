@@ -2,8 +2,8 @@
  * Asset inventory lock.
  *
  * Fails if:
- *   - Portrait count drifts from 30 (locked count).
- *   - Naming pattern drifts from `portrait-NN.jpg` (deterministic cycling in Writer).
+ *   - The pool is empty.
+ *   - A portrait's name drifts from `portrait-NN.jpg`, the Writer's own filter, so the Writer would skip it.
  *   - Any file is empty or not a JPEG.
  *   - LICENSE.md is missing.
  *
@@ -16,18 +16,17 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const ASSETS_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'assets', 'portraits');
-const EXPECTED_COUNT = 30;
-const FILENAME_PATTERN = /^portrait-(0[1-9]|[12][0-9]|30)\.jpg$/;
+const FILENAME_PATTERN = /^portrait-\d{2}\.jpg$/;
 
 // JPEG magic number: FF D8 FF
 const JPEG_MAGIC = Buffer.from([0xff, 0xd8, 0xff]);
 
-describe('portrait assets (GEN-10)', () => {
+describe('portrait assets', () => {
   const files = readdirSync(ASSETS_DIR);
   const portraits = files.filter((f) => f.endsWith('.jpg'));
 
-  it('contains exactly 30 portrait JPEG files', () => {
-    expect(portraits.length).toBe(EXPECTED_COUNT);
+  it('contains at least one portrait JPEG file', () => {
+    expect(portraits.length).toBeGreaterThan(0);
   });
 
   it('every portrait matches the portrait-NN.jpg naming pattern', () => {
@@ -48,12 +47,5 @@ describe('portrait assets (GEN-10)', () => {
 
   it('LICENSE.md is present in the assets directory', () => {
     expect(files).toContain('LICENSE.md');
-  });
-
-  it('portrait filenames sort deterministically (writer cycles portraits[i % 30])', () => {
-    const sorted = [...portraits].sort();
-    // portrait-01.jpg must sort first, portrait-30.jpg must sort last.
-    expect(sorted[0]).toBe('portrait-01.jpg');
-    expect(sorted[sorted.length - 1]).toBe('portrait-30.jpg');
   });
 });

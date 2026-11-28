@@ -24,6 +24,7 @@
 
 import { parseArgs } from 'node:util';
 import { TEARDOWN_USAGE } from './teardown-help';
+import { DEFAULT_EXTERNAL_ID_PREFIX } from '../ctx';
 import { SupabaseAdminClient } from '../supabaseAdminClient';
 import type { LocalityGuardOptions } from '../localSupabaseUrl';
 
@@ -212,11 +213,11 @@ if (isDirectInvocation) {
     process.exit(1);
   }
 
-  const prefix = values.prefix ?? values['external-id-prefix'] ?? 'seed_';
+  const prefix = values.prefix ?? values['external-id-prefix'] ?? DEFAULT_EXTERNAL_ID_PREFIX;
 
   try {
     const client = createTeardownClient({ allowRemote: values['allow-remote'] === true });
-    // The CLI reopens the project it targets (162.1 D-19), which undoes a `perm-closed-project` seed.
+    // The CLI reopens the project it targets, which undoes a `perm-closed-project` seed.
     const { rowsDeleted, storageRemoved } = await runTeardown(prefix, client, { reopenProject: true });
     process.stdout.write(
       `Teardown complete: ${rowsDeleted} rows deleted, ${storageRemoved} storage objects removed.\n` +

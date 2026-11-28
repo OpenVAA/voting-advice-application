@@ -9,5 +9,10 @@
     "declarationMap": false,
     "types": ["node"]
   },
-  "include": ["src/**/*", "tests/**/*", "scripts/**/*"]
+  "include": ["src/**/*", "tests/**/*", "scripts/**/*"],
+  "references": [
+    { "path": "../core/tsconfig.json" },
+    { "path": "../app-shared/tsconfig.json" },
+    { "path": "../matching/tsconfig.json" }
+  ]
 }

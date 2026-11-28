@@ -1,7 +1,7 @@
 /**
  * The single derived declaration of what a hand-authored `fixed[]` row may carry — one source of truth for TWO enforcement layers:
  *
- *   - the **type** layer: `FixedRow<C>` and its twelve named aliases, consumed by `Template`, so an illegal key is a TypeScript error at authoring time;
+ *   - the **type** layer: `FixedRow<C>` and its eleven named aliases, consumed by `Template`, so an illegal key is a TypeScript error at authoring time;
  *   - the **runtime** layer: `permittedKeys(collection)`, consumed by the seed writer's unknown-key guard, so an illegal key that slipped past the compiler is a loud failure instead of a silent drop.
  *
  * ## The four sources
@@ -35,9 +35,9 @@ import type { SentinelPayload } from './linkSentinels';
 // -----------------------------------------------------------------------------
 
 /**
- * The twelve snake_case table names dev-seed authors rows for.
+ * The eleven snake_case table names dev-seed authors rows for.
  *
- * `accounts` and `projects` are deliberately absent: they are bootstrapped by `seed.sql` and `Writer.write` deletes them from the payload before it reaches the admin client (the `delete bulkData.accounts` / `delete bulkData.projects` pair in `writer.ts`), so no authored row is ever written to them.
+ * `accounts` and `projects` are deliberately absent: they are bootstrapped by `seed.sql`, and dev-seed never writes a row to them.
  */
 export type CollectionKey =
   | 'elections'
@@ -50,19 +50,7 @@ export type CollectionKey =
   | 'question_categories'
   | 'questions'
   | 'nominations'
-  | 'app_settings'
-  | 'feedback';
-
-/**
- * The two tables `Writer.write` strips from the payload before Pass 1 (`writer.ts`, the `delete bulkData.accounts` / `delete bulkData.projects` pair). They are NOT template-declarable — `TemplateSchema` has no slot for either and every built-in emits zero rows — but they ARE `TOPO_ORDER` entries, so `runPipeline` puts an (empty) array under each key, and `writer.test.ts` passes `accounts: [{ id: 'x' }]` and `projects: [{ id: 'y' }]` as pass-through fixtures.
- *
- * ⚠ **They are modelled here because Pass 0 reads the PRE-DELETION `data`.**
- * Measured: with these two unmodelled, the guard's `permittedKeys` lookup throws `unknown collection "accounts"` on the two `writer.test.ts` pass-through fixtures — offences on the non-pipeline fixture surface. Widening the allow-list with a stated reason is the fix; excluding those fixtures from what the guard reads is not. Kept OUT of {@link CollectionKey}, so the twelve template-declarable slots, the twelve `FixedRow` aliases and `Template`'s key-set conformance assertion cover the twelve only.
- */
-export type PassThroughCollectionKey = 'accounts' | 'projects';
-
-/** Every collection the RUNTIME guard models — the twelve, plus the two pass-throughs. */
-export type GuardedCollectionKey = CollectionKey | PassThroughCollectionKey;
+  | 'app_settings';
 
 /**
  * `COLLECTION_MAP` and `resolveCollectionName` live in `./collectionNames`, a leaf module, and are re-exported here. They live there because `linkSentinels.ts` needs the same primitive for `pickCollection`, and importing it from THIS module would close an ESM cycle whose entry through `linkSentinels.ts` throws a TDZ `ReferenceError` — see `./collectionNames`'s header.
@@ -289,17 +277,8 @@ const TABLE_COLUMNS = {
     'subtype',
     'updated_at'
   ],
-  app_settings: ['created_at', 'customization', 'external_id', 'id', 'project_id', 'settings', 'updated_at'],
-  feedback: ['created_at', 'date', 'description', 'id', 'project_id', 'rating', 'url', 'user_agent']
+  app_settings: ['created_at', 'customization', 'external_id', 'id', 'project_id', 'settings', 'updated_at']
 } as const satisfies { [C in CollectionKey]: ReadonlyArray<Extract<keyof TablesInsert<C>, string>> };
-
-/**
- * Value-level mirror of the two pass-through tables' column sets — see {@link PassThroughCollectionKey} for why they are modelled at all. Held to the generated types in both directions by the same pair of assertions as {@link TABLE_COLUMNS}.
- */
-const PASS_THROUGH_COLUMNS = {
-  accounts: ['created_at', 'id', 'name', 'updated_at'],
-  projects: ['account_id', 'created_at', 'default_locale', 'id', 'name', 'open_for_voters', 'updated_at']
-} as const satisfies { [C in PassThroughCollectionKey]: ReadonlyArray<Extract<keyof TablesInsert<C>, string>> };
 
 /** `true` when `TValue` is exactly `never`; the compile-time completeness probe below. */
 type IsNever<TValue> = [TValue] extends [never] ? true : false;
@@ -309,34 +288,16 @@ type MissingColumns = {
   [C in CollectionKey]: Exclude<Extract<keyof TablesInsert<C>, string>, (typeof TABLE_COLUMNS)[C][number]>;
 }[CollectionKey];
 
-/** Columns the generated types declare but {@link PASS_THROUGH_COLUMNS} omits. */
-type MissingPassThroughColumns = {
-  [C in PassThroughCollectionKey]: Exclude<
-    Extract<keyof TablesInsert<C>, string>,
-    (typeof PASS_THROUGH_COLUMNS)[C][number]
-  >;
-}[PassThroughCollectionKey];
-
 /**
  * Compile-time assertion: no generated column is missing from {@link TABLE_COLUMNS}. If a migration adds a column, this line stops compiling and names it.
  */
 const COLUMN_COVERAGE_IS_COMPLETE: IsNever<MissingColumns> extends true ? true : MissingColumns = true;
 void COLUMN_COVERAGE_IS_COMPLETE;
 
-/** The same assertion for the two pass-through tables. */
-const PASS_THROUGH_COVERAGE_IS_COMPLETE: IsNever<MissingPassThroughColumns> extends true
-  ? true
-  : MissingPassThroughColumns = true;
-void PASS_THROUGH_COVERAGE_IS_COMPLETE;
-
 /**
  * The column source the runtime guard consults, keyed by RESOLVED table name.
- * One object so a single lookup covers all fourteen tables `TOPO_ORDER` names.
  */
-const COLUMNS_BY_TABLE: Readonly<Record<GuardedCollectionKey, ReadonlyArray<string>>> = {
-  ...TABLE_COLUMNS,
-  ...PASS_THROUGH_COLUMNS
-};
+const COLUMNS_BY_TABLE: Readonly<Record<CollectionKey, ReadonlyArray<string>>> = TABLE_COLUMNS;
 
 // -----------------------------------------------------------------------------
 // Source (3) — non-column fields
@@ -404,7 +365,7 @@ export const COLLECTION_NON_COLUMNS: Record<string, ReadonlySet<string>> = Objec
 /**
  * Authoring keys admitted on every collection irrespective of its columns.
  *
- * `Fragment<TRow>` (`src/types.ts`) re-requires `external_id` on every hand-authored row because the writer's upsert is keyed on it. That holds even for `feedback`, whose table genuinely has no `external_id` column (`107-feedback.sql`) and whose rows `Writer.write` skips with a logged warning.
+ * `Fragment<TRow>` (`src/types.ts`) re-requires `external_id` on every hand-authored row because the writer's upsert is keyed on it.
  *
  * ⚠ **`externalId` is not admitted** — see {@link CAMEL_FORMS_NOT_ADMITTED}, which withholds it from the camel derivation that would otherwise admit it on every table that has the column.
  */
@@ -444,7 +405,7 @@ const CAMEL_FORMS_NOT_ADMITTED: ReadonlySet<string> = new Set<string>(['external
  *
  * `nominations.faction` is admitted although nothing in-tree emits it — the RPC declares it, and omitting it would break the first factions-bearing template somebody writes.
  *
- * ⚠ Not derived. Held to the SQL by the two-directional parity test in `tests/template/permittedKeys.test.ts`; see this file's header.
+ * ⚠ Not derived. Held to the SQL by the two-directional parity test in `permittedKeys.test.ts`; see this file's header.
  */
 export const RELATIONSHIP_REFS = {
   factions: { organization: { fk: 'organization_id', table: 'organizations' } },
@@ -504,8 +465,8 @@ export const SKIP_COLUMNS_NOT_DENIED: Readonly<Record<string, string>> = {
     'Emitted on every generated row of every built-in. ' +
     'The RPC drops the payload copy and re-supplies its own from p_project_id, so denying it would turn every seed run and every E2E setup red.',
   id:
-    'A TablesInsert-legal key that two existing writer.test.ts fixtures supply (accounts and projects pass-through rows). ' +
-    'Denying it would fail those tests for a reason unrelated to what they assert.',
+    'A TablesInsert-legal key on every table that zero in-tree rows emit. ' +
+    'The RPC drops the payload copy and the database assigns the id, so a row that carries one is written rather than wrong.',
   created_at:
     'Zero in-tree rows emit it. A template that sets a creation timestamp gets a DB-overridden value rather than a wrong one, ' +
     'which is worth this note rather than a throw.',
@@ -530,7 +491,7 @@ export const SKIP_COLUMNS_NOT_DENIED: Readonly<Record<string, string>> = {
  *
  * Every read is answered from `#values`, which no `Set.prototype.*.call` can reach. The class EXTENDS `Set`, so `instanceof Set` and the `ReadonlySet<string>` contract both hold; the superclass's own data is left empty and unread. A prototype-borrowed mutation therefore writes into a slot nothing consults — it cannot throw (the receiver is a genuine `Set`), but it cannot widen the guard either, which is the property that matters.
  *
- * Held by `tests/template/permittedKeys.test.ts`, which performs the smuggle and asserts `has` still says no.
+ * Held by `permittedKeys.test.ts`, which performs the smuggle and asserts `has` still says no.
  */
 class PermittedKeySet extends Set<string> {
   readonly #values: ReadonlySet<string>;
@@ -594,7 +555,7 @@ function camelFormsFor(column: string): Array<string> {
   );
 }
 
-function derivePermittedKeys(collection: GuardedCollectionKey): ReadonlySet<string> {
+function derivePermittedKeys(collection: CollectionKey): ReadonlySet<string> {
   const keys = new Set<string>(AUTHORING_KEYS);
 
   // (1) DB columns and the camel forms FIELD_MAP actually resolves to them.
@@ -630,9 +591,7 @@ function derivePermittedKeys(collection: GuardedCollectionKey): ReadonlySet<stri
   return new PermittedKeySet([...keys].sort());
 }
 
-const COLLECTION_KEYS: ReadonlyArray<GuardedCollectionKey> = Object.keys(
-  COLUMNS_BY_TABLE
-) as ReadonlyArray<GuardedCollectionKey>;
+const COLLECTION_KEYS: ReadonlyArray<CollectionKey> = Object.keys(COLUMNS_BY_TABLE) as ReadonlyArray<CollectionKey>;
 
 /** Memoized per resolved table name, so the returned set has a stable identity. */
 const PERMITTED_KEYS: ReadonlyMap<string, ReadonlySet<string>> = new Map(
@@ -665,7 +624,7 @@ export function permittedKeys(collection: string): ReadonlySet<string> {
  * ⚠ **This symmetry is load-bearing, not tidiness.** `DENIED_BY_TABLE` is written in snake case because that is how the RPC's `skip_columns` array names its entries — but source (1) admits, for every column, *every camel form that resolves to it*, and `COLUMN_MAP` maps `entity_type` to `entityType`. A literal `new Set(['entity_type'])` would leave `entityType` in the PERMITTED set and out of the DENIED one, so the allow-list would wave it through; `bulkImport` would run `resolveFieldName('entityType') === 'entity_type'` and ship it to the RPC, whose `skip_columns` discards it — exit 0 and a row missing what the author asked for, which is the exact failure mode {@link DENIED_BY_TABLE} exists to eliminate.
  *
  * The rule this encodes: **every spelling `resolveFieldName` collapses onto a denied column is itself denied.** Deriving it here rather than listing it is what makes that true for a column added to `DENIED_BY_TABLE` tomorrow.
- * `tests/assertKnownRowProps.test.ts` asserts it for both spellings on every denying table, and holds the derived set to the declaration in both directions so neither can grow silently.
+ * `src/assertKnownRowProps.test.ts` asserts it for both spellings on every denying table, and holds the derived set to the declaration in both directions so neither can grow silently.
  */
 function deriveDeniedKeys(columns: ReadonlyArray<string>): ReadonlySet<string> {
   const keys = new Set<string>();
@@ -781,7 +740,7 @@ export type FixedRow<TCollection extends CollectionKey> = ColumnsFor<TCollection
   Partial<Record<RefKeysFor<TCollection>, ExternalRef>>;
 
 /*
- * The twelve named aliases.
+ * The eleven named aliases.
  *
  * ⚠ **The alias is load-bearing, not stylistic.** Measured: an inline intersection produces a `TS2353` whose type name is a twenty-line structural expansion, while an alias produces `… does not exist in type 'ElectionsFixedRow'`. The error must NAME the row type, so the alias form is required.
  */
@@ -808,5 +767,3 @@ export type QuestionsFixedRow = FixedRow<'questions'>;
 export type NominationsFixedRow = FixedRow<'nominations'>;
 /** A hand-authored `app_settings` row. */
 export type AppSettingsFixedRow = FixedRow<'app_settings'>;
-/** A hand-authored `feedback` row. */
-export type FeedbackFixedRow = FixedRow<'feedback'>;

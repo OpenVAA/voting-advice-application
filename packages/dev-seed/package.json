@@ -21,12 +21,12 @@
     "@faker-js/faker": "catalog:",
     "@openvaa/app-shared": "workspace:^",
     "@openvaa/core": "workspace:^",
-    "@openvaa/matching": "workspace:^",
     "@openvaa/supabase-types": "workspace:^",
     "@supabase/supabase-js": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@openvaa/matching": "workspace:^",
     "@openvaa/shared-config": "workspace:^",
     "@types/node": "catalog:",
     "eslint": "catalog:",

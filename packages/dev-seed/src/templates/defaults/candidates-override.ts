@@ -6,17 +6,19 @@
  * Weights: [61, 56, 49, 43, 38, 33, 26, 21] → sum 327, 8 organizations. These are the row sums of `nominations-override.ts`'s `ORGANIZATION_CONSTITUENCY_MATRIX`.
  * Shape: sorted descending; tail organization is 34% of the largest (21/61) — ensures the 8th organization is not invisibly small while keeping the profile clearly non-uniform for matching/clustering visibility.
  *
- * Faker locale cycles per candidate for visual variety. 109 candidates per locale block (3 × 109 = 327 exactly) — candidates 0-108 use en, 109-217 fi, 218-326 sv. The locale packs are fresh per-locale Faker instances seeded deterministically at fixed offsets so the 3 blocks produce visibly distinct name output while the overall run stays deterministic.
+ * Faker locale cycles per candidate for visual variety: the candidates are split into one consecutive block per locale in `LOCALES` (currently en, fi, sv: 3 × 109 = 327 exactly, candidates 0-108 use en, 109-217 fi, 218-326 sv). The locale packs are fresh per-locale Faker instances seeded deterministically at fixed offsets so the blocks produce visibly distinct name output while the overall run stays deterministic.
  *
  * THROWS if `ctx.refs.organizations.length !== 8` — the weights are tuned for 8 organizations. If a future edit adds or drops an organization in defaultTemplate without updating this override, runtime fails loudly here rather than silently mis-distributing candidates. Ship a new override (or generalize this one) if a template legitimately needs different weights.
  *
  * Answer emission: the override calls `ctx.answerEmitter ?? defaultRandomValidEmit` exactly as the CandidatesGenerator does. The latent emitter is auto-installed by `pipeline.ts` (`ctx.answerEmitter ??= latentAnswerEmitter(template)`) before this override runs, so candidates get clustered answers "for free".
  */
 
-import { en, Faker, fi, sv } from '@faker-js/faker';
+import { en, Faker } from '@faker-js/faker';
 import { defaultRandomValidEmit } from '../../emitters/answers';
+import { localePack, LOCALES } from '../../locales';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../../ctx';
+import type { LocaleCode } from '../../locales';
 
 /**
  * Sorted-descending weights. Sum MUST equal the candidates count.
@@ -29,30 +31,25 @@ export const ORGANIZATION_WEIGHTS: ReadonlyArray<number> = [61, 56, 49, 43, 38, 
 const TOTAL_CANDIDATES = ORGANIZATION_WEIGHTS.reduce((a, b) => a + b, 0);
 
 /**
- * 327 candidates / 3 locales = 109 per block exactly. Candidates 0-108 use en, 109-217 fi, 218-326 sv. Math.floor(i / 109) gives the locale index for candidate i in [0, 327).
+ * The number of consecutive candidates per locale block: 327 candidates / 3 locales = 109 per block exactly. Math.floor(i / LOCALE_BLOCK_SIZE) gives the index in `LOCALES` of candidate i's locale.
  */
-export const LOCALE_BLOCK_SIZE = 109;
+export const LOCALE_BLOCK_SIZE = Math.ceil(TOTAL_CANDIDATES / LOCALES.length);
 
 /**
- * Per-locale faker seed offsets. Same pattern as `locales.ts` fanOutLocales — fixed offsets ensure locales produce visibly distinct output while the overall run is deterministic at a given base seed.
+ * The faker seed offset of a locale: its index in `LOCALES` times 1000 (0, 1000, 2000 for en, fi, sv). Fixed offsets ensure locales produce visibly distinct output while the overall run is deterministic at a given base seed.
  */
-const LOCALE_ORDER = ['en', 'fi', 'sv'] as const;
-type LocaleCode = (typeof LOCALE_ORDER)[number];
-const LOCALE_PACKS: Record<LocaleCode, typeof en> = { en, fi, sv };
-const LOCALE_SEED_OFFSETS: Record<LocaleCode, number> = {
-  en: 0,
-  fi: 1000,
-  sv: 2000
-};
+function localeSeedOffset(locale: LocaleCode): number {
+  return LOCALES.indexOf(locale) * 1000;
+}
 
 /**
  * Build a per-locale Faker instance. Fallback chain `[locale, en]` keeps name generation robust if the locale pack lacks an entry. Seed is the ctx base seed plus a fixed per-locale offset.
  *
  * The base seed is read defensively — we cannot extract the *original* seed from `ctx.faker` once draws have occurred (faker.seed() without args returns the MUTATED internal state, not the input seed). We therefore fall back to a canonical `42` base. Tests in `default.test.ts` verify byte-level determinism at this base; the default template uses `seed: 42` (see defaultTemplate.seed).
  */
-function buildLocaleFaker(locale: LocaleCode): Faker {
-  const f = new Faker({ locale: [LOCALE_PACKS[locale], en] });
-  f.seed(42 + LOCALE_SEED_OFFSETS[locale]);
+function buildLocaleFaker(locale: LocaleCode, baseSeed = 42): Faker {
+  const f = new Faker({ locale: [localePack(locale), en] });
+  f.seed(baseSeed + localeSeedOffset(locale));
   return f;
 }
 
@@ -81,11 +78,9 @@ export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<s
   }
 
   // Per-locale Faker cache (built once per override invocation).
-  const localeFakers: Record<LocaleCode, Faker> = {
-    en: buildLocaleFaker('en'),
-    fi: buildLocaleFaker('fi'),
-    sv: buildLocaleFaker('sv')
-  };
+  const localeFakers: Record<LocaleCode, Faker> = Object.fromEntries(
+    LOCALES.map((locale) => [locale, buildLocaleFaker(locale)])
+  );
 
   // Emitter seam — mirrors CandidatesGenerator's. The latent emitter is auto-installed by `pipeline.ts` (`ctx.answerEmitter ??= latentAnswerEmitter(template)`), so by the time this override runs the field is populated when the template has a latent block (or non-empty organizations).
   const emit = ctx.answerEmitter ?? defaultRandomValidEmit;
@@ -96,7 +91,7 @@ export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<s
   const rows: Array<Record<string, unknown>> = [];
   for (let i = 0; i < TOTAL_CANDIDATES; i++) {
     const localeIdx = Math.floor(i / LOCALE_BLOCK_SIZE);
-    const locale = LOCALE_ORDER[localeIdx];
+    const locale = LOCALES[localeIdx];
     const faker = localeFakers[locale];
 
     const row: Record<string, unknown> = {
@@ -133,7 +128,5 @@ export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<s
  * @internal
  */
 export function __buildLocaleFakerForTests(locale: LocaleCode, baseSeed = 42): Faker {
-  const f = new Faker({ locale: [LOCALE_PACKS[locale], en] });
-  f.seed(baseSeed + LOCALE_SEED_OFFSETS[locale]);
-  return f;
+  return buildLocaleFaker(locale, baseSeed);
 }

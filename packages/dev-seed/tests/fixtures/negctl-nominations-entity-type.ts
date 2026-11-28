@@ -7,7 +7,7 @@
  *
  * ⚠ This file is BYTE-FROZEN at this exact path: a control is comparable between two trees only while its bytes are the same in both.
  *
- * Loaded through `yarn db:seed --template <absolute path to this file>`, and imported by `tests/assertKnownRowProps.test.ts`, which feeds its `fixed[]` rows to Pass 0. Nothing in `src/` imports it.
+ * Loaded through `yarn db:seed --template <absolute path to this file>`, and imported by `src/assertKnownRowProps.test.ts`, which feeds its `fixed[]` rows to Pass 0. Nothing in `src/` imports it.
  *
  * ```sh
  * yarn db:seed --template "$PWD/packages/dev-seed/tests/fixtures/negctl-nominations-entity-type.ts"
@@ -91,6 +91,5 @@ export default {
     ]
   },
 
-  app_settings: { count: 0 },
-  feedback: { count: 0 }
+  app_settings: { count: 0 }
 };

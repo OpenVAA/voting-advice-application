@@ -10,6 +10,7 @@
  * Cycle-avoidance: each generated row may optionally receive a `parent` ref pointing at a row EARLIER in the same batch (`rows.length > 0` + backward-only index). The self-FK is not modeled on `fixed[]` rows — users who need a parent relationship on hand-authored rows can add `parent: { external_id }` directly; the writer's strip logic treats sentinel refs on fixed rows the same as on generated rows (they pass through to bulk_import unchanged).
  */
 
+import { passThroughFixed } from './passThroughFixed';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx, Fragment } from '../types';
 
@@ -25,23 +26,10 @@ type ConstituencyRow = TablesInsert<'constituencies'> & {
 export class ConstituenciesGenerator {
   constructor(private ctx: Ctx) {}
 
-  // `defaults` ignores ctx here; reading `ctx.refs` is how a generator would scale its counts.
-
-  defaults(ctx: Ctx): ConstituenciesFragment {
-    return { count: 2 };
-  }
-
   generate(fragment: ConstituenciesFragment): Array<TablesInsert<'constituencies'>> {
     const { faker, projectId, externalIdPrefix } = this.ctx;
-    const rows: Array<ConstituencyRow> = [];
 
-    for (const fx of fragment.fixed ?? []) {
-      rows.push({
-        ...fx,
-        external_id: `${externalIdPrefix}${fx.external_id}`,
-        project_id: fx.project_id ?? projectId
-      });
-    }
+    const rows: Array<ConstituencyRow> = passThroughFixed<ConstituencyRow>(fragment.fixed, this.ctx);
 
     const n = fragment.count ?? 0;
     for (let i = 0; i < n; i++) {

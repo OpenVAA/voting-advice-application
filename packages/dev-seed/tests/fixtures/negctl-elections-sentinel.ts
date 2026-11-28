@@ -60,6 +60,5 @@ export default {
   question_categories: { count: 0 },
   questions: { count: 0 },
   nominations: { count: 0 },
-  app_settings: { count: 0 },
-  feedback: { count: 0 }
+  app_settings: { count: 0 }
 };

@@ -5,7 +5,7 @@
  *
  * {@link TemplateSchema} is the **runtime** authority: `validateTemplate` parses whatever a filesystem template hands over, and its per-entity `fixed[]` stays `z.record(z.string(), z.unknown())` on purpose — there is exactly ONE row-level authority, and that authority is the runtime unknown-key guard, not zod.
  *
- * `Template` is the **authoring** authority. It is hand-written, and its twelve per-entity slots carry the per-collection `FixedRow` aliases from `./permittedKeys`, so a key that no column, sentinel, non-column field or RPC relationship reference admits is a TypeScript error at the point it is written — naming the row type, e.g.
+ * `Template` is the **authoring** authority. It is hand-written, and its eleven per-entity slots carry the per-collection `FixedRow` aliases from `./permittedKeys`, so a key that no column, sentinel, non-column field or RPC relationship reference admits is a TypeScript error at the point it is written — naming the row type, e.g.
  * `'_constituencies' does not exist in type 'ElectionsFixedRow'`.
  *
  * Until this change `Template` was `z.infer<typeof TemplateSchema>`, so every template annotated `: Template` got `Record<string, unknown>` rows and an illegal key was indistinguishable from a real column. The old doc comment claimed `Template` "mirrors {@link TemplateSchema} exactly without hand-written duplication"; that is now only half true, so it is replaced rather than left standing — a record that silently stops being true is how records come to disagree.
@@ -40,17 +40,17 @@
  *   Default: the seed.sql bootstrap project (`00000000-0000-0000-0000-000000000001`). Most templates should not override — the bootstrap project is what the frontend reads in local dev.
  *
  * - `generateTranslationsForAllLocales: boolean` — when true, localized
- *   JSONB fields are expanded across every locale in `staticSettings.supportedLocales` (`en`, `fi`, `sv`, `da`). Default false / undefined. Set `true` in the default template; set `false` in the e2e template.
+ *   JSONB fields are expanded across every locale in `LOCALES`, which is read from `staticSettings.supportedLocales` (currently `en`, `fi`, `sv`). Default false / undefined. Set `true` in the default template; set `false` in the e2e template.
  *
  * - `openForVoters: boolean` — when present, the writer sets the target project's `open_for_voters` to this value after every other pass. Default undefined, which leaves the project's openness untouched.
- *   `false` makes the project's public data unreadable to anon; `perm-closed-project` uses it to reach the closed-project state (162.1 D-21). `yarn db:seed:teardown` reopens the project (D-19). dev-seed never creates a project row.
+ *   `false` makes the project's public data unreadable to anon; `perm-closed-project` uses it to reach the closed-project state. `yarn db:seed:teardown` reopens the project. dev-seed never creates a project row.
  *
  * - `latent: LatentConfig` — latent-factor answer model
  *   configuration (per-organization centroids, question loadings, noise). See {@link LatentHooks} for the swappable per-sub-step seam. Its shape is read off {@link TemplateSchema} so it cannot drift.
  *
  * ### Per-entity fragments
  *
- * Each of the 12 non-system public tables (`elections`, `constituency_groups`, `constituencies`, `organizations`, `alliances`, `factions`, `candidates`, `question_categories`, `questions`, `nominations`, `app_settings`, `feedback`) accepts a `{ count?, fixed? }` fragment:
+ * Each of the 11 content tables (`elections`, `constituency_groups`, `constituencies`, `organizations`, `alliances`, `factions`, `candidates`, `question_categories`, `questions`, `nominations`, `app_settings`) accepts a `{ count?, fixed? }` fragment:
  *
  * - `count: number` — target number of SYNTHETIC rows the generator emits.
  *   Smart default per entity (see individual generators).
@@ -96,7 +96,6 @@ import type {
   ConstituencyGroupsFixedRow,
   ElectionsFixedRow,
   FactionsFixedRow,
-  FeedbackFixedRow,
   NominationsFixedRow,
   OrganizationsFixedRow,
   QuestionCategoriesFixedRow,
@@ -135,7 +134,6 @@ export type Template = {
   questions?: Fragment<QuestionsFixedRow>;
   nominations?: Fragment<NominationsFixedRow>;
   app_settings?: Fragment<AppSettingsFixedRow>;
-  feedback?: Fragment<FeedbackFixedRow>;
   latent?: LatentConfig;
 };
 

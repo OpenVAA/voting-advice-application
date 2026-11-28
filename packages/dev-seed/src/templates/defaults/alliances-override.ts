@@ -8,7 +8,7 @@
  *
  * ALLIANCE_MEMBERSHIP and findAllianceForOrganization are exported so `nominations-override.ts` can (a) emit alliance noms with constituency-specific external_ids and (b) wire org-nom parent_nomination to the matching alliance nom in the same constituency.
  *
- * No real Finnish coalition names; invented neutral names. EN-only authoring + 4-locale auto-fan-out via `defaultTemplate.generateTranslationsForAllLocales: true`.
+ * No real Finnish coalition names; invented neutral names. EN-only authoring + fan-out to every locale in `LOCALES` via `defaultTemplate.generateTranslationsForAllLocales: true`.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';

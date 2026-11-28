@@ -10,6 +10,7 @@
  * Default count = 2: enough category diversity for the plumbing (e.g. "Economy", "Environment") so QuestionsGenerator's rotation assigns questions across more than one category. Templates can override it.
  */
 
+import { passThroughFixed } from './passThroughFixed';
 import type { Enums, TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx, Fragment } from '../types';
 
@@ -18,23 +19,13 @@ export type QuestionCategoriesFragment = Fragment<TablesInsert<'question_categor
 export class QuestionCategoriesGenerator {
   constructor(private ctx: Ctx) {}
 
-  // `defaults` ignores ctx here; reading `ctx.refs` is how a generator would scale its counts.
-
-  defaults(ctx: Ctx): QuestionCategoriesFragment {
-    return { count: 2 };
-  }
-
   generate(fragment: QuestionCategoriesFragment): Array<TablesInsert<'question_categories'>> {
     const { faker, projectId, externalIdPrefix } = this.ctx;
-    const rows: Array<TablesInsert<'question_categories'>> = [];
 
-    for (const fx of fragment.fixed ?? []) {
-      rows.push({
-        ...fx,
-        external_id: `${externalIdPrefix}${fx.external_id}`,
-        project_id: fx.project_id ?? projectId
-      });
-    }
+    const rows: Array<TablesInsert<'question_categories'>> = passThroughFixed<TablesInsert<'question_categories'>>(
+      fragment.fixed,
+      this.ctx
+    );
 
     const n = fragment.count ?? 0;
     for (let i = 0; i < n; i++) {

@@ -9,7 +9,7 @@
  *
  * ## It is exercised in CI, not only on a live database
  *
- * Like the snake fixture, this one IS imported — by `tests/assertKnownRowProps.test.ts`, which feeds its `fixed[]` rows straight to Pass 0 and asserts the deny message. A control reachable only through `yarn db:seed --template <abs path>` fires only when somebody runs a seed against a live database. The import is read-only and does not move the file's bytes; the CLI invocation below is the way to observe the exit code end to end.
+ * Like the snake fixture, this one IS imported — by `src/assertKnownRowProps.test.ts`, which feeds its `fixed[]` rows straight to Pass 0 and asserts the deny message. A control reachable only through `yarn db:seed --template <abs path>` fires only when somebody runs a seed against a live database. The import is read-only and does not move the file's bytes; the CLI invocation below is the way to observe the exit code end to end.
  *
  * ```sh
  * yarn db:seed --template "$PWD/packages/dev-seed/tests/fixtures/negctl-nominations-entity-type-camel.ts"
@@ -93,6 +93,5 @@ export default {
     ]
   },
 
-  app_settings: { count: 0 },
-  feedback: { count: 0 }
+  app_settings: { count: 0 }
 };

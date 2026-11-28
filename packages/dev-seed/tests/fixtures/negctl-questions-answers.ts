@@ -60,6 +60,5 @@ export default {
   },
 
   nominations: { count: 0 },
-  app_settings: { count: 0 },
-  feedback: { count: 0 }
+  app_settings: { count: 0 }
 };

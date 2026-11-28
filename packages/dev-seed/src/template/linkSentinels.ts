@@ -41,7 +41,7 @@ export type SentinelPayload =
 /**
  * The collections a `join`-target rule may declare — the collections whose `bulk_import` items carry a link key.
  *
- * ⚠ This list is not decoration: `bulk_import` reads a link key only on these two collections' items. Widen `LinkSentinelRule.collections` back to `ReadonlyArray<CollectionKey>` — all twelve — and a rule declaring a collection outside this list compiles clean, then sends a link key `bulk_import` ignores, so the declared links are silently dropped.
+ * ⚠ This list is not decoration: `bulk_import` reads a link key only on these two collections' items. Widen `LinkSentinelRule.collections` back to `ReadonlyArray<CollectionKey>` — all eleven — and a rule declaring a collection outside this list compiles clean, then sends a link key `bulk_import` ignores, so the declared links are silently dropped.
  */
 export const JOIN_PARENT_COLLECTIONS = ['elections', 'constituency_groups'] as const;
 
@@ -96,7 +96,7 @@ export type JsonbRefTable = 'elections' | 'constituencies';
  * ⚠ **A UNION, so `collections` and `target` are checked as a PAIR.** Collapse it back into one interface with `collections: ReadonlyArray<CollectionKey>` and a new rule such as `{ collections: ['organizations'], target: { kind: 'join', … } }` satisfies `as const satisfies ReadonlyArray<LinkSentinelRule>` and compiles clean — `bulkImport` then sends a link key `bulk_import` ignores, or `linkQuestionScopes` updates a table with no scoping column.
  *
  * As a union, a mismatched pair matches neither member and fails at the DECLARATION, which is where such errors belong.
- * `tests/template/strictRowTypes.type-test.ts` holds a `@ts-expect-error` on exactly that shape.
+ * `strictRowTypes.type-test.ts` holds a `@ts-expect-error` on exactly that shape.
  */
 export type LinkSentinelRule =
   | (LinkSentinelRuleBase & {

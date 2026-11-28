@@ -7,7 +7,7 @@
  *   - `loadings.ts` — per-question iid loading vector
  *   - `positions.ts` — per-candidate displacement around a centroid
  *
- * Pattern analog: `packages/dev-seed/src/emitters/answers.ts` (pure file-local helper style — same convention as `pickOneChoiceId`, `extractChoiceIds`).
+ * Pattern analog: `packages/dev-seed/src/emitters/answers.ts` (pure file-local helper style — same convention as `pickOneChoiceId`).
  *
  * ## Clamp
  *

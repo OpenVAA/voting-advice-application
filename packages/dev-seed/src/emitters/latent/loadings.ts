@@ -23,7 +23,7 @@
  *
  * ## Missing-external_id guard
  *
- * A question row with no `external_id` is silently skipped — mirrors the `defaultRandomValidEmit` / `extractChoiceIds` guard in `src/emitters/answers.ts`. A question without a stable key cannot be indexed by the projection step, so it's safer to drop than to invent a synthetic key.
+ * A question row with no `external_id` is silently skipped — mirrors the guard of `defaultRandomValidEmit` in `src/emitters/answers.ts`. A question without a stable key cannot be indexed by the projection step, so it's safer to drop than to invent a synthetic key.
  *
  * ## Determinism
  *

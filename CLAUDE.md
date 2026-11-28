@@ -274,13 +274,13 @@ The schema itself — tables, RLS policies, JWT claims, the bulk import/delete R
 **Seeding local data**:
 
 ```bash
-yarn db:reset-with-data                        # db:reset + default template (Finnish demo, 4 locales); DB only
+yarn db:reset-with-data                        # db:reset + default template (Finnish demo, every supported locale); DB only
 yarn db:seed --template e2e/base               # E2E test data for manual Playwright runs (canonical base dataset)
 yarn db:seed --template ./my-template.ts       # custom templates from filesystem
 yarn db:seed:teardown                          # remove all seed_-prefixed rows + portraits
 ```
 
-See `packages/dev-seed/README.md` for authoring custom templates (mixing `fixed[]` hand-authored rows with synthetic `count`, 4-locale expansion, latent-factor answer model overrides).
+See `packages/dev-seed/README.md` for authoring custom templates (mixing `fixed[]` hand-authored rows with synthetic `count`, expansion to every locale in `LOCALES`, latent-factor answer model overrides).
 
 ## Important Implementation Notes
 

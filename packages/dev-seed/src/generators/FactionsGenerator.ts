@@ -15,6 +15,7 @@
  * Default count = 0: factions are uncommon in VAA datasets and templates enable them explicitly via `factions: { count: N }`. Keeping the default off prevents surprise rows during smoke-tests of the `{}` template.
  */
 
+import { passThroughFixed } from './passThroughFixed';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx, Fragment } from '../types';
 
@@ -30,23 +31,10 @@ type FactionRow = Omit<TablesInsert<'factions'>, 'organization_id'> & {
 export class FactionsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // `defaults` ignores ctx here; reading `ctx.refs` is how a generator would scale its counts.
-
-  defaults(ctx: Ctx): FactionsFragment {
-    return { count: 0 };
-  }
-
   generate(fragment: FactionsFragment): Array<FactionRow> {
     const { faker, projectId, externalIdPrefix, refs } = this.ctx;
-    const rows: Array<FactionRow> = [];
 
-    for (const fx of fragment.fixed ?? []) {
-      rows.push({
-        ...fx,
-        external_id: `${externalIdPrefix}${fx.external_id}`,
-        project_id: fx.project_id ?? projectId
-      } as FactionRow);
-    }
+    const rows: Array<FactionRow> = passThroughFixed<FactionRow>(fragment.fixed, this.ctx);
 
     const n = fragment.count ?? 0;
 
