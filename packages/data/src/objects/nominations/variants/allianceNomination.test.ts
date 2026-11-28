@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
-import { ENTITY_TYPE, parseNominationTree } from '../../../internal';
+import { AllianceNomination, DataProvisionError, ENTITY_TYPE, parseNominationTree } from '../../../internal';
 import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
-import type { Alliance, AllianceNomination, PublicAllianceNominationData } from '../../../internal';
+import type { Alliance, AllianceNominationData, PublicAllianceNominationData, WithOptional } from '../../../internal';
 
 const root = getTestDataRoot();
 const data = getTestData();
@@ -33,6 +33,17 @@ test('Should have nested nominations', () => {
       )
     ).toBe(true);
   });
+});
+
+test('Should reject id-only data without an entityId', () => {
+  const { electionId, constituencyId } = nominationData[0];
+  const data = {
+    entityType: ENTITY_TYPE.Alliance,
+    electionId,
+    constituencyId,
+    organizationNominationIds: ['organizationNomination-1']
+  } as WithOptional<AllianceNominationData, 'id'>;
+  expect(() => new AllianceNomination({ data, root })).toThrow(DataProvisionError);
 });
 
 /**

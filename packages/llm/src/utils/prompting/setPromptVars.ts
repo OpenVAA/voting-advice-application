@@ -39,10 +39,11 @@ export function setPromptVars({
   // Determine which variables are optional
   const optionalSet = optional ? new Set(optional) : new Set<string>();
 
-  // Create a working copy of variables For optional variables that are missing, provide empty strings
+  // Create a working copy of variables
+  // For optional variables that are missing, provide empty strings
   const workingVariables = { ...variables };
   for (const varName of varsInTemplate) {
-    if (optionalSet.has(varName) && !(varName in workingVariables)) {
+    if (optionalSet.has(varName) && workingVariables[varName] === undefined) {
       workingVariables[varName] = '';
     }
   }
@@ -56,7 +57,7 @@ export function setPromptVars({
 
   // Check for missing REQUIRED variables (those not in optional list)
   for (const varName of varsInTemplate) {
-    if (!optionalSet.has(varName) && !(varName in variables)) {
+    if (!optionalSet.has(varName) && variables[varName] === undefined) {
       missingVars.push(varName);
     }
   }

@@ -1,6 +1,6 @@
 # `@openvaa/app-shared`: Common settings and utilities shared by the frontend and backend
 
-A module shared between `@openvaa/frontend` and (potentially) backend consumers, which contains:
+A module shared by the OpenVAA frontend, the docs site and other workspace packages, which contains:
 
 - The [application settings](./src/settings/)
 - Definitions for data types extending those defined in the `@openvaa/core` and `@openvaa/data` modules, such as [`CustomData`](./src/data/customData.type.ts) and [`Localized`](./src/data/extendedData.type.ts) types
@@ -22,6 +22,6 @@ yarn workspace @openvaa/app-shared build
 
 ## Build target
 
-ESM-only via `tsup`. All in-repo consumers (`@openvaa/frontend`, `@openvaa/docs`, `@openvaa/dev-seed`, `@openvaa/argument-condensation`, `@openvaa/llm`) declare `"type": "module"`. No `require()` consumers exist in the workspace, and Supabase Edge Functions do not import from this package.
+ESM-only via `tsup`. All in-repo consumers (`@openvaa/frontend`, `@openvaa/docs`, `@openvaa/dev-seed`, `@openvaa/argument-condensation`, `@openvaa/llm`, `@openvaa/question-info`) declare `"type": "module"`. No `require()` consumers exist in the workspace, and Supabase Edge Functions do not import from this package.
 
 A consumer that requires CommonJS needs `format: ['esm', 'cjs']` in `tsup.config.ts` and the matching `main` / `exports.require` entries in `package.json`.

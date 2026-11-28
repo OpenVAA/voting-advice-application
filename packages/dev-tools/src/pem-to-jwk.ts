@@ -7,7 +7,8 @@
  *   yarn workspace @openvaa/dev-tools pem-to-jwk \
  *     --in <path>             PEM file to convert
  *     --type <signing|encryption>
- *     --kid <id>              Key ID to embed in the JWK (e.g. openvaa-signing-1) [--alg <name>]          Algorithm override. Defaults:
+ *     --kid <id>              Key ID to embed in the JWK (e.g. openvaa-signing-1)
+ *     [--alg <name>]          Algorithm override. Defaults:
  *                               signing    -> RS256
  *                               encryption -> RSA-OAEP-256 (Idura)
  *                             Signicat encryption keys need --alg RSA-OAEP.
@@ -22,6 +23,7 @@
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import * as jose from 'jose';
+import { resolveKeyMetadata, withMetadata } from './jwkMetadata';
 
 const USAGE = `Usage: pem-to-jwk --in <path> --type <signing|encryption> --kid <id> [--alg <name>]
 
@@ -52,10 +54,7 @@ if (!values.in || !values.type || !values.kid) {
   process.exit(1);
 }
 
-if (values.type !== 'signing' && values.type !== 'encryption') {
-  process.stderr.write(`Invalid --type: ${values.type}. Use 'signing' or 'encryption'.\n`);
-  process.exit(1);
-}
+const { alg, use } = resolveKeyMetadata(values.type, values.alg);
 
 const pem = readFileSync(values.in, 'utf8');
 const isEncrypted = /-----BEGIN ENCRYPTED PRIVATE KEY-----/.test(pem);
@@ -79,15 +78,9 @@ if (isEncrypted) {
   process.exit(1);
 }
 
-const alg = values.alg ?? (values.type === 'signing' ? 'RS256' : 'RSA-OAEP-256');
-const use = values.type === 'signing' ? 'sig' : 'enc';
-
 const key = isPrivate
   ? await jose.importPKCS8(pem, alg, { extractable: true })
   : await jose.importSPKI(pem, alg, { extractable: true });
-const jwk = await jose.exportJWK(key);
-jwk.kid = values.kid;
-jwk.use = use;
-jwk.alg = alg;
+const jwk = withMetadata(await jose.exportJWK(key), { kid: values.kid, alg, use });
 
 process.stdout.write(`${JSON.stringify(jwk, null, 2)}\n`);

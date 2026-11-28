@@ -2,7 +2,7 @@
   "private": true,
   "name": "@openvaa/app-shared",
   "version": "0.1.0",
-  "description": "Settings and utilities shared between OpenVAA frontend and backend (Supabase Edge Functions, dev tooling). ESM-only — all current consumers are ESM (`type: module`).",
+  "description": "Settings and utilities shared by the OpenVAA frontend, docs site and workspace packages. ESM-only.",
   "scripts": {
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
     "lint": "eslint src/",

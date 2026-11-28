@@ -62,7 +62,8 @@ export async function createCondensationSteps({
   let currentBatchSize = originalBatchSize;
   let batches = createBatches({ array: comments, batchSize: currentBatchSize });
 
-  // PRE-PROCESSING: Validate parallel batch token counts to prevent API failures Makes sure that the combined number of tokens in the parallel calls does not exceed the model's TPM limit
+  // PRE-PROCESSING: Validate parallel batch token counts to prevent API failures
+  // Makes sure that the combined number of tokens in the parallel calls does not exceed the model's TPM limit
   let validationResult = await validateInputTokenCount({
     batches,
     topic: questionName,

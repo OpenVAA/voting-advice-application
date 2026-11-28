@@ -332,11 +332,13 @@ test('ChoiceQuestionFilter: empty-include semantics', () => {
 
   // (c) include = undefined → all entities match (filter inactive)
   expect(filter.active, 'undefined include → inactive').toBe(false);
+  expect(filter.include, 'unset include → undefined').toBeUndefined();
   expect(filter.apply(people), 'undefined include → all entities').toEqual(people);
 
   // (a) include = [] → zero matches (active, empty allow-list)
   filter.include = [];
   expect(filter.active, 'empty include → ACTIVE').toBe(true);
+  expect(filter.include, 'empty include → []').toEqual([]);
   expect(filter.apply(people), 'empty include → 0 matches').toEqual([]);
 
   // (b) include = [MISSING_VALUE] → only entities with no answer match

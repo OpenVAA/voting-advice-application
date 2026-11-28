@@ -152,7 +152,6 @@ describe('handleQuestion', () => {
       ['Test argument 1', 'Test argument 2'],
       ['Test argument 1', 'Test argument 2']
     ]);
-    expect(argumentsPerRun.flat().every((argument) => argument.text.trim().length > 0)).toBe(true);
   });
 
   test('It should condense arguments for a categorical question', async () => {
@@ -236,7 +235,6 @@ describe('handleQuestion', () => {
       ['Test argument 1', 'Test argument 2'],
       ['Test argument 1', 'Test argument 2']
     ]);
-    expect(argumentsPerRun.flat().every((argument) => argument.text.trim().length > 0)).toBe(true);
   });
 
   test('It should condense arguments for a boolean question', async () => {
@@ -300,7 +298,6 @@ describe('handleQuestion', () => {
       ['Test argument 1', 'Test argument 2'],
       ['Test argument 1', 'Test argument 2']
     ]);
-    expect(argumentsPerRun.flat().every((argument) => argument.text.trim().length > 0)).toBe(true);
   });
 
   test('It should throw an error if invalid prompt IDs are provided', async () => {

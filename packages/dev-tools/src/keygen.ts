@@ -22,6 +22,7 @@
 
 import { parseArgs } from 'node:util';
 import * as jose from 'jose';
+import { resolveKeyMetadata, withMetadata } from './jwkMetadata';
 
 const USAGE = `Usage: keygen --type <signing|encryption> --kid <id> [--alg <name>] [--size <bits>]
 
@@ -52,13 +53,7 @@ if (!values.type || !values.kid) {
   process.exit(1);
 }
 
-if (values.type !== 'signing' && values.type !== 'encryption') {
-  process.stderr.write(`Invalid --type: ${values.type}. Use 'signing' or 'encryption'.\n`);
-  process.exit(1);
-}
-
-const alg = values.alg ?? (values.type === 'signing' ? 'RS256' : 'RSA-OAEP-256');
-const use = values.type === 'signing' ? 'sig' : 'enc';
+const { alg, use } = resolveKeyMetadata(values.type, values.alg);
 const modulusLength = values.size ? Number.parseInt(values.size, 10) : 2048;
 
 if (!Number.isFinite(modulusLength) || modulusLength < 2048) {
@@ -71,15 +66,9 @@ const { privateKey, publicKey } = await jose.generateKeyPair(alg, {
   modulusLength
 });
 
-const privateJwk = await jose.exportJWK(privateKey);
-privateJwk.kid = values.kid;
-privateJwk.use = use;
-privateJwk.alg = alg;
-
-const publicJwk = await jose.exportJWK(publicKey);
-publicJwk.kid = values.kid;
-publicJwk.use = use;
-publicJwk.alg = alg;
+const meta = { kid: values.kid, alg, use };
+const privateJwk = withMetadata(await jose.exportJWK(privateKey), meta);
+const publicJwk = withMetadata(await jose.exportJWK(publicKey), meta);
 
 process.stdout.write('# Private JWK — wrap in [] for IDURA_SIGNING_JWKS / IDENTITY_PROVIDER_DECRYPTION_JWKS\n');
 process.stdout.write(`${JSON.stringify([privateJwk])}\n\n`);

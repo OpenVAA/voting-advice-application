@@ -22,9 +22,9 @@ export class AllianceNomination
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * The constructor accepts the alliance's member `OrganizationNomination`s either as nested `organizations` data (created during initialization) or as already-resolved `organizationNominationIds` (e.g. when an adapter has already created the org-noms and reverse-filled the parent → children edge from a flat schema). At least one of the two must be non-empty.
+   * The constructor accepts the alliance's member `OrganizationNomination`s either as nested `organizations` data (created during initialization) or as already-resolved `organizationNominationIds`. At least one of the two must be non-empty.
    *
-   * The constructor can also be called without an explicit `entityId`, in which case an `Alliance` entity with a deterministic, unique `id` will be generated. Implied-entity creation only fires for the nested-data path; adapters using the id path are expected to provide an explicit `entityId` referencing an alliance that already exists in the data root.
+   * The constructor can also be called without an explicit `entityId`, in which case an `Alliance` entity with a deterministic, unique `id` will be generated. Implied-entity creation only happens for the nested-data path; the id path requires an explicit `entityId` referencing an alliance that already exists in the data root.
    * @param data - The data for the nomination. If it does not contain an explicit `entityId`, a generic `Alliance` `Entity` will be created.
    * @param root - The `DataRoot`.
    */
@@ -32,6 +32,11 @@ export class AllianceNomination
     if (!data.organizations?.length && !data.organizationNominationIds?.length)
       throw new DataProvisionError(
         'An AllianceNomination must have at least one organization, provided either as nested `organizations` data or as `organizationNominationIds`.'
+      );
+
+    if (!data.entityId && !data.organizations?.length)
+      throw new DataProvisionError(
+        'An AllianceNomination given only organizationNominationIds must have an explicit entityId.'
       );
 
     // Create the possible implied entity before calling super(), because entityId will be needed by it for id generation
@@ -52,8 +57,7 @@ export class AllianceNomination
 
     super({ data, root });
 
-    // Create nested nominations only when nested `organizations` data is provided.
-    // The id-only path (e.g. supabase adapter reverse-fill) supplies `organizationNominationIds` directly; in that case the org-noms have already been created elsewhere in the same `provideNominationData` batch and there is nothing to create here.
+    // Nested data creates the member nominations; with ids only, they already exist.
     if (this.data.organizations?.length) {
       const { organizationNominations } = this.root.provideNominationData(
         this.data.organizations.map((d) => ({

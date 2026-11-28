@@ -29,8 +29,8 @@ export function createDeterministicId<TType extends DynamicObjectType>({
       otherProps = [data.entityType, (data as AnyNominationVariantData).entityId];
       break;
     case 'alliance':
-      // Implicit alliance entity creation only runs when nested `organizations` is provided (see AllianceNomination constructor: id-only path supplies an explicit entityId and bypasses this function entirely). The `!` is safe here.
-      otherProps = [...(data as PublicAllianceNominationData).organizations!.map((o) => o.entityId)].sort();
+      // An implied alliance entity is only created from nested `organizations`; the `AllianceNomination` constructor rejects id-only data without an `entityId`.
+      otherProps = [...((data as PublicAllianceNominationData).organizations ?? []).map((o) => o.entityId)].sort();
       break;
     case 'faction':
       otherProps = [...(data as PublicFactionNominationData).candidates.map((o) => o.entityId)].sort();

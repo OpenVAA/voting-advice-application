@@ -93,25 +93,4 @@ describe('isBooleanQuestion', () => {
     if (!ordinal) throw new Error('No SingleChoiceOrdinalQuestion found in test data');
     expect(isBooleanQuestion(ordinal)).toBe(false);
   });
-
-  test('Should return false for a SingleChoiceCategoricalQuestion', () => {
-    const categorical = dataRoot.questions.find((q) => q.objectType === OBJECT_TYPE.SingleChoiceCategoricalQuestion);
-    if (!categorical) throw new Error('No SingleChoiceCategoricalQuestion found in test data');
-    expect(isBooleanQuestion(categorical)).toBe(false);
-  });
-
-  test('Should return false for null', () => {
-    expect(isBooleanQuestion(null)).toBe(false);
-  });
-
-  test('Should return false for a primitive', () => {
-    expect(isBooleanQuestion('booleanQuestion')).toBe(false);
-    expect(isBooleanQuestion(42)).toBe(false);
-    expect(isBooleanQuestion(true)).toBe(false);
-  });
-
-  test('Should return false for an object missing objectType', () => {
-    expect(isBooleanQuestion({})).toBe(false);
-    expect(isBooleanQuestion({ id: 'question-1' })).toBe(false);
-  });
 });

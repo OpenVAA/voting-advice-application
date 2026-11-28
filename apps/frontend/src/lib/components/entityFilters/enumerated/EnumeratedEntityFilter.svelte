@@ -86,18 +86,16 @@
    *  - `filter.include === []` → filter active with zero allowed →
    *    `selected = []` in the UI; downstream produces 0 results.
    *  - `filter.include === [...ids]` → mirror the explicit allow-list.
-   *
-   * NB. `EnumeratedFilter.include` returns `[]` for the undefined case (see its getter), so we must read `_rules.include` semantics indirectly: the filter's `active` getter is true ONLY when include is defined.
    */
   function updateSelected() {
     const inc = filter.include;
     // Default (filter inactive): all checked. Matches the `parseSelected` contract where `selected.length === values.length` collapses to `filter.include = undefined`, so the all-checked UI and the inactive filter remain consistent round-trip.
-    if (!filter.active) {
+    if (inc === undefined) {
       selected = convertMissingForInputs(values.map((v) => v.value));
       userActivated = false;
       return;
     }
-    // Filter is active. If include is empty ([] explicit allow-none) mirror empty UI; otherwise mirror the allow-list. Either way the filter is user-activated from the UI's perspective.
+    // An explicit allow-list, possibly empty, is mirrored as is and counts as user-activated.
     selected = convertMissingForInputs(inc);
     userActivated = true;
   }

@@ -657,8 +657,8 @@ describe('Question Type Configurations', () => {
   });
 
   describe('Prompt composition boundary', () => {
-    test('rejects a question that arrives without a type, naming the question', async () => {
-      // `throwIfVarsMissing` cannot catch this case: the `questionType` variable is present but undefined, so the required-param check passes and the prompt would render the literal text `undefined`.
+    test('rejects a question that arrives without a type', async () => {
+      // `questionType` is a required prompt param, and an undefined value counts as missing.
       const untypedQuestion = {
         id: 'no-type-1',
         name: 'A question that never received a type'
@@ -674,10 +674,7 @@ describe('Question Type Configurations', () => {
         controller: noOpController
       } as QuestionInfoOptions;
 
-      // Anchored at `^`: the guard sits outside `generateInfo`'s catch, which would prefix the message with `Error generating question info: `. The message also names the failing question.
-      await expect(generateQuestionInfo({ questions: [untypedQuestion], options })).rejects.toThrow(
-        /^\[question-info\] Question 'no-type-1' \("A question that never received a type"\) has no `type`\./
-      );
+      await expect(generateQuestionInfo({ questions: [untypedQuestion], options })).rejects.toThrow(/questionType/);
 
       // It fails before reaching the provider.
       expect(mockLLMProvider.generateObjectParallel).not.toHaveBeenCalled();

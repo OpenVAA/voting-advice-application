@@ -12,7 +12,7 @@
     "keygen": "tsx src/keygen.ts"
   },
   "dependencies": {
-    "jose": "^6.2.1"
+    "jose": "catalog:"
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",

@@ -353,7 +353,7 @@ export async function loadPrompt(options: LoadPromptOptions): Promise<LoadPrompt
   }
 
   // Validate required parameters
-  const missingRequired = promptData.requiredParams.filter((param) => !(param in variables));
+  const missingRequired = promptData.requiredParams.filter((param) => variables[param] === undefined);
   if (missingRequired.length > 0) {
     if (strict) {
       throw new Error(

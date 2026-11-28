@@ -52,7 +52,8 @@ export function calculateLLMCallCounts(
       }
 
       case CondensationOperations.ITERATE_MAP: {
-        // Iterate_map processes batches in parallel, so each batch is one LLM call The number of batches should match the previous map step
+        // Iterate_map processes batches in parallel, so each batch is one LLM call
+        // The number of batches should match the previous map step
         llmCallCount = currentBatchCount;
         // Structure remains the same as after map
         break;
@@ -68,7 +69,8 @@ export function calculateLLMCallCounts(
       }
 
       case CondensationOperations.GROUND: {
-        // Ground processes argument lists in parallel, so each list is one LLM call The number of lists depends on the current structure
+        // Ground processes argument lists in parallel, so each list is one LLM call
+        // The number of lists depends on the current structure
         if (currentStructure === 'list') {
           llmCallCount = 1;
         } else {
@@ -113,7 +115,8 @@ export function calculateStepWeights(
     return steps.map((step, idx) => ({ stepIndex: idx, operation: step.operation, weight: 1 }));
   }
 
-  // Normalize weights so they sum to the total number of steps This ensures each step gets a proportional weight based on LLM calls
+  // Normalize weights so they sum to the total number of steps
+  // This ensures each step gets a proportional weight based on LLM calls
   return llmCallCounts.map((step) => ({
     stepIndex: step.stepIndex,
     operation: step.operation,

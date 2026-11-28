@@ -39,6 +39,14 @@ describe('setPromptVars', () => {
     }).toThrow('Prompt is missing required variables: age');
   });
 
+  test('should treat a required variable whose value is undefined as missing', () => {
+    const promptText = 'Hello {{name}}.';
+
+    expect(() => {
+      setPromptVars({ promptText, variables: { name: undefined }, controller: mockLogger });
+    }).toThrow('Prompt is missing required variables: name');
+  });
+
   test('should leave missing variables as placeholders when strict=false', () => {
     const promptText = 'Hello {{name}}, you are {{age}} years old.';
     const variables = { name: 'John' }; // Missing 'age'

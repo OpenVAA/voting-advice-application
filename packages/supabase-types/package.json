@@ -7,7 +7,6 @@
   "types": "./src/index.ts",
   "exports": {
     "import": "./src/index.ts",
-    "require": "./src/index.ts",
     "default": "./src/index.ts"
   },
   "scripts": {

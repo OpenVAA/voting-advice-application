@@ -1,6 +1,7 @@
 import { intersect } from './intersect';
 import { MISSING_VALUE } from '../../missingValue';
 import { Filter } from '../base/filter';
+import { matchRules } from '../rules';
 import type { MaybeWrappedEntity } from '@openvaa/core';
 import type { MaybeMissing } from '../../missingValue';
 
@@ -67,8 +68,14 @@ export abstract class EnumeratedFilter<
     return this._rules.exclude ?? [];
   }
 
-  get include(): Array<MaybeMissing<TValue>> {
-    return this._rules.include ?? [];
+  /**
+   * The `include` allow-list:
+   *  - `undefined` → filter inactive (everything passes).
+   *  - `[]` → filter active with nothing allowed (no results).
+   *  - `[…values]` → allow only the listed values.
+   */
+  get include(): Array<MaybeMissing<TValue>> | undefined {
+    return this._rules.include;
   }
 
   set exclude(values: Array<MaybeMissing<TValue>> | undefined) {
@@ -76,28 +83,16 @@ export abstract class EnumeratedFilter<
   }
 
   /**
-   * Set the `include` allow-list.
-   *
-   * Semantics:
+   * Set the `include` allow-list:
    *  - `undefined` → filter inactive (everything passes).
-   *  - `[]` (defined empty array) → filter ACTIVE with zero-allowed → 0 results.
-   *  - `[…ids]` → allow only listed values.
+   *  - `[]` → filter active with nothing allowed (no results).
+   *  - `[…values]` → allow only the listed values.
    *
-   * We bypass `setRule` because its `matchRules` optimization treats `undefined` and `[]` as equal (see `matchRules`/`ruleIsActive` semantics in `rules.ts`).
-   * That optimization is correct for "active vs inactive" question but wrong for the include allow-list, where we now need to distinguish those two states.
+   * `setRule` is bypassed because `matchRules` equates `undefined` with `[]`.
    */
   set include(values: Array<MaybeMissing<TValue>> | undefined) {
     const current = this._rules.include;
-    // Skip update only when both reference the same state (both undefined OR both arrays with identical content).
-    if (current === undefined && values === undefined) return;
-    if (
-      Array.isArray(current) &&
-      Array.isArray(values) &&
-      current.length === values.length &&
-      current.every((v) => values.includes(v))
-    ) {
-      return;
-    }
+    if (current === values || (current !== undefined && values !== undefined && matchRules(current, values))) return;
     this._rules.include = values;
     this.doOnChange();
   }
