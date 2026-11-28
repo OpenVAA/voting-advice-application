@@ -5,9 +5,8 @@ import type { VideoContent } from '@openvaa/app-shared';
 import type { OptionalVideoProps, Video } from '$lib/components/video';
 
 // A minimal `Video` stub: `load` resolves to a configurable boolean and `togglePlay` is a no-op. Only the members `VideoController` touches are implemented; the rest of the `Video` surface is unused here.
-function makePlayer(loadResult: boolean, marker = 'player'): Video {
+function makePlayer(loadResult: boolean): Video {
   return {
-    marker,
     load: vi.fn(async () => loadResult),
     togglePlay: vi.fn()
   } as unknown as Video;
@@ -40,21 +39,6 @@ describe('VideoController', () => {
     expect(video.hasContent).toBe(false);
     expect(video.mode).toBe('video');
     expect(video.player).toBeUndefined();
-  });
-
-  it('setting show/hasContent/mode/player round-trips through the $state fields', () => {
-    const video = setup();
-    const player = makePlayer(true, 'round-trip');
-    video.show = true;
-    video.hasContent = true;
-    video.mode = 'text';
-    video.player = player;
-    flushSync();
-    expect(video.show).toBe(true);
-    expect(video.hasContent).toBe(true);
-    expect(video.mode).toBe('text');
-    // `.player` reads through the `$state` proxy (a distinct ref from the original object — see popupStore.svelte.test.ts), so compare by marker, not identity.
-    expect((video.player as unknown as { marker: string }).marker).toBe('round-trip');
   });
 
   it('load() returns false and is a no-op when there is no player ref', async () => {

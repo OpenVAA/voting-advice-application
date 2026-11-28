@@ -965,7 +965,7 @@ service_role;
 --
 -- An array of more than 1000 nominations is refused before any object is read. A parent that is no entity of the entity's project, or an id that names no entity, is refused with SQLSTATE 22023 when the parent is resolved, so nothing the call wrote before it is stored.
 --
--- The writable nominations: the function writes only the nominations of the entity that the caller can read and for which `private.nomination_writable` holds, those at their election's current round in an election whose nomination shape admits the entity's type. A writable nomination that the set does not name is deleted. Every other nomination of the entity is neither updated nor deleted, and an `id` that names one is refused. A new nomination is written at its election's current_round, read here: the argument carries no round.
+-- The writable nominations: the function writes only the nominations of the entity that the caller can read and for which `private.nomination_writable` holds, those at their election's current round in an election whose nomination shape admits the entity's type. A writable nomination that the set does not name is deleted. Every other nomination of the entity is neither updated nor deleted, and an `id` that names one is refused. A new nomination is written at its election's current_round, read here, or at round 1 where the election stores none: the argument carries no round.
 --
 -- An entity may hold several nominations of one election, at different constituencies or under different parents. The set holds them as it holds any others; what bounds them is the uniqueness key `nominations_entity_parent_contest_key`, which refuses a second nomination of the entity under the same parent at the same contest (SQLSTATE 23505), and the contest rules `validate_nomination` judges.
 --
@@ -1169,7 +1169,7 @@ BEGIN
       END IF;
     END IF;
 
-    SELECT e.current_round INTO v_round
+    SELECT COALESCE(e.current_round, 1) INTO v_round
     FROM public.elections e
     WHERE e.id = v_election_id;
     IF NOT FOUND THEN

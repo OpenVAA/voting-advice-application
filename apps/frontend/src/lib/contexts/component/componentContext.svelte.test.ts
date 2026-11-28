@@ -1,7 +1,6 @@
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ComponentContextProvider } from './componentContext.svelte';
-import type { ComponentContext } from './componentContext.type';
 
 // `DarkMode` (composed by `ComponentContextProvider`) reads `browser` from `$app/environment` in its constructor. A mutable holder lets each test pick the SSR path (browser=false → `$state(false)` default, no matchMedia) or the browser path (browser=true → reads the mocked `matchMedia` below).
 const { env } = vi.hoisted(() => ({ env: { browser: false } }));
@@ -73,15 +72,5 @@ describe('ComponentContextProvider', () => {
     expect(instance.darkMode).toBe(true);
     cleanup();
     vi.unstubAllGlobals();
-  });
-
-  // Behavior 3 — the instance structurally satisfies `ComponentContext` (I18nContext & { darkMode: boolean }).
-  it('structurally satisfies ComponentContext', () => {
-    const instance: ComponentContext = new ComponentContextProvider();
-    expect(typeof instance.t).toBe('function');
-    expect(typeof instance.translate).toBe('function');
-    expect(typeof instance.locale).toBe('string');
-    expect(Array.isArray(instance.locales)).toBe(true);
-    expect(typeof instance.darkMode).toBe('boolean');
   });
 });

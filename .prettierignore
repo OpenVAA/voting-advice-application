@@ -22,6 +22,8 @@ apps/frontend/.svelte-kit
 apps/frontend/package
 # Generated Paraglide message files (auto-generated on build)
 apps/frontend/src/lib/paraglide/
+# The theme stylesheet `apps/frontend/vite.theme.ts` generates from staticSettings (gitignored)
+apps/frontend/src/theme.generated.css
 # Generated Inlang project files (auto-generated, gitignored)
 apps/frontend/project.inlang/
 # Ignores copied from /tests/.prettierignore

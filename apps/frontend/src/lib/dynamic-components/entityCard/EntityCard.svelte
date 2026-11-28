@@ -119,7 +119,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         nominationId: unwrapped.nomination?.id
       });
 
-    // The questions and possible submatches to display in the card TODO: Add support for all entity types by expanding the setting type to cover all of them
+    // The questions and possible submatches to display in the card.
+    // TODO: Add support for all entity types by expanding the setting type to cover all of them
     let cardQuestions: CardQuestions | undefined;
     let showSubMatches = false;
     // A header-only card makes no question lookup at all: the data root throws for a question it has not loaded.

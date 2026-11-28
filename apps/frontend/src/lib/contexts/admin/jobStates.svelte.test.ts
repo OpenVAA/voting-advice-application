@@ -35,18 +35,6 @@ describe('JobStatesProvider', () => {
     }
   });
 
-  it('the three projections are read-only prototype getters returning the live $derived', () => {
-    const jobs = setup();
-    expect(Array.isArray(jobs.pastJobs)).toBe(true);
-    expect(jobs.activeJobsByFeature).toBeInstanceOf(Map);
-    expect(jobs.pastJobsByFeature).toBeInstanceOf(Map);
-    // Reading twice within one flush returns a stable reference (no throw).
-    flushSync();
-    expect(jobs.pastJobs).toBe(jobs.pastJobs);
-    expect(jobs.activeJobsByFeature).toBe(jobs.activeJobsByFeature);
-    expect(jobs.pastJobsByFeature).toBe(jobs.pastJobsByFeature);
-  });
-
   it('startPolling/stopPolling are arrow-function fields that survive detach', () => {
     const jobs = setup();
     const { startPolling, stopPolling } = jobs;

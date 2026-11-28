@@ -125,7 +125,7 @@ export class JobStatesProvider implements JobStates {
       activeJobs.forEach((job) => newJobs.set(job.id, job));
       this.#jobs = newJobs;
     } catch (error) {
-      console.error('[JobPollingService] Error fetching jobs:', error);
+      log.error('[JobPollingService] Error fetching jobs', { err: error });
     }
   };
 

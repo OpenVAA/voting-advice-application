@@ -5,7 +5,7 @@
 --   READ  - `get_entity_nominations` states each nomination's updated_at, which is what the writer is given back.
 --   EXP   - the refusals of a malformed `p_expected_versions`, SQLSTATE 22023.
 --   CONST - a nomination's constituency must be one of its election's constituencies, for a new nomination and for a move; a stored nomination that stays where it is is not judged by it.
---   ROUND - a round that is not stored is round 1, on both sides of every comparison of a nomination's round with its election's or its parent's.
+--   ROUND - an election whose current round is not stored is at round 1, in every comparison of a nomination's round with its election's or its parent's and for the round a new nomination is written at; a nomination inserted without a round is stored at round 1.
 --   BOUND - `get_nomination_parent_options` refuses more contests than a writer may name nominations.
 --   REQ   - a requested parent organization counts only as a string that is not blank, for the end-of-transaction parent rule and for the confirmation rule.
 --
@@ -24,7 +24,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (32);
+  plan (34);
 
 SELECT
   create_test_data ();
@@ -156,7 +156,7 @@ VALUES
   (pg_temp.eid ('e_null'), pg_temp.eid ('g_main')),
   (pg_temp.eid ('e_other'), pg_temp.eid ('g_other'));
 
--- Two parties: one nominated at the first contest of election one at round 1, and one nominated at its second contest with no round stored.
+-- Two parties: one nominated at the first contest of election one at round 1, and one nominated at its second contest without a round stated.
 INSERT INTO
   organizations (id, project_id, name, confirmed)
 VALUES
@@ -227,7 +227,7 @@ VALUES
     NULL,
     pg_temp.eid ('e_one'),
     pg_temp.eid ('c_two'),
-    NULL,
+    DEFAULT,
     NULL,
     true,
     DEFAULT
@@ -275,7 +275,7 @@ VALUES
     pg_temp.eid ('cand_round_null'),
     pg_temp.eid ('e_one'),
     pg_temp.eid ('c_one'),
-    NULL,
+    DEFAULT,
     NULL,
     false,
     '2020-01-01T00:00:00Z'
@@ -818,6 +818,32 @@ SELECT
 SELECT
   is (
     pg_temp.save (
+      pg_temp.eid ('cand_round'),
+      jsonb_build_array(
+        pg_temp.item (
+          pg_temp.eid ('n_round'),
+          pg_temp.eid ('e_null'),
+          pg_temp.eid ('c_one'),
+          '4',
+          '{"kind":"none"}'
+        ),
+        pg_temp.item (
+          NULL,
+          pg_temp.eid ('e_null'),
+          pg_temp.eid ('c_two'),
+          NULL,
+          '{"kind":"none"}'
+        )
+      ),
+      pg_temp.versions_now (pg_temp.eid ('cand_round'))
+    ) ->> 'inserted',
+    '1',
+    'ROUND: a new nomination of an election whose current round is not stored is written'
+  );
+
+SELECT
+  is (
+    pg_temp.save (
       pg_temp.eid ('cand_round_null'),
       jsonb_build_array(
         pg_temp.item (
@@ -838,7 +864,7 @@ SELECT
       pg_temp.versions_now (pg_temp.eid ('cand_round_null'))
     ) ->> 'updated',
     '1',
-    'ROUND: a nomination with no round stored, in an election at round 1, is writable and is linked to its party''s round-1 nomination'
+    'ROUND: a nomination inserted without a round, in an election at round 1, is writable and is linked to its party''s round-1 nomination'
   );
 
 SELECT
@@ -858,7 +884,7 @@ SELECT
         )
       )
     ),
-    'ROUND: a party nominated with no round stored is nominated at round 1 of its election'
+    'ROUND: a party nominated without a round stated is nominated at round 1 of its election'
   );
 
 SELECT
@@ -890,6 +916,21 @@ SELECT
     ),
     1,
     'ROUND: the party holds one nomination'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        n.election_round
+      FROM
+        nominations n
+      WHERE
+        n.candidate_id = pg_temp.eid ('cand_round')
+        AND n.constituency_id = pg_temp.eid ('c_two')
+    ),
+    1,
+    'ROUND: the new nomination of an election whose current round is not stored is written at round 1'
   );
 
 -- =====================================================================

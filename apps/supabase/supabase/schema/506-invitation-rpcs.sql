@@ -74,7 +74,7 @@ service_role;
 --   id              - a uuid: the object describes that nomination of the invited entity. Absent: it describes a new one.
 --   election_id     - a uuid, required: an election of p_project_id the caller can read. With `id` it must be the stored row's.
 --   constituency_id - a uuid, required. With `id` it must be the stored row's: an invitation moves no nomination.
---   election_round  - an integer, optional. A new nomination without one is written at its election's current_round. With `id`, a stated round must be the stored row's.
+--   election_round  - an integer, optional. A new nomination without one is written at its election's current_round, or at round 1 where the election stores none. With `id`, a stated round must be the stored row's.
 --   election_symbol - a string or null. It is trimmed; a blank one is stored as NULL, and one longer than 50 characters is refused.
 --   parent          - `{"kind":"none"}`, `{"kind":"entity","entity_type","entity_id"}`, `{"kind":"other","name"}` or `{"kind":"keep"}`, as set_entity_nominations takes them; `keep` only with an `id`. A candidate names an organization and an organization an alliance.
 --   confirmed       - true or false, required on every object.
@@ -278,7 +278,7 @@ BEGIN
             USING ERRCODE = '22023';
         END IF;
 
-        SELECT e.current_round INTO v_round
+        SELECT COALESCE(e.current_round, 1) INTO v_round
         FROM public.elections e
         WHERE e.id = (v_checked ->> 'election_id')::uuid
           AND e.project_id = p_project_id;

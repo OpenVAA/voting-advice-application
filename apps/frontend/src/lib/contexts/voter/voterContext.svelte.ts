@@ -293,7 +293,7 @@ export class VoterContextProvider implements VoterContext {
         if (!sameRefs(next, this.#selectedElections)) this.#selectedElections = next;
       } catch (e) {
         // The lookup throws transiently during navigation, when the new params arrive before the loader has provided their data. A `goto` from here would race the navigation, so clear the mirror and leave any redirect to the route's `+page.ts` / `+layout.ts`.
-        log.error(`[selectedElections] Error fetching election: ${e}`);
+        log.error('[selectedElections] Error fetching election', { err: e });
         if (this.#selectedElections.length !== 0) this.#selectedElections = [];
       }
     });
@@ -321,7 +321,7 @@ export class VoterContextProvider implements VoterContext {
         if (!sameRefs(next, this.#selectedConstituencies)) this.#selectedConstituencies = next;
       } catch (e) {
         // Transient during navigation, as for the elections: clear the mirror and leave any redirect to the route.
-        log.error(`[selectedConstituencies] Error fetching constituency: ${e}`);
+        log.error('[selectedConstituencies] Error fetching constituency', { err: e });
         if (this.#selectedConstituencies.length !== 0) this.#selectedConstituencies = [];
       }
     });

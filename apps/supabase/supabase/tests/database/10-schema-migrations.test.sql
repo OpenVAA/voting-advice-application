@@ -7,7 +7,7 @@
 -- - the admin_jobs table with admin-only RLS
 -- - the merge_question_custom_data RPC for question custom_data JSONB merge
 -- - the entity display-name columns, the entity_type labels and the absence of the role vocabulary and its predicates
--- - the nominations.election_round lower bound and the app_settings project cascade
+-- - the nominations.election_round lower bound and NOT NULL, and the app_settings project cascade
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
 --
@@ -1351,9 +1351,9 @@ SELECT
     'nominations accepts election_round = 1 (the lower bound admits the value it bounds at)'
   );
 
--- the limit of the constraint, made observable rather than only written down
+-- the round is required: an explicit NULL is refused by the column's NOT NULL, which the CHECK alone would let through
 SELECT
-  lives_ok (
+  throws_ok (
     format(
       $$INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id, election_round)
       VALUES ('%s', '%s', '%s', '%s', NULL)$$,
@@ -1362,7 +1362,9 @@ SELECT
       test_id ('election_a'),
       test_id ('constituency_a')
     ),
-    'nominations accepts a NULL election_round: the constraint bounds the value and does not require its presence (a CHECK passes on NULL, and the column is not NOT NULL)'
+    '23502',
+    NULL,
+    'nominations refuses a NULL election_round with a not-null violation: round 1 is the only representation of the default round'
   );
 
 -- =====================================================================

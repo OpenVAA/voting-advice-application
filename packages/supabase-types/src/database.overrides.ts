@@ -54,7 +54,6 @@ export type FunctionReturnOverrides = {
       | 'organization_id'
       | 'faction_id'
       | 'alliance_id'
-      | 'election_round'
       | 'election_symbol'
       | 'sort_order'
       | 'subtype'

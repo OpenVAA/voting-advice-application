@@ -36,7 +36,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (104);
+  plan (105);
 
 SELECT
   create_test_data ();
@@ -50,6 +50,7 @@ CREATE FUNCTION pg_temp.eid (p_name text) RETURNS uuid LANGUAGE sql IMMUTABLE AS
     WHEN 'e_default' THEN 'e01'
     WHEN 'e_list' THEN 'e02'
     WHEN 'e_round2' THEN 'e03'
+    WHEN 'e_round_null' THEN 'e04'
     WHEN 'group' THEN 'f01'
     WHEN 'c_one' THEN 'c01'
     WHEN 'c_two' THEN 'c02'
@@ -84,6 +85,7 @@ CREATE FUNCTION pg_temp.eid (p_name text) RETURNS uuid LANGUAGE sql IMMUTABLE AS
     WHEN 'cand_who_upd' THEN 'a22'
     WHEN 'cand_req' THEN 'a23'
     WHEN 'cand_probe' THEN 'a24'
+    WHEN 'cand_round_null' THEN 'a25'
     WHEN 'editor' THEN 'ee1'
     WHEN 'no_entity' THEN 'fff'
   END)::uuid;
@@ -106,7 +108,7 @@ $fn$;
 -- =====================================================================
 -- Fixture, local to this transaction and inserted before the first impersonation, so that no row names a creator
 -- =====================================================================
--- Three elections of project A over one constituency group of two constituencies: one of the default type, one that states `organization_list`, and one of the default type whose current round is 2.
+-- Four elections of project A over one constituency group of two constituencies: one of the default type, one that states `organization_list`, one of the default type whose current round is 2, and one of the default type whose current round is not stored.
 INSERT INTO
   elections (
     id,
@@ -136,6 +138,13 @@ VALUES
     '{"en":"Election in its second round"}'::jsonb,
     DEFAULT,
     2
+  ),
+  (
+    pg_temp.eid ('e_round_null'),
+    test_id ('project_a'),
+    '{"en":"Election whose round is not stored"}'::jsonb,
+    DEFAULT,
+    NULL
   );
 
 INSERT INTO
@@ -173,7 +182,7 @@ SELECT
   pg_temp.eid (e.name),
   pg_temp.eid ('group')
 FROM
-  unnest(ARRAY['e_default', 'e_list', 'e_round2']) AS e (name);
+  unnest(ARRAY['e_default', 'e_list', 'e_round2', 'e_round_null']) AS e (name);
 
 -- A party nominated at the first contest of the default-type election and one nominated nowhere; three unconfirmed organizations that are invited, one of them nameless; and two confirmed organizations that are invited with nominations.
 INSERT INTO
@@ -262,7 +271,8 @@ FROM
         true
       ),
       ('cand_req', 'Candidate', 'Req', true),
-      ('cand_probe', 'Candidate', 'Probe', true)
+      ('cand_probe', 'Candidate', 'Probe', true),
+      ('cand_round_null', 'Candidate', 'Round Null', true)
   ) AS k (name, first_name, last_name, confirmed);
 
 -- The party's nomination.
@@ -1188,6 +1198,55 @@ SELECT
     ),
     ARRAY[2, 1],
     'NEW: an object that states no round is written at the election''s current round, and one that states a round at that round'
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('admin_a'),
+    '[]'::jsonb
+  );
+
+SELECT
+  pg_temp.remember (
+    't47.round_null',
+    pg_temp.seed_call (
+      test_id ('project_a'),
+      jsonb_build_array(
+        pg_temp.inv (
+          'candidate',
+          pg_temp.eid ('cand_round_null'),
+          jsonb_build_array(
+            pg_temp.nom (
+              NULL,
+              pg_temp.eid ('e_round_null'),
+              pg_temp.eid ('c_one'),
+              NULL,
+              pg_temp.none (),
+              false
+            )
+          )
+        )
+      ),
+      true
+    )
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    ARRAY(
+      SELECT
+        n.election_round
+      FROM
+        nominations n
+      WHERE
+        n.candidate_id = pg_temp.eid ('cand_round_null')
+    ),
+    ARRAY[1],
+    'NEW: an object that states no round, in an election whose current round is not stored, is written at round 1'
   );
 
 SELECT
