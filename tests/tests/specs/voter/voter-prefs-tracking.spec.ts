@@ -93,7 +93,7 @@ function describeEvent(event: CapturedRelayEvent): string {
 async function openVoterHome(page: Page): Promise<void> {
   await page.goto('/en/');
   await expect(page.getByTestId(testIds.voter.home.page)).toBeVisible({ timeout: TIMEOUTS.slowPage });
-  // Before the consent prompt is answered, which moves focus: the menu's toggle is pressed later on this document.
+  // The steps that follow press buttons, which do nothing before hydration.
   await waitForHydration(page, { timeout: TIMEOUTS.page });
 }
 
@@ -318,7 +318,7 @@ test.describe('voter-prefs-tracking (EFLOW-08)', () => {
     // A decline on the privacy page, then a menu opening, which is buffered while consent is declined and stays buffered until the next flush.
     await page.goto('/en/privacy');
     await expect(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
-    // Before the decline, which moves focus: the menu's toggle is pressed next.
+    // The decline and the menu toggle are buttons, which do nothing before hydration.
     await waitForHydration(page, { timeout: TIMEOUTS.page });
     await dismissConsentPrompt(page);
     await openAndCloseMenu(page);

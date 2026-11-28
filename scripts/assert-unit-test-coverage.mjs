@@ -395,8 +395,7 @@ function assertWorkspaceRootsMatchManifest() {
 /**
  * Depth-1 scan of each workspace root, returning one record per workspace plus the anomaly lists.
  *
- * Three accumulators — the matched set, the out-of-scope set AND the defect set — mirroring the
- * teardown-prefix guard at `tests/playwright.config.ts:191-205`: a thing this guard cannot
+ * Three accumulators — the matched set, the out-of-scope set AND the defect set: a thing this guard cannot
  * classify is REPORTED, never quietly discarded, because silent discarding is the
  * enumeration-drift failure mode the whole guard family is named after.
  *
@@ -414,8 +413,8 @@ function enumerateWorkspaces() {
   const candidates = [];
 
   for (const root of WORKSPACE_ROOTS) {
-    // see phase 140 review IN-01: named precondition, mirroring the ORPHAN-PROBE and
-    // TEARDOWN-PREFIX guards' `existsSync` checks. Without it a missing or renamed root would die
+    // see phase 140 review IN-01: named precondition, mirroring the ORPHAN-PROBE guard's
+    // `existsSync` check. Without it a missing or renamed root would die
     // on a raw readdirSync ENOENT — the opposite of the "fails immediately and by name" property
     // this guard claims for itself.
     if (!existsSync(fromRepoRoot(root))) {

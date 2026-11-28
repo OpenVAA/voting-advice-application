@@ -180,7 +180,7 @@ export function createContestantProfilePage(page: Page) {
     async open(): Promise<void> {
       await page.goto(buildEntityLessRoute({ route: 'ContestantAppProfile', locale: 'en' }));
       await expectEntityLoaded();
-      // Seen before any field takes focus, so that the menu can later be opened on this document.
+      // The profile's fields and buttons do nothing before hydration.
       await waitForHydration(page);
     },
 

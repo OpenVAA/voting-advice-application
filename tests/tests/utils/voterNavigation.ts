@@ -172,6 +172,18 @@ export async function followCategoryStart(page: Page): Promise<void> {
 }
 
 /**
+ * Click `target` to leave `stage`, unless the page leaves the stage on its own first. A page whose setting bypasses it (the questions intro with `questionsIntro.show` false, a single election) is server-rendered with its button and redirects itself once mounted, so the button can be gone by the time it is clicked. Whichever happens first — the redirect or the click — is the one action that leaves the stage.
+ */
+async function clickUnlessLeft(page: Page, stage: VoterStage, target: Locator): Promise<void> {
+  const left = page.waitForURL(leftStage(stage), { timeout: STAGE_BUDGET });
+  const clicked = target.click({ timeout: STAGE_BUDGET });
+  // The losing promise settles later (a click on a detached button times out); its outcome no longer matters.
+  clicked.catch(() => undefined);
+  left.catch(() => undefined);
+  await Promise.race([left, clicked]);
+}
+
+/**
  * Take the action that leaves `stage` — the start button, the Continue button, or the category start link — and wait until the URL is off the stage's route. The caller has waited for the page to hydrate, so the action is taken once. An action or a wait that times out throws an error naming the stage and the URL; any other error is thrown as it is.
  */
 async function leaveStage(page: Page, stage: VoterStage): Promise<void> {
@@ -180,10 +192,10 @@ async function leaveStage(page: Page, stage: VoterStage): Promise<void> {
       case 'home':
       case 'intro':
       case 'questions-intro':
-        await stageAnchor(page, stage).click({ timeout: STAGE_BUDGET });
+        await clickUnlessLeft(page, stage, stageAnchor(page, stage));
         break;
       case 'elections':
-        await page.getByTestId(testIds.voter.elections.continue).click({ timeout: STAGE_BUDGET });
+        await clickUnlessLeft(page, stage, page.getByTestId(testIds.voter.elections.continue));
         break;
       case 'constituencies':
         await continueFromConstituencies(page);

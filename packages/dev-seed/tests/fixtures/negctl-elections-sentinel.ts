@@ -20,7 +20,7 @@
  * `externalIdPrefix` is applied to hand-authored `fixed[]` rows too, not only to generator-emitted ones — every generator does ``external_id: `${externalIdPrefix}${fx.external_id}` `` (e.g. `ElectionsGenerator.ts`). Writing the already-prefixed id here would land in the database as `negctl144-negctl144-el-1`. `templates/e2e/base.ts` documents the same trap from the other direction by setting the prefix to `''`.
  *
  * Sentinel and relationship REFERENCES, by contrast, name the FINAL prefixed value, because they are resolved against rows already written to the database.
- * `externalIdPrefix` is `negctl144-`, its own, so `yarn db:seed:teardown --prefix negctl144-` and the Playwright teardown prefixes cannot collide — `tests/playwright.config.ts`'s duplicate-prefix guard is prefix-sensitive and a shared prefix is a known race.
+ * `externalIdPrefix` is `negctl144-`, its own, so `yarn db:seed:teardown --prefix negctl144-` and the Playwright teardown prefixes cannot collide: a teardown deletes by prefix, so a shared prefix would delete another dataset's rows.
  */
 
 export default {

@@ -338,7 +338,7 @@ export function createContestantEntityPages(page: Page) {
     async openQuestion(entity: SelectionEntity, questionId: string): Promise<void> {
       await page.goto(questionPath(entity, questionId));
       await this.expectOnQuestion(entity, questionId);
-      // Seen before an answer takes focus, so that the menu can later be opened on this document.
+      // The question's inputs do nothing before hydration.
       await waitForHydration(page);
     },
 
