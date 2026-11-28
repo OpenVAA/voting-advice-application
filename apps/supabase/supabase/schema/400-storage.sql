@@ -192,6 +192,8 @@ $$;
 --
 -- The visibility question asked of a path instead of a row, and answered by the row-level security of the table the type segment names. SECURITY INVOKER, so the lookup runs as the caller: for the anonymous caller it passes exactly the rows the table's anon SELECT policy admits, and the function holds no copy of that rule. A change to a table's anon policy therefore changes storage visibility with it.
 --
+-- For a signed-in caller the lookup passes the rows that caller's own SELECT policies admit, including the `nomination.read` disjunct of the nominations policy, so an entity editor may read the public-bucket files of rows it can read: its own unconfirmed nomination, or, for an organization editor, its child candidates' nominations. Because public-bucket downloads do not evaluate `storage.objects` RLS, this widens only what such a caller can list. 20-storage-authority.test.sql pins it.
+--
 -- The project-level path names no row, so it asks `project_open_for_voters` (301-auth-functions.sql), the same project term every anon SELECT policy carries. 20-storage-authority.test.sql asserts both directions.
 --
 -- Not `user_can`: anon holds no grant, which `user_can` denies by construction, so an anon policy built on it would deny everything and the public application would render blank. The anon policy therefore asks about visibility, and the other policies ask about authority.

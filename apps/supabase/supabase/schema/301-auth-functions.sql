@@ -698,7 +698,7 @@ $$;
 --
 -- Takes the entity type as an argument and matches it against the generated entity_type column, and the entity id against the four foreign keys, so a nomination of another type that shares the uuid does not match. Returns false when no row is found, so a missing row never fabricates an occupant; the consuming policy inverts the answer.
 --
--- A round that is not stored is round 1, on either side of the comparison, as the application reads it: the column is nullable, and `=` against a NULL round would answer "no occupant" for every such row.
+-- The caller's round may be NULL, from an election whose `current_round` is not stored, and is read as round 1, as the application reads it: `=` against a NULL round would answer "no occupant" for every row. A nomination's own round is NOT NULL, so its COALESCE never fires.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION private.nomination_exists_in_contest (
   p_entity_type public.entity_type,
@@ -728,7 +728,7 @@ $$;
 --------------------------------------------------------------------------------
 -- nomination_id_in_contest: which nomination does this entity hold at this contest?
 --
--- Answers the id of the entity's nomination at this election, constituency and round, by the match of `nomination_exists_in_contest`: the entity type against the generated entity_type column, the entity id against the four foreign keys, and a round that is not stored as round 1. A writer that points a child's nomination at its parent's asks it for the parent's id.
+-- Answers the id of the entity's nomination at this election, constituency and round, by the match of `nomination_exists_in_contest`: the entity type against the generated entity_type column, the entity id against the four foreign keys, and a NULL round argument as round 1. A writer that points a child's nomination at its parent's asks it for the parent's id.
 --
 -- SECURITY DEFINER because the caller may be unable to read the row. A parent's nomination the caller has just created through `entity_insert_parent_nominations` nominates an entity the caller holds no `nomination.read` on, so neither `INSERT ... RETURNING` nor a `SELECT` of the caller's own gives its id.
 --
@@ -764,7 +764,7 @@ $$;
 --------------------------------------------------------------------------------
 -- caller_nominated_in_contest: does the caller hold a named permission on an entity of one of the named types that is nominated at this contest?
 --
--- Asks whether there is a nomination at this contest whose entity is of one of p_caller_types and on which the caller holds p_permission. A round that is not stored is round 1, as in `nomination_exists_in_contest`. The permission's answer comes from `user_can`, so no cell of the matrix is written down a second time. The entity is named by the nomination's generated entity_type and its one set foreign key.
+-- Asks whether there is a nomination at this contest whose entity is of one of p_caller_types and on which the caller holds p_permission. A NULL round argument is round 1, as in `nomination_exists_in_contest`. The permission's answer comes from `user_can`, so no cell of the matrix is written down a second time. The entity is named by the nomination's generated entity_type and its one set foreign key.
 --
 -- p_caller_types is what pairs a row with the caller that may create it. `entity_insert_parent_nominations` passes the types of entity that stand under the row being inserted, so holding the permission on an entity of another type nominated at the contest does not answer yes. A NULL or empty array answers false.
 --

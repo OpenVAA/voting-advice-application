@@ -173,7 +173,7 @@ on these two tables.
 - entity_type: entity_type NOT NULL GENERATED ALWAYS AS (CASE WHEN candidate_id...) STORED -- `bulk_import` skips the key on this table
 - election_id: uuid NOT NULL FK elections(id) ON DELETE CASCADE
 - constituency_id: uuid NOT NULL FK constituencies(id) ON DELETE CASCADE
-- election_round: integer DEFAULT 1, election_symbol: text
+- election_round: integer NOT NULL DEFAULT 1, election_symbol: text
 - parent_nomination_id: uuid FK nominations(id) ON DELETE NO ACTION -- a delete, or a move, of a nomination is refused (23503) while a nomination is listed under it; `set_entity_nominations` asks `private.nominations_listed_under` first and refuses with OV005, so the key fires only for another writer
 - confirmed: boolean NOT NULL DEFAULT false
 - created_by: uuid FK auth.users(id) ON DELETE SET NULL DEFAULT auth.uid() -- the user who created the row, which the cap on unconfirmed parent nominations counts
@@ -486,7 +486,8 @@ Storage cleanup tables: candidates, organizations, factions, alliances, election
 | bulk_import(jsonb)                                                           | 501  | SECURITY INVOKER | Bulk upsert via external_id; skips `id`, `created_at`, `updated_at` and, on `nominations`, `entity_type`; writes the two constituency join tables from the link keys `constituency_groups` (elections) and `constituencies` (constituency groups) before nominations |
 | bulk_delete(jsonb)                                                           | 501  | SECURITY INVOKER | Bulk delete by prefix/ids/external_ids                                                                             |
 | resolve_email_variables(uuid, uuid[], text, text)                            | 502  | SECURITY DEFINER | Resolves per-recipient email template variables in the given project                                               |
-| get_nominations(uuid, uuid, uuid, boolean, integer)                          | 503  | SECURITY INVOKER | Nominations with entity data; `p_project_id` required                                                              |
+| get_nominations(uuid, uuid[], uuid[], boolean, integer)                      | 503  | SECURITY INVOKER | `(p_project_id, p_election_ids, p_constituency_ids, p_include_unconfirmed, p_election_round)`. Nominations with entity data; `p_project_id` required; each id array filters any-of, NULL for no filter |
+| get_questions(uuid, uuid[], uuid[], integer) -> jsonb                        | 505  | SECURITY INVOKER | `(p_project_id, p_election_ids, p_constituency_ids, p_election_round)`. `{categories, questions}` of the project, each an array ordered by `sort_order` (nulls last), then `id`; each id array filters any-of, NULL for no filter, and a row whose own list is NULL or empty passes that filter. EXECUTE: `anon`, `authenticated` |
 | get_entity_basic_data(entity_type, uuid)                                     | 503  | SECURITY DEFINER | Basic data of an entity the caller holds nomination.read on; probes only the named table                           |
 | get_user_entities(uuid)                                                      | 503  | SECURITY INVOKER | One `jsonb` object whose `entities` array lists every candidate and organization the caller holds an editor grant on in the given project, and `organization`, only when the caller's identity registered one there, from `private.caller_registered_organization`; one row with an empty array for a caller with none |
 | get_caller_account_state() -> jsonb                                          | 503  | SECURITY INVOKER | `{password_set, pending_email_taken}` of the caller's own account, from `private.caller_password_set()` and `private.caller_pending_email_taken()`. EXECUTE: `authenticated` only |

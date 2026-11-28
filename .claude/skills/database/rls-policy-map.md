@@ -351,7 +351,9 @@ its own. `confirmed` is therefore the single entity-side lever: a confirmed, nom
 project is public whether or not anyone has registered for it, signed in or accepted the terms of use.
 `private.nomination_entities_confirmed` restates the same three conditions for a nomination row, and
 `public.storage_path_is_public` (SECURITY INVOKER) asks the table's own policies for a file in
-`public-assets`, so a row, its files and its `get_nominations` row become public together.
+`public-assets`, so a row, its files and its `get_nominations` row become public together. For a
+signed-in caller the same function follows that caller's own table policies, so the authenticated read of
+`public-assets` also admits the files of every row the caller can read (§ Storage policies).
 
 That duplication is guarded mechanically, not by convention: `25-matrix-conformance.test.sql` § 5 derives
 the eight from `pg_policies` — so a ninth cannot appear un-guarded — and asserts them BOTH **relatively**
@@ -414,6 +416,16 @@ table policy asks:
 | `project` | deny | deny | `project.read_structure` | `project.edit_app_settings` |
 | anything else | deny | deny | deny | deny |
 
+The `deny` cells are `storage_path_can`'s answer only. `authenticated_select_public_assets` also asks
+`storage_path_is_public`, which is SECURITY INVOKER and so reads through the signed-in caller's own table
+RLS: a caller reads the `public-assets` files of every row it can read in that row's table. For
+`nominations` that includes the `nomination.read` disjunct of `authenticated_select_nominations`, so an
+entity editor reads the files of its own unconfirmed nomination, in a project closed to voters too, and an
+organization editor reads its child candidates' nomination files through the child-nominee hop. Anon
+stays on the public rule: an unconfirmed nomination's file is refused to it. Public-bucket downloads do not
+evaluate `storage.objects` RLS, so this changes what a signed-in caller can list, not what it can fetch by
+URL. `20-storage-authority.test.sql` pins both directions.
+
 ---
 
 ## The `SECURITY DEFINER` helpers a policy may reach
@@ -428,11 +440,15 @@ table policy asks:
 | `entity_has_confirmed_nomination(entity_type, uuid, uuid)` | the nomination-level anon visibility sub-rule |
 | `nomination_entities_confirmed(uuid)` | both sub-rules asked of a nomination row |
 | `storage_path_can(grant_scope_type, text, text, text, storage_verb)` | the storage authority question, over the eleven-segment mapping |
-| `storage_path_is_public(text, text, text)` | § 3.4's public-read question asked of a path |
 | `project_contestant_editing(uuid)` · `nomination_exists_in_contest(...)` · `caller_nominated_in_contest(election, constituency, round, permission, caller types)` · `caller_unconfirmed_originated_count()` | the nomination write guards; `project_contestant_editing` guards the four entity self-update policies too. The fifth argument of `caller_nominated_in_contest` is what pairs a parent's row with the caller that may create it: `entity_insert_parent_nominations` passes `{candidate, faction}` for an organization's row and `{organization}` for an alliance's, so holding `nomination.create_parent` on an entity of another type nominated at the contest does not answer yes. A faction's nomination always stands under its own organization's, so the organization's row a faction's editor can create is another organization's. The count behind the cap is by user (`created_by`) and includes the rows the caller inserted for an organization or an alliance it edits itself |
 | `nomination_id_in_contest(entity_type, uuid, uuid, uuid, integer)` | not asked by a policy: `private.parent_nomination_resolved` asks it, for both nomination writers, for the id of a parent's nomination the caller cannot read. No parent first, then the oldest, then the lowest id |
 | `entity_project_id(entity_type, uuid)` · `election_project_id(uuid)` · `constituency_group_project_id(uuid)` | the project a row belongs to, for policies whose table carries no `project_id` |
 | `private.project_account_id(uuid)` | the account a project belongs to; the project-admin arm of the three `invitations` policies passes it to `user_can` at account scope. Definer because `projects` has row-level security and an inline read would also ask whether the caller sees the project; `authenticated` alone holds EXECUTE |
+
+`storage_path_is_public(text, text, text)` is not among them: it is the SECURITY INVOKER visibility
+function, which asks whether the calling role can read the row a path names through that table's own
+SELECT policies (the project-level path asks `project_open_for_voters`). Anon and signed-in callers
+therefore each get their own table visibility, asked of a path.
 
 ---
 

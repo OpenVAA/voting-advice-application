@@ -1,6 +1,6 @@
 -- 00z-invitation-link-witness.test.sql: installs the test-only completion witness of a link request and the test-only listing of identity registrations
 --
--- No migration installs `private.invitation_link_witness`, its two functions or `public.test_identity_registrations`: they are test instruments, kept in ../fixtures/invitation-link-witness.psql. Its name sorts after 00-helpers.test.sql, which creates pgTAP, and before every file that reads the witness, in byte order and in a locale order alike. It applies that fixture outside a transaction, so every later file finds the witness, as the E2E harness's database does. pg_prove runs a file through psql, so the include resolves next to this file in the mounted supabase/tests directory. Prettier cannot parse the psql include, so this file is listed in .prettierignore.
+-- No migration installs `private.invitation_link_witness`, its two functions or `public.test_identity_registrations`: they are test instruments, kept in ../fixtures/invitation-link-witness.psql. Its name sorts after 00-helpers.test.sql, which creates pgTAP, and before every file that reads the witness, in byte order and in a locale order alike. It applies that fixture outside a transaction, so every later file finds the witness, as the E2E harness's database does. pg_prove runs a file through psql, so the include resolves next to this file in the mounted supabase/tests directory.
 \ir ../fixtures/invitation-link-witness.psql
 
 SET

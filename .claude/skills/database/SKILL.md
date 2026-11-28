@@ -1,6 +1,6 @@
 ---
 name: database
-description: 'Domain expert for the OpenVAA Supabase backend: 21-table PostgreSQL schema with JSONB localization, 99 RLS policies over a single grant model (four scopes, two role levels, a 23-member permission enum and one user_can predicate), JWT claims via Access Token Hook, invitations that promise a grant ahead of time, nominations held to their election's nomination shape, written by an entity's editor through one function or stated by an admin's invitation, 3 Edge Functions, bulk import/delete RPCs with external_id-based idempotent upsert, a pgTAP estate of 64 files planning 2996 assertions, storage bucket configuration, and a frozen baseline migration, after which a schema change is an appended numbered migration listed in a manifest. Activate when working in apps/supabase/ or packages/supabase-types/, writing migrations, RLS policies, database functions, pgTAP tests, or understanding the Supabase auth and service layer.'
+description: 'Domain expert for the OpenVAA Supabase backend: 21-table PostgreSQL schema with JSONB localization, 99 RLS policies over a single grant model (four scopes, two role levels, a 23-member permission enum and one user_can predicate), JWT claims via Access Token Hook, invitations that promise a grant ahead of time, nominations held to their election's nomination shape, written by an entity's editor through one function or stated by an admin's invitation, 3 Edge Functions, bulk import/delete RPCs with external_id-based idempotent upsert, a pgTAP estate of 65 files planning 3008 assertions, storage bucket configuration, and a frozen baseline migration, after which a schema change is an appended numbered migration listed in a manifest. Activate when working in apps/supabase/ or packages/supabase-types/, writing migrations, RLS policies, database functions, pgTAP tests, or understanding the Supabase auth and service layer.'
 targets:
   - apps/supabase/
   - packages/supabase-types/
@@ -31,8 +31,8 @@ each. A count is a snapshot: re-run its command before relying on it.
   its project allows for that type (RLS and Auth Patterns § 10)
 - 3 Edge Functions: `account-access`, `identity-callback`, `send-email`
 - Bulk import/delete RPCs with external_id-based idempotent upsert
-- 64 pgTAP files: 63 declare plans summing to 2996, and `00-helpers.test.sql` runs its smoke tests
-  under `no_plan()` (63,525 lines in all)
+- 65 pgTAP files: 64 declare plans summing to 3008, and `00-helpers.test.sql` runs its smoke tests
+  under `no_plan()` (63,813 lines in all)
 - Schema files: `apps/supabase/supabase/schema/` (30 SQL files, `000-enums.sql` through
   `900-test-helpers.sql`, numbered by **concern**: `0xx` types and functions, `1xx` content tables,
   `200` indexes, `3xx` auth and RLS, `400` storage, `5xx` RPCs, `900` test helpers)
@@ -275,8 +275,10 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `public.grants`, as `user_can` does.
    - `project_open_for_voters(project_id)` and `entity_has_confirmed_nomination(type, id, project_id)`:
      the two anon visibility sub-rules.
-   - `storage_path_can(scope, project, type, id, verb)` and `storage_path_is_public(project, type, id)`:
-     the storage authority and visibility questions, asked of a PATH.
+   - `storage_path_can(scope, project, type, id, verb)`: the storage authority question, asked of a PATH.
+     Its visibility counterpart, `storage_path_is_public(project, type, id)`, is SECURITY INVOKER and so
+     not one of these: it asks whether the calling role can read the row a path names through that
+     table's own SELECT policies.
    - Source: `apps/supabase/supabase/schema/301-auth-functions.sql`, `302-rls.sql`, `400-storage.sql`.
    - **Policy-only hops live in the `private` schema** (162-REVIEW WR-01): `entity_project_id`,
      `is_child_nominee`, `entity_has_confirmed_nomination`, `nomination_entities_confirmed`,
@@ -951,6 +953,12 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      whether the caller can read the named row through that table's own row-level security. There is
      one write policy per verb (`authenticated_insert_assets`, `_update_`, `_delete_`), covering both
      buckets and both scopes. **None routes through neither.**
+   - `authenticated_select_public_assets` asks `storage_path_is_public` too, so a signed-in caller reads
+     the `public-assets` files of every row its own table RLS lets it read, beyond `storage_path_can`'s
+     `deny` cells: an entity editor reads its own unconfirmed nomination's files (`nomination.read`),
+     and an organization editor its child candidates' nomination files. Anon is still refused an
+     unconfirmed nomination's file. Public-bucket downloads skip `storage.objects` RLS, so this widens
+     listing only; `20-storage-authority.test.sql` tests 48-50 pin it.
    - `storage_path_can` refuses an entity-scope write while the project's `access.contestantEditing`
      is `'locked'` (RLS and Auth Patterns § 6); a project-scope write and every read are unaffected.
    - ⚠ No storage policy names `user_can` in its own `pg_policies` expression; the reach is through
@@ -1061,14 +1069,13 @@ p_template_subject)` is SECURITY DEFINER (reads auth.users). For each user: look
 
 ## pgTAP Testing Conventions
 
-1. **Test infrastructure**: pgTAP extension loaded in `00-helpers.test.sql`. **64** files in
-   `apps/supabase/supabase/tests/database/` (`00` to `59`, with `00z` and the five `39a` to `39e`;
-   there is no file `13` and no `39`), in byte order of their names: `00-helpers` is the
+1. **Test infrastructure**: pgTAP extension loaded in `00-helpers.test.sql`. **65** files in
+   `apps/supabase/supabase/tests/database/` (`00` to `59`, with `00z`, the five `39a` to `39e` and two
+   `59` files; there is no file `13` and no `39`), in byte order of their names: `00-helpers` is the
    persistent-helper phase and runs its own smoke tests under `no_plan()`, `00z-invitation-link-witness`
    applies the test-only fixture `../fixtures/invitation-link-witness.psql` outside a transaction (so
-   every later file finds `private.invitation_link_witness` and its two functions; the file is listed
-   in `.prettierignore` because it holds a psql `\ir`), and the other **63** declare plans summing to
-   **2996**, `00z` included. A run reports those plus `00-helpers`' `no_plan()` assertions. Run with
+   every later file finds `private.invitation_link_witness` and its two functions), and the other **64** declare plans summing to
+   **3008**, `00z` included. A run reports those plus `00-helpers`' `no_plan()` assertions. Run with
    `supabase db reset` to reload helpers, then `supabase test db`. The largest file is
    `23-nominations-write.test.sql`, `plan (141)`; `07-rpc-security.test.sql` is `plan (44)`.
    - `39c-invitations-service-helpers.test.sql` counts only the `private.invitation_link_witness`
@@ -1184,7 +1191,7 @@ scalar-subquery form, or the common-column set. Those are review items, not gate
 - Validation triggers (nominations, entity immutability, entity type list, entity colour): `apps/supabase/supabase/schema/011-validation-functions.sql`
 - Edge Functions: `apps/supabase/supabase/functions/account-access/`, `identity-callback/`, `send-email/`
 - Bulk RPCs: `apps/supabase/supabase/schema/501-bulk-operations.sql`
-- pgTAP tests: `apps/supabase/supabase/tests/database/` (64 files, `00-helpers` through `59-identity-provider-entry`)
+- pgTAP tests: `apps/supabase/supabase/tests/database/` (65 files, `00-helpers` through `59-identity-provider-entry`)
 - Nominations: `apps/supabase/supabase/schema/104-nominations.sql` (table, triggers, the constraint trigger), `011-validation-functions.sql` (the matrix and the trigger functions), `301-auth-functions.sql` (the `private` guards), `302-rls.sql` (the policies), `503-entity-rpcs.sql` (`get_entity_nominations`, `get_nomination_parent_options`, `set_entity_nominations`, `private.nomination_writable`, and the four private write rules `nomination_list_checked`, `nomination_object_checked`, `parent_nomination_resolved` and `nomination_parent_target`)
 - Supabase config: `apps/supabase/supabase/config.toml`
 - Generated types: `packages/supabase-types/src/database.ts`
@@ -1481,9 +1488,9 @@ the same names. Measured on this date:
 
 | Statement | Value | Command |
 |---|---|---|
-| pgTAP files | 64, 63 of them with a plan | `git ls-files 'apps/supabase/supabase/tests/database/*.test.sql' \| wc -l`; `git grep -L -E "^  plan \(" -- 'apps/supabase/supabase/tests/database/*.test.sql'` |
-| planned pgTAP assertions | 2996 | `git grep -h -E "^  plan \(" -- 'apps/supabase/supabase/tests/database/*.test.sql'`, summed |
-| lines of the pgTAP files | 63,525 | `git ls-files 'apps/supabase/supabase/tests/database/*.test.sql' \| xargs cat \| wc -l` |
+| pgTAP files | 65, 64 of them with a plan | `git ls-files 'apps/supabase/supabase/tests/database/*.test.sql' \| wc -l`; `git grep -L -E "^  plan \(" -- 'apps/supabase/supabase/tests/database/*.test.sql'` |
+| planned pgTAP assertions | 3008 | `git grep -h -E "^  plan \(" -- 'apps/supabase/supabase/tests/database/*.test.sql'`, summed |
+| lines of the pgTAP files | 63,813 | `git ls-files 'apps/supabase/supabase/tests/database/*.test.sql' \| xargs cat \| wc -l` |
 | tables the schema creates in `public` and `private` | 21 and 4 (`access_throttle`, `deployment_settings`, `feedback_rate_limits`, `identity_registrations`) | `git grep -h -E "^CREATE TABLE" -- apps/supabase/supabase/schema` |
 | policies the schema creates | 99 | `git grep -h -E '^CREATE POLICY' -- apps/supabase/supabase/schema \| wc -l` |
 | functions the schema creates in `private` | 40 | `git grep -h -E '^CREATE (OR REPLACE )?FUNCTION private\.' -- apps/supabase/supabase/schema \| wc -l` |

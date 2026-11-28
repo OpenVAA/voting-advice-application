@@ -83,7 +83,7 @@ VALUES
   );
 
 -- The other two entity types, and one project-structure path.
--- The six entity-owner policies hardcoded `candidates`, so factions, alliances and every structure family were reachable at project scope only; the conversion makes the type segment an argument and these rows are what makes that observable rather than merely claimed. faction_a and alliance_a are confirmed and carry confirmed nominations in project A, which is open for voters.
+-- faction_a, alliance_a and one structure path exercise the type segment as an argument of storage_path_can: these rows make that observable rather than merely claimed. faction_a and alliance_a are confirmed and carry confirmed nominations in project A, which is open for voters.
 INSERT INTO
   storage.objects (id, bucket_id, name, owner)
 VALUES
@@ -273,7 +273,7 @@ SELECT
     'candidate_a cannot INSERT into organizations folder (org_a is not this caller entity)'
   );
 
--- THE POSITIVE THE REFUSAL ABOVE IS NOW PAIRED WITH. Under the old predicate the organizations folder was closed to EVERYONE holding an entity grant, its own grantee included, because the type segment was hardcoded. The refusal above and this allow are the same folder with two different callers, which is what turns "candidates only" into "this caller's own entity, whatever its type".
+-- The same folder with a second caller: the organization's own grantee may write here, so the refusal above is about the caller, not the type segment.
 SELECT
   set_test_user (
     'authenticated',
@@ -373,7 +373,7 @@ SELECT
 -- Section 7: the remaining path families
 --
 -- Anon coverage for the two entity types with no fixture user and for one project-structure family.
--- The behavioural half of the entity-scope grid is asserted on candidates and organizations, which are the only types create_test_data() gives users; factions and alliances are covered here on the READ side and structurally in 20-storage-authority.test.sql, whose normalised-identity assertion proves their policies are the same expression as the two that are exercised.
+-- The behavioural half of the entity-scope grid is asserted on candidates and organizations, which are the only types create_test_data() gives users; factions and alliances are covered here on the READ side and structurally in 20-storage-authority.test.sql, whose test 23 asserts that the three write policies carry one predicate, so factions and alliances go through the same expression as the two types that are exercised.
 -- =====================================================================
 SELECT
   set_test_user ('anon');

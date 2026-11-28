@@ -1190,7 +1190,6 @@ export type Database = {
         Args: { p_confirm_entity: boolean; p_invitations: Json; p_project_id: string };
         Returns: Json;
       };
-      create_test_data: { Args: Record<PropertyKey, never>; Returns: undefined };
       custom_access_token_hook: { Args: { p_event: Json }; Returns: Json };
       delete_storage_object: { Args: { p_bucket: string; p_file_path: string }; Returns: undefined };
       email_confirmation_release: { Args: { p_email: string }; Returns: undefined };
@@ -1315,8 +1314,6 @@ export type Database = {
       invitation_code_status: { Args: { p_code: string; p_project_id: string }; Returns: string };
       invitation_link_release: { Args: { p_code?: string; p_email: string; p_project_id: string }; Returns: undefined };
       invitation_link_request: { Args: { p_code?: string; p_email?: string; p_project_id: string }; Returns: string };
-      invitation_link_witness: { Args: { p_id: string; p_outcome?: string }; Returns: string };
-      invitation_link_witness_open: { Args: Record<PropertyKey, never>; Returns: string };
       is_image: { Args: { p_val: Json }; Returns: boolean };
       is_localized_string: { Args: { p_val: Json }; Returns: boolean };
       is_valid_choice_id: { Args: { p_valid_choices: Json; p_value: Json }; Returns: boolean };
@@ -1337,7 +1334,6 @@ export type Database = {
       project_open_for_voters: { Args: { p_project_id: string }; Returns: boolean };
       recovery_link_request: { Args: { p_email: string; p_project_id: string }; Returns: Json };
       referenced_storage_paths: { Args: { p_row: Json }; Returns: string[] };
-      reset_role: { Args: Record<PropertyKey, never>; Returns: undefined };
       resolve_email_variables: {
         Args: { p_project_id: string; p_template_body?: string; p_template_subject?: string; p_user_ids: string[] };
         Returns: {
@@ -1358,9 +1354,6 @@ export type Database = {
         };
         Returns: Json;
       };
-      set_test_grants: { Args: { p_user_id: string }; Returns: undefined };
-      set_test_retired_claim: { Args: { p_user_id: string; p_user_roles: Json }; Returns: undefined };
-      set_test_user: { Args: { p_role: string; p_user_grants?: Json; p_user_id?: string }; Returns: undefined };
       storage_path_can: {
         Args: {
           p_id: string;
@@ -1372,26 +1365,6 @@ export type Database = {
         Returns: boolean;
       };
       storage_path_is_public: { Args: { p_id: string; p_project: string; p_type: string }; Returns: boolean };
-      test_grants_claim: { Args: { p_user_id: string }; Returns: Json };
-      test_id: { Args: { entity_name: string }; Returns: string };
-      test_identity_registrations: {
-        Args: { p_user_ids: string[] };
-        Returns: {
-          entity_id: string;
-          entity_type: Database['public']['Enums']['entity_type'];
-        }[];
-      };
-      test_rls_digest: {
-        Args: Record<PropertyKey, never>;
-        Returns: {
-          digest: string;
-          tbl: string;
-        }[];
-      };
-      test_seed_fixture_grants: { Args: Record<PropertyKey, never>; Returns: number };
-      test_seed_identity_grants: { Args: { p_user_name: string }; Returns: number };
-      test_user_grants: { Args: { user_name: string }; Returns: Json };
-      test_user_id: { Args: { user_name: string }; Returns: string };
       upsert_answers: {
         Args: {
           p_answers: Json;

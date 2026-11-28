@@ -18,7 +18,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (47);
+  plan (50);
 
 SELECT
   create_test_data ();
@@ -1286,6 +1286,104 @@ SELECT
     '42501',
     NULL,
     'storage: an organization grantee is DENIED a write into a candidate folder of the same project -- because candidate_a is not this caller''s entity'
+  );
+
+SELECT
+  reset_role ();
+
+-- =====================================================================
+-- 48-50: the public-bucket read of a signed-in caller follows its own table RLS
+--
+-- storage_path_is_public is SECURITY INVOKER, so for a signed-in caller the visibility disjunct of authenticated_select_public_assets admits the files of every row that caller can read in its table. For a nomination that includes the `nomination.read` disjunct of authenticated_select_nominations, so a candidate's editor lists the files of its own unconfirmed nomination, in a project closed to voters too, while anon and the editor of an unrelated entity are refused. Public-bucket downloads do not evaluate storage.objects RLS, so this is what such a caller can list.
+-- =====================================================================
+UPDATE nominations
+SET
+  confirmed = false
+WHERE
+  id = test_id ('nomination_cand_a');
+
+INSERT INTO
+  storage.objects (id, bucket_id, name, owner)
+VALUES
+  (
+    gen_random_uuid(),
+    'public-assets',
+    test_id ('project_a')::text || '/nominations/' || test_id ('nomination_cand_a')::text || '/t48.png',
+    NULL
+  );
+
+-- 48. DENY. Anon: project A is open, and only the nomination's confirmation flag is false.
+SELECT
+  set_test_user ('anon');
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)
+      FROM
+        storage.objects
+      WHERE
+        bucket_id = 'public-assets'
+        AND name LIKE '%/nominations/' || test_id ('nomination_cand_a')::text || '/t48.png'
+    )::integer,
+    0,
+    'anon: a public-assets file of an unconfirmed nomination is NOT readable'
+  );
+
+SELECT
+  reset_role ();
+
+UPDATE projects
+SET
+  open_for_voters = false
+WHERE
+  id = test_id ('project_a');
+
+-- 49. ALLOW. The candidate's own editor, with the nomination unconfirmed and the project closed to voters.
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)
+      FROM
+        storage.objects
+      WHERE
+        bucket_id = 'public-assets'
+        AND name LIKE '%/nominations/' || test_id ('nomination_cand_a')::text || '/t48.png'
+    )::integer,
+    1,
+    'storage: a candidate grantee lists the public-assets file of its own unconfirmed nomination in a closed project'
+  );
+
+-- 50. DENY. The editor of another candidate of the same project.
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a2'),
+    test_user_grants ('candidate_a2')
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)
+      FROM
+        storage.objects
+      WHERE
+        bucket_id = 'public-assets'
+        AND name LIKE '%/nominations/' || test_id ('nomination_cand_a')::text || '/t48.png'
+    )::integer,
+    0,
+    'storage: the grantee of an unrelated candidate is NOT admitted to that file'
   );
 
 SELECT
