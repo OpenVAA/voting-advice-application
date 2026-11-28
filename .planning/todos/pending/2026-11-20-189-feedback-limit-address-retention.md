@@ -7,6 +7,8 @@ source: Phase 189 (D-03, research open question 5)
 owner: a later phase, and the operator of any deployment until it is decided
 files:
   - apps/supabase/supabase/schema/107-feedback.sql
+tags: [voter, supabase, improvement]
+keywords: [feedback, rate-limit, ip-address, retention, privacy]
 ---
 
 ## Problem

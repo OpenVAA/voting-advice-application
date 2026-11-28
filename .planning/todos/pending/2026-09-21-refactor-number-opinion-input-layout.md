@@ -7,6 +7,8 @@ files:
   - apps/frontend/src/lib/components/questions/NumberScaleInput.svelte (answer mode: the `flex items-center justify-between` value row and the `range range-primary w-full` input below it; display mode has its own copy of the same track at the `pt-24` marker block)
   - apps/frontend/src/lib/components/questions/NumberScaleInput.type.ts
   - apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte (the only caller; gates on `question.isMatchable`)
+tags: [voter, frontend, ui, improvement]
+keywords: [number-question, range-slider, layout, opinion-input]
 ---
 
 ## Problem

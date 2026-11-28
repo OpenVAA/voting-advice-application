@@ -10,6 +10,8 @@ files:
   - apps/supabase/supabase/functions/account-access/addressConfirmation.ts
   - apps/supabase/supabase/config.toml
   - infra/modules/supabase/hosted-settings.json
+tags: [contestant, supabase, improvement]
+keywords: [auth, email-change, account-enumeration, accepted-risk, gotrue]
 ---
 
 ## Not an open defect

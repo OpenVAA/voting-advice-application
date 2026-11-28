@@ -7,6 +7,8 @@ files:
   - apps/frontend/src/lib/_guards/eslint-store-guard.test.ts
 source: Phase 143 code review, finding IN-01 (143-REVIEW.md)
 resolves_phase: null
+tags: [frontend, tooling, improvement]
+keywords: [eslint, store-guard, cjs, require, no-require-imports]
 ---
 
 ## Problem

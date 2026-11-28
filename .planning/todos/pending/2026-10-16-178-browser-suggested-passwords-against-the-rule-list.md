@@ -7,6 +7,8 @@ source: Phase 178 (plan 178-23; item N-7 and the UI contract's backstop row on a
 files:
   - apps/frontend/src/lib/contestant/components/passwordSetter/PasswordSetter.svelte
   - apps/frontend/src/lib/utils/password-validation/passwordValidation.ts
+tags: [contestant, frontend, ui, improvement]
+keywords: [manual-check, password-rules, browser, passwordrules, set-password]
 ---
 
 ## What to do

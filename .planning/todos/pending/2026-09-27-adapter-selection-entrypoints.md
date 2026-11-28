@@ -4,11 +4,13 @@ title: Adapter-selection entrypoints — static-settings adapter choice, lazy Su
 area: frontend
 severity: follow-up
 files:
-  - apps/frontend/src/lib/api/dataProvider.ts (re-exports `SUPABASE_COOKIE_PREFIX` and `createSupabaseUniversalClient` from `$lib/supabase/universal`)
-  - apps/frontend/src/lib/api/dataWriter.ts (`createDataWriter` always builds a `SupabaseDataWriter`)
+  - 'apps/frontend/src/lib/api/dataProvider.ts (re-exports `SUPABASE_COOKIE_PREFIX` and `createSupabaseUniversalClient` from `$lib/supabase/universal`)'
+  - 'apps/frontend/src/lib/api/dataWriter.ts (`createDataWriter` always builds a `SupabaseDataWriter`)'
   - apps/frontend/src/lib/api/feedbackWriter.ts (the feedback-writer entrypoint)
-  - apps/frontend/src/lib/supabase/ (the client factories: `anon.ts`, `browser.ts`, `job.ts`, `server.ts`, `universal.ts`)
-  - apps/frontend/src/routes/+layout.server.ts, apps/frontend/src/routes/(voters)/(located)/+layout.server.ts, apps/frontend/src/routes/admin/(protected)/argument-condensation/+layout.server.ts, apps/frontend/src/routes/admin/(protected)/question-info/+layout.server.ts (route loaders importing `SUPABASE_COOKIE_PREFIX` from `$lib/api/dataProvider`)
+  - 'apps/frontend/src/lib/supabase/ (the client factories: `anon.ts`, `browser.ts`, `job.ts`, `server.ts`, `universal.ts`)'
+  - 'apps/frontend/src/routes/+layout.server.ts, apps/frontend/src/routes/(voters)/(located)/+layout.server.ts, apps/frontend/src/routes/admin/(protected)/argument-condensation/+layout.server.ts, apps/frontend/src/routes/admin/(protected)/question-info/+layout.server.ts (route loaders importing `SUPABASE_COOKIE_PREFIX` from `$lib/api/dataProvider`)'
+tags: [frontend, tooling, improvement]
+keywords: [adapter, data-provider, lazy-loading, hooks, static-settings, hooks-server, supabase-handle, data-adapter-handle, adapters, package-loading, tsconfig, architecture]
 ---
 
 ## Source
@@ -46,3 +48,15 @@ The complete list from the comment, plus the client move that phase 165 attached
 ## Note (2026-10-02, Phase 167)
 
 The `/api/cache` proxy was removed in Phase 167 (commit `837b895c4`), together with `cachifyUrl`, the `CACHE_*` and `PUBLIC_CACHE_ENABLED` settings and the `flat-cache` dependency. Any cache for static-data deployments should be designed together with the local adapter rather than restored from the removed route. This todo stays open.
+
+## Merged from `2026-08-28-hooks-supabase-handle-parameterisation.md` (2026-11-28)
+
+Rename supabaseHandle to dataAdapterHandle, but only once it is parameterised on staticSettings.dataAdapter (reviewer kaljarv, PR #870). Don't rename it while only one adapter exists.
+
+The merged todo is kept at `.planning/todos/completed/2026-08-28-hooks-supabase-handle-parameterisation.md`.
+
+## Merged from `adapter-package-loading.md` (2026-11-28)
+
+Adds the idea that each adapter is its own workspace package selected by tsconfig path mapping or package imports.
+
+The merged todo is kept at `.planning/todos/completed/adapter-package-loading.md`.

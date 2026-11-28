@@ -1,3 +1,8 @@
+---
+tags: [tooling, improvement]
+keywords: [project-scoped-queries, guard, string-literal, comment-spans]
+---
+
 # Exclude string and template literal spans from the project-scoped query guard
 
 **Filed:** 2026-09-07

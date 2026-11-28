@@ -4,6 +4,8 @@ title: Investigate differential privacy, or masking of timestamp and insert orde
 area: analytics / privacy
 severity: minor
 source: operator, 2026-10-11 (note under B2 of v2.17-DISCUSSION-POINTS.md, workstream deployment)
+tags: [voter, frontend, infra, improvement]
+keywords: [analytics, privacy, differential-privacy, answer-events, relay]
 ---
 
 ## Problem

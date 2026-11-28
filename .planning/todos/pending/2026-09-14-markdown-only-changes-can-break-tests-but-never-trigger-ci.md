@@ -6,7 +6,8 @@ source_plan: regression-gate
 resolves_phase: null
 priority: medium
 suggested_phase: future-ci-hygiene
-keywords: [main.yaml, paths-ignore, ci, dev-seed, e2eDocPreconditionGate, doc-guard, markdown]
+tags: [tests, ci, improvement]
+keywords: [main.yaml, paths-ignore, ci, dev-seed, e2eDocPreconditionGate, doc-guard, markdown, doc-guards, ci-trigger]
 ---
 
 # `paths-ignore: "**.md"` and doc-reading guards are mutually exclusive, and the repo has both

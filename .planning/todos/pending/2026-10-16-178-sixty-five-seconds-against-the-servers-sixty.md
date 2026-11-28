@@ -7,6 +7,8 @@ source: Phase 178 (plan 178-23; the unresolved assumption of plans 178-10 and 17
 files:
   - apps/frontend/src/lib/contestant/entryFlow/entryFlow.ts
   - apps/supabase/supabase/schema/506-invitation-rpcs.sql
+tags: [contestant, frontend, supabase, improvement]
+keywords: [resend, rate-limit, timing, account-access, email-sent]
 ---
 
 ## Problem

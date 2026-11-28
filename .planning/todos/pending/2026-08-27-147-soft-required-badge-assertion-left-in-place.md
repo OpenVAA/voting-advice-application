@@ -6,6 +6,8 @@ severity: minor
 source: Phase 147 (147-NEGATIVE-CONTROL.md rows RK2-OLD / RK2-NEW; 147-SCOUT-INVENTORY.md § D; filed by 147-05)
 files:
   - tests/tests/fixtures/candidate/candidateProfilePage.fixture.ts
+tags: [contestant, tests, translations, improvement]
+keywords: [assertion-quality, expect-soft, required-badge, raw-key, fixtures]
 ---
 
 ## The site

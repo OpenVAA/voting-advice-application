@@ -6,13 +6,14 @@ severity: low
 source: Phase 181.1 (declarative schema on pg-delta), decision D-01
 related_phase: 181.1
 re_check_trigger: "pg-delta leaves alpha (a non-alpha engine release, and the CLI no longer needs [experimental.pgdelta])"
-keywords: [pg-delta, declarative-schema, migrations, freeze]
 files:
   - apps/supabase/supabase/schema/400-storage.sql
   - apps/supabase/supabase/schema/107-feedback.sql
   - apps/supabase/supabase/schema/001-role-settings.sql
   - apps/supabase/supabase/config.toml
   - scripts/assert-schema-migration-parity.mjs
+tags: [supabase, tooling, improvement]
+keywords: [pg-delta, declarative-schema, migrations, freeze, supabase-cli]
 ---
 
 ## The decision (D-01)

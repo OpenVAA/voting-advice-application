@@ -9,6 +9,8 @@ files:
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/nominations/(edit)/details/+page.svelte
   - apps/supabase/supabase/schema/503-entity-rpcs.sql
   - apps/supabase/supabase/schema/104-nominations.sql
+tags: [contestant, frontend, supabase, feat]
+keywords: [election-symbol, nomination-editor, settings, validation]
 ---
 
 ## What is built

@@ -7,6 +7,8 @@ source: Phase 189.1.1 code review IN-06
 owner: the maintainer of the CI workflows
 files:
   - .github/workflows/main.yaml
+tags: [ci, improvement]
+keywords: [github-actions, timeout-minutes, ci, runners]
 ---
 
 ## Problem

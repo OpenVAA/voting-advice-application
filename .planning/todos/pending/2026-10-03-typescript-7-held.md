@@ -5,8 +5,9 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: low
 suggested_phase: the next dependency phase after the trigger fires
-keywords: [typescript-7, typescript-eslint, svelte-check, sveltekit-3, peer-dependencies, hold, D-16, D-06]
 re_check_trigger: "typescript-eslint and svelte-check both admit typescript 7 (and Kit 3's peer, once Kit 3 lands)"
+tags: [tooling, improvement]
+keywords: [typescript-7, typescript-eslint, svelte-check, sveltekit-3, peer-dependencies, hold, D-16, D-06, dependency-bump]
 ---
 
 # TypeScript 7 held (D-16)

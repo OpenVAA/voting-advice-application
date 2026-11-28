@@ -1,3 +1,8 @@
+---
+tags: [tooling, improvement]
+keywords: [gitignore, bg-shell, stray-file, repo-hygiene]
+---
+
 # `.bg-shell/manifest.json` is tracked and looks like local scaffolding
 
 **Filed:** 2026-09-03 (Phase 163, during evidence-branch preparation)

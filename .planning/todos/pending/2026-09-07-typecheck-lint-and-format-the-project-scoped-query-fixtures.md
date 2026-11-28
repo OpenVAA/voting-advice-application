@@ -1,3 +1,8 @@
+---
+tags: [tooling, improvement]
+keywords: [fixtures, typecheck, prettier, scripts, guard]
+---
+
 # The project-scoped query fixtures are read by no typechecker, linter or formatter
 
 **Filed:** 2026-09-07

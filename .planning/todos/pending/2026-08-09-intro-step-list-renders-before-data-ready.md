@@ -1,3 +1,8 @@
+---
+tags: [voter, frontend, ui, contexts, bug]
+keywords: [intro, cls, data-ready, layout-shift, steps-list]
+---
+
 # Intro step list renders an incomplete list for ~½ s on client-side entry
 
 **Captured:** 2026-08-09

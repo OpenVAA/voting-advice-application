@@ -7,6 +7,8 @@ source: Phase 178 (plan 178-23; the UI contract's two long-text backstop rows an
 files:
   - apps/frontend/messages
   - tests/tests/specs/contestant/contestant-entry-phone.spec.ts
+tags: [contestant, frontend, ui, translations, improvement]
+keywords: [manual-check, phone-width, locales, entry-flow, overflow]
 ---
 
 ## What to do

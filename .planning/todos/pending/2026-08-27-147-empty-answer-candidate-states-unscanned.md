@@ -9,6 +9,8 @@ files:
   - tests/tests/fixtures/candidate/candidateLogoutButton.fixture.ts
   - tests/tests/specs/a11y/candidate-a11y.spec.ts
   - packages/dev-seed/src/templates/e2e/base.ts
+tags: [contestant, dev-seed, tests, ui, improvement]
+keywords: [a11y, axe, empty-state, questions-intro, scan-coverage]
 ---
 
 ## The gap

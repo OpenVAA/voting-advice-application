@@ -8,6 +8,8 @@ files:
   - apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte
   - .planning/phases/158-routing-auth-surface-harmonisation/158-LIB-UTILS-MOVE-PROPOSAL.md
 blocked_on: 'the operator ruling on 158-LIB-UTILS-MOVE-PROPOSAL.md section 3.2 - the proposal is written but explicitly unauthorised'
+tags: [frontend, improvement]
+keywords: [rename, alliances, lib-utils, file-structure]
 ---
 
 ## Status: filed, not implemented - renaming it now would be half of a two-step move
@@ -67,3 +69,7 @@ Rename the file to `alliances.ts` (or place it at `lib/entities/alliances.ts` if
 **one move, not two**), update the two import specifiers, and keep the exported symbol name
 `getAllianceSummary` unless a separate decision renames it too. `yarn typecheck` catches a missed
 specifier; there is no test file to move.
+
+## Maintainer ruling (2026-11-28)
+
+Rename to `alliances.ts` in place now; do not wait for the `lib/utils` -> `lib/entities/` move.
