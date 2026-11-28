@@ -1,8 +1,6 @@
 import { env } from '$env/dynamic/public';
 
 export const constants = {
-  PUBLIC_BROWSER_FRONTEND_URL: env.PUBLIC_BROWSER_FRONTEND_URL ?? '',
-  PUBLIC_SERVER_FRONTEND_URL: env.PUBLIC_SERVER_FRONTEND_URL ?? '',
   PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: env.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID ?? '',
   PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: env.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT ?? '',
   // The one default for the provider keyword; nothing downstream applies another. `getActiveProvider()` has no case for an empty string, so without it an unset `PUBLIC_IDENTITY_PROVIDER_TYPE` would throw in both callers, the `/api/oidc/authorize` and `/api/oidc/callback` endpoints.

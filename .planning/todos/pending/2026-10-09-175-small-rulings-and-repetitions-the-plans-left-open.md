@@ -13,6 +13,8 @@ files:
   - packages/dev-seed/src/templates/e2e/perm/perm-organization-editing.ts
   - tests/tests/fixtures/contestant/contestantTermsOfUsePage.fixture.ts
   - tests/tests/fixtures/shared/pageGeometry.fixture.ts
+tags: [contestant, frontend, tests, improvement]
+keywords: [rulings, cleanup, duplication, matchmedia, test-setup]
 ---
 
 ## Rulings a plan asked for and built one way

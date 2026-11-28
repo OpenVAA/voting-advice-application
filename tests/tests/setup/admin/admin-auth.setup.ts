@@ -2,7 +2,7 @@ import { expect, test as setup } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { createAdminLoginPage } from '../../fixtures/admin/adminLoginPage.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { ADMIN_LOGIN_REDIRECT_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { ADMIN_STORAGE_STATE, TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD } from '../../utils/adminCredentials';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 
@@ -34,8 +34,8 @@ setup('mint + authenticate as project admin', async ({ page }) => {
   await login.goToPage();
   await login.login(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
 
-  // The login action answers 303 to the admin home; wait for the address to leave the login page.
-  await expect(page).not.toHaveURL(/.*\/admin\/login.*/);
+  // The login action answers 303 to the admin home, whose data is a second answer; wait for the address to leave the login page.
+  await expect(page).not.toHaveURL(/.*\/admin\/login.*/, { timeout: ADMIN_LOGIN_REDIRECT_TIMEOUT });
 
   await page.context().storageState({ path: ADMIN_STORAGE_STATE });
 });

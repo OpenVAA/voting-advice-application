@@ -16,6 +16,8 @@ When performing code review, double check all of the items below:
 - [ ] Check that parts of the application that share dependencies with the PR but are not included in it are not unduly affected.
 - [ ] The changes pass the [WCAG A and AA requirements for accessibility](https://usability.yale.edu/web-accessibility/articles/wcag2-checklist).
 - [ ] The changed parts of the app are fully usable with keyboard navigation and screen-reading.
+- [ ] Nothing hard-codes a default or fallback locale (such as `'en'`): it comes from `staticSettings.supportedLocales` (the `isDefault` entry), so a deployment whose default is another language behaves the same.
+- [ ] Tests assert behaviour, not incidentals: no exact counts that grow with the codebase (use a ceiling or derive the expected set from its source), no exact versions a declared range allows, and no assertions on the wording of docstrings or comments.
 - [ ] Documentation is added wherever necessary. This includes updating the possibly affected entries in the [Developers’](<apps/docs/src/routes/(content)/developers-guide>) and [Publishers’ Guides](<apps/docs/src/routes/(content)/publishers-guide>).
 - [ ] Every comment the PR adds or changes follows [Comment Hygiene](/CLAUDE.md#comment-hygiene): no historical narrative, no planning references beyond a bare `see phase N` / `see spike N`, no notes addressed to the reviewer (or, if unavoidable, tagged `[PR review]` and removed before merge), and present only where the code cannot explain itself.
 - [ ] The commit history is clean and linear, and the commits follow the [commit guidelines](<apps/docs/src/routes/(content)/developers-guide/contributing/contribute/+page.md>)

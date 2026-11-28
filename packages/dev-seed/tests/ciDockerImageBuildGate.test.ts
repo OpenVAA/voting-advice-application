@@ -3,7 +3,9 @@
  *
  * ## What the gate is
  *
- * The `docker-image-build` job in `.github/workflows/main.yaml` builds the `production` target of `apps/frontend/Dockerfile` from the repo root, the image `docker-compose.dev.yml` and `render.example.yaml` deploy. The image copies `apps/`, `packages/`, `scripts/` and the root manifests and runs the root lifecycle scripts during `yarn install`, so a root lifecycle script that needs a file outside those directories breaks the image install and nothing else. No other job builds the image, so without this one that breakage reaches a deployment first.
+ * The `docker-image-build` job in `.github/workflows/main.yaml` builds the `production` target of `apps/frontend/Dockerfile` from the repo root.
+ * That target is the image `docker-compose.dev.yml` runs and the image the AWS deploy pipeline builds and deploys.
+ * The image copies `apps/`, `packages/`, `scripts/` and the root manifests and runs the root lifecycle scripts during `yarn install`, so a root lifecycle script that needs a file outside those directories breaks the image install and nothing else. No other job builds the image, so without this one that breakage reaches a deployment first.
  *
  * ## Why each property is asserted
  *

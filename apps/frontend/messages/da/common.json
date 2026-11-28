@@ -42,7 +42,17 @@
         "title": "Vælg en adgangskode",
         "why": "Din konto har endnu ingen adgangskode. Vælg en, så du kan logge ind med din e-mailadresse og adgangskode."
       },
-      "signedInAs": "Logget ind som"
+      "signedInAs": "Logget ind som",
+      "tooManyAttempts": [
+        {
+          "declarations": ["input minutes"],
+          "selectors": ["minutes"],
+          "match": {
+            "minutes=1": "Der er foretaget for mange forsøg fra dit netværk. Prøv igen om et minut.",
+            "minutes=*": "Der er foretaget for mange forsøg fra dit netværk. Prøv igen om {minutes} minutter."
+          }
+        }
+      ]
     },
     "alliance": {
       "plural": "alliancer",

@@ -13,6 +13,8 @@ files:
   - apps/supabase/supabase/tests/database/23-nominations-write.test.sql
   - apps/supabase/supabase/tests/database/43-set-entity-nominations.test.sql
   - apps/supabase/supabase/tests/database/44-nomination-parent-options.test.sql
+tags: [contestant, supabase, tests, improvement]
+keywords: [nominations, set-entity-nominations, pgtap, rls, parent-nomination, bounds]
 ---
 
 Each item is a property of the schema as it stands at the close of Phase 177. None is a known defect a user can meet through the application's pages; several are what a caller of the API can do that the pages never do.

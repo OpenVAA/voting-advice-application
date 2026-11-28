@@ -6,7 +6,7 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 
 **Phases 181 to 189, planned.**
 
-**Milestone goal:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one. The milestone has 83 requirements (INFRA 19, SUPA 14, PIPE 10, OBS 11, RELAY 21, DOCS 8) in 9 phases.
+**Milestone goal:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one. The milestone has 92 requirements (INFRA 20, SUPA 15, PIPE 12, OBS 13, RELAY 23, DOCS 9) in 9 phases.
 
 **Sources.** `REQUIREMENTS.md` in this directory is the source of truth. It follows the operator's 28 rulings, recorded in `v2.17-DISCUSSION-POINTS.md` under "Rulings as read, 2026-10-11". The phase structure is ruling E4: phases 181 to 189 as `research/SUMMARY.md` proposes. That file's phase sketches were written before the rulings, so where a sketch and a requirement differ, the requirement wins. The largest difference is in phase 182: the sketch removes the consent components, and RELAY-11 keeps them, with consent asked by default.
 
@@ -74,13 +74,17 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 
 - [x] **Phase 181: Deployability and Migration Model** - Without any cloud account, the server reports its health and build, refuses to start half-configured, works behind a proxy, and the migration is frozen as a baseline with append-only changes (SUPA-10) (completed 2026-10-21)
 - [x] **Phase 182: Analytics Relay** - Events go through a same-origin relay to a provider chosen by configuration, with no analytics identifier on the device, consent asked by default, and Umami removed (RELAY-01, RELAY-02, RELAY-03, RELAY-05, RELAY-06, RELAY-07, RELAY-08, RELAY-10 to RELAY-21)
-- [ ] **Phase 183: Terraform Foundation and Supabase as Code** - Remote state, access roles, a budget alarm, the staging zone and the mail identity exist in AWS, and the hosted Supabase project is imported into a root of its own with a settings parity guard (INFRA-15, INFRA-17, INFRA-18, SUPA-11)
-- [ ] **Phase 184: Hosted Supabase Measurement and Conformance Probe** - The schema, functions and bootstrap rows are on the hosted project, what it serves is measured and dated, and a probe fails by name when it drifts (SUPA-01 to SUPA-07, SUPA-13, SUPA-14, OBS-01, OBS-02, OBS-03, OBS-05, OBS-07)
-- [ ] **Phase 185: AWS Frontend Stack, First Apply by Hand** - The frontend runs at `https://staging.openvaa.org` from a stack applied by hand, with a failed rollout, a teardown and the frontend-side observations each seen once (INFRA-01 to INFRA-14, SUPA-12, OBS-04, OBS-06, OBS-08, OBS-10)
-- [ ] **Phase 186: Deployed Smoke Entry** - A read-mostly smoke run proves from a workstation that the deployed URL serves the intended build on the dedicated project, and refuses anything else (SUPA-09)
-- [ ] **Phase 187: Deploy Pipeline** - GitHub Actions deploys staging without stored keys, behind a gate and in a fixed order, and the run goes red when the build, the rollout or the smoke run fails (PIPE-01 to PIPE-10, INFRA-16, INFRA-19, SUPA-08)
-- [ ] **Phase 188: Relay on the Deployed Stack, and the Per-Caller Limit** - Events from staging arrive in PostHog EU as anonymous events, the stack's capacity is measured, and the per-caller limit is built or deferred on the evidence (RELAY-04, RELAY-09, OBS-09, OBS-11)
-- [ ] **Phase 189: Documentation and Closure** - The documentation follows the Terraform path, every statement about a hosted project is a dated observation, and the absorbed todos are closed on the record (DOCS-01 to DOCS-08)
+- [x] **Phase 183: Terraform Foundation and Supabase as Code** - Remote state, access roles, a budget alarm, the staging zone and the mail identity exist in AWS, and the hosted Supabase project is imported into a root of its own with a settings parity guard (INFRA-15, INFRA-17, INFRA-18, SUPA-11) (completed 2026-10-26)
+- [x] **Phase 184: Hosted Supabase Measurement and Conformance Probe** - The schema, functions and bootstrap rows are on the hosted project, what it serves is measured and dated, and a probe fails by name when it drifts (SUPA-01 to SUPA-07, SUPA-13, SUPA-14, OBS-01, OBS-02, OBS-03, OBS-05, OBS-07) (completed 2026-11-12)
+- [x] **Phase 185: AWS Frontend Stack, First Apply by Hand** - The frontend runs at `https://staging.openvaa.org` from a stack applied by hand, with a failed rollout, a teardown and the frontend-side observations each seen once (INFRA-01 to INFRA-14, SUPA-12, OBS-04, OBS-06, OBS-08, OBS-10) (completed 2026-11-14)
+- [x] **Phase 186: Deployed Smoke Entry** - A read-mostly smoke run proves from a workstation that the deployed URL serves the intended build on the dedicated project, and refuses anything else (SUPA-09) (completed 2026-11-15)
+- [x] **Phase 187: Deploy Pipeline** - GitHub Actions deploys staging without stored keys, behind a gate and in a fixed order, and the run goes red when the build, the rollout or the smoke run fails (PIPE-01 to PIPE-10, INFRA-16, INFRA-19, SUPA-08) (completed 2026-11-18)
+- [x] **Phase 188: Relay on the Deployed Stack, and the Per-Caller Limit** - Events from staging arrive in PostHog EU as anonymous events, the stack's capacity is measured, and the per-caller limit is built or deferred on the evidence (RELAY-04, RELAY-09, OBS-09, OBS-11) (completed 2026-11-20)
+- [x] **Phase 189: Documentation and Closure** - The documentation follows the Terraform path, every statement about a hosted project is a dated observation, and the absorbed todos are closed on the record (DOCS-01 to DOCS-08) (completed 2026-11-21)
+- [x] **Phase 189.1: Address tech debt: invitation-limit guard and trackEvents smoke** (completed 2026-11-22)
+- [x] **Phase 189.1.1: Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit** (completed 2026-11-27)
+- [ ] **Phase 189.1.2: Move the deployment to Supabase publishable and secret keys before the legacy anon and service_role keys retire (FUT-02)**
+- [x] **Phase 190: Multi-deployment bootstrap** - `infra/bootstrap` takes a map of deployments, so a second instance deploys from its own repository into the same AWS account (INFRA-21 to INFRA-24, PIPE-13, PIPE-14) (completed 2026-11-27)
 
 ## Phase Details
 
@@ -316,7 +320,7 @@ Notes:
   5. The project the operator created is imported into a Supabase root that has its own state file and `prevent_destroy`, and a destroy of that root is refused. The root applies the hosted API and auth settings and a second plan is empty. `supabase config push` is used nowhere. `yarn lint:check` fails when a security-relevant key of `config.toml` and the HCL disagree, seen once (SUPA-11). A job in `main.yaml` that needs no credentials formats and validates the Terraform, and is seen passing in a run.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topics from `research/SUMMARY.md`: the exact `supabase_settings` JSON keys, found by importing from a scratch project (F1); the OIDC subject for repositories created after 2026-07-15; legacy against publishable keys (F5), which C5 rules as measure and stay on legacy if they work. Create against import is closed by C2: the operator creates the project and Terraform imports it. Added by rulings after the research: a delegated subzone or the whole zone for `staging.openvaa.org` (reading 4, settled here), and the layout of the IAM policies (F1 note).
-**Plans**: 15/28 plans executed in 15 waves. Waves 1 to 5 run now without the operator and touch no cloud. The first operator checkpoint that can block is plan 183-14: it needs the applying identity (follow-up 183-R1) and Terraform 1.16.5. Plans 21 to 25 (the Supabase chain) depend only on their own predecessors and on plan 16, and may be executed by plan without waiting for plans 18, 19 and 20 of the same wave.
+**Plans**: 28/28 plans complete in 15 waves. Waves 1 to 5 run now without the operator and touch no cloud. The first operator checkpoint that can block is plan 183-14: it needs the applying identity (follow-up 183-R1) and Terraform 1.16.5. Plans 21 to 25 (the Supabase chain) depend only on their own predecessors and on plan 16, and may be executed by plan without waiting for plans 18, 19 and 20 of the same wave.
 
 Plans:
 **Wave 1**
@@ -347,35 +351,35 @@ Plans:
 - [x] 183-13-PLAN.md — wave 6, needs the operator — See both new guards fail through `yarn lint:check` itself, each as its own recorded step, without a planted file ever existing in the checkout that three phases share; then see the three repository gates on the finished tree.
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 183-14-PLAN.md — wave 7, needs the operator — Have the operator name the applying identity, install Terraform 1.16.5 and run the read-only account inventory; settle any inline user policy it finds; and adapt the code to what the account already holds.
-- [ ] 183-15-PLAN.md — wave 7, needs the operator — Have the `infra-validate` job seen passing in a real run, and seen failing in a second run of a tree broken on purpose.
+- [x] 183-14-PLAN.md — wave 7, needs the operator — Have the operator name the applying identity, install Terraform 1.16.5 and run the read-only account inventory; settle any inline user policy it finds; and adapt the code to what the account already holds.
+- [x] 183-15-PLAN.md — wave 7, needs the operator — Have the `infra-validate` job seen passing in a real run, and seen failing in a second run of a tree broken on purpose.
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 183-16-PLAN.md — wave 8, needs the operator — The operator applies the bootstrap root, migrates its state into the bucket it created, and reads back what criterion 1 and criterion 2 state.
+- [x] 183-16-PLAN.md — wave 8, needs the operator — The operator applies the bootstrap root, migrates its state into the bucket it created, and reads back what criterion 1 and criterion 2 state.
 
 **Wave 9** *(blocked on Wave 8 completion)*
-- [ ] 183-17-PLAN.md — wave 9, needs the operator — The operator applies the zone and mail root and re-runs the account asserts now that the SMTP user exists.
+- [x] 183-17-PLAN.md — wave 9, needs the operator — The operator applies the zone and mail root and re-runs the account asserts now that the SMTP user exists.
 
 **Wave 10** *(blocked on Wave 9 completion)*
-- [ ] 183-18-PLAN.md — wave 10, needs the operator — The operator enters the delegation for `staging.openvaa.org` at Cloudflare; the executor verifies it from outside and writes down what was changed.
-- [ ] 183-19-PLAN.md — wave 10, needs the operator — Wait, as a checkpoint, for the mail identity to verify; have the operator file the production-access request and verify their own mailbox for the sandbox; record the published mail records.
-- [ ] 183-20-PLAN.md — wave 10, needs the operator — See the budget alert fire once at a test amount, confirmed by the operator from their mailbox, then raise the budget to its standing 100 USD.
-- [ ] 183-21-PLAN.md — wave 10, needs the operator — The operator creates the throwaway Supabase project and imports it and its settings into the scratch root.
+- [x] 183-18-PLAN.md — wave 10, needs the operator — The operator enters the delegation for `staging.openvaa.org` at Cloudflare; the executor verifies it from outside and writes down what was changed.
+- [x] 183-19-PLAN.md — wave 10, needs the operator — Wait, as a checkpoint, for the mail identity to verify; have the operator file the production-access request and verify their own mailbox for the sandbox; record the published mail records.
+- [x] 183-20-PLAN.md — wave 10, needs the operator — See the budget alert fire once at a test amount, confirmed by the operator from their mailbox, then raise the budget to its standing 100 USD.
+- [x] 183-21-PLAN.md — wave 10, needs the operator — The operator creates the throwaway Supabase project and imports it and its settings into the scratch root.
 
 **Wave 11** *(blocked on Wave 10 completion)*
-- [ ] 183-22-PLAN.md — wave 11, needs the operator — Have the operator make and save the first plan after the throwaway project's import, and read it against the stop rules before any apply is asked for.
+- [x] 183-22-PLAN.md — wave 11, needs the operator — Have the operator make and save the first plan after the throwaway project's import, and read it against the stop rules before any apply is asked for.
 
 **Wave 12** *(blocked on Wave 11 completion)*
-- [ ] 183-24-PLAN.md — wave 12, needs the operator — Have the operator apply the plan that plan 183-22 read and approved, then rehearse on the throwaway project the rest of what the persistent project will get: the second plan, the read-back and the refused destroy.
+- [x] 183-24-PLAN.md — wave 12, needs the operator — Have the operator apply the plan that plan 183-22 read and approved, then rehearse on the throwaway project the rest of what the persistent project will get: the second plan, the read-back and the refused destroy.
 
 **Wave 13** *(blocked on Wave 12 completion)*
-- [ ] 183-23-PLAN.md — wave 13, needs the operator — The operator creates the persistent Pro project in a region they confirm first, imports it into its own root and makes the first plan.
+- [x] 183-23-PLAN.md — wave 13, needs the operator — The operator creates the persistent Pro project in a region they confirm first, imports it into its own root and makes the first plan.
 
 **Wave 14** *(blocked on Wave 13 completion)*
-- [ ] 183-25-PLAN.md — wave 14, needs the operator — Have the operator apply, on the persistent project, the one plan that plan 183-23 read and approved; then see a second plan empty, a destroy refused, and the served settings equal to the declared ones.
+- [x] 183-25-PLAN.md — wave 14, needs the operator — Have the operator apply, on the persistent project, the one plan that plan 183-23 read and approved; then see a second plan empty, a destroy refused, and the served settings equal to the declared ones.
 
 **Wave 15** *(blocked on Wave 14 completion)*
-- [ ] 183-27-PLAN.md — wave 15 — Run the lint and format chains once more, on the final tree, after everything that the operator's work changed.
+- [x] 183-27-PLAN.md — wave 15 — Run the lint and format chains once more, on the final tree, after everything that the operator's work changed.
 
 Notes:
 
@@ -399,7 +403,71 @@ Notes:
   5. The conformance probe reads what the persistent project serves and passes. Each of its checks is seen failing once, by name, against the throwaway project broken on purpose.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`, planned as measurement tasks with recorded outputs. Two topics that `research/SUMMARY.md` lists under 185 are measured here, because this roadmap makes the first push and sends the first Edge Function mail in this phase: `db push` from an IPv4 network, with the pooler as the fallback, and the SES port from an Edge Function (D7; 2587 first by C6). Also measured here: whether the hook can be switched on before its function exists (F2), and the Postgres major version.
-**Plans**: TBD
+**Plans**: 25/25 plans complete in 19 waves. Waves 1 to 4 write the code without the operator (the probe, the push wrapper, the drift check's linked guard, the parity guard's `[functions.*]` family, the function secrets in Terraform, the scratch root's fault file, the smoke template, the runbook and the grant script); three of them stop for a ruling first. Waves 5 to 13 are the throwaway's sittings, in order; waves 14 to 17 the persistent project's, the first push behind a one-way gate (plan 184-21); wave 18 deletes the throwaway; wave 19 closes on the repository gates and a full E2E run.
+
+Plans:
+**Wave 1**
+- [x] 184-01-PLAN.md — wave 1 — The probe end to end for one check (the tracer), and its Vitest suite in `yarn test:unit`.
+- [x] 184-04-PLAN.md — wave 1 — The push wrapper and the drift check's linked-target guard, each with its offline refusals.
+- [x] 184-05-PLAN.md — wave 1 — Widen the parity guard to `[functions.*]` and classify `identity-callback`'s JWT setting.
+- [x] 184-06-PLAN.md — wave 1 — The Edge Function secrets in the Supabase module, wired into the staging and example roots.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 184-02-PLAN.md — wave 2 — The probe's Management API checks: the auth settings, the API settings and the deployed functions.
+- [x] 184-07-PLAN.md — wave 2, needs the operator — Rule the project id; make the scratch root rehearse staging, with an import block and the batched-break fault file.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 184-03-PLAN.md — wave 3, needs the operator — Rule the bucket source; the probe's public-API and catalog checks and the seed check, twenty-two in all.
+- [x] 184-08-PLAN.md — wave 3, needs the operator — Rule how staging is opened for voters; the dev-seed `smoke` template with more than 1000 rows and no user.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 184-09-PLAN.md — wave 4 — The first administrator's grant script, the deploy runbook (Steps 14 to 23) and the repository gates after the code.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 184-10-PLAN.md — wave 5, needs the operator — Throwaway: restore the scratch state, read it before change, make and review its first plan.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 184-11-PLAN.md — wave 6, needs the operator — Throwaway: apply SMTP and the function secrets, link, push, and read the pushed database.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 184-12-PLAN.md — wave 7, needs the operator — Throwaway: deploy the functions and measure the gateway's call shapes and the keys.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 184-13-PLAN.md — wave 8, needs the operator — Throwaway: the header record, the anon timeout, the drift check red and green, the second push.
+- [x] 184-14-PLAN.md — wave 8, needs the operator — Rule the key model if the legacy keys fail; apply `account-access`'s JWT setting if the gateway requires it.
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 184-15-PLAN.md — wave 9, needs the operator — Throwaway: the logging gate, two bootstraps, the administrator's claims and the smoke dataset.
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 184-16-PLAN.md — wave 10, needs the operator — Throwaway: one mail on 2587 with its authentication results, the redirect cases, a failed send on 587.
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 184-17-PLAN.md — wave 11, needs the operator — Rule the probe's catalog role; the probe green on the throwaway before any fault.
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [x] 184-18-PLAN.md — wave 12, needs the operator — The batched break: every check of the probe seen failing by its own cause, and both refusals.
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [x] 184-19-PLAN.md — wave 13, needs the operator — Revert the break and see the probe green again.
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [x] 184-20-PLAN.md — wave 14, needs the operator — Persistent: the measured port and project id in its root, its reads before change, its plan reviewed.
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [x] 184-21-PLAN.md — wave 15, needs the operator — Persistent: the one-way gate, then apply, link, push twice and deploy the functions.
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [x] 184-22-PLAN.md — wave 16, needs the operator — Persistent: the logging gate, two bootstraps, the first administrator and the smoke dataset.
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [x] 184-23-PLAN.md — wave 17, needs the operator — Persistent: the probe green and the settings read back; the FUT-02 todo and the security re-transfer.
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [x] 184-24-PLAN.md — wave 18, needs the operator — Delete the throwaway and its local state, and make every text naming the scratch root true.
+
+**Wave 19** *(blocked on Wave 18 completion)*
+- [x] 184-25-PLAN.md — wave 19 — The repository gates and a full E2E run on the final tree.
 
 Notes:
 
@@ -423,7 +491,66 @@ Notes:
   5. State is remote and locked, and staging has its own variables and outputs. A destroy of the AWS root, run once on purpose, removes the stack cleanly and leaves the hosted project, its data and its settings untouched, and the stack is then applied again. Every resource carries the cost tags, and a monthly estimate measured on the applied stack is recorded.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topic from `research/SUMMARY.md`: ACM and DNS staging. It was written for a zone outside Route 53, and F1 moves the zone to Route 53 in phase 183, so what remains is the order of the staged apply (registry, image, DNS and certificate, compute). Added by ruling A2 after the research, and so not researched: the CDN (INFRA-14). Where it sits can change the proxy depth of INFRA-06, the region of the certificate against the default of INFRA-12, the header record of OBS-04 and the scope of the WAF variable of RELAY-09. The header observations are made with the CDN in place.
-**Plans**: TBD
+**Plans**: 22/22 plans complete in 18 waves. Waves 1 to 7 write and gate the code without AWS (the first stops once for the operator's rulings on the execution role's home, the push and the alert address); waves 8 to 17 are the hosted sittings in order, the agent applying `envs/staging/aws` under D-01; wave 18 closes on the repository gates and a full E2E run beside the cost read.
+
+Plans:
+**Wave 1**
+- [x] 185-01-PLAN.md — wave 1, needs the operator — Rule the execution role's home, the push and the alert address; the role module called from bootstrap, with its runbook step.
+- [x] 185-02-PLAN.md — wave 1 — The task's environment list and its guard against `REQUIRED_ENV`, the analytics names and `.env.example`.
+- [x] 185-03-PLAN.md — wave 1 — The stop line and the diagnostics allow-list, seen on the production build, and the voter-journey E2E project.
+- [x] 185-05-PLAN.md — wave 1 — The build-and-push script and the request loop, each with a self-test in the infra suite.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 185-04-PLAN.md — wave 2 — The module's origin half (network, load balancer, service) with offline tests, called from the staging root.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 185-06-PLAN.md — wave 3 — The CDN, scaling and the deployment alert in the module and the staging root.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 185-07-PLAN.md — wave 4 — The example root with stand-ins, and the CI job running the module tests.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 185-08-PLAN.md — wave 5 — The AWS runbook's frame and Steps 1 to 6, `infra/README.md` corrected, the guard widened.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 185-09-PLAN.md — wave 6 — The runbook's Steps 7 to 18 and the election-day section.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 185-10-PLAN.md — wave 7 — The repository gates and the CI validation commands on the finished code.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 185-11-PLAN.md — wave 8, needs the operator — The two parameters and the execution role on AWS, read back.
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 185-12-PLAN.md — wave 9 — The image from a pushed source-only commit, and the refused second push.
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 185-13-PLAN.md — wave 10, needs the operator — One plan and one apply; the subscription confirmed and the cost tags activated.
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 185-14-PLAN.md — wave 11 — What the stack serves: certificates, redirects, OBS-08, form post, caching, network, tags, logs, state.
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [x] 185-15-PLAN.md — wave 12 — The header record and the depth, both origin locks refusing, diagnostics off again.
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [x] 185-16-PLAN.md — wave 13, needs the operator — The failed rollout and its rollback, the alert mail, the restore and SIGTERM.
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [x] 185-17-PLAN.md — wave 14 — The scheduled floor raised and lowered, and removed.
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [x] 185-18-PLAN.md — wave 15, needs the operator — The feedback limit from two networks and the invitation mail (OBS-10, OBS-06).
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [x] 185-19-PLAN.md — wave 16, needs the operator — Cleanup, the plans before, the log copy, the destroy and the sweep in both regions.
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [x] 185-20-PLAN.md — wave 17, needs the operator — The Supabase plan and probe after the destroy, and the re-apply.
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [x] 185-21-PLAN.md — wave 18 — The repository gates and a full E2E run on the final tree.
+- [x] 185-22-PLAN.md — wave 18, needs the operator — The priced inventory and the measured monthly cost, or its dated follow-up.
 
 Notes:
 
@@ -447,7 +574,28 @@ Notes:
   4. The local gate suite and its preflight are unchanged, and the full local suite is green on the tree that adds the smoke entry.
 
 **Research flag**: Standard pattern, no research phase. A second Playwright config reuses the existing fixtures. The local-port assumption in `supabaseAdminClient.ts` must be made a parameter.
-**Plans**: TBD
+**Plans**: 8/8 plans complete in 6 waves. Waves 1 to 5 run without the operator: the gate, the entry and its specs, the lock, the grant SQL and its runbook item, the three negative controls, the docs and the closing local gates with the one full local E2E run. Wave 6 is the one hosted write, at a checkpoint the operator approves, followed by the full green deployed smoke run. The research flag is read as "the smoke entry holds no service-role client, enforced" (A-05), not as a parameterised admin client.
+
+Plans:
+**Wave 1**
+- [x] 186-01-PLAN.md — wave 1 — The deployed-target gate as a pure module with its unit refusals: tfvars identity, served ref and project id, SHA, service-role refusal.
+- [x] 186-04-PLAN.md — wave 1 — The contestant grant SQL proven on an isolated database, and its creation and removal in Step 22 of the staging runbook; nothing hosted written.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 186-02-PLAN.md — wave 2 — The second Playwright entry and its two specs; the voter half run green against staging; the contestant spec failing by name without its inputs.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 186-03-PLAN.md — wave 3 — The root script, the ESLint import lock seen red and green, and the unit guard over workflows, config shape and import closure.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 186-05-PLAN.md — wave 4 — The three negative controls, each seen red on a real target at its own check alone.
+- [x] 186-06-PLAN.md — wave 4 — § Deployed smoke run in tests/README.md and one CLAUDE.md Testing line.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 186-07-PLAN.md — wave 5 — Lint, format and unit gates, the unchanged-local-gate proofs, and the phase's one full local E2E run.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 186-08-PLAN.md — wave 6, needs the operator — Readiness, the operator-approved contestant sitting, and the full deployed smoke run green.
 
 Notes:
 
@@ -468,7 +616,80 @@ Notes:
   5. A guarded destroy path removes the AWS stack, and it is seen unable to reach the Supabase root.
 
 **Research flag**: Standard pattern, no research phase. OIDC, plan and apply, and environment gating are well documented, and the repository-specific items carry the risk. Added by rulings after the research: the named-branch trigger (PIPE-10) and the failure alerts (INFRA-16).
-**Plans**: TBD
+**Plans**: 31/31 plans complete in 20 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 20 (plans 14 to 29) are the outward actions, each behind an operator checkpoint. Plans 26 (wave 10), 27 (wave 11), 28 (wave 12), 29 (wave 13), 30 (wave 14) and 31 (wave 15) are gap closures: plan 26 of plan 15's CI run; plan 27 of plan 26's run, after the branch was rebased onto the -gsd stream on 2026-11-16; plan 28 of plan 27's run, after the CI measurement and the rebase onto `fix/v2.16-ci-e2e` on 2026-11-17; plan 29 of plan 18's red run 44042442257, whose build line and wrong-subject refusal the runner's `bash -e` hid (operator ruling `RULING_BASH_E=fix-now-and-re-observe`, 2026-11-17); and plan 30 (wave 14) of plan 21's green run 44165083175, whose deploy job's ARM runner found no linux_arm64 hash in the staging AWS root's lock. Plan 18 closed after plan 29, on the operator's alert-mail lines. Plans 24 and 25 run on or after 2026-11-23.
+
+Plans:
+
+**Wave 1**
+- [x] 187-01-PLAN.md — wave 1 — The deploy role's nine customer-managed policies and `ecr:DescribeImages` in the github-oidc module, with the module's first offline test; nothing applied.
+- [x] 187-02-PLAN.md — wave 1 — The task's image by a required `image_digest` in the module and both AWS roots; no image value in any tfvars.
+- [x] 187-03-PLAN.md — wave 1 — CR-01: the image built from the commit's `git archive`, with a self-test that plants an ignored file.
+- [x] 187-04-PLAN.md — wave 1 — `push-migrations.sh --confirmed-ref`, accepted only in a staging Actions job, tested against stubs.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 187-05-PLAN.md — wave 2 — The numeric id conditions, the `staging-destroy` subject, the plan role's lock write removed, and bootstrap runbook Step 9.
+- [x] 187-06-PLAN.md — wave 2 — The running-image digest script and the staging AWS runbook's plans by digest.
+- [x] 187-07-PLAN.md — wave 2 — The three example roots planned with mock providers, production shape asserted.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 187-08-PLAN.md — wave 3 — `infra-plan.yml` (checks, same-repository plan, wrong-subject proof) and the shared workflow guard library.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 187-09-PLAN.md — wave 4 — `deploy.yml`: one gated job, build, plan, migrations, functions, apply, stable, smoke, re-read, alert.
+- [x] 187-10-PLAN.md — wave 4 — `destroy.yml`: two approved jobs, the Supabase-root refusal, the destroy-plan guard.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 187-11-PLAN.md — wave 5 — Cross-workflow guards, `yarn lint:workflows`, `infra/README.md` § The deploy pipeline, the smoke entry's notes, the secret scan's two exclusions.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 187-12-PLAN.md — wave 6 — The repository gates, and the green and red evidence commits proven by local builds; nothing pushed.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 187-13-PLAN.md — wave 7 — The phase's one full local E2E run and the handoff to plan 186-08.
+
+**Wave 8** *(blocked on Wave 7 completion; needs the operator)*
+- [x] 187-14-PLAN.md — wave 8 — H2, H3: the `staging` and `staging-destroy` environments, secrets and variables, read back.
+
+**Wave 9** *(needs the operator)*
+- [x] 187-15-PLAN.md — wave 9 — The `ci-evidence/187-final` push: secret-scan, infra-validate, dependency-audit. (stopped at Task 3; G-03 closed by 187-28)
+- [x] 187-16-PLAN.md — wave 9 — H1: the bootstrap hand apply after the simulator and CloudTrail checks.
+- [x] 187-17-PLAN.md — wave 9 — H9: plan 186-08 completed, and the two contestant secrets set.
+
+**Wave 10** *(needs the operator; gap closure)*
+- [x] 187-26-PLAN.md — wave 10 — Gap closure of run 43817899191: the URI fixtures, `run_child` on Linux, the functions env in CI's E2E job, the drift-guard timeout; the evidence chain again, and the `ci-evidence/187-final-2` push. (stopped at Task 7; closed by 187-28)
+
+**Wave 11** *(needs the operator; gap closure)*
+- [x] 187-27-PLAN.md — wave 11 — Gap closure after the rebase onto the -gsd stream: every gate on the rebased tree, what it carries to staging (read-only), the two CI-only contestant readiness fixes proven under CPU throttling, the drift-guard link; the evidence chain again, and the `ci-evidence/187-final-3` push. (stopped at Task 8; closed by 187-28)
+
+**Wave 12** *(needs the operator; gap closure)*
+- [x] 187-28-PLAN.md — wave 12 — Gap closure after the CI measurement and the rebase onto `fix/v2.16-ci-e2e`: every gate on the rebased tree, the evidence chain again, the closing full E2E run on the functions env template, the `ci-evidence/187-final-4` push, and the run read job by job; on green, 187-15, 187-26 and 187-27 closed.
+
+**Wave 13** *(needs the operator; gap closure)*
+- [x] 187-29-PLAN.md — wave 13 — Gap closure of plan 18's red run: every status read of the three workflows is captured as `cmd || name=$?`, so the runner's `bash -e` lets each step reach its diagnosis and still ends a step at any other failing command, proven under `bash -e` with stub commands and locked by a shared rule; the evidence commits rebuilt and the red build re-proven locally; a new red push as `deploy-evidence/187-red-2` showing `failed=build`, both roles refusing the branch subject, and nothing hosted written.
+
+**Wave 14** *(needs the operator)*
+- [x] 187-18-PLAN.md — wave 14 — H8: the red run from a broken build, its alert, and the wrong-subject refusal. (stopped at Task 3; its run 44042442257 executed; the five lines the runner's `bash -e` hid closed by 187-29; the alert mail arrived)
+- [x] 187-30-PLAN.md — wave 14 — Gap closure of plan 21's green run 44165083175, red at its plan step: every root lock written for linux_amd64, linux_arm64, darwin_arm64 and darwin_amd64, guarded by the `arm-lock` and `lock-platforms` rules, proven on linux/arm64 in a container; attempt 1 recorded; the evidence commits rebuilt.
+
+**Wave 15** *(needs the operator)*
+- [x] 187-19-PLAN.md — wave 15 — H5: a draft pull request's plan, readable in its run.
+- [x] 187-31-PLAN.md — wave 15 — Gap closure of plan 21's attempt 3 (run 44258126898), red at the stable step: one describe-services read raced the rollout's IN_PROGRESS to COMPLETED by 25 to 32 s; the step now reads at most 60 times 15 s apart, proven by stub cases under bash -e and the `rollout-poll` rule; the evidence commits rebuilt.
+
+**Wave 16** *(needs the operator)*
+- [x] 187-20-PLAN.md — wave 16 — H6: a fork pull request's credentialed job skipped.
+- [x] 187-21-PLAN.md — wave 16 — H4, H7: the first green pipeline deploy, every stage in order.
+
+**Wave 17** *(needs the operator)*
+- [x] 187-22-PLAN.md — wave 17 — The first deploy from `deploy/staging`, reusing the built image.
+
+**Wave 18** *(needs the operator)*
+- [x] 187-23-PLAN.md — wave 18 — The destroy path up to its apply: the Supabase root refused, the apply job rejected.
+
+**Wave 19** *(needs the operator; on or after 2026-11-23)*
+- [x] 187-24-PLAN.md — wave 19 — H10: the real destroy through the pipeline.
+
+**Wave 20** *(needs the operator)*
+- [x] 187-25-PLAN.md — wave 20 — H10: the redeploy from nothing and the confirmed alert subscription.
 
 Notes:
 
@@ -490,7 +711,56 @@ Notes:
   4. The per-caller limit on the anonymous invitation operations is decided from the header record of OBS-04. It is either built and seen limiting one caller without limiting another, or deferred with the measurement and a date.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topics from `research/SUMMARY.md`: PostHog's price for anonymous events and the billing limit, and the cost of a WAF rule. Added by ruling A2 after the research, and so not researched: the tool and the method of the load check (OBS-11).
-**Plans**: TBD
+**Plans**: 20/20 plans complete in 14 waves. Every plan first checks that 187-21, 187-22 and 186-08 are complete (a literal `test -f` of their SUMMARY.md files), because those plans need `apps/`, `packages/` and `tests/` unchanged and 187's first green deploy would carry this phase's migration. Waves 1 to 4 (plans 01 to 08 and 20) run without the operator: the flush interval and the overlap fix, the stop timeout, the WAF variable, the per-caller limit's migration and function, the refusal and read scripts, the load-check method, and the closing gates with the phase's one full local E2E run. Waves 5 to 14 (plans 09 to 19) are the outward actions, each behind an operator checkpoint; 187's destroy-path plans 187-23 to 187-25 must not run between plans 188-10 and 188-19.
+
+Plans:
+**Wave 1**
+- [x] 188-01-PLAN.md — wave 1 — `ANALYTICS_FLUSH_INTERVAL_MS` through the analytics configuration and the task-environment contract.
+- [x] 188-04-PLAN.md — wave 1 — The per-caller limit's RPC as the first appended migration, its pgTAP file and census pins, and the [BLOCKING] local schema push.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 188-02-PLAN.md — wave 2 — `stop_timeout_seconds = 40` passed through both AWS roots.
+- [x] 188-05-PLAN.md — wave 2 — `account-access` takes a slot before every operation and answers 429; the conformance pins moved; local proof; the docs corrected.
+- [x] 188-06-PLAN.md — wave 2 — The deployed refusal script, proven against the local relay, and the named-line PostHog read.
+- [x] 188-07-PLAN.md — wave 2 — The k6 load method: wrapper, script, figure, journey extractor, method; a local dry run.
+- [x] 188-20-PLAN.md — wave 2 — A timer tick skipped while a flush is in flight, and the Render and Compose templates naming the flush interval.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 188-03-PLAN.md — wave 3 — The opt-in WAF rate rule as a nullable module variable, off by default, tested both ways.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 188-08-PLAN.md — wave 4 — The repository gates and the phase's one full local E2E run.
+
+**Wave 5** *(needs the operator)*
+- [x] 188-09-PLAN.md — wave 5 — G1 to G5: the PostHog project, its settings, the billing limit and the read key; the Supabase plan; the read-back proven.
+
+**Wave 6** *(needs the operator)*
+- [x] 188-10-PLAN.md — wave 6 — PostHog on, through the pipeline, with the first hosted append migration and the new function (one-way, gated).
+
+**Wave 7** *(needs the operator)*
+- [x] 188-11-PLAN.md — wave 7 — The first capture with no visitor data, batching, and the nine refusals on the deployed relay.
+- [x] 188-16-PLAN.md — wave 7 — The trust flag read first; the hosted per-caller limit seen refusing one caller and not another; the todo closed.
+
+**Wave 8** *(needs the operator)*
+- [x] 188-12-PLAN.md — wave 8 — Queued events delivered at SIGTERM, with a ten-minute flush interval by hand apply; restored.
+
+**Wave 9** *(needs the operator)*
+- [x] 188-13-PLAN.md — wave 9 — A full queue dropping on the deployed relay, memory flat; restored.
+
+**Wave 10** *(needs the operator)*
+- [x] 188-14-PLAN.md — wave 10 — The site green while PostHog is unreachable; restored.
+
+**Wave 11** *(needs the operator)*
+- [x] 188-15-PLAN.md — wave 11 — Provider `none` by hand apply of the same digest, zero events; restored.
+
+**Wave 12** *(needs the operator)*
+- [x] 188-17-PLAN.md — wave 12 — The WAF rule planned on and costed; off reads no change.
+
+**Wave 13** *(needs the operator)*
+- [x] 188-18-PLAN.md — wave 13 — One journey recorded and the stepped load check to a dated capacity figure.
+
+**Wave 14** *(needs the operator)*
+- [x] 188-19-PLAN.md — wave 14 — The end state, the requirement trace and the read key settled.
 
 Notes:
 
@@ -508,10 +778,45 @@ Notes:
   2. A search of the documentation and of the repository's comments finds no statement about a hosted project that is marked unverified. Each one is replaced by a dated observation or removed.
   3. The analytics documentation gives the event catalogue, how to add a provider, the privacy mechanism and a checklist the deployer completes for their own jurisdiction. It says that the consent determination is the deployer's, and nowhere says that no consent is required.
   4. An operations runbook covers election-day scaling, rollback, teardown and restore, secret rotation, SES, and the limit that Admin job progress is unreliable above one task.
-  5. `render.example.yaml` is fixed and documented as an untested alternative, the orphan compose file is retired if nothing references it, and each of the seven absorbed todos has a closure record.
+  5. The Render deployment example and its mentions are removed, the orphan compose file is retired if nothing references it, and each of the seven absorbed todos has a closure record (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01; supersedes ruling A5).
 
 **Research flag**: Standard pattern, no research phase, once phases 184, 185 and 188 have produced the observations.
-**Plans**: TBD
+**Plans**: 20/20 plans complete
+
+Plans:
+**Wave 1**
+- [x] 189-01-PLAN.md — Render example and its mentions removed; DOCS-07 and criterion 5 amended (F-01)
+- [x] 189-02-PLAN.md — the two frontend-URL variables removed, targeted E2E of the projects they serve (B-03)
+- [x] 189-03-PLAN.md — orphan frontend compose file and its stage retired, production image built (F-02, F-03)
+- [x] 189-04-PLAN.md — docs subtree pages and nav, the deployment overview kept reachable (A-02)
+- [x] 189-05-PLAN.md — operator sitting 1: read-only probe, privilege and DMARC reads (H-01)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 189-06-PLAN.md — operator sitting 2: the backups read, as runbook Step 24 (E-02)
+- [x] 189-08-PLAN.md — hosted-settings reference and its guard (B-01, DOCS-02)
+- [x] 189-09-PLAN.md — environment-variable reference by role and its guard (B-02, DOCS-04)
+- [x] 189-10-PLAN.md — analytics page: catalogue guard, mechanism, provider, checklist (D-01 to D-03, DOCS-05)
+- [x] 189-13-PLAN.md — operations: scaling, rollback, teardown, SES, Admin job limit, cost (E-01, E-04)
+- [x] 189-19-PLAN.md — fold-ins: seed comment, skill citation, INFRA-13, re-targets (G-05)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 189-07-PLAN.md — operator sitting 3: origin header secret rotated by runbook Step 19 (E-03)
+- [x] 189-11-PLAN.md — the guide's path from an empty account to a tested instance, OpenTofu rule (DOCS-01)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 189-12-PLAN.md — the guide's hosted-project sections on the Terraform path (DOCS-01, C-01)
+- [x] 189-14-PLAN.md — operations: restore and secret rotation (E-02, E-03)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 189-15-PLAN.md — unobserved statements swept from the bootstrap and AWS runbooks, back-links (C-01, A-01)
+- [x] 189-17-PLAN.md — identity-callback closing check; hosted-auth todo closed (G-03, G-04)
+- [x] 189-18-PLAN.md — five absorbed todos closed on the record (G-01, G-02)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 189-16-PLAN.md — unobserved statements swept from mail, Supabase, modules and the auth page (C-01)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 189-20-PLAN.md — recorded searches, closing gates and the full E2E run (C-02, H-02)
 
 Notes:
 
@@ -540,7 +845,14 @@ Every requirement of `REQUIREMENTS.md` is mapped to exactly one phase. The file 
 | 187 | PIPE-01 to PIPE-10, INFRA-16, INFRA-19, SUPA-08 | 13 |
 | 188 | RELAY-04, RELAY-09, OBS-09, OBS-11 | 4 |
 | 189 | DOCS-01 to DOCS-08 | 8 |
-| Total | | 83 |
+| 189.1 | OBS-12, OBS-13, PIPE-11 | 3 |
+| 189.1.1 | RELAY-22, RELAY-23, PIPE-12, DOCS-09, INFRA-20, SUPA-15 | 6 |
+| 190 | INFRA-21 to INFRA-24, PIPE-13, PIPE-14 | 6 |
+| Total | | 92 |
+
+Phase 189.1 adds three ids, OBS-12, OBS-13 and PIPE-11, from the tech debt of `v2.17-MILESTONE-AUDIT.md`, which brings the file to 86.
+
+Phase 189.1.1 adds six ids, RELAY-22, RELAY-23, PIPE-12, DOCS-09, INFRA-20 and SUPA-15, from the 2026-11-23 re-audit of `v2.17-MILESTONE-AUDIT.md` and 189.1's UAT todos, which brings the file to 92.
 
 Phases 181 and 186 each close one requirement because most of what they build is proven later, on the hosted stack or in the pipeline. Their success criteria and their **Builds toward** lines carry that work.
 
@@ -552,10 +864,214 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 |-------|----------------|--------|-----------|
 | 181. Deployability and Migration Model | 19/19 | Complete    | 2026-10-21 |
 | 182. Analytics Relay | 31/31 | Complete | 2026-10-20 |
-| 183. Terraform Foundation and Supabase as Code | 15/28 | In Progress | - |
-| 184. Hosted Supabase Measurement and Conformance Probe | 0/TBD | Not started | - |
-| 185. AWS Frontend Stack, First Apply by Hand | 0/TBD | Not started | - |
-| 186. Deployed Smoke Entry | 0/TBD | Not started | - |
-| 187. Deploy Pipeline | 0/TBD | Not started | - |
-| 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
-| 189. Documentation and Closure | 0/TBD | Not started | - |
+| 183. Terraform Foundation and Supabase as Code | 28/28 | Complete    | 2026-10-26 |
+| 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
+| 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
+| 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
+| 187. Deploy Pipeline | 31/31 | Complete    | 2026-11-18 |
+| 188. Relay on the Deployed Stack, and the Per-Caller Limit | 20/20 | Complete    | 2026-11-20 |
+| 189. Documentation and Closure | 20/20 | Complete    | 2026-11-21 |
+
+### Phase 189.1: Address tech debt: invitation-limit guard and trackEvents smoke (INSERTED)
+
+**Goal:** Close the two tech-debt items of `v2.17-MILESTONE-AUDIT.md`: (1) the per-caller invitation limit (OBS-09, SUPA-08) can no longer be silently inert — `private.deployment_settings.behind_cloudflare` is asserted (or established) by the pipeline rather than living only in the operator's manual `bootstrap.sql` step, and a smoke asserts the 429 + `Retry-After` path; (2) the deployed voter smoke passes with `trackEvents` on — the consent prompt no longer blocks an answer control (todo `2026-11-19-deployed-voter-smoke-fails-when-track-events-is-on`).
+**Requirements**: OBS-12, OBS-13, PIPE-11 (follow-ups of OBS-09, OBS-10 and SUPA-08)
+**Depends on:** Phase 189
+**Success Criteria** (what must be TRUE):
+  1. A deploy run refuses to roll out when the hosted project's `behind_cloudflare` is not true: the check runs after the migration push and before the functions and the apply, exits 3 with a message naming the cause on a database where it is false (seen on the local stack), reads 0 on staging in an observed green run, and a failure is alerted as stage `settings`.
+  2. The deployed smoke asserts the per-caller limit on every deploy: a 429 with the fixed body and an integer `Retry-After` from 1 to 600 within 31 calls, observed in the pipeline's run, while a stand-in that admits every call fails it by name.
+  3. The deployed voter smoke passes on staging with `analytics.trackEvents` on and with it off. With it on, the unchanged spec is seen red at the prompt and the changed one green; the prompt's overlap with an answer control is measured and its WCAG disposition decided by the operator; and staging ends in the state the operator chose.
+  4. The full local E2E suite is green at the phase's end, with a summed delta of 0 against the last full run (729 passed).
+**Plans:** 10/10 plans complete
+
+Plans:
+- [x] 189.1-01-PLAN.md
+- [x] 189.1-02-PLAN.md
+- [x] 189.1-03-PLAN.md
+- [x] 189.1-04-PLAN.md
+- [x] 189.1-05-PLAN.md
+- [x] 189.1-06-PLAN.md
+- [x] 189.1-07-PLAN.md
+- [x] 189.1-08-PLAN.md
+- [x] 189.1-09-PLAN.md
+- [x] 189.1-10-PLAN.md
+
+### Phase 189.1.1: Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit (INSERTED)
+
+**Goal:** Close the actionable tech debt of the 2026-11-23 re-audit (`v2.17-MILESTONE-AUDIT.md`) and 189.1's UAT todos: the voter consent prompt becomes a modal that no longer covers an answer choice (Escape declines), the `migrations` and `settings` deploy steps connect with `verify-full` against the Supabase CA, a reviewer brief for the relay's legal position is written, and the small audit items of 189.1.1-CONTEXT.md D-14 are fixed.
+**Requirements**: RELAY-22, RELAY-23, PIPE-12, DOCS-09, INFRA-20, SUPA-15
+**Depends on:** Phase 189.1
+**Success Criteria** (what must be TRUE):
+  1. With the consent prompt shown, the page under it is inert (`dialog:modal`), no answer choice can be focused or clicked, Escape closes it as a decline with nothing beyond the pageview sent, and a navigation with it open runs no named View Transition; the staging re-measurement reads `A11Y_FINDING=none`.
+  2. The `migrations` and `settings` steps connect with `PGSSLMODE=verify-full` and the Supabase root CA, a wrong CA or host is refused, the guard test fails on a fallback to `require`, and an observed staging deploy is green.
+  3. A standalone reviewer brief describes what the relay collects, where it goes, anonymisation, consent and retention, and poses the six readings as questions; the legal review stays an external blocker.
+  4. The three UAT todos and the D-14 audit items are fixed and their todos closed, one observed full `main.yaml` CI run is green, and the full local E2E suite is green at the phase's end with summed deltas against the last full run (729 passed).
+**Plans:** 22/22 plans executed (7 gap-closure plans)
+
+Plans:
+**Wave 1**
+- [x] 189.1.1-01-PLAN.md — six requirement ids, coverage counts, install state and the phase-start E2E baseline (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 189.1.1-02-PLAN.md — ModalContainer Escape closes the topmost modal only; voter smoke on the results fixture (wave 2)
+- [x] 189.1.1-03-PLAN.md — Supabase root CA from the dashboard, pinned; TLS red/green legs; channel binding and hosted history read (wave 2, operator sitting)
+- [x] 189.1.1-04-PLAN.md — stop-timeout precondition; Supabase provider locks agree with the pins (wave 2)
+- [x] 189.1.1-05-PLAN.md — relay legal reviewer brief; 189.1 VALIDATION reconciled (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 189.1.1-06-PLAN.md — consent prompt as a modal, every dismissal declines; unit pins and E2E (wave 3)
+- [x] 189.1.1-07-PLAN.md — verify-full on the migrations and settings steps, guard and mutations (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 189.1.1-08-PLAN.md — dark-mode checkbox contrast and start-aligned inputs; two UAT todos closed (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 189.1.1-09-PLAN.md — migration 00005 drops invitation_caller_take (wave 5)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 189.1.1-10-PLAN.md — exit-after-drain check in CI; settings check names a missing table (wave 6)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 189.1.1-11-PLAN.md — one observed full main.yaml run through ci-evidence/** (wave 7, operator approval)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 189.1.1-12-PLAN.md — staging database rebuilt to 00004 per D-16 (wave 8, operator decision and sitting)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 189.1.1-13-PLAN.md — observed deploy: 00005 and the renamed functions over verify-full, modal prompt smoke (wave 9, operator approval)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 189.1.1-14-PLAN.md — staging re-measure of the consent prompt; consent todo closed (wave 10)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 189.1.1-15-PLAN.md — requirement trace, closing gates, the phase's full E2E run (wave 11)
+
+**Gap closure** *(from 189.1.1-VERIFICATION.md, gaps_found 4/5, and 189.1.1-REVIEW.md CR-01, WR-01, IN-01..IN-07)*
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [x] 189.1.1-16-PLAN.md — nested Escape: red-first browser test, `preventDefault` in ModalContainer, jsdom cases model the browser (wave 12)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [x] 189.1.1-17-PLAN.md — drawer and prompt stacking measured; `preventDefault` in DrawerHost; the measured order pinned (wave 13)
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [x] 189.1.1-18-PLAN.md — review IN-02..IN-05 fixed (comments, smoke title), IN-06 and IN-07 deferred with reasons (wave 14)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [x] 189.1.1-19-PLAN.md — deploy of the fix; nested-Escape script on staging before and after (wave 15, operator decision and review approval)
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [x] 189.1.1-22-PLAN.md — sweep of every URL wait in `tests/`: the unplanned red's click release read from its trace, then the shared sign-in helper red first with its click released while a scratch hold keeps the post in flight, then a named chain budget; each wait classified by the navigation its action starts and budgeted per server answer, shown red first per changed helper with a trace proving the delay reached the wait; the targeted projects green (wave 16; re-planned 2026-11-26 on the corrected premise that a click waits for the document navigation it starts; from plan 21's red targeted run, evidence 21 `TARGETED_RED_1_`)
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [x] 189.1.1-21-PLAN.md — the entity pages' URL waits get a server round trip's budget, red first under a scratch data delay (wave 17; Task 1 done, its targeted run red on the shared sign-in setup; a continuation closes Task 2 from plan 22's run)
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [x] 189.1.1-20-PLAN.md — gap-closure map, review dispositions, closing gates, the phase's full E2E run (wave 18; Tasks 1–2 done, its first full run red, amended after plans 21 and 22)
+
+### Phase 189.1.2: Move the deployment to Supabase publishable and secret keys before the legacy anon and service_role keys retire (FUT-02) (INSERTED)
+
+**Goal:** The deployment runs on Supabase's publishable and secret keys, and staging works with its legacy `anon` and `service_role` keys disabled, before Supabase retires them (the staging dashboard read "early 2027" on 2026-11-11; Supabase's migration guide says "by the end of 2026"). Covers the frontend clients, the three Edge Functions, the storage cleanup trigger and its `storage_config` row (a new migration), the bootstrap, the Terraform outputs, GitHub secrets and task environment, the environment-variable registries and reference, the probe and the operator tooling. Pulled forward from FUT-02 by the operator on 2026-11-25, no longer waiting for the v2.16/v2.17 merge.
+**Requirements**: FUT-02 (to be promoted into this milestone's requirements)
+**Depends on:** Phase 189.1.1 (staging is shared; runs after it closes)
+**Plans:** 19 plans
+
+Plans:
+**Wave 1**
+- [ ] 189.1.2-02-PLAN.md — migration 00006: the cleanup key's row as `secret_key`, the trigger's `apikey` branch; pgTAP, equivalence, `storage-cleanup` (wave 1)
+- [ ] 189.1.2-03-PLAN.md — Terraform's `legacy_api_keys_enabled`, unmanaged by default; FUT-02 promoted; the phase-start E2E baseline (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 189.1.2-01-PLAN.md — the functions' shared key helper, which logs its source's name; the witness admitted with either key shape; function-driving E2E projects; B4 measured (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 189.1.2-04-PLAN.md — bootstrap and seed check on `secret_key` and `SUPABASE_SECRET_KEY`; probe and load check on `SUPABASE_PUBLISHABLE_KEY` (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 189.1.2-05-PLAN.md — the frontend's code on `PUBLIC_SUPABASE_PUBLISHABLE_KEY`: resolver, factories, `REQUIRED_ENV`, unit fixtures (wave 4)
+- [ ] 189.1.2-08-PLAN.md — the sitting self-test library; the local `.env` sitting and script A0 with its read-only probe of the secret key, written and rehearsed (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 189.1.2-17-PLAN.md — the contract bound to the frontend's name: task list and module test, `.env.example`, the reference and its specifications; B1 checked (wave 5)
+- [ ] 189.1.2-09-PLAN.md — script A (switch the keys, read the functions' key source), written and rehearsed (wave 5)
+- [ ] 189.1.2-10-PLAN.md — script B (disable the legacy keys) with its `--rollback` mode, written and rehearsed (wave 5)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 189.1.2-06-PLAN.md — the E2E harness and the deployed smoke's helpers on the new names; the smoke's import closure kept free of workspace packages (wave 6)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 189.1.2-18-PLAN.md — CI's key writer and `main.yaml`, and the local production-build tooling, on the new names (wave 7)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 189.1.2-07-PLAN.md — the retired-name guard and its wirings; dev-seed and the E2E wrapper on `SUPABASE_SECRET_KEY` (wave 8)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 189.1.2-11-PLAN.md — docs, READMEs and runbooks on the new names; key rotation rewritten; the rename made impossible to miss (wave 9)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 189.1.2-12-PLAN.md — whole-tree gates, the workstation's `.env` renamed, the full E2E run that gates the pushes (wave 10, operator sitting)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 189.1.2-19-PLAN.md — one observed full `main.yaml` run through `ci-evidence/189.1.2-final` (wave 11, operator approval)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 189.1.2-13-PLAN.md — script A0: the new SSM parameter and the A2 probe; the observed deploy of 00006, the functions and the frontend (wave 12, operator sitting and approval)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 189.1.2-14-PLAN.md — script A: the secret key stored, the trigger proven on staging, the functions' key source, the probe, the smoke run (wave 13, operator sitting)
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [ ] 189.1.2-15-PLAN.md — script B: the legacy keys disabled by Terraform, falsified; the former parameter deleted; the rehearsed rollback at hand (wave 14, operator sitting)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [ ] 189.1.2-16-PLAN.md — requirement trace, residue, closing gates, the todo closed, and the phase's own full E2E run (wave 15)
+### Phase 190: Multi-deployment bootstrap
+
+**Goal:** `infra/bootstrap` takes a map of deployments, so a second OpenVAA instance can deploy from its own repository into the same AWS account (`471112560111`) without colliding with staging. The first consumer is the private downstream repository `OpenVAA/deploy-nuortenvaalikone` (Nuorten vaalikone 2027, `nuortenvaalikone.openvaa.org`, its own Supabase project).
+**Requirements**: INFRA-21, INFRA-22, INFRA-23, INFRA-24, PIPE-13, PIPE-14
+**Depends on:** Phase 189 (the deployment stack on `main`; the phase may be planned before then, and is executed after)
+
+**Shape:**
+
+- Shared, once per account: the GitHub OIDC provider (IAM allows one per issuer URL), the state bucket, the image registry (per-deployment repository or tag prefix, to be decided in discussion) and the budget.
+- Per deployment entry: the repository's numeric id and owner id, the plan and deploy subjects, the deploy environment, the pipeline state key `pipeline/<env>/aws/terraform.tfstate`, the hosted zone and domain, and that deployment's plan, deploy and frontend execution roles, the last scoped to `/openvaa/<env>/frontend/`.
+- Staging moves into the map by `moved` blocks; a plan against the live account shows no destroy and no replace.
+- The deploy, destroy and infra-plan workflows read the deployment (environment name, domain, state key, role ARNs, trigger branch) from one per-repository configuration instead of naming `staging` inline (`deploy.yml` names it 39 times), so a downstream repository runs them unedited.
+- `infra/envs/example` and `infra/README.md` document adding a deployment from a downstream repository: a new entry in the bootstrap map upstream, the env roots copied from `example` downstream.
+
+**Context (exploration, 2026-11-23):** same AWS account, confirmed by the operator; the downstream repository is a private non-fork mirror with an `upstream` remote and diverges only by added files; it follows the deployment stack by `git rebase --onto` while the stack is restacked, and by merge from `main` once the stack lands. This is upstream PR 1 of 2; the second, an instance overlay over `staticSettings`, static assets and translations, is not yet on the roadmap. Not urgent: planned ahead so testing can start as soon as the infrastructure is on `main`.
+**Plans:** 14/14 plans executed, in 9 waves. Plans 11, 12 and 14 hold operator checkpoints: the two live bootstrap applies through the plan guard, in the order of decision D8; the downstream token probe and the workstation smoke run; and the rewritten workflows run on staging from an evidence branch. Plan 13 makes the phase's one full E2E run.
+
+Plans:
+
+**Wave 1**
+- [x] 190-01-PLAN.md — Terraform 1.16.5 untracked, the unit baseline, the bootstrap plan guard and the offline move-proof harness.
+- [x] 190-02-PLAN.md — The deployment map with staging's entry, and the workflows' resolver.
+- [x] 190-03-PLAN.md — `push-migrations.sh --deployment` and the smoke gate keyed by `SMOKE_DEPLOYMENT`.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 190-04-PLAN.md — The pure move: `for_each` over the map, the provider module, the moved blocks, staging's names unchanged, proven offline (MOVE_COMMIT).
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 190-05-PLAN.md — The bootstrap root test (two entries apart, staging pinned, validations refusing) and its CI check.
+- [x] 190-06-PLAN.md — The tightening: `Environment` in the deploy scopes, the plan deny on its own key, required ids, tag denies where AWS allows (TIGHTEN_COMMIT).
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 190-07-PLAN.md — deploy.yml and destroy.yml routed through the resolve job; the cross-workflow rules over resolved values.
+- [x] 190-11-PLAN.md — The runbook steps, then the operator's apply 1 (move) and apply 2 (tightening), each through the guard.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 190-08-PLAN.md — deploy.yml and destroy.yml stage values from the resolve outputs; no staging literal left.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 190-09-PLAN.md — infra-plan.yml over the owned deployments, its push trigger excluding destroy branches; no literal role ARN in any workflow.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 190-10-PLAN.md — README, example roots and guide for two deployments in one account; rootCopies over every env root.
+- [x] 190-12-PLAN.md — The downstream OIDC token probe (subjects, empty environment, arm runner) and the deployed smoke against staging.
+
+**Wave 8** *(blocked on Wave 7 completion; needs the operator)*
+- [x] 190-14-PLAN.md — The rewritten workflows on staging: an evidence deploy and the infra-plan proof, a destroy rejected at apply-destroy, a dispatch with a wrong confirm.
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 190-13-PLAN.md — Every gate on one commit, the full E2E run judged against `tests/e2e-runs/191-06-full`, the requirement trace, VALIDATION signed.

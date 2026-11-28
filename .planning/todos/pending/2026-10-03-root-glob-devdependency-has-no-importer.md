@@ -5,8 +5,9 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: low
 suggested_phase: any cleanup slot
-keywords: [glob, root-package-json, unused-dependency, cleanup]
 re_check_trigger: "any time"
+tags: [tooling, improvement]
+keywords: [glob, root-package-json, unused-dependency, cleanup]
 ---
 
 # Consumer-less root `glob`

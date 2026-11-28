@@ -21,12 +21,10 @@ Tests live **next to the code they test** (`foo.ts` + `foo.test.ts`, `foo.svelte
 - **Judge what the PR introduced or extended.** A pre-existing wart is out of scope unless the PR copied it or built new code on top of it, which spreads it. Say which case applies.
 - **Repo rules are the floor.** `CLAUDE.md` and `.agents/code-review-checklist.md` already ran before review (`/openvaa-pr`). If you see one broken anyway, report it and cite the checklist section and item, or the CLAUDE.md section. That is valuable signal that the pre-review gate leaked.
 - **Suggest the concrete alternative.** "Could reuse existing code" is not a finding. "Extend `Expander` (`apps/frontend/src/lib/components/expander/`) with a `title` snippet instead of the new `InfoToggle`" is. If you can't name the thing to reuse, you haven't verified it exists.
-- **Severity.**
-  - `blocking`: breaks a CLAUDE.md invariant, a checklist item or WCAG 2.1 AA; adds a second source of truth for business logic; bypasses authority or project scoping; leaks sensitive analytics; or will force a rewrite once someone builds on it.
-  - `should-fix`: real design debt that is cheap to fix now and expensive later.
-  - `consider`: a defensible alternative the reviewer may want to discuss.
-
-  Most findings are `should-fix`. Reserve `blocking` for things a reviewer would refuse to merge over.
+- **Everything is fixed by default.** A finding is something to change, not something to weigh: the review posts it with a recommended fix, and `/openvaa-review fix` applies that fix unless the reviewer ticks otherwise. So raise only what you would have fixed, and make the recommended option the one you would apply unattended. Two fields place a finding in one of the comment's three blocks:
+  - `needs_decision: true` puts it in **Decisions needed**. Set it only when the fixes you offer lead to genuinely different outcomes a reviewer has to choose between (a product behaviour, a policy, a scope, a cost against a benefit) and you could not defend picking one unattended. Write the choice as one question in `decision`, and give every route as an option. A narrow patch versus the general refactor of the same outcome is not a decision: recommend one.
+  - `severity: critical` puts it in **Critical**: it breaks a CLAUDE.md invariant, a checklist item or WCAG 2.1 AA; adds a second source of truth for business logic; bypasses authority or project scoping; leaks sensitive analytics; or will force a rewrite once someone builds on it. Its `detail` is shown open, so it says plainly what went wrong and, when a gate (a checklist item, an `assert:*` script, a test) should have caught it, which one.
+  - Everything else is `severity: normal` and lands in **Fixed by default**. Most findings are here.
 - **Stack slices.** When the PR is a slice of a `ship-review-stack` stack, intermediate states are not expected to build or pass. Never raise a red slice CI, a missing file that a higher slice adds, or a slice's size.
 
 ## Lens ownership

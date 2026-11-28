@@ -5,8 +5,9 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: low
 suggested_phase: any docs-tooling slot
-keywords: [docs, typescript, tsconfig, scripts, typecheck, deferred-item]
 re_check_trigger: "any time; or before the next TypeScript major"
+tags: [docs, tooling, improvement]
+keywords: [docs, typescript, tsconfig, scripts, typecheck, deferred-item, docs-scripts, mdsvex, gate]
 ---
 
 # Ungated docs-scripts tsconfig (169-02 deferred item)

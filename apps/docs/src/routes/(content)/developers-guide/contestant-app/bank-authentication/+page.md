@@ -138,7 +138,7 @@ Every failure of the flow lands on the error screen, `/contestant/register/ident
 | `invalid_token`         | `noRetry`   | the ID token was rejected                                                                      |
 | `mode_not_allowed`      | `noRetry`   | the project does not allow registration with the identity provider for the type                |
 | `configuration_error`   | `noRetry`   | the server or `identity-callback` is not configured, or the function refused the server        |
-| `no_account`            | `noAccount` | a sign-in found no account the identity provider made for this identity                         |
+| `no_account`            | `noAccount` | a sign-in found no account the identity provider made for this identity                        |
 
 A value that is not a code is shown as `retry`. Each class has its own title and sentence: "Identification cancelled", "Identification did not succeed", "Registration is not possible right now" and "No account found". The first two lead with Try again, and the third with Contact support, because trying again will not help. `noAccount` is "No account found", says that an address the user registered with signs them in instead, and leads with Register, which goes where Try again does; it offers no support. Each class offers support once: in the first two the words "contact support" in the sentence below Try again are themselves the link to the support section of the Help page (`ContactSupport` with `sentence`), and the third has a Contact support button with no icon (`icon={null}`) and no such sentence. A signed-in visitor is sent to the app root.
 

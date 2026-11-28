@@ -8,7 +8,7 @@ resource "aws_iam_access_key" "smtp" {
   user = aws_iam_user.smtp.name
 }
 
-# The only permission: send raw mail through this identity, as the one From address. Whether SES authorises an SMTP send against the identity's ARN with this condition is tracked in the "Not yet observed" table of infra/envs/staging/dns-mail/README.md; if the first real send is refused, the fallback is the same statement on every resource with the condition kept.
+# The only permission: send raw mail through this identity, as the one From address. SES authorises an SMTP send against the identity's ARN under this condition.
 data "aws_iam_policy_document" "ses_send" {
   statement {
     effect    = "Allow"

@@ -32,7 +32,7 @@ import { createContestantQuestionPage } from './contestantQuestionPage.fixture';
 import { createContestantQuestionsOverviewPage } from './contestantQuestionsOverviewPage.fixture';
 import { createContestantSettingsPage } from './contestantSettingsPage.fixture';
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { DRAFT_KEY_STEM } from '../../utils/contestantDrafts';
 import { messagesOf } from '../../utils/messages';
@@ -260,6 +260,15 @@ export function createContestantEntityPages(page: Page) {
   const questionPath = (entity: SelectionEntity, questionId: string) =>
     buildRoute({ route: 'ContestantAppQuestion', locale: 'en', params: { ...entityParams(entity), questionId } });
 
+  /**
+   * Assert that the page's path is exactly `pathname`. The address changes only once the server has answered every request of the action that led there, so the wait has the budget of that action's chain: by default one server round trip, the request for the next page's data after a navigation inside the application.
+   *
+   * @param timeout - The budget of the chain the action that led to the page makes.
+   */
+  async function expectPath(pathname: string, timeout: number = TIMEOUTS.slowPage): Promise<void> {
+    await expect(page).toHaveURL(exactPathRe(pathname), { timeout });
+  }
+
   return {
     /** The path of an entity's home. */
     homePath,
@@ -280,10 +289,10 @@ export function createContestantEntityPages(page: Page) {
     },
 
     /**
-     * Assert the page is that entity's home, and that the home has rendered.
+     * Assert the page is that entity's home, and that the home has rendered. The home may be reached by a sign-in, so the address has the sign-in's budget.
      */
     async expectOnHome(entity: SelectionEntity): Promise<void> {
-      await expect(page).toHaveURL(exactPathRe(homePath(entity)));
+      await expectPath(homePath(entity), SIGN_IN_REDIRECT_TIMEOUT);
       await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -319,9 +328,7 @@ export function createContestantEntityPages(page: Page) {
      * Assert the page is that entity's profile, and that its identity section has rendered.
      */
     async expectOnProfile(entity: SelectionEntity): Promise<void> {
-      await expect(page).toHaveURL(
-        exactPathRe(buildRoute({ route: 'ContestantAppProfile', locale: 'en', params: entityParams(entity) }))
-      );
+      await expectPath(buildRoute({ route: 'ContestantAppProfile', locale: 'en', params: entityParams(entity) }));
       await expect(page.getByTestId(testIds.contestant.profile.identity)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
 
@@ -337,7 +344,7 @@ export function createContestantEntityPages(page: Page) {
      * Assert the page is that entity's editor of that question, and that the answer input has rendered.
      */
     async expectOnQuestion(entity: SelectionEntity, questionId: string): Promise<void> {
-      await expect(page).toHaveURL(exactPathRe(questionPath(entity, questionId)));
+      await expectPath(questionPath(entity, questionId));
       await expect(page.getByTestId(testIds.contestant.questions.answerInput)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -347,9 +354,7 @@ export function createContestantEntityPages(page: Page) {
      * Assert the page is that entity's questions overview, and that its list of questions has rendered.
      */
     async expectOnQuestionsOverview(entity: SelectionEntity): Promise<void> {
-      await expect(page).toHaveURL(
-        exactPathRe(buildRoute({ route: 'ContestantAppQuestions', locale: 'en', params: entityParams(entity) }))
-      );
+      await expectPath(buildRoute({ route: 'ContestantAppQuestions', locale: 'en', params: entityParams(entity) }));
       await expect(page.getByTestId(testIds.contestant.questions.list)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
 

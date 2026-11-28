@@ -26,7 +26,7 @@ function createEnqueue(): Enqueue {
     },
     randomId: () => crypto.randomUUID()
   });
-  const queue = createQueue({ provider });
+  const queue = createQueue({ provider, flushIntervalMs: analyticsConfig.flushIntervalMs });
   registerShutdownFlush(queue);
   return queue.enqueue;
 }

@@ -3,16 +3,25 @@
  *
  * The guard compares the security-relevant API and auth settings of the local `config.toml` with the hosted settings the Terraform module sends, and fails when they disagree. It is only worth anything on the days it runs and on the days it can still fail: a guard deleted from the `lint:check` chain keeps passing when run by hand, and a guard that stopped comparing keeps reporting green on a clean tree. This spec holds both properties, wiring by reading `package.json`, teeth by running the guard on a hosted settings file that disagrees on one key and on an environments directory that holds no origin.
  *
- * The guard is run as a child process and never imported, so no copy of its classification exists here to drift from the real one.
+ * The guard is run as a child process, so no copy of its classification exists here to drift from the real one. Its fixture cases, `scripts/fixtures/hosted-settings-parity/cases.mjs`, are in-memory edits of a correct set of inputs, the tracked files scanned for a second writer among them, which no flag of the command line can supply: they are run through the guard's exported `check`.
  *
  * The invariant on the chain is MEMBERSHIP of the `&&` chain, never position, never the whole string, never the link count. Guards are appended to the chain freely, and an assertion on position or length reddens a correct append.
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import type { SpawnSyncReturns } from 'node:child_process';
 
@@ -30,15 +39,78 @@ const ROOT_PACKAGE_JSON = JSON.parse(readFileSync(resolve(REPO_ROOT, 'package.js
 
 /** An empty directory standing in for `infra/envs`, so that the guard finds no Supabase root and no origin. */
 const EMPTY_ENVS = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-'));
-afterAll(() => rmSync(EMPTY_ENVS, { recursive: true, force: true }));
+/** The copies of `infra/envs` made by `copyOfEnvs`, removed after the run. */
+const COPIES: Array<string> = [];
+afterAll(() => {
+  for (const dir of [EMPTY_ENVS, ...COPIES]) rmSync(dir, { recursive: true, force: true });
+});
 
 /**
- * Run the guard from the repository root.
+ * Copy the `.tf` files and the `terraform.tfvars` of every Supabase root under `infra/envs` into a directory of its own, so that a test can edit a root the guard must then refuse. Nothing else is copied: no state, no plan and no `.terraform/`.
+ * @returns The directory, standing in for `infra/envs`.
+ */
+function copyOfEnvs(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-envs-'));
+  COPIES.push(dir);
+  const envsDir = resolve(REPO_ROOT, 'infra/envs');
+  for (const env of readdirSync(envsDir)) {
+    const root = join(envsDir, env, 'supabase');
+    if (!existsSync(root)) continue;
+    mkdirSync(join(dir, env, 'supabase'), { recursive: true });
+    for (const name of readdirSync(root))
+      if (name.endsWith('.tf') || name === 'terraform.tfvars')
+        copyFileSync(join(root, name), join(dir, env, 'supabase', name));
+  }
+  return dir;
+}
+
+/**
+ * Replace one text in a file, failing when it is not there, so that an edit cannot silently test nothing.
+ * @param file - The file.
+ * @param from - The text to replace.
+ * @param to - Its replacement.
+ */
+function edit(file: string, from: string | RegExp, to: string): void {
+  const text = readFileSync(file, 'utf8');
+  const edited = text.replace(from, to);
+  if (edited === text) throw new Error(`${file} does not hold ${String(from)}`);
+  writeFileSync(file, edited);
+}
+
+/** A proxy on a closed local port, so that a run which wrongly reached a network would fail fast instead of reaching a hosted API. */
+const UNREACHABLE_NETWORK = {
+  HTTPS_PROXY: 'http://127.0.0.1:9',
+  HTTP_PROXY: 'http://127.0.0.1:9',
+  ALL_PROXY: 'http://127.0.0.1:9'
+};
+
+/**
+ * Run the guard from the repository root, offline and with no hosted credential.
  * @param args - The guard's arguments.
  * @returns The spawn result, with stdout and stderr as text.
  */
 function runGuard(args: Array<string>): SpawnSyncReturns<string> {
-  return spawnSync(process.execPath, [GUARD_PATH, ...args], { cwd: REPO_ROOT, encoding: 'utf8' });
+  const env: NodeJS.ProcessEnv = { ...process.env, ...UNREACHABLE_NETWORK };
+  delete env.SUPABASE_ACCESS_TOKEN;
+  return spawnSync(process.execPath, [GUARD_PATH, ...args], {
+    cwd: REPO_ROOT,
+    env,
+    encoding: 'utf8',
+    timeout: 15_000
+  });
+}
+
+/**
+ * Copy the repository's `config.toml` into a directory of its own, with a text appended.
+ * @param appended - The text appended to the copy.
+ * @returns The copy's path.
+ */
+function copyOfConfig(appended = ''): string {
+  const dir = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-config-'));
+  COPIES.push(dir);
+  const config = join(dir, 'config.toml');
+  writeFileSync(config, `${readFileSync(resolve(REPO_ROOT, 'apps/supabase/supabase/config.toml'), 'utf8')}${appended}`);
+  return config;
 }
 
 /**
@@ -103,13 +175,140 @@ describe('the hosted-settings parity guard still has teeth', () => {
     expect(result.stdout).toContain('auth/site_url');
   });
 
-  it('reproduces its fixture cases in self-test mode', () => {
-    expect(runGuard(['--self-test']).status).toBe(0);
+  it("fails when a root's module call switches the send-email hook off with a literal false", () => {
+    const envs = copyOfEnvs();
+    edit(
+      join(envs, 'staging/supabase/main.tf'),
+      /enable_send_email_hook(\s*)= var\.enable_send_email_hook/,
+      'enable_send_email_hook$1= false'
+    );
+    const result = runGuard(['--envs-dir', envs]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toMatch(/staging\/supabase\/main\.tf: auth\.hook\.send_email\/enabled: /);
+  });
+
+  it('fails when a root leaves a hook switch out of terraform.tfvars and its own default is false', () => {
+    const envs = copyOfEnvs();
+    edit(join(envs, 'staging/supabase/terraform.tfvars'), /^enable_access_token_hook\s*=.*\n/m, '');
+    edit(
+      join(envs, 'staging/supabase/variables.tf'),
+      'variable "enable_access_token_hook" {\n',
+      'variable "enable_access_token_hook" {\n  default = false\n'
+    );
+    const result = runGuard(['--envs-dir', envs]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toMatch(/staging\/supabase\/variables\.tf: auth\.hook\.custom_access_token\/enabled: /);
+  });
+
+  it('fails on a Supabase root with no terraform.tfvars next to the good ones, and names it', () => {
+    const envs = copyOfEnvs();
+    mkdirSync(join(envs, 'prod/supabase'), { recursive: true });
+    copyFileSync(join(envs, 'staging/supabase/main.tf'), join(envs, 'prod/supabase/main.tf'));
+    const result = runGuard(['--envs-dir', envs]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toMatch(/prod\/supabase\/terraform\.tfvars: root\/terraform\.tfvars: /);
+  });
+
+  it('checks a root that calls the module from a directory not named supabase', () => {
+    const envs = copyOfEnvs();
+    mkdirSync(join(envs, 'prod/app'), { recursive: true });
+    for (const name of ['main.tf', 'variables.tf', 'terraform.tfvars'])
+      copyFileSync(join(envs, 'staging/supabase', name), join(envs, 'prod/app', name));
+    edit(
+      join(envs, 'prod/app/terraform.tfvars'),
+      /^enable_send_email_hook(\s*)= true/m,
+      'enable_send_email_hook$1= false'
+    );
+    const result = runGuard(['--envs-dir', envs]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toMatch(/prod\/app\/terraform\.tfvars: auth\.hook\.send_email\/enabled: /);
+  });
+
+  it('passes on an unedited copy of the roots, so the tests above fail on their edit alone', () => {
+    expect(runGuard(['--envs-dir', copyOfEnvs()]).status).toBe(0);
+  });
+
+  it('classifies the keys under a quoted table header that follows a table outside the family', () => {
+    const result = runGuard(['--config', copyOfConfig('\n[auth.external."github"]\nenabled = true\n')]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('auth.external.github/enabled');
+  });
+
+  it('fails on a [functions.*] key that no row classifies, and names it', () => {
+    const result = runGuard(['--config', copyOfConfig('\n[functions.new-function]\nverify_jwt = false\n')]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('functions.new-function/verify_jwt');
+  });
+
+  it('passes on an unedited copy of config.toml, so the test above fails on its added table alone', () => {
+    expect(runGuard(['--config', copyOfConfig()]).status).toBe(0);
+  });
+
+  it('fails when a further map is merged into the auth settings the module sends', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-module-'));
+    COPIES.push(dir);
+    const moduleDir = resolve(REPO_ROOT, 'infra/modules/supabase');
+    for (const name of readdirSync(moduleDir))
+      if (name.endsWith('.tf') || name === 'hosted-settings.json') copyFileSync(join(moduleDir, name), join(dir, name));
+    edit(join(dir, 'settings.tf'), /(local\.auth_smtp,\n)(\s*\))/, '$1    var.extra_auth,\n$2');
+    const result = runGuard(['--module-dir', dir]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('module/local.auth');
   });
 
   it('refuses an unknown argument with a usage error', () => {
     const result = runGuard(['--no-such-flag']);
     expect(result.status).toBe(2);
     expect(result.stderr).toContain('usage:');
+  });
+});
+
+interface ParityResult {
+  channelErrors: Array<unknown>;
+  findings: Array<{ file: string; id: string }>;
+  census?: { hookOff: Record<string, Array<string>> };
+}
+
+interface ParityCase {
+  name: string;
+  edit: (inputs: unknown) => void;
+  expected: Array<string>;
+  hookOff?: Record<string, Array<string>>;
+  files?: Array<string>;
+}
+
+// Imported by URL, so that the type checker does not follow into the untyped modules.
+const { check, HOOK_SWITCHES } = (await import(pathToFileURL(resolve(REPO_ROOT, GUARD_PATH)).href)) as {
+  check: (inputs: unknown) => ParityResult;
+  HOOK_SWITCHES: Array<{ variable: string }>;
+};
+const { CASES, correctInputs } = (await import(
+  pathToFileURL(resolve(REPO_ROOT, 'scripts/fixtures/hosted-settings-parity/cases.mjs')).href
+)) as { CASES: Array<ParityCase>; correctInputs: () => unknown };
+
+describe('the hosted-settings parity check over its fixture cases', () => {
+  const correct = JSON.stringify(correctInputs());
+
+  /** The roots named as not applying a hook, per switch, as one comparable line. */
+  function offLine(off: Record<string, Array<string> | undefined>): string {
+    return HOOK_SWITCHES.map(({ variable }) => {
+      const roots = (off[variable] ?? []).join(',');
+      return roots === '' ? '' : `${variable}=${roots}`;
+    })
+      .filter((part) => part !== '')
+      .join(' ');
+  }
+
+  it.each(CASES.map((testCase, index) => [testCase.name, index] as const))('%s', (_name, index) => {
+    const { edit, expected, hookOff = {}, files } = CASES[index];
+    const inputs = correctInputs();
+    edit(inputs);
+    // An edit that changes nothing tests nothing.
+    if (index > 0) expect(JSON.stringify(inputs)).not.toBe(correct);
+    const result = check(inputs);
+    const observed = result.channelErrors.length > 0 ? ['(channel)'] : result.findings.map((f) => f.id);
+    expect([...observed].sort()).toEqual([...expected].sort());
+    if (result.census) expect(offLine(result.census.hookOff)).toBe(offLine(hookOff));
+    if (files !== undefined) expect([...new Set(result.findings.map((f) => f.file))].sort()).toEqual([...files].sort());
   });
 });

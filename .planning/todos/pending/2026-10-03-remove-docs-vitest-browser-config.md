@@ -5,8 +5,9 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: low
 suggested_phase: any cleanup slot
-keywords: [docs, vitest, browser-mode, vitest-browser-playwright, dead-config, cleanup]
 re_check_trigger: "any time; or before the next Vitest major (it saves migrating dead config)"
+tags: [docs, tooling, improvement]
+keywords: [docs, vitest, browser-mode, vitest-browser-playwright, dead-config, cleanup]
 ---
 
 # Dead Vitest browser config in `apps/docs`

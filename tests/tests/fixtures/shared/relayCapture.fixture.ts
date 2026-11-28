@@ -23,7 +23,7 @@
  *  - `getEventNames()` — the names of those events, in the same order.
  *  - `clear()`         — forget everything captured so far.
  *
- * Beside the capture, this module holds what the usage-data specs share about the events and the consent surface: `flushTrackingBuffer` and `flushUntil` reach the hidden flush point, `hasVisitId` and `visitIdOf` read an event's visit id through the one key `VISIT_ID_KEY`, and `CONSENT_PROMPT`, `GRANTED_BUTTON` and `PREFS_KEY` name the consent prompt, its granting button and the stored user preferences.
+ * Beside the capture, this module holds what the usage-data specs share about the events and the consent surface: `flushTrackingBuffer` and `flushUntil` reach the hidden flush point, `hasVisitId` and `visitIdOf` read an event's visit id through the one key `VISIT_ID_KEY`, and `PREFS_KEY` names the stored user preferences. `CONSENT_PROMPT` and `GRANTED_BUTTON`, the consent prompt and its granting button, are re-exported from `consentPrompt.fixture.ts`, where the prompt's surface lives.
  *
  * ## Every event is held to the vocabulary
  *
@@ -58,11 +58,7 @@ export function visitIdOf(event: RelayEvent): string | undefined {
   return hasVisitId(event) ? (event as Record<typeof VISIT_ID_KEY, string | undefined>)[VISIT_ID_KEY] : undefined;
 }
 
-/** The accessible name of the voter app's consent prompt (`common.privacy.dataCollection.title`, the title of DataConsentPopup's Alert), which is also the heading of the privacy page's consent control. */
-export const CONSENT_PROMPT = /collecting usage data/i;
-
-/** The accessible name of the consent control's button that grants consent (DataConsent.svelte). */
-export const GRANTED_BUTTON = /agree to share my data/i;
+export { CONSENT_PROMPT, GRANTED_BUTTON } from '../voter/consentPrompt.fixture';
 
 /** localStorage key the app persists `userPreferences` under (the `localStorageState` call in appContext.svelte.ts). */
 export const PREFS_KEY = 'appContext-userPreferences';

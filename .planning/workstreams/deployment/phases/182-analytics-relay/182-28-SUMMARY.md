@@ -46,7 +46,7 @@ key-decisions:
   - "The phase's closing E2E evidence is on cb8da595b, which git finds equal outside .planning to 0e343a40d (plan 182-24's green runs) and 7d35eef74 (plan 182-31's red controls)"
   - "The static gates were run again on cb8da595b (LOCAL_GATES_SOURCE=rerun), because plan 182-22's gates describe e4d535df3, which differs in code from the final tree"
 
-requirements-completed: []   # left to the orchestrator, as instructed
+requirements-completed: [RELAY-01]   # marked at the v2.17 milestone audit (2026-11-21) from the phase VERIFICATION.md
 
 duration: about 22 min (05:50:34Z to 06:12Z UTC on 2026-10-20); gates about 3 min, full suite about 15 min, consent-free run about 1 min
 completed: 2026-10-20

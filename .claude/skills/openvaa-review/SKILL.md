@@ -5,12 +5,14 @@ description: >-
   noise out of the diff, runs a parallel team of design lenses (behaviour, analytics, cross-cutting authority
   and project scope, settings merit, data-structure rot, nomenclature, reuse, domain packages, conciseness,
   database, Edge Functions, routes, Svelte components, design, accessibility, localization, tests, docs,
-  dependencies), peer-verifies every finding, and posts ONE thematic PR review with tick-box fix options that
-  explains the change to a non-author. Use for "review PR 897", "brief me on this PR", "prep the human
+  dependencies), peer-verifies every finding, and posts ONE thematic PR review that explains the change to a
+  non-author, its findings in three comments (decisions needed, critical, fixed by default) with tick-box fix
+  options; everything is fixed by default. Use for "review PR 897", "brief me on this PR", "prep the human
   review", "what does this PR actually change", as the last step of /openvaa-pr, and for each slice of a
   ship-review-stack stack. "openvaa-review fix <PR#>" (or --fix) applies a posted review's ticked options and
-  every other open review comment on the PR in parallel waves, re-evaluates and fixes what that finds, runs the gates and targeted E2E, and pushes; on a stack slice it fixes the
-  source branch and re-cuts the slices. "openvaa-review --plan [branch] [guidance]" reviews unexecuted GSD
+  every other open review comment on the PR in parallel waves, re-evaluates and fixes what that finds, runs the
+  gates and targeted E2E, squashes the fixes into the feature commits and pushes; on a stack slice it fixes the
+  source branch and re-cuts the slices. "fix --auto" asks nothing but the hard decisions. "openvaa-review --plan [branch] [guidance]" reviews unexecuted GSD
   plans through the same lenses before execution. "openvaa-review learn" promotes recurring findings into
   .agents/code-review-checklist.md and the project skills. --local keeps a review off GitHub as a committed
   file. NOT for bug-hunting review (that is /code-review or /gsd-code-review), and NOT for splitting a branch
@@ -44,13 +46,14 @@ The reader is the **non-author reviewer**. Every lens section therefore opens by
 | `/openvaa-review <PR#> --verbose` | Keeps every lens's **Affected** list in the comment (combines with `--dry-run`). Without it only Common patterns and Conciseness show theirs |
 | `/openvaa-review` (no number) | Uses the current branch's PR. If there is none, reviews `$BASE..HEAD` in dry-run, asking for the base when it is not obvious |
 | `/openvaa-review fix <PR#>`, `<PR#> --fix`, `--fix [<PR#>]` | Applies the review's decisions and fixes every other open review comment on the PR. See § Fix mode. `--fix` anywhere selects fix mode, never a review |
+| `/openvaa-review fix <PR#> --auto` | Fix mode that asks the operator only the hard decisions (§ Fix mode › Hard decisions) and runs everything else unattended. `--auto` without `fix` or `--fix` is fix mode too |
 | `/openvaa-review --plan [<branch or PR#>] [guidance]` | Reviews unexecuted plans on a branch. See § Plan mode |
 | `/openvaa-review fix --plan <branch or PR#>` | Applies a plan review's decisions to the plan documents |
 | any of the above with `--local` | Saves the review as a committed file instead of posting it. See § Local reviews |
 | `/openvaa-review <PR#> <PR#> …` or a range (`890-904`) | One full review per PR, run as described in § Several PRs at once |
 | `/openvaa-review learn [--limit N]` | Learning loop across past reviews, see `.claude/skills/openvaa-review/references/learning-loop.md` |
 
-The flags combine in any order (`--plan --fix 912` is `fix --plan 912`), and `--dry-run` works with `--plan` too.
+The flags combine in any order (`--plan --fix 912` is `fix --plan 912`, `--auto --plan 912` is `fix --plan --auto 912`), and `--dry-run` works with `--plan` too.
 
 Posting is the purpose of the skill, so do it without asking again, unless `--local` says otherwise. A re-run **edits** the existing comment instead of adding a second one (see step 8).
 
@@ -198,13 +201,18 @@ Pass `--verbose` only when the user supplied it.
 
 The script applies the verdicts (refuted findings dropped, severities and revised text honoured) and the merge plan, then writes `comment.md` following `.claude/skills/openvaa-review/references/comment-template.md`:
 
-- **The Findings section** carries every surviving finding, grouped blocking → should-fix → consider. Each finding shows its detail, evidence and existing-code pointer in a collapsed `<details>` block, then its fix options as tick boxes: the recommended fix, any alternatives, `Discuss` and `Don't fix`.
+- **The Findings** come in three blocks, each a comment of its own (the first shares the header's comment):
+  1. **Decisions needed:** findings with `needs_decision`, each led by the question it asks. Fix mode never takes these by default.
+  2. **Critical:** `severity: critical` findings, with the detail shown open so the operator sees what went wrong.
+  3. **Fixed by default:** the rest, detail collapsed.
+
+  The stance is that everything gets fixed: an untouched finding means its recommended option. Every finding shows its fix options as tick boxes: the recommended fix, any alternatives, `Discuss` and `Don't fix`.
 - **Lens sections** keep their explanation and point at their findings by id. Their **Affected** list is dropped, except under Common patterns and Conciseness, unless `--verbose` is given.
 - **Lenses that did not apply** are absent. **A lens with nothing to fix** keeps its explanation and says "Nothing to fix." **Evaluation criteria** never get an "OK" line each.
 
 It escapes every `<` and `>` in agent-written text outside code spans, fenced blocks, blockquote markers and real HTML, because GitHub silently drops unknown tags. Fix options are escaped before they are fingerprinted, and `parse_decisions.py` turns the entities back.
 
-Each comment is capped at about 20,000 characters, because task-list checkboxes toggle unreliably in long comments. When the review is longer, the overflow goes to `comment-2.md`, `comment-3.md` and so on, each starting with an `openvaa-review:v1-cont` marker. Findings are packed before lens sections, and nothing is dropped.
+The parts are `comment.md`, `comment-2.md`, `comment-3.md` and so on, each continuation starting with an `openvaa-review:v1-cont` marker. Each non-empty block after the first starts a new part, so the comment boundaries fall on the seams between the blocks. A part is also capped at about 20,000 characters, because task-list checkboxes toggle unreliably in long comments, and overflows into the next. The lens sections follow the last block, and nothing is dropped.
 
 The hidden data block counts towards the first comment's budget. When the first comment can't hold it, the block gets a final comment of its own, with no checkboxes. `parse_decisions.py` and `harvest.py` read it from either place, so every visible part stays under the cap.
 
@@ -235,7 +243,7 @@ Report back to the user:
 - how many the verifier refuted;
 - the conciseness lens's effective-line count against its sketch.
 
-Then check the confirmed findings against `.agents/code-review-checklist.md` and the lens's *Promote to* targets. If a `blocking` finding is something neither covers, name it as a **promotion candidate** and suggest `/openvaa-review learn`. Do not edit the checklist or the skills during a review run: the branch under review is someone else's, and learnings go on their own branch (`.claude/skills/openvaa-review/references/learning-loop.md`).
+Then check the confirmed findings against `.agents/code-review-checklist.md` and the lens's *Promote to* targets. If a critical finding is something neither covers, name it as a **promotion candidate** and suggest `/openvaa-review learn`. Do not edit the checklist or the skills during a review run: the branch under review is someone else's, and learnings go on their own branch (`.claude/skills/openvaa-review/references/learning-loop.md`).
 
 ## Several PRs at once
 
@@ -244,7 +252,7 @@ Each review runs as its own orchestrator agent, one per PR, following the Workfl
 1. **Resolve first, serially.** Skip the closed and merged PRs, and the stack's planning slice (step 1). Fetch every head and merge base yourself, one after another. Concurrent `git fetch` runs in one repository contend for its lock files. Give each review its `HEAD_SHA`, `MB`, base and, for a slice, its `stack.json` facts, and tell it not to fetch unless triage exits 3.
 2. **At most three reviews at a time**, each keeping no more than about seven agents of its own running. Start the next review as one finishes. Smallest-first gets early results back; the big slices take longest.
 3. **A refused spawn means wait.** When a spawn fails with "Concurrent subagent limit reached", the review yields until one of its own agents finishes and spawns again. It never plays the lens, verifier or consolidator role itself. One agent checking its own claims is not peer verification. If a review did fall back anyway, rerun it once the others are done. The rerun edits the posted comments in place (step 8).
-4. Report one row per PR: its comment link, findings by severity, the refuted count, and any problem the review raised. The promotion candidates and recurring themes go in one list across all the PRs.
+4. Report one row per PR: its comment link, findings per block, the refuted count, and any problem the review raised. The promotion candidates and recurring themes go in one list across all the PRs.
 
 ## Local reviews
 
@@ -389,7 +397,17 @@ Report the comment URL or the committed path, which plans were reviewed and why 
 
 ## Fix mode
 
-`/openvaa-review fix <PR#>` (or `--fix`) carries out the decisions the reviewer recorded in the posted review (the ticks, and every word they added) and fixes every other review comment still open on the PR. It edits the PR's own branch (or, for a stack slice, the stack's source branch), so it is the author's command, not the reviewer's.
+`/openvaa-review fix <PR#>` (or `--fix`) carries out the decisions the reviewer recorded in the posted review (the ticks, and every word they added) and fixes every other review comment still open on the PR. It edits the PR's own branch (or, for a stack slice, the stack's source branch), so it is the author's command, not the reviewer's. Everything is fixed by default; the run ends by squashing the fixes into the feature commits (step 9).
+
+**Hard decisions** stop the run in every mode, `--auto` included, and go to the operator with `AskUserQuestion`:
+
+- a `decision`-block finding nobody ticked, and any finding the reviewer ticked `Discuss`;
+- two options ticked on one finding (`conflict`);
+- a contradiction between two decisions (step 3), and a review comment two fixes could satisfy incompatibly or that contradicts a reviewer's decision;
+- a test failure whose fix needs a product decision (step 8), and the re-evaluation loop cap (step 7);
+- the PR merged or closed, or the branch moved under the run (step 10).
+
+**Without `--auto`** the run also stops for the soft ones: the operator confirms the wave plan (step 5), and chooses for a re-evaluation finding a reviewer could reasonably fix by one of its `alternatives` (step 7). **With `--auto`** the wave plan is shown without waiting, a re-evaluation finding takes its recommended option, and the report lists every choice taken that way.
 
 ### 1. Read the decisions
 
@@ -403,7 +421,7 @@ python3 $SKILL_DIR/scripts/parse_decisions.py --pr $N --repo $REPO --out $RUN/de
 Each finding resolves to one of:
 
 - `fix`: an option is ticked, or nothing is, which means the recommended one;
-- `discuss`;
+- `discuss`: `Discuss` is ticked, or the finding is in the decisions block and nothing is ticked (`undecided: true`);
 - `skip`;
 - `conflict`: two options are ticked.
 
@@ -446,11 +464,11 @@ These are not review comments: a comment carrying one of this skill's markers (`
 
 Add each to `decisions.json` as a finding of its own: `id` `RC-<n>`, `source` (`thread` | `review` | `comment`), its `url`, `thread_id` (the root comment's `id`) for a thread, `path` and `line`, the comment text as `detail`, `decision: "fix"`, and as `choice` the concrete change that does what it asks, written the way a fix option is. A comment that overlaps a review finding is attached to that finding as a constraint rather than duplicated. A comment that is ambiguous, that two fixes could satisfy in incompatible ways, or that contradicts a reviewer's decision on a finding becomes `discuss` and goes to the user in step 2. Review comments then take part in steps 3–7 exactly like findings, and the re-evaluation checks each is fully done.
 
-After the push in step 9, reply in each fixed thread with the commit that fixed it (`gh api repos/$REPO/pulls/$N/comments/<thread_id>/replies -f body=…`), and list the fixed review bodies and issue comments in the fixes comment. Do not resolve threads: resolving is the reviewer's call.
+After the push in step 10, reply in each fixed thread with the commit that fixed it (`gh api repos/$REPO/pulls/$N/comments/<thread_id>/replies -f body=…`), and list the fixed review bodies and issue comments in the fixes comment. Do not resolve threads: resolving is the reviewer's call.
 
 ### 2. Settle the discussions first, before touching any code
 
-Resolve every `discuss` finding with the user before the first agent runs, because its answer can change what the other fixes should do. Use `AskUserQuestion`, up to 4 findings per call. The question is the finding's title, the options are its own options plus "Don't fix", and the context you explain is the finding's detail plus the reviewer's notes and mentions. Write the answer back into `decisions.json`.
+Resolve every `discuss` finding with the user before the first agent runs, `--auto` or not, because its answer can change what the other fixes should do. Use `AskUserQuestion`, up to 4 findings per call. The question is the finding's title, the options are its own options plus "Don't fix", and the context you explain is the finding's detail plus the reviewer's notes and mentions. Write the answer back into `decisions.json`.
 
 ### 3. Check the decisions against each other
 
@@ -490,7 +508,7 @@ FIX_BASE=$(git rev-parse HEAD)
 2. Check its tree equals the top slice's tree (`git rev-parse <source>^{tree}` vs `<top slice>^{tree}`). If they differ, the stack has drifted from its source: stop and ask.
 3. Set `FIX_BASE` to the source branch's head.
 
-The fixes then land on the source branch, and step 9 re-cuts the slices from it.
+The fixes then land on the source branch, and step 10 re-cuts the slices from it.
 
 **Either way:** a moved head is not a blocker, but say so. If the working tree is dirty, stop and ask. Do not stash: the stash stack is shared with other worktrees.
 
@@ -499,10 +517,10 @@ The fixes then land on the source branch, and step 9 re-cuts the slices from it.
 Group the `fix` findings so a wave can run in parallel without agents colliding:
 
 - **Disjoint files.** Two findings whose files overlap go in the same group (one agent, sequential) or in different waves. Start from the `files` array in the data block, and widen it when an option names a file the evidence did not cite. A new message key touches every locale catalogue, and a schema change touches the generated types.
-- **Dependencies decide the order, not severity.** A finding that adds a data-model method lands before the findings told to call it, and a rename before its call sites. Every `ordering` entry in `conflicts.json` is such a dependency. Within that constraint, run blocking first.
+- **Dependencies decide the order, not severity.** A finding that adds a data-model method lands before the findings told to call it, and a rename before its call sites. Every `ordering` entry in `conflicts.json` is such a dependency. Within that constraint, run critical findings first.
 - **Keep waves small.** Up to about 6 agents per wave, each with 1–4 related findings. Group by area, for example all the results-drawer component findings together.
 
-Write the plan to `$RUN/waves.json` as `[{ "wave": 1, "groups": [{ "group": "results-drawer", "findings": ["CMP-2", "CMP-3"], "files": [...] }] }]`, and show it to the user before starting.
+Write the plan to `$RUN/waves.json` as `[{ "wave": 1, "groups": [{ "group": "results-drawer", "findings": ["CMP-2", "CMP-3"], "files": [...] }] }]`, and show it to the user. Without `--auto`, wait for their go-ahead; with it, start at once.
 
 ### 6. Run each wave
 
@@ -524,7 +542,7 @@ git add <the finding's files> && git commit --fixup=$TARGET
 ```
 
 - When no PR commit touched the file (a new file a fix creates, a catalogue entry), use the PR commit that introduced the feature, by subject.
-- When nothing fits, use an ordinary commit following the repo's convention (`fix: <what>` with the package tag in brackets, `[db]` for database changes). Name it in the report.
+- When nothing fits, use an ordinary commit following the repo's convention (`fix: <what>` with the package tag in brackets, `[db]` for database changes), and name it in the report. Step 9 still folds it into a feature commit when it fixes the PR's own code.
 - Record each finding's commit in `$RUN/commits.json`.
 - On a stack's source branch, apply the same rule within the source branch's own history.
 
@@ -560,7 +578,7 @@ Each surviving finding carries an `origin`:
 
 **Every surviving finding is fixed, whatever its origin and severity.** Surviving means the verifier returned `CONFIRMED` or `DOWNGRADED`; a `REFUTED` finding is dropped, and a duplicate is fixed once, under the finding the verifier keeps. Nothing a re-evaluation confirms is left as "reported only".
 
-A remedial wave runs exactly like step 6, with the finding's `suggestion` (or the verifier's `revised_suggestion`) as its `apply`, committed as fixups. When a reviewer could reasonably prefer one of its `alternatives`, ask the user before running it; that is the only reason to stop.
+A remedial wave runs exactly like step 6, with the finding's `suggestion` (or the verifier's `revised_suggestion`) as its `apply`, committed as fixups. When a reviewer could reasonably prefer one of its `alternatives`, ask the user before running it, unless `--auto` is given; a re-evaluation finding with `needs_decision` is a hard decision and is asked either way.
 
 Then loop until a re-check comes back clean:
 
@@ -570,17 +588,9 @@ Then loop until a re-check comes back clean:
 
 The loop ends when a re-check has no surviving finding. A round can only look at the previous round's diff, so each round is smaller than the one before. If a third remedial round still produces surviving findings, stop and show them to the user: findings that keep coming back mean the fixes are fighting each other, and that is a decision, not another wave.
 
-Write `$RE/outcome.json` as `[{ "id", "lens", "origin", "severity", "title", "round", "status": "fixed | blocking", "commit" }]`. A finding is `blocking` only when the user stopped it or the loop cap was reached; a blocking one stops the push in step 9.
+Write `$RE/outcome.json` as `[{ "id", "lens", "origin", "severity", "title", "round", "status": "fixed | blocking", "commit" }]`. A finding is `blocking` only when the user stopped it or the loop cap was reached; a blocking one stops the push in step 10.
 
-### 8. Squash the fixups, then gate the whole codebase
-
-Fold the fixups into their targets:
-
-```bash
-git rebase --autosquash $MB   # git ≥ 2.44 honours --autosquash without -i; check the result with git log
-```
-
-Then check that `git diff $FIX_HEAD HEAD` is empty: the squash may only move changes between commits, never change the tree. Record `SQUASHED=$(git rev-parse HEAD)`.
+### 8. Gate the whole codebase
 
 CI checks the whole repository, so the gates do too. Each runs on its own line with its output redirected, never piped:
 
@@ -617,7 +627,7 @@ How to read each run:
 
 Read the unit log's summary line as well as its exit status: a log with no test count means the suite never ran, which is not a pass.
 
-**Lint and format.** What `lint:fix` and `format` change was committed with each wave. Anything left is committed as `style: lint and format`, never folded into a finding's commit. When it touches files outside the PR, say so in the PR comment.
+**Lint and format.** What `lint:fix` and `format` change was committed with each wave. Anything left is committed as a fixup of the PR's own `style: lint and format` commit when it has one, and otherwise as `style: lint and format`; never folded into a finding's commit. When it touches files outside the PR, say so in the PR comment.
 
 **Failing tests.** Every failing test is fixed, whoever broke it:
 
@@ -629,11 +639,28 @@ Read the unit log's summary line as well as its exit status: a log with no test 
 
 Unit failures are grouped by test file and fixed in parallel with § Test fix agent. E2E failures are fixed one at a time by the orchestrator, because they share one stack and one dev server. Diagnose the root cause: the E2E Hard Rule allows no retries, skips or raised timeouts.
 
-A test is never deleted, skipped, given `.only`, or loosened to pass. A failure whose fix needs a product decision goes to the user. Commit test fixes as fixups of the commit that introduced the tested code, autosquash again, and re-run the whole block until every line exits 0, or until a failure only the user can decide is left. That one blocks the push.
+A test is never deleted, skipped, given `.only`, or loosened to pass. A failure whose fix needs a product decision goes to the user. Commit test fixes as fixups of the commit that introduced the tested code, and re-run the whole block until every line exits 0, or until a failure only the user can decide is left. That one blocks the push. Record the gated tip: `GATED=$(git rev-parse HEAD)`.
 
-### 9. Push and comment
+### 9. Squash the fixes into the feature commits
 
-Push once step 7 has no blocking finding left and every gate in step 8 passes, without asking. The autosquash rewrote the PR's history at your request, so this is a force-push with lease (the user's standing rule). A gate still failing means no push: say which, and leave the commits local. Re-read the PR first, because it can be merged while the fixes run:
+The PR must show only its final outcome, as `/openvaa-pr` step 6 requires: no commit of the PR fixes another commit of the PR. Fold everything the run committed:
+
+1. Every fixup from steps 6–8 folds into its target.
+2. An ordinary `fix:` commit the run made because nothing fitted (step 6) is re-targeted when it fixes the PR's own code: amend it into a fixup of the feature commit it belongs to, by subject. It stays its own commit only when it changes what the PR did not introduce (a pre-existing test failure, a file outside the PR), and the report says why.
+3. A `style: lint and format` commit stays separate from code, as the checklist asks, but there is only one: fold a second into the first.
+
+```bash
+git rebase --autosquash $MB   # git ≥ 2.44 honours --autosquash without -i
+git diff $GATED HEAD          # must be empty: squashing moves changes between commits, never changes the tree
+for c in $(git rev-list $MB..HEAD); do [ "$(git rev-parse $c^{tree})" = "$(git rev-parse $c~1^{tree})" ] && echo "EMPTY: $c"; done
+git log --oneline $MB..HEAD   # the PR's commits, with no fixup! left and no fix-of-itself subject
+```
+
+A non-empty diff or an empty commit is a squash error: redo the step from `$GATED`, never re-gate a changed tree as if it were the same. Because the tree is identical to the gated one, the gates need not run again. On a stack's source branch the same rule applies within the source branch's own history.
+
+### 10. Push and comment
+
+Push once step 7 has no blocking finding left, every gate in step 8 passes and step 9 left the tree unchanged, without asking. The squash rewrote the PR's history at your request, so this is a force-push with lease (the user's standing rule). A gate still failing means no push: say which, and leave the commits local. Re-read the PR first, because it can be merged while the fixes run:
 
 ```bash
 read STATE PR_HEAD <<< "$(gh api repos/$REPO/pulls/$N -q '(if .merged then "MERGED" else (.state|ascii_upcase) end)+" "+.head.sha')"
@@ -677,14 +704,16 @@ A PR above a re-cut slice gets a one-line note that its base moved; its review c
 
 Nothing pushed means no comment.
 
-### 10. Report
+### 11. Report
 
 Show a table of every finding: applied (with its commit), skipped (with who decided), and blocked (with why). Below it, add:
 
 - the conflicts from step 3;
 - the re-evaluation findings from `$RE/outcome.json`;
 - the test failures fixed, with their attribution;
-- each E2E project's result and run directory.
+- each E2E project's result and run directory;
+- the commits before and after the squash;
+- with `--auto`, every choice the run took without asking.
 
 Give the pushed tips, or why nothing was pushed. Report gate results honestly, including anything still failing. Do not update the PR description unless asked.
 
@@ -704,7 +733,7 @@ Give the pushed tips, or why nothing was pushed. Report gate results honestly, i
 3. Check out the branch. An uncommitted edit to the review file itself is the reviewer's ticks, not a dirty tree: commit it first, on its own, as `docs[planning]: record plan-review decisions`.
 4. **Waves group by plan file.** Only the plan paths (`plans` in the data block) are edited. Several findings on one plan go to one agent.
 5. Use § Plan fix agent. Instead of typecheck and lint, check after each wave that every edited plan still has intact frontmatter and task structure, and that `git diff --stat` touches plan documents only. Commit as `docs[planning]: <what changed in the plan> (review <ID>)`. Planning commits are not squashed here: `.planning/` ships in its own record, and its history is the record.
-6. Re-evaluate as in step 7, with the plan-mode pipeline (P2–P3, then P4 with § Plan-mode preamble and § Re-evaluation preamble) over the edited plans. Step 8 does not run: no code changed.
+6. Re-evaluate as in step 7, with the plan-mode pipeline (P2–P3, then P4 with § Plan-mode preamble and § Re-evaluation preamble) over the edited plans. Steps 8 and 9 do not run: no code changed, and planning commits are not squashed.
 7. Push (a plain push, since nothing was rewritten) when the branch has a PR or is already on the remote, and comment when it has a PR. A branch that has never been pushed stays local; say so in the report.
 8. In the report, list any fix that contradicts a decision recorded in the context files: the operator decides which one moves. With a committed review file, offer to append an `## Applied` section in its own commit; never rewrite the ticks.
 

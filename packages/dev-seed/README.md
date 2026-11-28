@@ -40,13 +40,14 @@ never have to type `yarn workspace @openvaa/dev-seed ...` for common operations.
 
 ### `seed` (primary command)
 
-| Flag                              | Type   | Default       | Purpose                                                                                     |
-| --------------------------------- | ------ | ------------- | ------------------------------------------------------------------------------------------- |
-| `-t`, `--template <name-or-path>` | string | `default`     | Built-in name (`default`, `e2e/base`, `perm-*`) OR filesystem path (`./my.ts`, `/abs.json`) |
-| `--seed <integer>`                | number | from template | Faker RNG seed override (determinism)                                                       |
-| `--external-id-prefix <str>`      | string | `seed_`       | Override for the `external_id` prefix on every row (teardown filter contract)               |
-| `--allow-remote`                  | flag   | off           | Permit a non-local Supabase host for this invocation (see Security Notes)                   |
-| `-h`, `--help`                    | flag   | —             | Show help and exit                                                                          |
+| Flag                              | Type   | Default                | Purpose                                                                                            |
+| --------------------------------- | ------ | ---------------------- | -------------------------------------------------------------------------------------------------- |
+| `-t`, `--template <name-or-path>` | string | `default`              | Built-in name (`default`, `e2e/base`, `perm-*`) OR filesystem path (`./my.ts`, `/abs.json`)        |
+| `--seed <integer>`                | number | from template          | Faker RNG seed override (determinism)                                                              |
+| `--external-id-prefix <str>`      | string | `seed_`                | Override for the `external_id` prefix on every row (teardown filter contract)                      |
+| `--project-id <uuid>`             | string | template's `projectId` | Seed into this project instead of the template's; required for a non-local Supabase host           |
+| `--allow-remote`                  | flag   | off                    | Permit a non-local Supabase host for this invocation (see Security Notes); requires `--project-id` |
+| `-h`, `--help`                    | flag   | —                      | Show help and exit                                                                                 |
 
 Template argument resolution (name-first, path-fallback):
 
@@ -127,7 +128,7 @@ when the canonical base dataset moved under `src/templates/e2e/`, and
 ### `perm-*` and `show-feedback-survey`
 
 Minimal-data settings- and topology-permutation fixtures consumed by the
-Playwright suite — every built-in other than `default` and `e2e/base`. Each carries its own distinct
+Playwright suite — every built-in other than `default`, `e2e/base` and `smoke`. Each carries its own distinct
 `externalIdPrefix` so per-perm setup and teardown never share a prefix and
 cannot race each other in a parallel run. They are E2E fixtures rather than a
 demo dataset: seed one only when you are reproducing the spec that owns it. The
@@ -157,6 +158,33 @@ parties and alliances a nomination can stand under.
 **`perm-identity-provider`** (prefix `e2e-bankauth-idp-`) is the identity-provider
 specs' minimal dataset, and their setup adds the identity provider's
 registration mode for candidates.
+
+### `smoke`
+
+A dataset large enough that an anonymous read of more than 1000 rows can be
+observed whole, meant to be seeded once on a hosted project from an operator's
+shell with `--allow-remote --project-id <the deployment's public_project_id>`:
+
+- 1 election, 1 constituency group, 1 constituency and 4 organizations, all
+  synthetic
+- 1 opinion category with 6 Likert-5 opinion questions, no info questions
+- 1001 candidates, answered by the latent-factor emitter, and 1001 candidate
+  nominations wired to the election and constituency
+- The minimal application settings the `perm-*` datasets state, so the voter
+  app has a settings tree to read on a project whose bootstrapped settings row
+  is empty
+- A fixed seed, English only (`generateTranslationsForAllLocales: false`)
+
+It creates **no auth user**, no account and no `storage_config` row, so a project
+seeded with it still passes a check that no seed user exists. It targets the
+default project (`00000000-0000-0000-0000-000000000001`) and does not change
+whether that project is open for voters: openness is set when the project is
+bootstrapped, and an anonymous read of these rows needs it open.
+
+Every row carries the prefix `smoke_`, so
+`yarn db:seed:teardown --prefix smoke_` removes exactly its content rows. Like
+every teardown, it keeps the settings row it merged into and leaves the project
+open for voters.
 
 ## Authoring Custom Templates
 
@@ -420,7 +448,8 @@ it.
 To target a non-local instance on purpose, opt out for that one invocation:
 pass `--allow-remote` to `seed` or `seed:teardown`, or set
 `DEV_SEED_ALLOW_REMOTE=1` in the environment of the command (the only option for
-library and E2E-harness callers). Do not put `DEV_SEED_ALLOW_REMOTE` in the
+library and E2E-harness callers). A `seed` of a non-local host must also pass
+`--project-id`, whichever opt-out it uses. Do not put `DEV_SEED_ALLOW_REMOTE` in the
 repo-root `.env`: both CLIs auto-load it, which would turn the guard off for
 every run.
 

@@ -52,7 +52,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS } from '../../helpers';
+import { PROFILE_SAVE_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { buildEntityLessRoute, contestantUrlOutsideRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
 import { createMultilingualTextField } from '../shared/multilingualTextFieldFixture.fixture';
@@ -101,6 +101,11 @@ const SUBMIT_LABEL_TEXT: Readonly<Record<ProfileSubmitLabel, RegExp>> = Object.f
 });
 
 export function createContestantProfilePage(page: Page) {
+  /** Wait until a save has left the profile page, with the budget of the save's writes. */
+  async function expectLeftAfterSave(): Promise<void> {
+    await expect(page).toHaveURL(contestantUrlOutsideRe('/profile'), { timeout: PROFILE_SAVE_TIMEOUT });
+  }
+
   /**
    * Locate the per-question wrapper (data-testid="contestant-profile-info-item") whose visible content matches `label` (string | RegExp). Returns the filtered Locator without awaiting — caller chains an action.
    */
@@ -469,9 +474,10 @@ export function createContestantProfilePage(page: Page) {
       await expect(submitButton).toBeEnabled({ timeout: TIMEOUTS.page });
       await submitButton.click();
       if (opts.expect === 'navigation') {
-        await expect(page).toHaveURL(contestantUrlOutsideRe('/profile'), { timeout: TIMEOUTS.slowPage });
+        await expectLeftAfterSave();
       } else {
-        await expect(saveMessage).toHaveAttribute('data-outcome', /.+/, { timeout: TIMEOUTS.slowPage });
+        // Every write of the save can come before the message.
+        await expect(saveMessage).toHaveAttribute('data-outcome', /.+/, { timeout: PROFILE_SAVE_TIMEOUT });
       }
     },
 
@@ -489,8 +495,9 @@ export function createContestantProfilePage(page: Page) {
       await identity.evaluate(setMark, mark);
       await saveMessage.evaluate(setMark, mark);
 
+      // The re-read follows the save's writes: the other properties', the names', then the loads' data.
       const reread = page.waitForResponse((response) => new URL(response.url()).pathname.endsWith(LOAD_DATA_REQUEST), {
-        timeout: TIMEOUTS.slowPage
+        timeout: PROFILE_SAVE_TIMEOUT
       });
       await submitButton.click();
       await reread;
@@ -703,7 +710,7 @@ export function createContestantProfilePage(page: Page) {
      * Assert the profile-submit flow advances away from /profile (i.e., the submit was successful — the page navigates to the entity's home or to its questions page).
      */
     async expectSubmitMessage(): Promise<void> {
-      await expect(page).toHaveURL(contestantUrlOutsideRe('/profile'));
+      await expectLeftAfterSave();
     }
   };
 }

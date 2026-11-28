@@ -12,8 +12,8 @@
         },
         "name": {
           "locked": {
-            "candidate": "Ylläpitäjä on asettanut nimesi tai se on saatu tunnistautumisestasi, etkä voi muuttaa sitä täällä. Jos nimessä on virhe, ota yhteyttä tukeen.",
-            "organization": "Ylläpitäjä on vahvistanut puolueesi nimen ja lyhenteen, etkä voi muuttaa niitä täällä. Jos niissä on virhe, ota yhteyttä tukeen."
+            "candidate": "Ylläpitäjä on asettanut nimesi tai se on saatu tunnistautumisestasi, etkä voi muuttaa sitä täällä. Jos nimessä on virhe, {contactSupportLink}.",
+            "organization": "Ylläpitäjä on vahvistanut puolueesi nimen ja lyhenteen, etkä voi muuttaa niitä täällä. Jos niissä on virhe, {contactSupportLink}."
           },
           "editable": {
             "candidate": "Voit muuttaa nimeäsi, kunnes ylläpitäjä on vahvistanut profiilisi.",

@@ -12,8 +12,8 @@
         },
         "name": {
           "locked": {
-            "candidate": "Votre nom a été défini par l’administrateur ou repris de votre identification, et vous ne pouvez pas le modifier ici. S’il est incorrect, veuillez contacter l’assistance.",
-            "organization": "Le nom et l’abréviation de votre parti ont été confirmés par l’administrateur, et vous ne pouvez pas les modifier ici. S’ils sont incorrects, veuillez contacter l’assistance."
+            "candidate": "Votre nom a été défini par l’administrateur ou repris de votre identification, et vous ne pouvez pas le modifier ici. S’il est incorrect, {contactSupportLink}.",
+            "organization": "Le nom et l’abréviation de votre parti ont été confirmés par l’administrateur, et vous ne pouvez pas les modifier ici. S’ils sont incorrects, {contactSupportLink}."
           },
           "editable": {
             "candidate": "Vous pouvez modifier votre nom jusqu’à ce qu’un administrateur ait confirmé votre profil.",

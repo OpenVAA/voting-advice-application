@@ -6,6 +6,8 @@ priority: medium
 files:
   - apps/supabase/supabase/config.toml
   - tests/IDURA-TEST-RUNBOOK.md
+tags: [supabase, infra, tooling, improvement]
+keywords: [edge-runtime, config-toml, public-project-id, send-email, env-file]
 ---
 
 ## Problem

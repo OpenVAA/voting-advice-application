@@ -1,0 +1,342 @@
+name: "Destroy AWS stack"
+
+# Destroys the AWS stack of one deployment, the one the resolve job picks from the deployment map under
+# infra/bootstrap: every resource of its AWS root, all of them under module.frontend. Upstream, staging is the one
+# entry. The DNS and mail root and the Supabase root are not touched, and the deployment's persistent Supabase
+# project, which holds the only copy of its data, is out of this workflow's reach. Two things keep it there: the
+# deployment's destroy environment holds no secret and no variable, so no Supabase token exists in either job, and
+# the deploy role cannot read the hand-applied state under `hand/`, which the plan job shows before it plans anything,
+# by an init of the Supabase root and a read of its state key that must both be refused.
+#
+# A run, in order:
+#   1. job resolve, with no credential: picks the deployment, its destroy environment, role, roots, state keys, its
+#      destroy branch and its confirm text;
+#   2. job plan-destroy, which waits for its own approval of the destroy environment: shows the Supabase root out of
+#      reach, then runs infra/scripts/plan-destroy.sh, which lists the AWS root's state, plans `-destroy` of that root
+#      into a saved plan and checks the plan with infra/scripts/check-destroy-plan.sh, and only then prints it;
+#   3. job apply-destroy, which needs the second and waits for a second approval: plans again into its own saved plan,
+#      so that no plan crosses jobs, checks and prints it the same way, applies it and fails unless the state is then
+#      empty.
+# An evidence run is approved at plan-destroy and rejected at apply-destroy, so it destroys nothing. A real destroy is
+# approved at both.
+#
+# A push of the deployment's branch `deploy-evidence/destroy-<key>` starts it; the deploy workflow excludes those
+# branches. A dispatch must pick that deployment's `deploy/<key>` ref, because its destroy environment admits no
+# other branch for it, and must type `destroy <key> aws` into `confirm`; any other text skips both jobs.
+#
+# A cancelled or timed-out apply can leave the state lock held; `terraform force-unlock` from the operator's shell
+# releases it.
+#
+# A step reads a command's status as `cmd || name=$?`, after `name=0`, because a `run:` step that names no `shell:`
+# runs under `bash -e`: that shell ends the step at a failing command that is not in an `||` list, so a status read
+# on the next line would never run, while every command whose status the step does not read still ends the step.
+#
+# The repository's default token may write, so the top-level permissions are empty and every job names its own.
+
+on:
+  push:
+    branches:
+      - "deploy-evidence/destroy-*"
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type destroy <deployment> aws, with the deployment this ref deploys, to destroy its AWS stack"
+        required: true
+        type: string
+
+# One constant group with the deploy workflow, for every deployment of the repository, so no deploy and no destroy
+# write AWS state at the same time. A running destroy is never cancelled, because a cancelled apply can leave the
+# state lock held.
+concurrency:
+  group: aws-pipeline
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  # Picks the deployment this run destroys from the deployment map under infra/bootstrap, by the repository's id,
+  # the ref and the event, with no credential. A push of a destroy branch no entry of this repository owns, or a
+  # dispatch from a ref no entry deploys from, ends the run here, before any job names an environment or assumes a
+  # role; both later jobs need this one and read its outputs.
+  resolve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      key: ${{ steps.resolve.outputs.key }}
+      github_environment: ${{ steps.resolve.outputs.github_environment }}
+      github_destroy_environment: ${{ steps.resolve.outputs.github_destroy_environment }}
+      domain: ${{ steps.resolve.outputs.domain }}
+      aws_account_id: ${{ steps.resolve.outputs.aws_account_id }}
+      aws_region: ${{ steps.resolve.outputs.aws_region }}
+      state_bucket: ${{ steps.resolve.outputs.state_bucket }}
+      aws_root: ${{ steps.resolve.outputs.aws_root }}
+      supabase_root: ${{ steps.resolve.outputs.supabase_root }}
+      state_key: ${{ steps.resolve.outputs.state_key }}
+      supabase_state_key: ${{ steps.resolve.outputs.supabase_state_key }}
+      deploy_role_arn: ${{ steps.resolve.outputs.deploy_role_arn }}
+      plan_role_arn: ${{ steps.resolve.outputs.plan_role_arn }}
+      topic_arn: ${{ steps.resolve.outputs.topic_arn }}
+      cluster_name: ${{ steps.resolve.outputs.cluster_name }}
+      service_name: ${{ steps.resolve.outputs.service_name }}
+      destroy_branch: ${{ steps.resolve.outputs.destroy_branch }}
+      destroy_confirm: ${{ steps.resolve.outputs.destroy_confirm }}
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Resolve the deployment"
+        id: resolve
+        env:
+          REPOSITORY_ID: ${{ github.repository_id }}
+          REF_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -uo pipefail
+          resolve_exit=0
+          infra/scripts/resolve-deployment.sh --mode destroy --repository-id "$REPOSITORY_ID" --ref "$REF_NAME" \
+            --event "$EVENT_NAME" --github-output "$GITHUB_OUTPUT" || resolve_exit=$?
+          if [ "$resolve_exit" -ne 0 ]; then
+            echo "::error::resolve-deployment.sh exited $resolve_exit; no deployment of this repository is destroyed from $REF_NAME on $EVENT_NAME."
+            exit 1
+          fi
+
+  plan-destroy:
+    needs: resolve
+    if: (github.event_name == 'push' && github.ref == format('refs/heads/{0}', needs.resolve.outputs.destroy_branch)) || (github.event_name == 'workflow_dispatch' && inputs.confirm == needs.resolve.outputs.destroy_confirm)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: ${{ needs.resolve.outputs.github_destroy_environment }}
+      url: https://${{ needs.resolve.outputs.domain }}
+
+    steps:
+      - name: "Checkout source code"
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Setup Terraform 1.16.5"
+        id: terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      # The role comes from the resolve job, so the environment holds no setting.
+      - name: "Assume the deploy role"
+        id: credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ needs.resolve.outputs.deploy_role_arn }}
+          aws-region: ${{ needs.resolve.outputs.aws_region }}
+          role-session-name: destroy-plan-${{ github.run_id }}
+          allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
+
+      # An init refreshes the state right after it configures the backend and before it installs a provider, so a
+      # refused read of the state fails the init with "Error refreshing state". The step fails if either read succeeds.
+      - name: "Show the Supabase root's state is out of reach"
+        id: supabase-root-refused
+        env:
+          SUPABASE_ROOT: ${{ needs.resolve.outputs.supabase_root }}
+          STATE_BUCKET: ${{ needs.resolve.outputs.state_bucket }}
+          SUPABASE_STATE_KEY: ${{ needs.resolve.outputs.supabase_state_key }}
+        run: |
+          set -uo pipefail
+          init_status=0
+          terraform -chdir="$SUPABASE_ROOT" init -input=false -no-color > "$RUNNER_TEMP/supabase-init.log" 2>&1 || init_status=$?
+          echo "supabase_root_init_status=$init_status"
+          init_refused=no
+          if grep -q 'Error refreshing state' "$RUNNER_TEMP/supabase-init.log" \
+            && grep -qE 'AccessDenied|403' "$RUNNER_TEMP/supabase-init.log"; then
+            init_refused=yes
+          fi
+          head_status=0
+          aws s3api head-object --bucket "$STATE_BUCKET" --key "$SUPABASE_STATE_KEY" > /dev/null \
+            2> "$RUNNER_TEMP/supabase-head.err" || head_status=$?
+          echo "supabase_state_head_status=$head_status"
+          head_refused=no
+          if grep -qE 'Forbidden|AccessDenied|403' "$RUNNER_TEMP/supabase-head.err"; then
+            head_refused=yes
+          fi
+          rm -f "$RUNNER_TEMP/supabase-init.log" "$RUNNER_TEMP/supabase-head.err"
+          if [ "$init_status" -ne 0 ] && [ "$init_refused" = yes ] && [ "$head_status" -ne 0 ] && [ "$head_refused" = yes ]; then
+            echo "supabase_root_refused=yes"
+            exit 0
+          fi
+          echo "supabase_root_refused=no"
+          echo "::error::The deploy role was not refused both reads of the Supabase root's state (init $init_status, refused=$init_refused; head-object $head_status, refused=$head_refused)."
+          exit 1
+
+      - name: "Initialise the AWS root"
+        id: init
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+        run: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly
+
+      # plan-destroy.sh lists the state, plans the destroy with placeholder variable values, exports the saved plan as
+      # JSON for check-destroy-plan.sh and, only when the guard passes, writes the printed plan. Nothing of a plan
+      # reaches the log before the guard has passed it.
+      - name: "Plan the destroy and check it destroys the stack and nothing else"
+        id: plan
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+          DEPLOYMENT_KEY: ${{ needs.resolve.outputs.key }}
+        run: |
+          set -uo pipefail
+          plan_exit=0
+          infra/scripts/plan-destroy.sh --root "$AWS_ROOT" --out-dir "$RUNNER_TEMP/destroy" || plan_exit=$?
+          echo "plan_destroy_exit=$plan_exit"
+          if [ "$plan_exit" -ne 0 ]; then
+            echo "::error::plan-destroy.sh exited $plan_exit; no plan that destroys the $DEPLOYMENT_KEY AWS stack and nothing else was made."
+            exit 1
+          fi
+
+      - name: "Show the plan"
+        id: show
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+        run: |
+          set -euo pipefail
+          cat "$RUNNER_TEMP/destroy/destroy-plan.txt"
+          {
+            echo "### Destroy plan of $AWS_ROOT"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/destroy/destroy-plan.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Remove the plan and the step files"
+        id: cleanup
+        if: always()
+        run: >-
+          rm -rf "$RUNNER_TEMP/destroy"
+
+  # Plans again rather than taking the first job's plan, so no plan file crosses jobs. Its guard checks this plan.
+  apply-destroy:
+    needs: [resolve, plan-destroy]
+    if: (github.event_name == 'push' && github.ref == format('refs/heads/{0}', needs.resolve.outputs.destroy_branch)) || (github.event_name == 'workflow_dispatch' && inputs.confirm == needs.resolve.outputs.destroy_confirm)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: ${{ needs.resolve.outputs.github_destroy_environment }}
+      url: https://${{ needs.resolve.outputs.domain }}
+
+    steps:
+      - name: "Checkout source code"
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Setup Terraform 1.16.5"
+        id: terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      # The role comes from the resolve job, so the environment holds no setting.
+      - name: "Assume the deploy role"
+        id: credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ needs.resolve.outputs.deploy_role_arn }}
+          aws-region: ${{ needs.resolve.outputs.aws_region }}
+          role-session-name: destroy-apply-${{ github.run_id }}
+          allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
+
+      - name: "Initialise the AWS root"
+        id: init
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+        run: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly
+
+      # plan-destroy.sh lists the state, plans the destroy with placeholder variable values, exports the saved plan as
+      # JSON for check-destroy-plan.sh and, only when the guard passes, writes the printed plan. Nothing of a plan
+      # reaches the log before the guard has passed it.
+      - name: "Plan the destroy and check it destroys the stack and nothing else"
+        id: plan
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+          DEPLOYMENT_KEY: ${{ needs.resolve.outputs.key }}
+        run: |
+          set -uo pipefail
+          plan_exit=0
+          infra/scripts/plan-destroy.sh --root "$AWS_ROOT" --out-dir "$RUNNER_TEMP/destroy" || plan_exit=$?
+          echo "plan_destroy_exit=$plan_exit"
+          if [ "$plan_exit" -ne 0 ]; then
+            echo "::error::plan-destroy.sh exited $plan_exit; no plan that destroys the $DEPLOYMENT_KEY AWS stack and nothing else was made."
+            exit 1
+          fi
+
+      - name: "Show the plan"
+        id: show
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+        run: |
+          set -euo pipefail
+          cat "$RUNNER_TEMP/destroy/destroy-plan.txt"
+          {
+            echo "### Destroy plan of $AWS_ROOT"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/destroy/destroy-plan.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Apply the saved destroy plan"
+        id: apply
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+        run: |
+          set -uo pipefail
+          apply_exit=0
+          terraform -chdir="$AWS_ROOT" apply -input=false -no-color "$RUNNER_TEMP/destroy/destroy.tfplan" || apply_exit=$?
+          echo "apply_exit=$apply_exit"
+          if [ "$apply_exit" -ne 0 ]; then
+            echo "::error::terraform apply exited $apply_exit."
+            exit 1
+          fi
+
+      - name: "Show the state of the AWS root is empty"
+        id: state-after
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+        run: |
+          set -uo pipefail
+          state_exit=0
+          terraform -chdir="$AWS_ROOT" state list > "$RUNNER_TEMP/state-after.txt" || state_exit=$?
+          if [ "$state_exit" -ne 0 ]; then
+            echo "::error::terraform state list exited $state_exit."
+            exit 1
+          fi
+          count_exit=0
+          count=$(awk 'NF { n++ } END { print n + 0 }' "$RUNNER_TEMP/state-after.txt") || count_exit=$?
+          echo "destroy_state_after=$count"
+          if [ "$count_exit" -ne 0 ] || [ -z "$count" ]; then
+            echo "::error::The state list after the destroy could not be counted."
+            exit 1
+          fi
+          if [ "$count" -ne 0 ]; then
+            echo "::error::The state of $AWS_ROOT still holds $count addresses."
+            exit 1
+          fi
+
+      - name: "Remove the plan and the step files"
+        id: cleanup
+        if: always()
+        run: >-
+          rm -rf "$RUNNER_TEMP/destroy" "$RUNNER_TEMP/state-after.txt"

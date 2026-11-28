@@ -12,6 +12,6 @@ export type EmailEntryProps = SvelteHTMLElements['div'] & {
 };
 
 /**
- * What the server answered about an address `showEmailError()` shows a message for: `in-use` for an address another account holds, `invited` for one an invitation was sent to.
+ * Why the server did not take the address `showEmailError()` shows a message for: `in-use` for an address another account holds, `invited` for one an invitation was sent to, `too-many-attempts` for a request refused over the per-caller limit before the address was read.
  */
-export type EmailEntryErrorReason = 'in-use' | 'invited';
+export type EmailEntryErrorReason = 'in-use' | 'invited' | 'too-many-attempts';

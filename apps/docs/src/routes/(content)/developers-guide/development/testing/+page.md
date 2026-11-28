@@ -15,7 +15,7 @@ Run every workspace's unit tests from the repository root:
 yarn test:unit
 ```
 
-This first runs `yarn assert:unit-coverage`, which fails if a workspace holds test files but declares no `test:unit` script, or declares one that `turbo run test:unit` does not run. It then runs `turbo run test:unit`, which builds each workspace before testing it, so you do not need a separate build.
+This first runs `yarn assert:unit-coverage`, which fails if a workspace holds test files but declares no `test:unit` script, or declares one that `turbo run test:unit` does not run. It then runs `turbo run test:unit`, which builds each workspace before testing it, so you do not need a separate build. After that it runs `yarn test:unit:tests` and `yarn test:unit:infra`, the Vitest suites of `tests/` and `infra/`, which belong to no workspace.
 
 To run one workspace's tests, use its own script:
 

@@ -6,6 +6,8 @@ severity: minor
 source: Phase 146 (D-09, measured and deferred)
 files:
   - apps/frontend/src/app.css
+tags: [frontend, ui, improvement]
+keywords: [font-weight, tailwind, type-scale, dead-classes, typography]
 ---
 
 ## Problem

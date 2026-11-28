@@ -4,7 +4,7 @@
 
 Shows the basic information of the entity the user edits, a candidate or an organization, some of which is editable.
 
-- The identity section holds the entity's name fields: a candidate's first and last name, or an organization's name and short name by locale. They are editable while the entity is unconfirmed and answers are not locked, and locked otherwise; the section says which. The locked info questions follow them.
+- The identity section holds the entity's name fields: a candidate's first and last name, or an organization's name and short name by locale. They are editable while the entity is unconfirmed and answers are not locked, and locked otherwise; the section says which, and the sentence of a locked name links to an email to support. The locked info questions follow them.
 - The editable section holds the image, an organization's colour and the editable info questions. They are locked only while answers are locked. Beside the thumbnail of an image that is shown, in the same row, a Trash icon button stages its removal, which a save stores; it is not shown while answers are locked.
 - One Save button stores every edit of the page. A stored save leads on: to the questions list when the profile is then complete and an opinion question is unanswered, and to the entity's home otherwise. The button's label says which before the save, from the saved data with the draft. A save that fails, and one in which the backend refuses a changed name because the entity has been confirmed, stay on the page: each puts its own sentence into the message region above the button, which is in the document from the start so that the message is announced, and focus returns to the button. A save that fails first reads the answers lock alone, from the stored settings: when answers are locked, the page's data is read again and the note that answers can no longer be edited says why in place of the failure, and focus moves to the Return button that replaces Save. Otherwise no load runs again, because a load that reruns after a fault can sign the user out or replace the page, and the page keeps its edits.
 
@@ -36,11 +36,13 @@ Which fields a profile has, and every text that differs between the two entity t
   import { lockedAfterRefusedSave, rereadPageData } from '$lib/contestant/utils/rereadPageData';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { ContactSupport } from '$lib/dynamic-components/contactSupport';
   import type { LocalizedAnswer } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { IdentityFieldDescriptor } from '$lib/contestant/utils/entityDescriptor';
   import type { NameState } from '$lib/contestant/utils/nameRule';
+  import type { TranslationKey } from '$types';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -98,9 +100,10 @@ Which fields a profile has, and every text that differs between the two entity t
     'locked-answers': undefined
   };
 
-  const nameSentence = $derived.by(() => {
+  /** The sentence above the name fields, if the name state shows one: which of the two it is and its translation key. */
+  const nameSentence = $derived.by((): { member: 'editable' | 'locked'; key: TranslationKey } | undefined => {
     const member = NAME_SENTENCE[currentNameState];
-    return member ? t(`dynamic.contestantAppBasicInfo.identity.name.${member}.${textType}`) : undefined;
+    return member ? { member, key: `dynamic.contestantAppBasicInfo.identity.name.${member}.${textType}` } : undefined;
   });
 
   /** The name fields with one field for each locale, which stand on their own, and those with a single line, which are rows of the group the locked info questions are in. */
@@ -378,8 +381,15 @@ Which fields a profile has, and every text that differs between the two entity t
     data-name-state={currentNameState}
     data-entity-loaded={entityLoaded ? 'true' : 'false'}>
     <h2 class={subheadingClass}>{t(`dynamic.contestantAppBasicInfo.identity.title.${textType}`)}</h2>
-    {#if nameSentence}
-      <p class="mx-md" id={NAME_NOTE_ID} data-testid="contestant-profile-name-note">{nameSentence}</p>
+    {#if nameSentence?.member === 'locked'}
+      <ContactSupport
+        sentence={nameSentence.key}
+        action="email"
+        id={NAME_NOTE_ID}
+        class="mx-md text-start"
+        data-testid="contestant-profile-name-note" />
+    {:else if nameSentence}
+      <p class="mx-md" id={NAME_NOTE_ID} data-testid="contestant-profile-name-note">{t(nameSentence.key)}</p>
     {/if}
     {#if lockedInfoQuestions.length}
       <p class="mx-md mt-md">{t('dynamic.contestantAppBasicInfo.identity.lockedInfo')}</p>

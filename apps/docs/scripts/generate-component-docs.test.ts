@@ -51,9 +51,7 @@ describe('generateComponentDocs', () => {
 
     await generateComponentDocs({
       outputDir: out,
-      componentDirs: [
-        { dir: components, name: 'Static', importPrefix: '$lib/components' }
-      ],
+      componentDirs: [{ dir: components, name: 'Static', importPrefix: '$lib/components' }],
       libRoot: root
     });
 

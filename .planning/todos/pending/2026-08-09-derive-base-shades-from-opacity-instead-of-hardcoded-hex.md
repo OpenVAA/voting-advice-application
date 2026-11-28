@@ -8,6 +8,8 @@ files:
   - packages/app-shared/src/settings/staticSettings.ts (colors.light / colors.dark)
   - packages/app-shared/src/settings/staticSettings.type.ts (Colors type)
   - apps/frontend/tailwind.config.* + DaisyUI theme wiring (consumers of the colors object)
+tags: [frontend, app-shared, ui, improvement]
+keywords: [theme, colors, base-shades, oklch, color-mix]
 ---
 
 ## Problem

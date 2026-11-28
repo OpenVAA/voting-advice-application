@@ -13,6 +13,8 @@ files:
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/nominations/(edit)/details/page.svelte.test.ts
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/nominations/(edit)/constituencies/+page.svelte
   - packages/dev-seed/src/templates/e2e/perm/perm-contestant-nominations.ts
+tags: [contestant, frontend, tests, improvement]
+keywords: [e2e-coverage, nomination-editor, component-tests, axe-scan, phone-width]
 ---
 
 The closing run of Phase 177 holds 97 tests in `perm-contestant-nominations`: thirteen states scanned in both themes, eleven tests at each of 320 and 390 px, and the behaviour tests. What follows is what that leaves.

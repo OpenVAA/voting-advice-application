@@ -9,6 +9,8 @@ files:
   - apps/frontend/src/routes/contestant/register/+page.svelte
   - apps/frontend/src/routes/contestant/email-sent/+page.svelte
   - apps/frontend/src/lib/contestant/gates/SetPasswordGate.svelte
+tags: [contestant, frontend, ui, improvement]
+keywords: [manual-check, a11y, keyboard, screen-reader, entry-flow]
 ---
 
 ## What to do

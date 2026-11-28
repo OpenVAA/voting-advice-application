@@ -169,6 +169,7 @@ export type TranslationKey =
   | 'common.account.setPassword.title'
   | 'common.account.setPassword.why'
   | 'common.account.signedInAs'
+  | 'common.account.tooManyAttempts'
   | 'common.alliance.plural'
   | 'common.alliance.singular'
   | 'common.answer.no'

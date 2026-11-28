@@ -1,4 +1,4 @@
-import type { EntryLinkRequest } from '$lib/auth/entryFlow';
+import type { EntryLinkRefusal, EntryLinkRequest } from '$lib/auth/entryFlow';
 
 export type ForgotPasswordScreenProps = {
   /**
@@ -6,11 +6,11 @@ export type ForgotPasswordScreenProps = {
    */
   appName: string;
   /**
-   * The app's own way to ask for a mailed link, as its context's entry flow holds it. It resolves once the request has settled or its bound has passed, whatever it settled as.
+   * The app's own way to ask for a mailed link, as its context's entry flow holds it. It resolves once the request has settled or its bound has passed, whatever it settled as, and to the wait when the request was refused over the per-caller limit.
    */
-  sendEntryLink: (request: EntryLinkRequest) => Promise<void>;
+  sendEntryLink: (request: EntryLinkRequest) => Promise<EntryLinkRefusal | undefined>;
   /**
-   * The address of the app's "email sent" page, opened when the request has settled.
+   * The address of the app's "email sent" page, opened when the request has settled and was not refused over the per-caller limit.
    */
   emailSentHref: string;
   /**

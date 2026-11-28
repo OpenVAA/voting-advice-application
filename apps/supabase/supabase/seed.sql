@@ -6,7 +6,7 @@
 -- Storage cleanup configuration for pg_net triggers These settings allow triggers to call the Supabase Storage API for automatic file cleanup on entity delete and image column update.
 --
 -- Values below are the default Supabase local dev settings (not secrets -- they are identical for every local Supabase instance).
--- In production, update with actual Supabase URL and service role key.
+-- A hosted project's two rows are written by `infra/scripts/bootstrap.sql`.
 --------------------------------------------------------------------------------
 INSERT INTO
   storage_config (key, value)

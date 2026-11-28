@@ -404,6 +404,8 @@ export const testIds = {
     }
   },
   voter: {
+    // The consent prompt's `<dialog>` (DataConsentPopup.svelte), the content anchor of its axe scan in voter-prefs-tracking.spec.ts.
+    consentPrompt: 'voter-consent-prompt',
     home: {
       startButton: 'voter-home-start',
       // stable page-content load anchor on the home `MainContent` root <div> (apps/frontend/src/routes/(voters)/+page.svelte). Unlike `startButton` (an action that is HIDDEN under access.voterApp=false maintenance mode), this anchor confirms "the home page content loaded" so `voterHomePage.expectPageVisible()` checks page-load, not action presence.

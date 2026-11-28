@@ -11,7 +11,7 @@
  * 6. **The three outcomes of a save.** A stored save navigates, after the list of the user's entities is read again when it shows a stored property. A refused name and a failed save stay on the page, each with its own sentence in the one message region, and with focus on the Save button. A failed save reads the answers lock alone, and runs no load again unless that read finds answers locked: then the page's data is read again and the page shows the answers-locked note and no failure, with focus on the Return button. While the lock is read as open, or cannot be read, the page stays as it is, with its edits, and says that the save failed. The store's `save`, the lock's reader and the navigation module's `goto` and `invalidateAll` are spies.
  * 7. **The Save button's label and where a stored save leads.** The label follows the saved data with the draft, and the target follows the entity's task state as the save leaves it. The fake context's task state is the real `taskStateOf` over the box's saved facts, and a fake save rewrites the box before it resolves, so a case can tell a target read after the save from one computed before it.
  *
- * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are. The box is raw so that the user data a case puts in it reaches an `Input` as the plain object the real store hands out. Messages are their keys.
+ * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are. The box is raw so that the user data a case puts in it reaches an `Input` as the plain object the real store hands out. Messages are their keys, except the two locked name sentences, which are their keys followed by the support link's placeholder.
  */
 
 import { log } from '@openvaa/app-shared';
@@ -89,8 +89,26 @@ const {
   invalidateAll: vi.fn()
 }));
 
+/** The address the support link of a locked name sentence writes to. */
+const SUPPORT_EMAIL = 'support@example.org';
+
+/** The sentences that hold a placeholder, each its key followed by the placeholder. Every other key translates to itself. */
+const SENTENCES: Record<string, string> = Object.fromEntries(
+  [
+    'dynamic.contestantAppBasicInfo.identity.name.locked.candidate',
+    'dynamic.contestantAppBasicInfo.identity.name.locked.organization'
+  ].map((key) => [key, `${key} {contactSupportLink}`])
+);
+
 const { context, box } = fakeContestantContext(EMPTY_BOX, (held) => ({
-  appSettings: { entities: { hideIfMissingAnswers: { candidate: false, organization: false } } },
+  appSettings: {
+    admin: { email: SUPPORT_EMAIL },
+    entities: { hideIfMissingAnswers: { candidate: false, organization: false } }
+  },
+  t: (key: string, params: Record<string, unknown> = {}) =>
+    (SENTENCES[key] ?? key).replace(/\{(\w+)\}/g, (match, name: string) =>
+      name in params ? String(params[name]) : match
+    ),
   dataRoot: { getElection, getConstituency },
   userData: {
     get current() {
@@ -333,6 +351,19 @@ function rowOf(input: HTMLElement): HTMLElement {
   return row!;
 }
 
+/** Assert that a name note is the start-aligned locked sentence of a key, with one link in place of its placeholder that opens the support email. */
+function expectLockedSentence(note: Element | null, key: string): void {
+  expect(note?.tagName).toBe('P');
+  expect(note?.textContent).toBe(`${key} contestantApp.common.contactSupportLink`);
+  expect(note?.classList.contains('mx-md')).toBe(true);
+  expect(note?.classList.contains('text-start')).toBe(true);
+  expect(note?.classList.contains('text-center')).toBe(false);
+  const links = note?.querySelectorAll('a') ?? [];
+  expect(links).toHaveLength(1);
+  expect(links[0].textContent).toBe('contestantApp.common.contactSupportLink');
+  expect((links[0].getAttribute('href') ?? '').startsWith(`mailto:${SUPPORT_EMAIL}?subject=`)).toBe(true);
+}
+
 function submitOf(target: HTMLElement): HTMLButtonElement {
   const submit = target.querySelector<HTMLButtonElement>(SUBMIT);
   expect(submit, 'the Save button should be rendered').not.toBeNull();
@@ -396,7 +427,7 @@ describe('profile page — a candidate', () => {
 
     const note = identity.querySelector(NAME_NOTE);
     expect(note?.id).toBe(NAME_NOTE_ID);
-    expect(note?.textContent).toBe('dynamic.contestantAppBasicInfo.identity.name.locked.candidate');
+    expectLockedSentence(note, 'dynamic.contestantAppBasicInfo.identity.name.locked.candidate');
     expect(firstName.getAttribute('aria-describedby')).toContain(NAME_NOTE_ID);
 
     expect(target.querySelector(NAME)).toBeNull();
@@ -420,6 +451,7 @@ describe('profile page — a candidate', () => {
     expect(identity.querySelector(NAME_NOTE)?.textContent).toBe(
       'dynamic.contestantAppBasicInfo.identity.name.editable.candidate'
     );
+    expect(identity.querySelector(`${NAME_NOTE} a`)).toBeNull();
   });
 
   it('shows the in-row required badge on a blank first name of an unconfirmed candidate', () => {
@@ -514,6 +546,7 @@ describe('profile page — an organization', () => {
     expect(identity.querySelector(NAME_NOTE)?.textContent).toBe(
       'dynamic.contestantAppBasicInfo.identity.name.editable.organization'
     );
+    expect(identity.querySelector(`${NAME_NOTE} a`)).toBeNull();
 
     // The name: the required locale's field is shown with the translations hidden, and the value has no entry in it.
     const nameFields = fieldsOf(identity, NAME);
@@ -557,9 +590,9 @@ describe('profile page — an organization', () => {
 
     const identity = identityOf(target);
     expect(identity.dataset.nameState).toBe('locked-confirmed');
-    expect(identity.querySelector(NAME_NOTE)?.textContent).toBe(
-      'dynamic.contestantAppBasicInfo.identity.name.locked.organization'
-    );
+    const note = identity.querySelector(NAME_NOTE);
+    expect(note?.id).toBe(NAME_NOTE_ID);
+    expectLockedSentence(note, 'dynamic.contestantAppBasicInfo.identity.name.locked.organization');
     for (const container of [NAME, SHORT_NAME]) {
       const fields = fieldsOf(identity, container);
       expect(fields.length).toBeGreaterThan(0);

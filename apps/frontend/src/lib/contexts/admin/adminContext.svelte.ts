@@ -13,7 +13,7 @@ import { prepareAdminWriter } from '../utils/prepareAdminWriter';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { LoginError } from '$lib/admin/utils/loginError';
 import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
-import type { EntryLinkRequest } from '$lib/auth/entryFlow';
+import type { EntryLinkRefusal, EntryLinkRequest } from '$lib/auth/entryFlow';
 import type { AppContext } from '../app';
 import type { AdminContext } from './adminContext.type';
 
@@ -32,7 +32,7 @@ const CONTEXT_KEY = Symbol('admin');
  * See the inline comment on the getter for the why.
  *
  * ── The entry flow ───────────────────────────────────────────────────────────
- * The forgot-password and "email sent" pages keep their one link request in the private `EntryFlowHolder` `#entryFlow`, as the contestant context does. Its request function asks a request from the forgot-password page with an address for a recovery link made for the Admin App, in the context's locale at the call, and asks nothing for any other request. `sendEntryLink`, `resendEntryLink` and `clearEntryFlow` are arrow fields forwarding to the holder; `entryFlow` is a prototype getter, a reactive accessor. A Log out that worked lets the flow go; one that failed keeps it.
+ * The forgot-password and "email sent" pages keep their one link request in the private `EntryFlowHolder` `#entryFlow`, as the contestant context does. Its request function asks a request from the forgot-password page with an address for a recovery link made for the Admin App, in the context's locale at the call, and asks nothing for any other request. `sendEntryLink`, `resendEntryLink` and `clearEntryFlow` are arrow fields forwarding to the holder, and the first two pass on nothing of an answer about the address but the wait of a refusal over the per-caller limit; `entryFlow` is a prototype getter, a reactive accessor. A Log out that worked lets the flow go; one that failed keeps it.
  *
  * ── Getter-collision audit ──────────────────────────────────────────────────
  * AppContext exposes NONE of `isAuthenticated` / `logout` / `setPassword` / `logoutFailed` / `clearLogoutFailure` / `entryFlow` / `sendEntryLink` / `resendEntryLink` / `clearEntryFlow` (verified). So forwarding appContext onto `this` cannot overwrite any of them, and the getter-only `isAuthenticated` and `logoutFailed` accessors are never an assign target → the `TypeError: Cannot set property which has only a getter` path is STRUCTURALLY absent. Admin's `logout` and the forwarded `clearLogoutFailure` are PLAIN arrow fields, and nothing assigns over them, so no exclusion-on-assign is needed. Do NOT add any `Object.assign` that carries an `isAuthenticated` (or other auth) key onto the instance.
@@ -126,9 +126,9 @@ export class AdminContextProvider implements AdminContext {
 
   #entryFlow = new EntryFlowHolder((request) => this.#requestLink(request));
 
-  sendEntryLink = (request: EntryLinkRequest): Promise<void> => this.#entryFlow.send(request);
+  sendEntryLink = (request: EntryLinkRequest): Promise<EntryLinkRefusal | undefined> => this.#entryFlow.send(request);
 
-  resendEntryLink = (): Promise<void> => this.#entryFlow.resend();
+  resendEntryLink = (): Promise<EntryLinkRefusal | undefined> => this.#entryFlow.resend();
 
   clearEntryFlow = (): void => this.#entryFlow.clear();
 

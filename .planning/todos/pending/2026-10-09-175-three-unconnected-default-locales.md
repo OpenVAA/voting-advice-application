@@ -13,6 +13,8 @@ files:
   - apps/frontend/src/lib/api/dataProvider.ts
   - apps/supabase/supabase/schema/100-tenancy.sql
   - apps/supabase/supabase/schema/010-utility-functions.sql
+tags: [frontend, supabase, translations, improvement]
+keywords: [default-locale, i18n, projects-table, adapter, paraglide]
 ---
 
 ## Finding
@@ -46,3 +48,7 @@ Related: `2026-05-30-paraglide-baselocale-vs-runtime-default-divergence.md` is a
 3. **Leave the three, and name them.** Rename so that no two are called "default locale", and document which decides what.
 
 `requiredNameLocale()` is the single seam for the name rule under every option.
+
+## Maintainer ruling (2026-11-28)
+
+The project's default locale is `projects.default_locale`, loaded per project (consistent with `PUBLIC_PROJECT_ID` scoping). The static-settings default becomes a fallback only where no project is loaded, or goes.

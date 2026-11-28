@@ -8,6 +8,8 @@ files:
   - .planning/phases/147-candidate-app-scan-reach-authenticated-fixture-raw-key-gate/147-03-SUMMARY.md
   - .planning/phases/147-candidate-app-scan-reach-authenticated-fixture-raw-key-gate/147-04-SUMMARY.md
   - .planning/phases/147-candidate-app-scan-reach-authenticated-fixture-raw-key-gate/147-05-SUMMARY.md
+tags: [docs, tooling, improvement]
+keywords: [planning, verify-scripts, negative-control, gsd, process]
 ---
 
 ## The defect class

@@ -3,7 +3,7 @@
 
 The two addresses are compared trimmed and without regard to case. The mismatch is shown at the confirmation when that field loses focus while both hold text, and by `validate()`; an edit of either field removes it. Neither field rewrites what was typed or pasted.
 
-A screen that sends the address on can show what the server answered about it at the address field with `showEmailError()`, naming the server's reason: `in-use` for an address another account holds, `invited` for one an invitation was sent to. The message is shown as the fields' own are, carries that reason as `data-reason`, and is removed by the next edit of either field or by `validate()`.
+A screen that sends the address on can show why the server did not take it at the address field with `showEmailError()`, naming the server's reason: `in-use` for an address another account holds, `invited` for one an invitation was sent to, `too-many-attempts` for a request refused over the per-caller limit. The message is shown as the fields' own are, carries that reason as `data-reason`, and is removed by the next edit of either field or by `validate()`.
 
 ### Properties
 

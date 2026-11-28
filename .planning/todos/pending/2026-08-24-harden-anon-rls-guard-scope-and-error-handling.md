@@ -4,6 +4,8 @@ title: Harden the phase-145 anon RLS guard — unscoped counts and a swallowed q
 area: dev-seed
 files:
   - packages/dev-seed/tests/integration/default-template.integration.test.ts
+tags: [supabase, dev-seed, tests, improvement]
+keywords: [rls, anon, integration-test, vacuous-pass, guard]
 ---
 
 ## Problem

@@ -13,6 +13,7 @@
 - `tst-visual-baseline`: a re-baselined screenshot says why the pixels changed, and the image diff matches that reason.
 - `tst-pgtap-patterns`: BEGIN/ROLLBACK boundaries, `create_test_data()` fixtures, and the right assertion for each case (`ok()`, `lives_ok()` + `is()` for silent RLS denial, `throws_ok()`).
 - `tst-gap`: flag a missing test only where the PR adds branching authority, visibility, matching or filtering logic with **no** test at all, and a regression would be silent. Don't ask for coverage for its own sake.
+- `tst-pins-incidentals`: a test asserts the behaviour, not incidental counts or prose. It doesn't pin an exact count that grows with the codebase (number of specs, soft assertions, grants, files: use a ceiling or derive the expected set from its source), an exact dependency version a caret range allows, or the wording of its own or the code's docstrings and comments.
 
 ## Where to look
 

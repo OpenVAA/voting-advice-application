@@ -95,13 +95,15 @@ import { createContestantPasswordResetPage } from '../../fixtures/contestant/con
 import { createContestantPasswordSetter } from '../../fixtures/contestant/contestantPasswordSetter.fixture';
 import { createContestantQuestionsOverviewPage } from '../../fixtures/contestant/contestantQuestionsOverviewPage.fixture';
 import { createContestantSetPasswordGate } from '../../fixtures/contestant/contestantSetPasswordGate.fixture';
+import { createContestantTermsOfUsePage } from '../../fixtures/contestant/contestantTermsOfUsePage.fixture';
 import { createInvitationFlow } from '../../fixtures/shared/invitationFlow.fixture';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { serverAnswersTimeout, TIMEOUTS } from '../../helpers';
 import { declareScans } from '../../utils/contestantAxeScan';
 import { contestantHomeUrlRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { declareEntryScans } from '../../utils/entryAxeScan';
 import { CONTESTANT_A11Y_SCAN_ADDRESS_PREFIX } from '../../utils/invitationConstants';
+import { measureBorderContrastInSchemes, NON_TEXT_CONTRAST_MINIMUM } from '../../utils/nonTextContrast';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import {
   MULTI_ENTITY_STORAGE_STATE,
@@ -127,7 +129,8 @@ const CONTESTANT_AXE_ROUTES: ReadonlyArray<ContestantAxeRoute> = [
     contentTestId: testIds.contestant.home.statusMessage,
     postLoginTestId: testIds.contestant.home.logout,
     reach: async (page) => {
-      await createContestantHomePage(page).expectNextStep('preview');
+      // reason: after a cold document load the main action names its next step only once three server answers have come in a row, the page, the candidate's questions and the candidate's answers, so the wait has the budget of that chain.
+      await createContestantHomePage(page).expectNextStep('preview', { timeout: serverAnswersTimeout(3) });
     }
   },
   {
@@ -158,11 +161,21 @@ const CONTESTANT_AXE_ROUTES: ReadonlyArray<ContestantAxeRoute> = [
   {
     // Anchor on a profile info item — one per editable info question, several in the base dataset — rather than on the profile heading, which renders from a static i18n title before any of the candidate's own data mounts.
     // Marker: the identity section, which the protected profile alone renders.
+    // State: the base candidate is confirmed, so its name is locked and the sentence saying so carries the link to the support email the scan reads.
     name: 'cand-profile',
     fixture: 'raw',
     routeId: 'ContestantAppProfile',
     contentTestId: testIds.contestant.profile.infoItem,
-    postLoginTestId: testIds.contestant.profile.identity
+    postLoginTestId: testIds.contestant.profile.identity,
+    reach: async (page) => {
+      const identity = page.getByTestId(testIds.contestant.profile.identity);
+      await expect(identity).toHaveAttribute('data-name-state', 'locked-confirmed', { timeout: TIMEOUTS.slowPage });
+      const supportLink = identity
+        .getByTestId(testIds.contestant.profile.nameNote)
+        .getByRole('link', { name: 'contact support', exact: true });
+      await expect(supportLink).toHaveCount(1);
+      await expect(supportLink).toHaveAttribute('href', /^mailto:/);
+    }
   },
   {
     // Anchor on a question CARD, and expand every category expander first.
@@ -459,6 +472,25 @@ test.describe(() => {
   for (const entry of TERMS_PENDING_AXE_ROUTES) {
     declareScans(entry);
   }
+
+  // axe has no rule for non-text contrast (SC 1.4.11), so a box whose border cannot be seen passes the scans above; its border is measured instead.
+  test('the unchecked terms checkbox has a border of at least 3:1 contrast in the light and the dark theme', async ({
+    page
+  }, testInfo) => {
+    const termsPage = createContestantTermsOfUsePage(page);
+    const ratios = await measureBorderContrastInSchemes(page, async () => {
+      await termsPage.open();
+      await expect(termsPage.getCheckbox()).not.toBeChecked();
+      return termsPage.getCheckbox();
+    });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      testInfo.annotations.push({ type: 'border-contrast', description: `${scheme}=${ratio.toFixed(2)}` });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      expect(
+        ratio,
+        `the border contrast of the unchecked terms checkbox in the ${scheme} theme`
+      ).toBeGreaterThanOrEqual(NON_TEXT_CONTRAST_MINIMUM);
+  });
 });
 
 // The session is scoped here for the same reason: the selection screen and the switch item exist only for a user who edits several entities, and the project's user edits one. The scans read this session and leave it as it is: every reader of the run loads the same file.

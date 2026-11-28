@@ -1,13 +1,15 @@
 /**
  * The on-demand deployment checks' WIRING, asserted rather than described.
  *
- * Four checks answer questions that only a running database or Docker can answer: whether migrations/ and schema/ build the same database, whether a deployed database still matches its migrations, whether a database holds anything of the local seed, and whether the frontend image behaves behind a reverse proxy. Each has a root script key so that a later step calls it by name, and the key must name the committed file it claims to run.
+ * Six checks answer questions that only a running database, Docker or a frontend build can answer: whether migrations/ and schema/ build the same database, whether a deployed database still matches its migrations, whether a database holds anything of the local seed, whether a deployed database trusts `cf-connecting-ip`, whether the frontend image behaves behind a reverse proxy, and whether the built server exits by itself after its drain. Each has a root script key so that a later step calls it by name, and the key must name the committed file it claims to run.
  *
  * None of them may be a link of `lint:check`. That chain runs with Node alone. A check that needs a database, placed in it, would either fail every run or be made to pass when it can compare nothing, and a green `lint:check` would then be read as a green check. The keys are `check:*`, not `assert:*`, because every `assert:*` key is a chain link.
  *
  * The schema-equivalence check runs in CI all the same, as a step of the `sql-lint` job, whose runner has Docker and the Supabase CLI. It is the only tie between `schema/` and `migrations/`, so a migration written without its `schema/` edit, or the reverse, reddens that job.
  *
- * The seed check runs in CI too, as a step of the `supabase-tests` job after `supabase start`. That stack holds the local seed, so the step requires the check to refuse it; a check that went blind reddens the job. The drift check has no automated run.
+ * The seed check runs in CI too, as a step of the `supabase-tests` job after `supabase start`. That stack holds the local seed, so the step requires the check to refuse it; a check that went blind reddens the job. The drift check runs in the deploy pipeline: `deploy.yml` calls it through `infra/scripts/push-migrations.sh` after each migration push.
+ *
+ * The shutdown check runs in CI as the step of the `frontend-and-shared-module-validation` job directly after the frontend build, which it needs: it starts `apps/frontend/build/index.js`.
  *
  * The bootstrap script writes rows into a deployment's database. It gets no script key, so that no convenient name can run it against whatever database the environment happens to point at; an operator runs it by hand.
  *
@@ -47,9 +49,19 @@ const CHECKS = [
     file: 'infra/scripts/check-seed.sql'
   },
   {
+    key: 'check:deployment-settings',
+    command: 'psql -X -f infra/scripts/check-deployment-settings.sql',
+    file: 'infra/scripts/check-deployment-settings.sql'
+  },
+  {
     key: 'check:proxy-topology',
     command: 'bash infra/local/check-proxy-topology.sh',
     file: 'infra/local/check-proxy-topology.sh'
+  },
+  {
+    key: 'check:shutdown-exit',
+    command: 'node scripts/check-shutdown-exit.mjs',
+    file: 'scripts/check-shutdown-exit.mjs'
   }
 ] as const;
 
@@ -130,5 +142,20 @@ describe('the seed check runs in CI against the seeded stack', () => {
       expect(lines.join('\n')).toContain(`'${finding}'`);
     }
     expect(lines).toContain("- 'infra/scripts/check-seed.sql'");
+  });
+});
+
+describe('the shutdown check runs in CI after the frontend build', () => {
+  const runs = jobRuns('frontend-and-shared-module-validation');
+
+  it('is wired as `check:shutdown-exit` running the committed script', () => {
+    expect(SCRIPTS['check:shutdown-exit']).toBe('node scripts/check-shutdown-exit.mjs');
+    expect(existsSync(resolve(REPO_ROOT, 'scripts/check-shutdown-exit.mjs'))).toBe(true);
+  });
+
+  it('runs `yarn check:shutdown-exit` in the frontend job as the step directly after the frontend build', () => {
+    const build = runs.indexOf('yarn workspace @openvaa/frontend build');
+    expect(build).toBeGreaterThan(-1);
+    expect(runs[build + 1]).toBe('yarn check:shutdown-exit');
   });
 });

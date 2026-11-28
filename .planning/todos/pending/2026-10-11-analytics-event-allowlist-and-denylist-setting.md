@@ -4,6 +4,8 @@ title: Add a setting for an analytics event allowlist and denylist
 area: analytics / settings
 severity: minor
 source: operator, 2026-10-11 (note under B3 of v2.17-DISCUSSION-POINTS.md, workstream deployment)
+tags: [voter, frontend, app-shared, feat]
+keywords: [analytics, relay, settings, allowlist, denylist, events]
 ---
 
 ## Problem

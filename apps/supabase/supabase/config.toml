@@ -437,6 +437,13 @@ PUBLIC_PROJECT_ID = "env(PUBLIC_PROJECT_ID)"
 # `supabase functions deploy` reads this setting, so a deploy needs no flag for it.
 verify_jwt = false
 
+[functions.account-access]
+# The gateway does not verify a JWT for this function. The function admits an anonymous caller
+# and makes its own checks of every request: the closed sign-up, the redirect allow list,
+# eligibility and the throttle.
+# `supabase functions deploy` reads this setting, so a deploy needs no flag for it.
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

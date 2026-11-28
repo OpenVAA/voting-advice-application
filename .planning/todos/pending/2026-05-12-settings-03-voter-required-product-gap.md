@@ -8,7 +8,8 @@ created: 2026-05-12
 phase-context: 77-settings-matrix-question-customization-gap-fills/Plan-04
 related-phases: [77]
 related-requirements: [SETTINGS-03]
-tags: [voter-app, required-info, product-gap, customData.required, profileComplete]
+tags: [voter, frontend, contexts, feat]
+keywords: [voter-app, required-info, product-gap, customData.required, profileComplete, info-questions, results-gate, customdata-required]
 ---
 
 # SETTINGS-03 voter-side `customData.required` enforcement PRODUCT-GAP

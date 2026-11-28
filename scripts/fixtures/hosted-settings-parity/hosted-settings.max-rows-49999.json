@@ -1,7 +1,7 @@
 {
   "api": {
     "db_schema": "public,graphql_public",
-    "db_extra_search_path": "public,extensions",
+    "db_extra_search_path": "public, extensions",
     "max_rows": 49999
   },
   "auth": {

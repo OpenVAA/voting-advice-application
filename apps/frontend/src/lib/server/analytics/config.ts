@@ -13,11 +13,21 @@ export const ANALYTICS_ENV = {
   consentMode: 'ANALYTICS_CONSENT_MODE',
   visitIdMode: 'ANALYTICS_VISIT_ID_MODE',
   posthogKey: 'ANALYTICS_POSTHOG_KEY',
-  posthogHost: 'ANALYTICS_POSTHOG_HOST'
+  posthogHost: 'ANALYTICS_POSTHOG_HOST',
+  flushIntervalMs: 'ANALYTICS_FLUSH_INTERVAL_MS'
 } as const;
 
 /** The PostHog host used when `ANALYTICS_POSTHOG_HOST` is unset: the EU cloud. */
 export const DEFAULT_POSTHOG_HOST = 'https://eu.i.posthog.com';
+
+/** The flush interval used when `ANALYTICS_FLUSH_INTERVAL_MS` is unset, in milliseconds. */
+export const DEFAULT_FLUSH_INTERVAL_MS = 2000;
+
+/** The shortest flush interval accepted, in milliseconds. */
+export const MIN_FLUSH_INTERVAL_MS = 500;
+
+/** The longest flush interval accepted, in milliseconds. */
+export const MAX_FLUSH_INTERVAL_MS = 600000;
 
 /** The hosts on which a plain `http:` PostHog host is accepted, for a local PostHog or a test double. */
 const LOOPBACK_HOSTNAMES: ReadonlyArray<string> = ['localhost', '127.0.0.1'];
@@ -27,6 +37,8 @@ export type AnalyticsConfig = {
   provider: AnalyticsProviderName;
   consentMode: ConsentMode;
   visitIdMode: VisitIdMode;
+  /** How often the queue hands its events to the provider, in milliseconds. */
+  flushIntervalMs: number;
   /** Present only when the provider is `posthog`. */
   posthog?: { host: string; key: string };
 };
@@ -37,7 +49,7 @@ export type AnalyticsConfigProblem = {
   variable: string;
   /** `missing` when a required value was unset, `invalid` when the value is not acceptable. */
   reason: 'invalid' | 'missing';
-  /** The normalised value, only for a vocabulary variable. Never present for the key or the host, so a secret cannot reach a log through it. */
+  /** The normalised value, only for a vocabulary variable. Never present for the key, the host or the flush interval, so no raw value of theirs, the secret key among them, can reach a log through it. */
   provided?: string;
 };
 
@@ -47,7 +59,7 @@ type AnalyticsEnv = Readonly<Record<string, string | undefined>>;
 /**
  * Resolve the analytics configuration from the environment. It reads nothing but its argument, and it neither throws nor logs for any value.
  *
- * Unset values take their defaults: provider `none`, consent mode `gated`, visit-id mode `memory`. Any problem at all resolves the provider to `none`, so a misconfigured deployment sends nothing; the two modes still resolve to their valid or default values.
+ * Unset values take their defaults: provider `none`, consent mode `gated`, visit-id mode `memory`, flush interval {@link DEFAULT_FLUSH_INTERVAL_MS}. Any problem at all resolves the provider to `none`, so a misconfigured deployment sends nothing; the two modes and the flush interval still resolve to their valid or default values.
  *
  * @param env - The private server environment.
  * @returns The configuration, and the problems that forced a fallback, in variable order.
@@ -74,9 +86,13 @@ export function resolveAnalyticsConfig(env: AnalyticsEnv): {
     if (key !== undefined && host !== undefined) posthog = { host, key };
   }
 
-  if (problems.length > 0) return { config: { provider: 'none', consentMode, visitIdMode }, problems };
+  const flushIntervalMs = readFlushInterval(env, problems);
+
+  if (problems.length > 0) return { config: { provider: 'none', consentMode, visitIdMode, flushIntervalMs }, problems };
   return {
-    config: posthog ? { provider, consentMode, visitIdMode, posthog } : { provider, consentMode, visitIdMode },
+    config: posthog
+      ? { provider, consentMode, visitIdMode, flushIntervalMs, posthog }
+      : { provider, consentMode, visitIdMode, flushIntervalMs },
     problems
   };
 }
@@ -125,6 +141,22 @@ function readVocabulary<TValue extends string>(
   if (match !== undefined) return match;
   problems.push({ variable, reason: 'invalid', provided: normalised });
   return fallback;
+}
+
+/**
+ * Read the flush interval: a whole number of milliseconds from {@link MIN_FLUSH_INTERVAL_MS} to {@link MAX_FLUSH_INTERVAL_MS}. An unset value takes {@link DEFAULT_FLUSH_INTERVAL_MS}; any other value takes the default and records an `invalid` problem that carries no value.
+ *
+ * @param env - The environment.
+ * @param problems - Where an invalid value is recorded.
+ * @returns The accepted interval or the default.
+ */
+function readFlushInterval(env: AnalyticsEnv, problems: Array<AnalyticsConfigProblem>): number {
+  const raw = readValue(env[ANALYTICS_ENV.flushIntervalMs]);
+  if (raw === undefined) return DEFAULT_FLUSH_INTERVAL_MS;
+  const interval = /^\d+$/.test(raw) ? Number(raw) : NaN;
+  if (interval >= MIN_FLUSH_INTERVAL_MS && interval <= MAX_FLUSH_INTERVAL_MS) return interval;
+  problems.push({ variable: ANALYTICS_ENV.flushIntervalMs, reason: 'invalid' });
+  return DEFAULT_FLUSH_INTERVAL_MS;
 }
 
 /**

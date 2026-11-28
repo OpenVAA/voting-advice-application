@@ -14,6 +14,26 @@ export function isActive(route: string, url: URL): boolean {
   return url.pathname === route || url.pathname.startsWith(route + '/');
 }
 
+/**
+ * Returns the leaf item of the menu that stands for the current page: the leaf whose route is the URL's path or, when no leaf has that route, the leaf with the longest route the path lies below.
+ *
+ * A leaf's route can be a prefix of another leaf's, as a subsection's Overview item is of its siblings, so the first active leaf is not enough.
+ */
+function findCurrentLeaf(items: Array<NavigationSection | NavigationItem>, url: URL): NavigationItem | null {
+  let current: NavigationItem | null = null;
+  for (const item of flattenNavigation(items)) {
+    if (isActive(item.route, url) && (!current || item.route.length > current.route.length)) current = item;
+  }
+  return current;
+}
+
+/**
+ * Whether a leaf item of the menu stands for the current page. Only one leaf of the whole menu does.
+ */
+export function isCurrentLeaf(item: NavigationItem, url: URL): boolean {
+  return findCurrentLeaf(navigation, url)?.route === item.route;
+}
+
 export function hasChildren(item: NavigationSection | NavigationItem): item is NavigationSection {
   return 'children' in item && item.children.length > 0;
 }
@@ -52,8 +72,8 @@ export function getPeerNavigation(url: URL): {
   // Flatten all items in the active section
   const allItems = flattenNavigation(activeSection.children);
 
-  // Find the current item index
-  const currentIndex = allItems.findIndex((item) => isActive(item.route, url));
+  const current = findCurrentLeaf(activeSection.children, url);
+  const currentIndex = current ? allItems.indexOf(current) : -1;
 
   if (currentIndex === -1) {
     return { prev: null, next: null };

@@ -12,8 +12,8 @@
         },
         "name": {
           "locked": {
-            "candidate": "Sinu nime on määranud administraator või see on saadud sinu isikutuvastusest ning sa ei saa seda siin muuta. Kui see on vale, võta palun ühendust toega.",
-            "organization": "Administraator on kinnitanud sinu erakonna nime ja lühendi ning sa ei saa neid siin muuta. Kui need on valed, võta palun ühendust toega."
+            "candidate": "Sinu nime on määranud administraator või see on saadud sinu isikutuvastusest ning sa ei saa seda siin muuta. Kui see on vale, {contactSupportLink}.",
+            "organization": "Administraator on kinnitanud sinu erakonna nime ja lühendi ning sa ei saa neid siin muuta. Kui need on valed, {contactSupportLink}."
           },
           "editable": {
             "candidate": "Saad oma nime muuta seni, kuni administraator on sinu profiili kinnitanud.",

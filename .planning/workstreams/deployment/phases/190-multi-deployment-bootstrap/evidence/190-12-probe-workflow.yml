@@ -1,0 +1,155 @@
+name: "OIDC subject probe"
+
+# A throwaway probe for Phase 190, never merged. It is copied to `.github/workflows/downstream-oidc-probe.yml` on a
+# throwaway `deploy/nuorten-2027` branch of the downstream repository and deleted with that branch.
+#
+# It records three things: the `sub` claim of an OIDC token minted by a push and by a pull request; that a job whose
+# environment name evaluates to the empty string, in the object form of the deploy job's environment, runs with no
+# environment and is issued the ref-based subject; and whether an `ubuntu-24.04-arm` runner starts for the repository.
+#
+# The token is requested with the audience `sts.amazonaws.com` and masked before it is decoded. Only the decoded claims
+# are printed; the token itself never is. No role trusts the repository, so the token assumes nothing.
+#
+# A step reads a command's status as `cmd || name=$?`, after `name=0`, because a `run:` step that names no `shell:`
+# runs under `bash -e`: that shell ends the step at a failing command that is not in an `||` list.
+
+on:
+  push:
+    branches:
+      - "deploy/nuorten-2027"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+permissions: {}
+
+jobs:
+  # Gives the empty environment name, the way the deploy workflow's resolve job does for a deployment without
+  # environments.
+  shape:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      environment: ${{ steps.shape.outputs.environment }}
+
+    steps:
+      - name: "Write an empty environment name"
+        id: shape
+        run: echo "environment=" >> "$GITHUB_OUTPUT"
+
+  probe-empty-environment:
+    needs: shape
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: ${{ needs.shape.outputs.environment }}
+      url: https://nuortenvaalikone.openvaa.org
+
+    steps:
+      - name: "Print the token's claims"
+        run: |
+          set -uo pipefail
+          umask 077
+          response="$RUNNER_TEMP/oidc-response.json"
+          token_file="$RUNNER_TEMP/oidc-token"
+          claims_file="$RUNNER_TEMP/oidc-claims.json"
+          cleanup() { rm -f "$response" "$token_file" "$claims_file"; }
+          trap cleanup EXIT
+          curl_status=0
+          curl -sS --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" -o "$response" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" || curl_status=$?
+          if [ "$curl_status" -ne 0 ]; then
+            echo "::error::The OIDC token request exited $curl_status."
+            exit 1
+          fi
+          jq_status=0
+          jq -j .value "$response" > "$token_file" || jq_status=$?
+          rm -f "$response"
+          if [ "$jq_status" -ne 0 ] || [ ! -s "$token_file" ]; then
+            echo "::error::The OIDC token response held no token."
+            exit 1
+          fi
+          echo "::add-mask::$(cat "$token_file")"
+          IFS=. read -r _ payload _ < "$token_file" || [ -n "$payload" ]
+          payload="${payload//-/+}"
+          payload="${payload//_//}"
+          case $(( ${#payload} % 4 )) in
+            2) payload="$payload==" ;;
+            3) payload="$payload=" ;;
+          esac
+          decode_status=0
+          base64 -d <<< "$payload" > "$claims_file" || decode_status=$?
+          claims_status=0
+          claims=$(jq -r '"sub=\(.sub)", "repository_id=\(.repository_id)", "repository_owner_id=\(.repository_owner_id)", "ref=\(.ref)", "environment=\(.environment // "")", "event_name=\(.event_name)"' "$claims_file") || claims_status=$?
+          cleanup
+          if [ "$decode_status" -ne 0 ] || [ "$claims_status" -ne 0 ]; then
+            echo "::error::The token's claims could not be read."
+            exit 1
+          fi
+          echo "$claims"
+
+  probe-no-environment:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: "Print the token's claims"
+        run: |
+          set -uo pipefail
+          umask 077
+          response="$RUNNER_TEMP/oidc-response.json"
+          token_file="$RUNNER_TEMP/oidc-token"
+          claims_file="$RUNNER_TEMP/oidc-claims.json"
+          cleanup() { rm -f "$response" "$token_file" "$claims_file"; }
+          trap cleanup EXIT
+          curl_status=0
+          curl -sS --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" -o "$response" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" || curl_status=$?
+          if [ "$curl_status" -ne 0 ]; then
+            echo "::error::The OIDC token request exited $curl_status."
+            exit 1
+          fi
+          jq_status=0
+          jq -j .value "$response" > "$token_file" || jq_status=$?
+          rm -f "$response"
+          if [ "$jq_status" -ne 0 ] || [ ! -s "$token_file" ]; then
+            echo "::error::The OIDC token response held no token."
+            exit 1
+          fi
+          echo "::add-mask::$(cat "$token_file")"
+          IFS=. read -r _ payload _ < "$token_file" || [ -n "$payload" ]
+          payload="${payload//-/+}"
+          payload="${payload//_//}"
+          case $(( ${#payload} % 4 )) in
+            2) payload="$payload==" ;;
+            3) payload="$payload=" ;;
+          esac
+          decode_status=0
+          base64 -d <<< "$payload" > "$claims_file" || decode_status=$?
+          claims_status=0
+          claims=$(jq -r '"sub=\(.sub)", "repository_id=\(.repository_id)", "repository_owner_id=\(.repository_owner_id)", "ref=\(.ref)", "environment=\(.environment // "")", "event_name=\(.event_name)"' "$claims_file") || claims_status=$?
+          cleanup
+          if [ "$decode_status" -ne 0 ] || [ "$claims_status" -ne 0 ]; then
+            echo "::error::The token's claims could not be read."
+            exit 1
+          fi
+          echo "$claims"
+
+  # A job that waits in the queue is not ended by timeout-minutes, which counts from the job's start; one that has
+  # no runner after ten minutes is cancelled by hand.
+  probe-arm:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: "Print the machine"
+        run: echo "uname_m=$(uname -m)"

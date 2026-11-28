@@ -126,6 +126,8 @@ tfplan.*
 # non-secret inputs and holds no secret. Only local and secret variable files are ignored.
 *.auto.tfvars
 *.auto.tfvars.json
+# The deployment map is public, reviewed data that the bootstrap root auto-loads.
+!infra/bootstrap/deployments.auto.tfvars.json
 *.local.tfvars
 *.secret.tfvars
 # Local overrides, including the backend override used for the first apply of the bootstrap
@@ -136,5 +138,6 @@ override.tf.json
 *_override.tf.json
 .terraformrc
 terraform.rc
-# A provider lock file belongs to a root and never to a module.
+# A provider lock file belongs to a root, except where a module's own test must run the roots' pinned provider.
 infra/modules/**/.terraform.lock.hcl
+!infra/modules/supabase/.terraform.lock.hcl

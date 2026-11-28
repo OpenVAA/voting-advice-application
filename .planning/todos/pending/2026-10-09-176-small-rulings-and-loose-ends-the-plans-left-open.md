@@ -11,6 +11,8 @@ files:
   - tests/tests/utils/buildRoute.ts
   - tests/tests/utils/testIds.ts
   - scripts/assert-project-scoped-queries.mjs
+tags: [contestant, tests, improvement]
+keywords: [rulings, timeouts, task-count, loose-ends]
 ---
 
 ## 1. Two rulings the orchestrator made on its own judgement

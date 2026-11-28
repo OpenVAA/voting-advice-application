@@ -22,6 +22,10 @@
  *
  * A batch is sent at the next flush point: a client navigation, the page becoming hidden, or the page being left. `flushTrackingBuffer` reaches the hidden flush point on the same document by overriding `document.visibilityState` and dispatching `visibilitychange`, then restores the real value. Where a test needs a batch to have arrived, it flushes again until the batch is captured, which also covers a first flush made before the page has hydrated.
  *
+ * ## The consent prompt
+ *
+ * The prompt is a modal dialog driven through `consentPrompt.fixture.ts`: it covers the page under it, an Escape in its information dialog closes that dialog alone, and over a results drawer one Escape closes only the topmost of the two. Its axe scan, in both themes, runs here too, because this is the dataset on which the prompt opens.
+ *
  * ## Persisted-prefs scope
  *
  * In the voter app, `userPreferences` (userPreferences.type.ts) persists exactly: `dataCollection.consent` + `feedback.status` + `survey.status` (the Contestant App keeps its consent apart, in `contestantDataConsent`) — there is NO theme field (dark mode is OS-media-driven, not a persisted preference). The round-trip writes all three through the app's real `localStorageState` versioned envelope (`appContext-userPreferences`), reloads, and re-reads them back THROUGH the version check (proving persistence, not a raw blob echo).
@@ -44,13 +48,19 @@ import {
   PREFS_KEY,
   visitIdOf
 } from '../../fixtures/shared/relayCapture.fixture';
+import { createConsentPrompt } from '../../fixtures/voter/consentPrompt.fixture';
+import { createResultsPage } from '../../fixtures/voter/resultsPage.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { assertAxeScan, assertDarkThemeApplied } from '../../utils/axeScan';
+import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 import { walkVoterStages } from '../../utils/voterNavigation';
 import type { BrowserContext, Page } from '@playwright/test';
 import type { CapturedRelayEvent, RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
+import type { ConsentPromptFixture } from '../../fixtures/voter/consentPrompt.fixture';
+import type { RawAxeRoute } from '../../utils/axeScan';
 
 /** The message of the first assertion, which fails when the relay forwards nothing. */
 const RELAY_INACTIVE_MESSAGE = `no request to the relay path ${RELAY_PATH} was captured: the server must run with ANALYTICS_PROVIDER=log, as .env.example sets it`;
@@ -113,14 +123,14 @@ async function readStoredText(context: BrowserContext, page: Page): Promise<stri
 /**
  * Grant data-collection consent via the in-app DataConsent control (NOT seeded).
  *
- * When consent is `indetermined` the voter layout auto-opens the DataConsentPopup (a non-modal `Alert` dialog) which carries its OWN DataConsent — the canonical consent surface a voter sees. We drive the dialog's granted button (scoped to `getByRole('dialog')` to avoid the strict-mode clash with an inline copy). Clicking it runs `setDataConsent('granted')` → `track('dataConsent_granted')` and closes the dialog (`onChange` → `closeAlert()`).
+ * When consent is `indetermined` the voter layout auto-opens the DataConsentPopup, a modal dialog that carries its OWN DataConsent — the canonical consent surface a voter sees. While it is open the page under it is inert. We drive the dialog's granted button (scoped to `getByRole('dialog')` to avoid the strict-mode clash with an inline copy). Clicking it runs `setDataConsent('granted')` → `track('dataConsent_granted')` and closes the dialog (`onChange` → `closeModal()`), which records nothing more.
  */
 async function grantConsentViaPopup(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog');
   const grantedButton = dialog.getByRole('button', { name: GRANTED_BUTTON });
   await expect(grantedButton).toBeVisible({ timeout: TIMEOUTS.slowPage });
   await grantedButton.click();
-  // The popup closes once consent is set (Alert.closeAlert via onChange).
+  // The popup closes once consent is set (Modal.closeModal via onChange).
   await expect(dialog).toBeHidden({ timeout: TIMEOUTS.slowPage });
 }
 
@@ -130,37 +140,49 @@ async function grantConsentViaPopup(page: Page): Promise<void> {
 const CONSENT_FREE_MODE = process.env.ANALYTICS_CONSENT_MODE?.trim().toLowerCase() === 'free';
 
 /**
- * Close the voter app's consent prompt WITHOUT making a choice, and assert that no choice is stored.
+ * Close the voter app's consent prompt with Escape, which declines, and assert that the decline is stored.
  *
- * In the default mode the prompt opens on its own while no choice is stored. It is a non-modal alert fixed to the bottom of the viewport, and the pages of the walk keep their primary action at the bottom of the viewport too (the intro's Continue button), so whatever the viewport, the alert covers it. Its close button closes the alert and records nothing; the prompt is queued once, when the voter layout mounts, so it does not open again during the walk.
+ * In the default mode the prompt opens on its own while no choice is stored. It is a modal dialog: while it is open the page under it is inert, so a walk cannot go on until it is closed. Every close without a choice, Escape included, is a decline, recorded as the decline button records it, and a stored decline keeps the prompt from opening again.
  *
- * In consent-free mode no prompt is shown, so there is nothing to close: after the page has hydrated, the prompt must be absent. Only in that mode is its absence accepted.
+ * In consent-free mode no prompt is shown, so there is nothing to close: after the page has hydrated, the prompt must be absent and no choice stored. Only in that mode is its absence accepted.
  *
  * @param page - A voter page opened by its URL, with no consent choice stored.
  */
 async function dismissConsentPrompt(page: Page): Promise<void> {
   const prompt = page.getByRole('dialog', { name: CONSENT_PROMPT });
   if (CONSENT_FREE_MODE) {
-    await waitForNavigationFocusReset(page);
+    // The consent prompt is queued when the voter layout mounts, so its absence counts only once the page has hydrated.
+    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
     await expect(
       prompt,
       'the consent prompt is shown although ANALYTICS_CONSENT_MODE=free: the server is not in consent-free mode'
     ).toHaveCount(0);
-  } else {
-    await expect(
-      prompt,
-      'the consent prompt did not open: the server must run in the default mode, with ANALYTICS_CONSENT_MODE unset or gated'
-    ).toBeVisible({ timeout: TIMEOUTS.slowPage });
-    await prompt.getByRole('button', { name: /^close$/i }).click();
-    await expect(prompt).toBeHidden({ timeout: TIMEOUTS.slowPage });
+    await expectNoConsentChoiceStored(page);
+    return;
   }
-  await expectNoConsentChoiceStored(page);
+  await expect(
+    prompt,
+    'the consent prompt did not open: the server must run in the default mode, with ANALYTICS_CONSENT_MODE unset or gated'
+  ).toBeVisible({ timeout: TIMEOUTS.slowPage });
+  await page.keyboard.press('Escape');
+  await expect(prompt).toBeHidden({ timeout: TIMEOUTS.slowPage });
+  await expectStoredConsent(page, 'denied');
 }
 
 /** Assert that the stored user preferences hold no consent choice: no consent at all, or `indetermined`. */
 async function expectNoConsentChoiceStored(page: Page): Promise<void> {
   const consent = (await readPersistedPrefs(page))?.dataCollection?.consent;
   expect([undefined, 'indetermined'], `a consent choice is stored: ${String(consent)}`).toContain(consent);
+}
+
+/** Assert that the stored user preferences hold `consent` as the voter app's consent choice. */
+async function expectStoredConsent(page: Page, consent: string): Promise<void> {
+  await expect
+    .poll(async () => (await readPersistedPrefs(page))?.dataCollection?.consent, {
+      message: `the stored consent choice is not ${consent}`,
+      timeout: TIMEOUTS.slowPage
+    })
+    .toBe(consent);
 }
 
 /**
@@ -184,6 +206,11 @@ async function readPersistedPrefs(page: Page): Promise<PersistedPrefs | null> {
   }, PREFS_KEY);
 }
 
+/** Remove the stored user preferences, and with them the consent choice, so the voter layout opens the consent prompt again on the next document. */
+async function forgetStoredPreferences(page: Page): Promise<void> {
+  await page.evaluate((key) => window.localStorage.removeItem(key), PREFS_KEY);
+}
+
 /**
  * Merge `patch` into the app's versioned localStorage envelope, PRESERVING the existing version number (so the app's `getItemFromStorage` version gate accepts it on reload). Requires the envelope to already exist (consent granted via UI first), so we never fabricate a version.
  */
@@ -198,6 +225,25 @@ async function patchPersistedPrefs(page: Page, patch: PersistedPrefs): Promise<v
     },
     { key: PREFS_KEY, patch }
   );
+}
+
+/** The voter app's consent prompt on `page`, with the slow-page wait budget, telling the entity drawer apart from other dialogs. */
+function consentPromptOn(page: Page): ConsentPromptFixture {
+  return createConsentPrompt(page, { timeout: TIMEOUTS.slowPage, drawerTestId: testIds.voter.results.entityDetails });
+}
+
+/** The front page with the consent prompt open over it, as the axe scan reaches it: a fresh context stores no consent choice, so the voter layout opens the prompt as it mounts. */
+const CONSENT_PROMPT_SCAN: RawAxeRoute = {
+  name: 'voter-consent-prompt',
+  fixture: 'raw',
+  routeId: 'Home',
+  contentTestId: testIds.voter.consentPrompt
+};
+
+/** The stored consent choice of the voter app, `none` when no choice is stored (absent or `indetermined`). */
+async function consentChoice(page: Page): Promise<string> {
+  const consent = (await readPersistedPrefs(page))?.dataCollection?.consent;
+  return consent === undefined || consent === 'indetermined' ? 'none' : consent;
 }
 
 test.describe('voter-prefs-tracking (EFLOW-08)', () => {
@@ -219,40 +265,68 @@ test.describe('voter-prefs-tracking (EFLOW-08)', () => {
       .toBeGreaterThan(0);
   });
 
-  test('before consent only pageviews are sent, with no id', async ({ context, page }) => {
-    const capture = createRelayCapture(context);
-
-    // Two pages and an answer, with no consent choice, flushing after each step. The consent prompt is closed without a choice, so it covers none of the controls the walk clicks.
-    await openVoterHome(page);
-    await dismissConsentPrompt(page);
-    await flushUntil(page, () => hasPageview(capture, isHomeRoute), 'the front page sent no pageview');
-    await startToFirstQuestion(page);
-    await flushUntil(page, () => hasPageview(capture, isQuestionRoute), 'the question page sent no pageview');
-    await answerAndAdvanceToResults(page, 'max');
-    // The results pageview is sent by this last flush, after every batch of the earlier pages.
-    await flushUntil(page, () => hasPageview(capture, isResultsRoute), 'the results page sent no pageview');
-    // Still no choice at the end of the walk, so every captured batch was sent before consent.
-    await expectNoConsentChoiceStored(page);
-
-    const events = capture.getEvents();
-    const notPageviews = events.filter((event) => event.name !== 'pageview').map((event) => event.name);
-    expect(notPageviews, `non-pageview events were sent before consent: ${notPageviews.join(', ')}`).toStrictEqual([]);
-    const withId = events.filter(hasVisitId).map(describeEvent);
-    expect(withId, `events with an id were sent before consent: ${withId.join(', ')}`).toStrictEqual([]);
-    const pageviewCount = events.filter((event) => event.name === 'pageview').length;
-    expect(pageviewCount, 'at least two pageviews were sent').toBeGreaterThanOrEqual(2);
-  });
-
-  test('after consent the events are sent with the visit id, and nothing buffered before the grant is sent', async ({
+  test('before a choice and after a decline only pageviews are sent, with no id, and the declined prompt does not open again', async ({
     context,
     page
   }) => {
     const capture = createRelayCapture(context);
 
+    // The front page's pageview is sent while the prompt is open and no choice is stored; Escape then declines, and the walk goes on under the decline.
     await openVoterHome(page);
-    // Opening the menu buffers `menu_open` while no consent choice is stored; the grant must drop it.
+    await expect(page.getByRole('dialog', { name: CONSENT_PROMPT })).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await flushUntil(page, () => hasPageview(capture, isHomeRoute), 'the front page sent no pageview');
+    await expectNoConsentChoiceStored(page);
+    await dismissConsentPrompt(page);
+    await startToFirstQuestion(page);
+    await flushUntil(page, () => hasPageview(capture, isQuestionRoute), 'the question page sent no pageview');
+    await answerAndAdvanceToResults(page, 'max');
+    // The results pageview is sent by this last flush, after every batch of the earlier pages.
+    await flushUntil(page, () => hasPageview(capture, isResultsRoute), 'the results page sent no pageview');
+    await expectStoredConsent(page, 'denied');
+
+    const events = capture.getEvents();
+    const notPageviews = events.filter((event) => event.name !== 'pageview').map((event) => event.name);
+    expect(
+      notPageviews,
+      `non-pageview events were sent before a choice or after a decline: ${notPageviews.join(', ')}`
+    ).toStrictEqual([]);
+    const withId = events.filter(hasVisitId).map(describeEvent);
+    expect(
+      withId,
+      `events with an id were sent before a choice or after a decline: ${withId.join(', ')}`
+    ).toStrictEqual([]);
+    const pageviewCount = events.filter((event) => event.name === 'pageview').length;
+    expect(pageviewCount, 'at least three pageviews were sent').toBeGreaterThanOrEqual(3);
+
+    // The stored decline keeps the prompt from opening again on a new document.
+    await page.reload();
+    await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    // The prompt is queued when the voter layout mounts, so its absence counts only once the page has hydrated.
+    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
+    await expect(page.getByRole('dialog', { name: CONSENT_PROMPT }), 'the declined prompt opened again').toHaveCount(0);
+    await expectStoredConsent(page, 'denied');
+  });
+
+  test('after a grant the events are sent with the visit id, and nothing buffered before the grant is sent', async ({
+    context,
+    page
+  }) => {
+    const capture = createRelayCapture(context);
+
+    // A decline on the privacy page, then a menu opening, which is buffered while consent is declined and stays buffered until the next flush.
+    await page.goto('/en/privacy');
+    await expect(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await dismissConsentPrompt(page);
     await openAndCloseMenu(page);
-    await grantConsentViaPopup(page);
+    // The grant on the same document, through the page's own consent control; the grant must drop the buffered `menu_open`.
+    await page.getByTestId(testIds.voter.privacy.content).getByRole('button', { name: GRANTED_BUTTON }).click();
+    await expectStoredConsent(page, 'granted');
+    await flushUntil(
+      page,
+      () => capture.getEventNames().includes('dataConsent_granted'),
+      'the grant was not sent from the privacy page'
+    );
+    await openVoterHome(page);
     await startToFirstQuestion(page);
     await answerAndAdvanceToResults(page, 'max');
     await flushUntil(page, () => hasPageview(capture, isResultsRoute), 'the results page sent no pageview');
@@ -338,5 +412,138 @@ test.describe('voter-prefs-tracking (EFLOW-08)', () => {
     // The reloaded app must still reflect the persisted consent (granted button disabled) — proves the round-trip is consumed by the app, not just storage.
     const grantedAfterReload = page.getByRole('button', { name: GRANTED_BUTTON });
     await expect(grantedAfterReload).toBeDisabled({ timeout: TIMEOUTS.slowPage });
+  });
+});
+
+test.describe('the consent prompt over a question', () => {
+  test('the consent prompt is a modal: the answer choices under it cannot be reached, and Escape declines', async ({
+    page
+  }) => {
+    const consentPrompt = consentPromptOn(page);
+
+    // The prompt opens on the front page as the one modal dialog, and Escape declines it, so the walk can reach a question.
+    await openVoterHome(page);
+    await consentPrompt.expectOpen();
+    await consentPrompt.expectModalCount(1, 'the consent prompt is not shown as a modal dialog (dialog:modal)');
+    await consentPrompt.declineWithEscape();
+    await expectStoredConsent(page, 'denied');
+    await startToFirstQuestion(page);
+
+    // With no stored choice, the voter layout queues the prompt again as it mounts, now over the question.
+    await forgetStoredPreferences(page);
+    await page.reload();
+    await consentPrompt.expectOpen();
+    await consentPrompt.expectModalCount(
+      1,
+      'the consent prompt over the question is not a modal dialog (dialog:modal)'
+    );
+
+    // The last answer choice, which the prompt covers, can be neither focused nor clicked.
+    const choice = page.getByTestId(testIds.voter.questions.answerOption).last();
+    await consentPrompt.expectCovers(choice);
+
+    // Escape declines, and the page under the prompt is reachable again.
+    await consentPrompt.declineWithEscape();
+    await expectStoredConsent(page, 'denied');
+    await choice.focus();
+    await expect(choice, 'the answer choice cannot take focus after the prompt closed').toBeFocused();
+  });
+});
+
+test.describe('the information dialog inside the consent prompt', () => {
+  test('an Escape in the information dialog closes that dialog alone, and the next Escape declines the prompt', async ({
+    page
+  }) => {
+    const consentPrompt = consentPromptOn(page);
+
+    await openVoterHome(page);
+    await consentPrompt.expectOpen();
+    await consentPrompt.expectModalCount(1);
+
+    // The information dialog carries the prompt's accessible name, so while both are open they are told apart by counting the modal dialogs, not through the role locator.
+    await consentPrompt.openInformation();
+    await consentPrompt.expectModalCount(2, 'the information dialog did not open inside the prompt');
+
+    await page.keyboard.press('Escape');
+    await consentPrompt.expectModalCount(1, 'one Escape in the information dialog closed the consent prompt too');
+    await expect(
+      consentPrompt.prompt.getByRole('button', { name: GRANTED_BUTTON }),
+      'the dialog left open is not the consent prompt'
+    ).toBeVisible();
+    await expectNoConsentChoiceStored(page);
+
+    await page.keyboard.press('Escape');
+    await consentPrompt.expectModalCount(0);
+    await expectStoredConsent(page, 'denied');
+  });
+});
+
+test.describe('the consent prompt over a results drawer', () => {
+  test('on a cold entry to a results drawer, one Escape closes only the topmost of the prompt and the drawer', async ({
+    page
+  }) => {
+    const consentPrompt = consentPromptOn(page);
+    // The drawer is opened once under a stored decline, for its URL. Entering that URL with no choice stored opens the prompt and the drawer together.
+    await openVoterHome(page);
+    await dismissConsentPrompt(page);
+    await startToFirstQuestion(page);
+    await answerAndAdvanceToResults(page, 'max');
+    const resultsPage = createResultsPage(page);
+    // A party card's action is its header, inside the card; a candidate card without subcards is wrapped whole by its action.
+    await resultsPage.selectEntityTab('orgs');
+    await expect(resultsPage.getEntityCards().first()).toBeVisible({ timeout: TIMEOUTS.page });
+    await resultsPage.openEntityDetailsForCard(() => 0);
+    const drawerUrl = page.url();
+    await forgetStoredPreferences(page);
+    await page.goto(drawerUrl);
+    await expect(page.getByTestId(testIds.voter.results.entityDetails)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await expect
+      .poll(() => consentPrompt.openKinds(), {
+        message: 'the consent prompt and the drawer did not both open',
+        timeout: TIMEOUTS.slowPage
+      })
+      .toStrictEqual(['drawer', 'prompt']);
+
+    // The voter layout queues the prompt as it mounts, and the drawer opens over it once the results have loaded.
+    const topmost = await consentPrompt.topmostKind();
+    test.info().annotations.push({ type: 'drawer-stack-topmost', description: topmost });
+    expect(topmost, 'the topmost dialog on a cold drawer entry is not the one measured in phase 189.1.1').toBe(
+      'drawer'
+    );
+
+    // One Escape closes the drawer alone and records nothing. A prompt that the same Escape closed would stay closed, so the poll cannot pass on a moment of a wrong outcome.
+    await page.keyboard.press('Escape');
+    await expect
+      .poll(() => consentPrompt.openKinds(), {
+        message: 'the dialogs left open after one Escape',
+        timeout: TIMEOUTS.slowPage
+      })
+      .toStrictEqual(['prompt']);
+    expect(await consentChoice(page), 'the Escape that closed the drawer stored a consent choice').toBe('none');
+
+    // The next Escape declines the prompt.
+    await page.keyboard.press('Escape');
+    await expect
+      .poll(() => consentPrompt.openKinds(), {
+        message: 'the dialogs left open after the second Escape',
+        timeout: TIMEOUTS.slowPage
+      })
+      .toStrictEqual([]);
+    await expectStoredConsent(page, 'denied');
+  });
+});
+
+test.describe('the accessibility of the consent prompt', () => {
+  test('axe accessibility scan — the consent prompt over the front page', async ({ page }, testInfo) => {
+    await page.goto(buildRoute({ route: CONSENT_PROMPT_SCAN.routeId, locale: 'en' }));
+    await assertAxeScan(page, CONSENT_PROMPT_SCAN, testInfo, CONSENT_PROMPT_SCAN.name);
+  });
+
+  test('axe accessibility scan — the consent prompt over the front page (dark)', async ({ page }, testInfo) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto(buildRoute({ route: CONSENT_PROMPT_SCAN.routeId, locale: 'en' }));
+    await consentPromptOn(page).expectOpen();
+    await assertDarkThemeApplied(page);
+    await assertAxeScan(page, CONSENT_PROMPT_SCAN, testInfo, `${CONSENT_PROMPT_SCAN.name}-dark`);
   });
 });

@@ -1,0 +1,498 @@
+# 187-27 evidence: the rebased branch made sound and carried to CI
+
+Repository `OpenVAA/voting-advice-application`, branch `feat/deployment-terraform-supabase`. Read and written by the plan executor from this checkout, 2026-11-16. Remote reads were `gh api` GETs and `git ls-remote` only. Nothing was pushed, and no GitHub, AWS or Supabase setting was read or changed. Logs and status files are under `tmp/187-27/` (ignored).
+
+**Pre-rebase commit ids.** Every commit id cited in this workstream's evidence before the rebase of 2026-11-16, including every id in `187-26-ci-closure.md` and the superseded sections of `187-12-evidence-commits.md` and `187-13-closing-e2e.md`, names a commit of `backup/deployment-pre-rebase-20261116`, not of HEAD. Those lines are left as written. A new line that needs a pre-rebase base uses the rebased commit with the same subject and records both ids.
+
+## The rebase (2026-11-16)
+
+```
+REBASE_HEAD_AT_START=dbe69d1a6fe8cbacedbbc7648eece958a82a4cbc
+REBASE_BACKUP_TIP=30202494344883b74d2025731e07404b994142a4
+REBASE_ONTO=c2b3bff15c78168ae73fa244f1e443f05a34269e
+REBASE_COUNTERPART_ee85b83a3=d35c1bb6aa558aa6988e048e62b90c7d96f62b9f
+REBASE_COUNTERPART_a7a4222a8=36a67601889033d1ef783ff6ccb0d845d4226f7f
+PRE_REBASE_SHAS_RESOLVE_IN_BACKUP_ONLY=yes
+```
+
+- `REBASE_HEAD_AT_START` is `git rev-parse HEAD` before this plan's first commit (the plan's own commit `dbe69d1a6`, one past the planning-time HEAD `201a6320a`). `REBASE_BACKUP_TIP` is `git rev-parse backup/deployment-pre-rebase-20261116`.
+- The counterparts are the commits of `c2b3bff15..HEAD` (466 commits) whose subjects are `docs(187): pattern map` and `docs(186): discussion points and context (recommendations, operator away)`, one each.
+- For each id 187-26 cited (`27ee4fcea`, `a21f94b99`, `02a1530b2`, `6c8d41c6f`, `97a631eb9`), `git merge-base --is-ancestor <id> backup/deployment-pre-rebase-20261116` exited 0 and `git merge-base --is-ancestor <id> HEAD` exited 1.
+- Every earlier evidence id names the backup's history and is left as written.
+
+## Task 1: the gates on the rebased tree, the local database, the archive build and the scan
+
+```
+REBASE_GATE_INSTALL_EXIT=0
+REBASE_GATE_BUILD_EXIT=0
+REBASE_GATE_DB_RESET_EXIT=0
+LOCAL_MIGRATIONS_APPLIED=22
+REBASE_GATE_DB_LINT_SQL_EXIT=0
+REBASE_GATE_PGTAP_EXIT=0
+REBASE_GATE_DB_TYPES_DIFF=empty
+REBASE_PLAYWRIGHT_BROWSER=unchanged (playwright-core 1.63.0 at the backup and at HEAD, chromium revision 1243 already installed)
+REBASE_GATE_LINT_CHECK_EXIT=0
+REBASE_GATE_FORMAT_CHECK_EXIT=0
+REBASE_GATE_FORMAT_CHECK_FIRST_ATTEMPT_EXIT=1
+REBASE_GATE_TYPECHECK_EXIT=0
+REBASE_GATE_TEST_UNIT_EXIT=0
+REBASE_GATE_LINT_WORKFLOWS_EXIT=0
+REBASE_GATE_SKILL_DRIFT_EXIT=0
+REBASE_GATE_SKILL_DRIFT_ON_BRANCH_HISTORY_EXIT=1
+REBASE_GATE_E2E_SELF_TEST_EXIT=0
+REBASE_GATE_TF_FMT_EXIT=0
+REBASE_GATE_TF_ROOTS_VALIDATED=8
+REBASE_GATE_TF_MODULES_TESTED=frontend-service,github-oidc
+REBASE_GATE_TF_EXAMPLE_PLANS=example/aws,example/dns-mail,example/supabase
+REBASE_PROBE_COMMIT=e98e7de458d92f6c504037360ae38046b2ca05af
+REBASE_PROBE_TREE=64ae8ba1836aea92a9bb112501992fc1dd84d678
+REBASE_GATE_ARCHIVE_BUILD_EXIT=0
+REBASE_SCAN_PROBE_EXIT=0
+REBASE_SCAN_PROBE_RESULTS=0
+REBASE_PROBE_REFS_DELETED=yes
+REBASE_FALLOUT=format:check: apps/frontend/src/hooks.server.ts (deployment; the rebase's hand-resolved conflict in a -gsd file): the merged five-handle sequence() call was left on one line past the print width
+```
+
+How each line was read:
+
+- **Install, build and the database** (`tmp/187-27/t1/step2.sh`, in the background, each status written by the command on the line after it, `TURBO_CACHE_DIR=tmp/187-27/turbo-cache`; 17:29:58Z to 17:31Z). `yarn install --immutable` exit 0, `yarn build` exit 0, `yarn db:reset` exit 0. `docker exec supabase_db_openvaa-local psql -U postgres -tAc 'select count(*) from supabase_migrations.schema_migrations'` printed `22`, the number of `.sql` files under `apps/supabase/supabase/migrations/` at HEAD (`git ls-tree`). `yarn db:lint:sql` exit 0 (`Summary: 0 error(s), 3 warning(s)`, the advisor's non-failing foreign-key-index notes), and `yarn workspace @openvaa/supabase test:db` exit 0 (`Result: PASS`).
+- **The generated types.** The first `yarn db:types` ran directly after the pgTAP tests, as the plan orders them, and `git diff --quiet -- packages/supabase-types` exited 1: 18 added lines, every one a test helper the pgTAP run leaves in the schema (`create_test_data`, `set_test_user`, `test_user_id` and their siblings). CI's `supabase-types-drift` job generates on a database no test has run against. So the generated file was restored with `git checkout --` (it is this plan's own output), `yarn db:reset` was run again (exit 0, 22 migrations), and `yarn db:types` then exited 0 with `git diff --quiet` exit 0. That is the line recorded. It is a measurement-order correction, not fallout.
+- **The repository gates** (`tmp/187-27/t1/run-gates.sh`, one after another, at HEAD `dbe69d1a6`). `lint:check` exit 0, including upstream's `assert:test-keys-scope` and `assert:no-preregister` and this branch's `assert:hosted-settings-parity`, and ESLint's ban on `unroute()`; no call was found. `typecheck` exit 0. `test:unit` exit 0, which includes `apps/frontend/src/hooks.server.test.ts`, so no test asserts a handle sequence other than the merged one. `lint:workflows` exit 0 (`actionlint found nothing in 3 workflows`). `tests/scripts/e2e-run.sh --self-test` exit 0 (`self-test passed: 13 case(s)`, the Linux key-server bind cases among them). `format:check` exited 1 first, on `apps/frontend/src/hooks.server.ts` alone: the fallout below. After the fix, `format:check` exit 0 (`All matched files use Prettier code style!`).
+- **The skill-drift audit.** On the branch, `.claude/scripts/audit-skill-drift.sh` exits 1 (four skills drifted). The audit counts commits to each skill's targets since the last commit touching the skill's own directory, so it reads history, not the tree. CI runs it on the pushed source-only commit, whose single commit touches every skill directory. Run that way, in the scan repository of the probe commit below (with `origin/main`'s history and the probe commit checked out), it exited 0 with `Checked: 6  Drifted: 0  Skipped: 2`. `REBASE_GATE_SKILL_DRIFT_EXIT` is that reading, and the branch reading is recorded beside it.
+- **Terraform** (`tmp/187-27/run-tf.sh t1`, after the gates, alone). `terraform fmt -check -recursive -diff infra` exit 0. The eight roots each `init -backend=false -lockfile=readonly` and `validate` exit 0. `terraform test` of `frontend-service` `Success! 33 passed, 0 failed.` and of `github-oidc` `Success! 11 passed, 0 failed.`. The three example roots each `Success! 1 passed, 0 failed.`. `git status --porcelain` afterwards listed only the untracked ledger.
+- **The probe.** HEAD `527d9e866` (after the fallout fix), its tree without `.planning/` written in a temporary index (`read-tree HEAD`, `rm -r --cached --quiet .planning`, `write-tree`), committed with parent `refs/remotes/origin/main` (`340a20070`, no fetch) and message `deploy: staging`, held by `refs/evidence/187/build-probe`. Its tree has 0 planning paths and equals HEAD's outside `.planning/` (`git diff --quiet` exit 0).
+- **The archive build.** `tmp/187-27/build-archive.sh probe`: `git archive` of the probe, extracted into a scratch directory, then `docker buildx build --platform linux/arm64 --target production --provenance=false --sbom=false -f apps/frontend/Dockerfile --output type=cacheonly`, exit 0 in 90 s.
+- **The scan.** `tmp/187-27/scan.sh probe 340a200708c28fb7ed078d452138712f3400c789 refs/evidence/187/build-probe`, 187-26 Task 1's command (`ghcr.io/trufflesecurity/trufflehog:3.97.9`, digest `sha256:52e67fef4d054ecff5c2ce4b4ae376626d1ef54aa0898b53cac19c25e92e14db`, main.yaml's `extra_args`), in a fresh `git init` repository fetched from this checkout. The `--github-actions` run exit 0, `"verified_secrets": 0, "unverified_secrets": 0` over 4186 chunks, no annotation. The `--json` run exit 0; `jq` selected no result, so there is no `REBASE_SCAN_FINDING=` line. Its mode-700 directory was deleted, the scan repository removed, and `tmp/187-27/scan/` removed after it.
+- **Clean-up.** `git update-ref -d refs/evidence/187/build-probe`; `git show-ref --quiet` of it and of `refs/evidence/187/scan-probe` each exit 1. `docker builder prune -af` exit 0 (2.565 GB).
+- **The fallout.** `apps/frontend/src/hooks.server.ts` holds the conflict this branch's rebase resolved by hand. `prettier --write` split the `sequence(...)` call over seven lines, with the order unchanged. Committed as `527d9e866` (`fix(187-27): format the merged handle sequence of hooks.server.ts`). No other gate or the scan was red, so no exclusion entry and no test change was needed.
+
+
+## Task 2: what the rebase carries to the staging Supabase project, from records only
+
+```
+HOSTED_READS_BY_AGENT=0
+HOSTED_WRITES_BY_AGENT=0
+MIGRATIONS_AT_HEAD=22
+MIGRATIONS_ON_STAGING=00001
+MIGRATION_00001_UNCHANGED_SINCE_STAGING_PUSH=yes
+MIGRATIONS_FIRST_PIPELINE_PUSH=21
+MIGRATION_PENDING=00002_claim_excludes_identity_provider_accounts.sql lines=107 blob=10a88aaae4c612fc98784b3265dc25e4ef6d3f7d
+MIGRATION_PENDING=00003_address_confirmation_request.sql lines=97 blob=0410a2101c66716f92992ff0d14f564ca233bd8a
+MIGRATION_PENDING=00004_user_entities_pending_email_taken.sql lines=92 blob=663234bc8f269df39169d4c193e6eb7b7a4d9800
+MIGRATION_PENDING=00005_invitation_link_bounds.sql lines=234 blob=d9adad8c9ecadbf8a89c6a4897082b8bc84fce74
+MIGRATION_PENDING=00006_nomination_write_guards.sql lines=973 blob=49251e0c638dd9d5e8da6292d55ee32a8839c5b2
+MIGRATION_PENDING=00007_nomination_write_kept_constituency.sql lines=425 blob=277555b609e66aa26806fddc9deaf594e4863cf3
+MIGRATION_PENDING=00008_bulk_import_key_quoting.sql lines=136 blob=81f00c6a4b8faaa5733777b40219e53e73a30095
+MIGRATION_PENDING=00009_contestant_app_public_config_bounded.sql lines=67 blob=c6b7c4a3e8582227e17d72fb41974dd3756eaa70
+MIGRATION_PENDING=00010_claim_grant_key_conflict_target.sql lines=106 blob=1e10b25e9dc6c76e9d3040763bfabcef44e13c6f
+MIGRATION_PENDING=00011_invitation_email_target_open_rows.sql lines=15 blob=5bebf0d83ae93477adb9adcc2153596ffd884afe
+MIGRATION_PENDING=00012_bulk_import_constituency_links.sql lines=158 blob=b73c035146aec7a7a0bb52f6432418952e8bcbed
+MIGRATION_PENDING=00013_nomination_constituency_rule.sql lines=177 blob=c859f6a1c7c95242b4d352798a100dea810e5d0f
+MIGRATION_PENDING=00014_set_entity_nominations_constituency_once.sql lines=413 blob=ed0207ad708fc678752e68325026e40903191cb0
+MIGRATION_PENDING=00015_answers_lock_entity_rows.sql lines=264 blob=3872052d1f42e5801615402401df9ce0a8df361f
+MIGRATION_PENDING=00016_answers_lock_nominations_storage.sql lines=777 blob=fc0b0b0e04ff60ebc2059e060dc955c6b218b98b
+MIGRATION_PENDING=00017_user_can_reads_grants.sql lines=143 blob=aa4b8300aa297f26749675e45edd5f53c9792ef1
+MIGRATION_PENDING=00018_identity_entity_find_or_create.sql lines=157 blob=61737636fc218ba03312361dc0d50aa04dd5bcd3
+MIGRATION_PENDING=00019_address_holds_open_invitation.sql lines=46 blob=47e9196b8b5175f84b700167566953bc53f27471
+MIGRATION_PENDING=00020_identity_metadata_written_under_lock.sql lines=183 blob=22d85d4786c49a512f8a4e9c6441a904acb603b2
+MIGRATION_PENDING=00021_email_holds_global_or_account_grant.sql lines=55 blob=dfa5a29f676149210f9350e852f8260e01a6947d
+MIGRATION_PENDING=00022_grants_reaching_a_project.sql lines=117 blob=63b3a68a10935d3eb175f3c0833d0c94b5e8aa55
+MIGRATIONS_NEEDING_HAND_STEP=none
+MIGRATIONS_CALLTIME_PRIVILEGE_NOTE=00018_identity_entity_find_or_create.sql and 00020_identity_metadata_written_under_lock.sql define SECURITY DEFINER functions, owned by the pushing role, that UPDATE auth.users at call time; 00001 writes auth.users nowhere; a db push creates them without exercising that privilege, and whether the hosted postgres role holds it is unread by this plan
+PUSH_MIGRATIONS_UNCHANGED_BY_REBASE=yes
+187_21_EXPECTED_PENDING_STALE=yes (187-21-PLAN.md Task 1 records EXPECTED_PENDING=none for a commit holding 00001 alone; its green commit will hold 22 files, 21 pending)
+HOSTED_SETTINGS_KEYS_CHANGED=auth.mailer_otp_length 6 -> 10; redirect_callback_paths ["/api/auth/callback","/*/api/auth/callback"] -> ["/auth/confirm","/*/auth/confirm"] (settings.tf joins each path onto public_origin into auth.uri_allow_list)
+PARITY_SCRIPT_CHANGE=the expected values follow the JSON (redirect paths and config.toml's additional_redirect_urls now /auth/confirm, its three redirect-path mutation cases rewritten on /auth/confirm) and two row reasons are reworded (mailer_otp_length: a mailed link also mints a one-time code accepted in its place; mailer_secure_email_change_enabled: an identity-provider account's address confirmation relies on it); no row, key or rule is added or removed
+PARITY_ASSERT_EXIT=0
+STAGING_SETTINGS_HAND_APPLY=needed-before:187-21
+STAGING_SETTINGS_HAND_APPLY_REASON_redirect_callback_paths=the functions staging serves (deployed 2026-11-11 from 0e6ba4f90, a pre-rebase commit) mail links to <site>/<locale>/api/auth/callback, and HEAD's account-access refuses to issue a link unless <site>/<locale>/auth/confirm is admitted (linkIssue.ts: "SITE_URL is not admitted by the auth redirect allowlist; no link issued"); deploy.yml deploys functions and frontend but sets no auth setting, so the allow list must change by hand in the same sitting as 187-21's deploy, immediately before its approval: earlier breaks the served functions' links, later leaves the new ones refusing
+STAGING_SETTINGS_HAND_APPLY_REASON_mailer_otp_length=staging serves 6 since the hand apply of 2026-11-11 (runbook Observations: every managed setting served as declared, read back from the then hosted-settings.json); 10 keeps the one-time code each mailed link mints out of reach of guessing; the module sends both keys in one apply, so the shorter code stays until the same sitting
+STAGING_SETTINGS_HAND_APPLY_REASON_187_18=187-18's red run fails at the build step, before any hosted write, and deploys nothing, so it needs no apply
+STAGING_SETTINGS_RUNBOOK_STEP=Step 18 of infra/envs/staging/supabase/README.md
+FUNCTION_ENV_NAMES_NEW=IDENTITY_CALLBACK_SERVER_SECRET
+STAGING_FUNCTION_SECRETS_CHANGE=none
+FRONTEND_ENV_NAMES_NEW=IDENTITY_CALLBACK_SERVER_SECRET (default '' in apps/frontend/src/lib/server/constants.ts; the OIDC callback answers configurationError while it is empty; not in infra/modules/frontend-service/task-environment.json, so the AWS root does not set it)
+PROBE_IDENTITY_CALLBACK_CHECK_AFTER_FIRST_DEPLOY=would-fail
+```
+
+How each line was read (this checkout and its records only; no Terraform plan or apply, no Supabase CLI call against a project, no Management API read):
+
+- **`MIGRATIONS_ON_STAGING=00001`.** `evidence/184-21-persistent-apply-push-functions.md` (phase 184): the push table reads `push_pending` `00001`, then none on the second run, and the drift report `history: database: 00001`. The staging runbook's Observations row of 2026-11-11 says the same (`push-migrations.sh` pushed the frozen baseline `00001`, `push_status=0`, clean drift check). No later row (2026-11-12, 2026-11-14, 2026-11-15) records a push.
+- **`MIGRATION_00001_UNCHANGED_SINCE_STAGING_PUSH=yes`.** The head 184-21 records is `0e6ba4f902faa64e8393404a304e295d91c7105a`, an ancestor of the backup (`git merge-base --is-ancestor` exit 0). `git rev-parse 0e6ba4f90:apps/supabase/supabase/migrations/00001_initial_schema.sql` and the same at HEAD both print `2b07ce7c378db9c59b09165762b2b0bf0af351cf`. At `0e6ba4f90` and at the backup the migrations directory holds that one file.
+- **The pending files.** `git ls-tree` at HEAD, less `00001`; each line count from `git show HEAD:<file> | wc -l` and each blob from `git rev-parse HEAD:<file>`.
+- **`MIGRATIONS_NEEDING_HAND_STEP=none`.** Every top-level statement of the 21 files was listed (lines that begin with `CREATE`, `ALTER`, `DROP`, `GRANT`, `REVOKE`, `SET` and so on). They are `CREATE OR REPLACE FUNCTION` and `DROP FUNCTION` in `public` and `private`, `GRANT` and `REVOKE` of `EXECUTE`, eight `DROP POLICY` and `CREATE POLICY` pairs on `public` entity and nomination tables (00015, 00016), and one `DROP INDEX` and `CREATE UNIQUE INDEX` on `public.invitations` (00011). A grep for `CREATE EXTENSION`, `ALTER SYSTEM`, `CREATE ROLE`, `ALTER ROLE`, `storage.buckets`, `ALTER DATABASE`, `CREATE SCHEMA`, `OWNER TO`, publications, `pg_cron`, `vault.` and `pgsodium` found none. 00016's name says "storage", but it changes only the nomination policies and `public.storage_path_can`, not the storage schema. The only hook it mentions is `custom_access_token_hook`, in comments, unchanged. So nothing needs a hosted step before a pooler `db push` by `postgres`. The call-time note above is recorded for 187-21's reviewer and is not a push step.
+- **`PUSH_MIGRATIONS_UNCHANGED_BY_REBASE=yes`.** `git diff --quiet backup/deployment-pre-rebase-20261116 HEAD -- infra/scripts/push-migrations.sh infra/scripts/check-drift.sh` exit 0.
+- **For 187-21's reviewer.** Its first pipeline deploy pushes these 21 migrations under the one environment approval, the single-approval risk C-04 accepts; the push is one-way. Its Task 1 still expects `EXPECTED_PENDING=none`, which held only while `00001` was the one file; the green commit 187-21 reads will hold 22.
+- **`HOSTED_SETTINGS_KEYS_CHANGED`.** `git diff backup/deployment-pre-rebase-20261116 HEAD -- infra/modules/supabase/hosted-settings.json`: two hunks, `mailer_otp_length` and `redirect_callback_paths`. `infra/modules/supabase/settings.tf` line 36 builds `uri_allow_list = join(",", [for p in local.hosted.redirect_callback_paths : "${var.public_origin}${p}"])`. `apps/supabase/supabase/config.toml` changed the same two values (`otp_length = 10`, `additional_redirect_urls` on `/auth/confirm`).
+- **`PARITY_ASSERT_EXIT=0`.** `yarn assert:hosted-settings-parity` exit 0 (`tmp/187-27/t1/parity.log`).
+- **The served build.** `185-12-SUMMARY.md` and `185-13-SUMMARY.md` (phase 185) record the image `712947a1bd44a735f66ee8f51610f4748d76cd30` served at `https://staging.openvaa.org/api/health`; the AWS runbook records the root destroyed and applied again on 2026-11-14; STATE.md records `712947a1b` as what staging serves. At `712947a1b` the frontend has `routes/api/auth/callback/+server.ts` and no `routes/auth/confirm/`; at HEAD it has both. At `0e6ba4f90`, the functions' `signInLink.ts` has `CALLBACK_PATH = '/api/auth/callback'`; at HEAD it has `LINK_PATH = '/auth/confirm'`.
+- **`FUNCTION_ENV_NAMES_NEW`.** Every `Deno.env.get('…')` and `requireEnv('…')` name in the functions' non-test `.ts` files, at the backup and at HEAD: the one name at HEAD alone is `IDENTITY_CALLBACK_SERVER_SECRET`. `identity-callback/index.ts` refuses a request without the `x-identity-callback-secret` header before it reads the variable, and an unset value then answers `configuration`.
+- **`STAGING_FUNCTION_SECRETS_CHANGE=none`.** `infra/modules/supabase/function-secrets.tf` sets seven names (`PUBLIC_PROJECT_ID`, `SITE_URL` and five `SMTP_`). The new name serves only bank authentication through `identity-callback`, and the staging root configures no identity provider (none of the `IDENTITY_PROVIDER_` names is set either), so nothing is missing for what staging runs. C-05 leaves function secrets alone; no change is proposed.
+- **`FRONTEND_ENV_NAMES_NEW`.** Every `env.X`, `process.env.X` and `env['X']` in the frontend's non-test sources at the backup and at HEAD.
+- **`PROBE_IDENTITY_CALLBACK_CHECK_AFTER_FIRST_DEPLOY=would-fail`.** The conformance probe of runbook Step 23 (`infra/scripts/probe/checks.mjs`, check `functions.identity-callback-unverified`) expects `identity-callback` to answer a keyless GET with 405 and `{"error":"Method not allowed"}`, and a keyless POST of `{}` with 500 and `{"error":"Internal server error"}`. That is the function at the backup (`index.ts`: `status: 405` for a method other than POST). At HEAD it answers a GET with `bad_request`, status 400, and a POST without the server credential header with `refused`, status 401, each as `{"result":"…"}` (`requestContract.ts`). So once 187-21 deploys HEAD's functions, that check fails; the gateway still demands no JWT, which is what the check guards. Plan 187-25 runs the probe before its redeploy. Recorded as a blocker entry in `deferred-items.md`; no probe or runbook file is changed here.
+
+The operator's step, from Step 18 of `infra/envs/staging/supabase/README.md`, with `R=staging`, after the lines that begin a sitting of that part of the runbook. Agents run none of it. Part A is one sitting; the go-ahead for the saved plan is given on its lines; Parts B and C follow.
+
+1. The account check (prints `s18_account=471112560111`):
+
+   ```bash
+   A=$(aws sts get-caller-identity --query Account \
+     --output text)
+   echo "s18_account=$A"
+   ```
+
+2. Initialise, plan and save the plan (prints `s18_init_exit=0` and `s18_plan_exit=0`):
+
+   ```bash
+   T="infra/envs/$R/supabase"
+   terraform -chdir="$T" init -input=false -no-color \
+     > "$L/s18-init.log" 2>&1
+   echo "s18_init_exit=$?"
+   terraform -chdir="$T" plan -input=false -no-color \
+     -out=tfplan > "$L/s18-plan.log" 2>&1
+   echo "s18_plan_exit=$?"
+   ```
+
+3. The checksum and the plan's lines (prints `s18_plan_sha256=<hex>`, then `s18_plan_line=` lines; expected: one heading `module.supabase.supabase_settings.this` updated in place, a `Plan: 0 to add, 1 to change, 0 to destroy.` line, and no line naming the password, a replacement or a destroy):
+
+   ```bash
+   S=$(shasum -a 256 "$T/tfplan" | cut -d' ' -f1)
+   echo "s18_plan_sha256=$S"
+   grep -n -E -e '^  # |^Plan:|^No changes' \
+     -e 'database_password|must be replaced' \
+     -e 'will be destroyed|forces replacement' \
+     "$L/s18-plan.log" | sed 's/^/s18_plan_line=/'
+   ```
+
+4. Part B, after the go-ahead names that SHA-256: compare the checksum, then apply the saved plan (prints the same `s18_plan_sha256=`, then `s18_apply_exit=0`, `s18_apply_line=Apply complete! Resources: 0 added, 1 changed, 0 destroyed.` and `s18_plan_file_removed=yes`):
+
+   ```bash
+   S=$(shasum -a 256 "$T/tfplan" | cut -d' ' -f1)
+   echo "s18_plan_sha256=$S"
+   ```
+
+   ```bash
+   terraform -chdir="$T" apply -input=false -no-color \
+     tfplan > "$L/s18-apply.log" 2>&1
+   echo "s18_apply_exit=$?"
+   grep -m1 -E '^Apply complete!' "$L/s18-apply.log" \
+     | sed 's/^/s18_apply_line=/'
+   grep -E '^Error: ' "$L/s18-apply.log" \
+     | sed 's/^/s18_error=/'
+   rm -f "$T/tfplan"; echo "s18_plan_file_removed=yes"
+   ```
+
+5. Plan again (prints `s18_second_plan_exit=0` and a `No changes` line):
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s18-plan2.log" 2>&1
+   echo "s18_second_plan_exit=$?"
+   grep -n -E '^  # |^Plan:|^No changes' \
+     "$L/s18-plan2.log" | sed 's/^/s18_plan2_line=/'
+   ```
+
+6. Part C, the read-back: Step 18 item 8 as the runbook gives it (expected: `s18_auth.mailer_otp_length=10` and `s18_auth.uri_allow_list=` naming the staging origin's `/auth/confirm` and `/*/auth/confirm`), then item 9, which removes the plan file and the logs and prints `s18_logs_removed=yes`.
+
+The expected plan lines in item 3 are a reading of the module and the JSON, not of a plan; whoever reads the real lines reads them against Step 4's stop rules.
+
+## Task 3: the two CI-only contestant readiness timeouts under CPU throttling (stopped: not reproduced)
+
+```
+DIAG_COPY=tmp/187-27/diag
+FAILURE1_FIX_IN_HEAD=yes
+FAILURE1_WITNESS_USES_ROUTE_UNTIL_ENDED=yes
+FAILURE1_NO_PAGE_REQUEST_USES_ROUTE_UNTIL_ENDED=yes
+FAILURE1_ESLINT_BAN=yes
+FAILURE1_UNROUTE_RACE=13/600
+FAILURE1_FALLBACK_RACE=0/600
+FAILURE1_DIAGNOSIS_READINGS=unroute 6/600 and 1/300, fallback 0/600
+CI_TRACE_CAND_HOME=goto at 0 s; the page's load ended and the data-next-step wait began at 2.16 s; the wait failed at 12.35 s (10.19 s later); the test's steps hold no focus-reset wait, so the trace cannot say whether the reset had landed
+CI_TRACE_TERMS=goto at 0 s; terms-of-use-submit visible at 1.32 s; the box checked at 2.47 s; toBeEnabled of terms-of-use-submit began at 2.60 s and failed at 7.61 s (5.0 s later); the fixture CI ran has no focus-reset wait in open()
+CI_CONTESTANT_SCAN_MARGINS=slowest passing contestant scans in CI, whole-test durations: cand-questions (dark) 19.2 s, cand-nominations (dark) 17.7 s, cand-question 17.2 s, cand-question (dark) 17.0 s, cand-questions 16.8 s, cand-nominations 16.7 s, cand-preview 16.4 s; cand-home passed in 12.7 s and failed in 13.4 s (dark); results.json carries no step timings, so the time each passing entry spent inside its 10 s wait is not readable
+THROTTLE_MECHANISM=a temporary top-level test.beforeEach in the two specs: when E2E_DIAG_CPU_RATE is a number of at least 2, it opens a DevTools Protocol session for the test's page and sends Emulation.setCPUThrottlingRate with that rate, as eperm07-term-trigger.spec.ts's knob does for its own spec; the setup projects are unthrottled; the suite has no project-wide throttle
+NEG_CONTROL_CAND_HOME_RATE4=passed (tests/e2e-runs/187-27-thr-a11y-r4-20261116T174957Z: 44 passed, 0 failed; cand-home 6.0 s, cand-home (dark) 6.0 s)
+NEG_CONTROL_CAND_HOME_RATE6=passed (tests/e2e-runs/187-27-thr-a11y-r6-20261116T175341Z: 44 passed, 0 failed; cand-home 7.9 s, cand-home (dark) 7.9 s)
+THROTTLED_TERMS_AT_HEAD_RATE4=passed (tests/e2e-runs/187-27-thr-terms-head-r4-20261116T175142Z: 6 passed)
+THROTTLED_TERMS_AT_HEAD_RATE6=passed (tests/e2e-runs/187-27-thr-terms-head-r6-20261116T175530Z: 6 passed; the two terms tests 4.6 s each)
+NEG_CONTROL_TERMS_RATE4=passed (tests/e2e-runs/187-27-thr-terms-mut-r4-20261116T175236Z: 6 passed; 2.5 s each)
+NEG_CONTROL_TERMS_RATE6=passed (tests/e2e-runs/187-27-thr-terms-mut-r6-20261116T175626Z: 6 passed; 3.7 s each)
+NEG_CONTROL_TERMS_RESTORED=yes
+THROTTLE_REPRODUCES_CI=no
+THROTTLE_PATCH_REVERTED=yes
+TASK3_STOPPED=yes
+```
+
+How each line was read:
+
+- **The copy.** The diagnosis directory was copied whole to `tmp/187-27/diag/` (`cp -R`, exit 0) before anything ran from it.
+- **Failure 1.** `git merge-base --is-ancestor b64c1cf18 HEAD` exit 0 (`fix(e2e): end mid-test routes without turning request interception off`). In `tests/tests/fixtures/shared/invitationFlow.fixture.ts`, `witnessPageRequest` registers `addWitness` with `const endWitnessing = await routeUntilEnded(page, ACCOUNT_ACCESS_ROUTE, addWitness)` and calls `endWitnessing()`; `expectNoPageRequest` registers `count` with `routeUntilEnded` and calls `endCounting()`. Neither calls `unroute()`. `tests/eslint.config.mjs` forbids `CallExpression[callee.property.name=/^unroute(All)?$/]` with the message naming `routeUntilEnded`.
+- **The harness.** The copied `scripts/race2.cjs`, in the background, 600 iterations in unroute mode and then 600 with its `flag` argument (the handler falls back once ended, as `routeUntilEnded` does). Unroute: `hung 13/600`, exit 0, at delays 0 (2), 1 (6), 2 (1), 4 (1) and 5 (3). Fallback: `hung 0/600`, exit 0. The race fires on about 1 to 2% of calls, so a green run cannot show it closed; the harness readings are its evidence, and the code is not changed.
+- **CI's readings.** `scripts/act.py` over the three copied traces: `1c571c65…` is cand-home (dark), `b4a32f93…` is contestant-terms-gate-phone, `0d03b565…` is failure 1. Times are from each trace's own `before`/`after` records, relative to its `goto`. `scripts/res.py` over `art/results.json` for the margins.
+- **The throttle.** The patch `tmp/187-27/throttle/throttle.patch` (14 added lines over the two specs) was applied with `git apply` for the six runs and reverted with `git apply -R`; `git diff --quiet HEAD -- tests` exit 0 afterwards. It was never committed. That the variable reached the test is shown by the durations: against the unthrottled closing run of 187-26 on this host (`tests/e2e-runs/187-26-close-20261116T083717Z`), cand-home went from 4.4 s to 6.0 s at rate 4 and 7.9 s at rate 6, cand-questions from 3.8 s to 10.3 s and 11.1 s, and the terms test from 1.5 to 1.9 s to 2.5 s and 4.6 s.
+- **The controls** (`tmp/187-27/throttle/negctl.sh <rate>`, in the background; each run `E2E_DIAG_CPU_RATE=<rate> tests/scripts/e2e-run.sh --run-dir <dir> --no-db-reset --project <project>`). Every run's wrapper exited 0 with preflight successes 1 and failures 0, no `VOID-host-suspend.txt`, and `e2e-spec-verdict.mjs <dir> --no-flaky` exit 0. The terms mutation deleted the one line `      await waitForNavigationFocusReset(page);` from `open()` (count 1; diffstat `1 -`), which is the fixture CI ran; after each mutation run `git checkout --` of the fixture and `git diff --quiet` exit 0.
+- **The result.** At rate 4 and at rate 6, neither control fails: cand-home's `data-next-step` wait holds within its 10 s, and with the hydration wait removed, terms-of-use-submit enables within 5 s. The slowest throttled run is still well inside CI's times (cand-home 7.9 s against CI's 12.7 to 13.4 s; the terms test 3.7 s against CI's failure at 7.6 s). By the plan, `THROTTLE_REPRODUCES_CI=no`: the cause stays unconfirmed on this host, the patch is reverted, Task 3 stops, and no fix is committed. Browser CPU throttling slows only the page's own script; on CI's 4-CPU runner the dev server, the database and six workers share the CPU as well, and that part is not modelled here. The readings above are put to the operator.
+
+## Task 4: the drift guard's `docker` stand-in linked to an existing binary
+
+```
+DRIFT_GUARD_CI_RUNNER_IMAGE=ubuntu-24.04 version 20261111.127.1 (Operating System: Ubuntu 24.04.5 LTS; run 43839245785, job 133203483557, frontend-and-shared-module-validation)
+DRIFT_GUARD_LINK_PROBE=host(macOS 26.5.1) /usr/bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=host(macOS 26.5.1) /bin/true absent
+DRIFT_GUARD_LINK_PROBE=ubuntu:24.04 /usr/bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=ubuntu:24.04 /bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=ubuntu:26.04 /usr/bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=ubuntu:26.04 /bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=node:24-alpine /usr/bin/true absent
+DRIFT_GUARD_LINK_PROBE=node:24-alpine /bin/true exit=127
+DRIFT_GUARD_STAND_IN_ON_HOST=link:/usr/bin/true
+DRIFT_GUARD_STAND_IN_ON_CI_IMAGE=link:/usr/bin/true
+DRIFT_GUARD_STAND_IN_ON_NODE_ALPINE=written
+DRIFT_GUARD_FIRST_EXEC_MS=129-233 for a freshly written #!/bin/sh stand-in, 4-6 for its second exec, 2-3 for a link to /usr/bin/true (10 each)
+DRIFT_GUARD_CASE_EXECS_NO_FRESH_FILE=yes
+DRIFT_GUARD_ALONE_RUNS=10
+DRIFT_GUARD_ALONE_MAX_MS=16
+DRIFT_GUARD_LOADED_SESSIONS=3
+DRIFT_GUARD_LOADED_RUNS=18
+DRIFT_GUARD_LOADED_TIMEOUTS=0
+DRIFT_GUARD_LOADED_MAX_MS=68
+DRIFT_GUARD_FIX_COMMIT=ced5b42bb
+TODO_DRIFT_GUARD_CLOSED=yes
+```
+
+- **The runner image.** `gh api --allow-escape-sequences repos/OpenVAA/voting-advice-application/actions/jobs/133203483557/logs` exit 0; the job's `Operating System` and `Runner Image` groups. `main.yaml`'s 13 jobs run on `ubuntu-latest`, which resolved to that image on run 43839245785.
+- **The probes.** For each candidate, a link named `docker` in a fresh temporary directory, run as `docker info`. On this host directly, and in `docker run --rm` containers of `ubuntu:24.04` (the runner's release), `ubuntu:26.04` (where `ubuntu-latest` moves next; its `true` is a link to `gnutrue`, a single-purpose GNU binary) and `node:24-alpine` (BusyBox's `/bin/true`, which dispatches on the name it runs under and answers `docker` with 127). The containers were discarded.
+- **The change** (`ced5b42bb`, the test file only). `dockerLinkTarget()` runs once at module load: in a probe directory it links `docker` to each of `/usr/bin/true` and `/bin/true` that exists and returns the first whose `docker info` exits 0. `binDir(true)` links `docker` to it, or writes the stand-in as before when there is none. `binDir`'s TSDoc says how the stand-in is chosen. The `psql` and `pgrep` stand-ins, `BIN_WITHOUT_DOCKER`, the case's two assertions (status 2, the loopback message) and the single `timeout: 15_000` are byte-identical to HEAD's. Prettier and ESLint on the file exit 0.
+- **The lead, measured once before the change.** 187-26's `firstexec.pl`, ten times: first exec of a freshly written stand-in 233, 135, 134, 129, 131, 137, 129, 131, 200, 134 ms; second exec 4 to 6 ms; a link to `/usr/bin/true` 2 to 3 ms.
+- **No fresh file executed.** A traced run with a `BASH_ENV` (`tmp/187-27/t4/bash-env.sh`, 187-26's xtrace method plus one line that records what `docker` resolves to in each bash) exit 0, 13 of 13: the one child with a `docker` on its PATH resolved it to `check-drift-bin-…/docker`, a link to `/usr/bin/true`, and its trace runs `docker info` at `check-drift.sh:275` and ends at `exit 2` after the loopback refusal. The other twelve children have no `docker`.
+- **Alone.** `yarn workspace @openvaa/dev-seed vitest run --reporter=verbose tests/checkDriftLinkedGuard.test.ts` ten times, each exit 0 and 13 of 13; the local case took 12, 12, 11, 13, 13, 15, 14, 13, 16 and 15 ms (160 to 215 ms with the written stand-in in 187-26).
+- **Loaded.** `tmp/187-27/t4/load.sh <session>` (187-26's method), three sessions one after another: each `yarn test:unit` with a fresh private turbo cache (`Cached: 0 cached, 26 total`, about 47 s, exit 0) and the Terraform loops (fmt, 8 roots, 2 module suites, 3 examples, each part exit 0) together, and from 25 s in, the traced file six times, 5 s apart. Of the 18 file runs, 6 ran under both loads and 12 under `yarn test:unit` alone; every one exited 0 with 13 of 13, the local case 23 to 68 ms, and every traced local child resolved `docker` to the link. `git status --porcelain` afterwards listed only the change and the untracked ledger.
+- **The todo.** `git mv` from `.planning/todos/pending/` to `.planning/todos/done/`, with `## Resolution (plan 187-27, 2026-11-16)`; a dated sub-entry under the drift-guard item of `deferred-items.md`, which is kept.
+
+## Operator rulings on Task 3's stop and the probe (2026-11-16)
+
+The operator answered "both as recommended", relayed by the orchestrator:
+
+- `THROTTLE_RULING=delayed-entry-module` — the CPU-throttle negative control is replaced by a deterministic delayed-hydration control. A temporary, never-committed patch (the throttle patch's discipline) holds the page's client entry module, picked by measurement, for about 12 s with `page.route` on the cand-home scan entry and the terms-gate-phone spec. HEAD's cand-home and the terms fixture without its hydration wait must both fail under the delay; with the plan's fixes applied the same delayed runs must pass. If a control still passes under the delay, the plan stops. Task 3's verify names the throttle; where its reading is adapted, that is a deviation under this ruling.
+- `PROBE_RULING=fix-in-187-27` — the stale check `functions.identity-callback-unverified` of `infra/scripts/probe/checks.mjs` and its tests are fixed in this plan, as a deviation, to expect what HEAD's `identity-callback` answers, keeping the check's purpose: an unverified callback is refused without leaking detail.
+
+## Task 3, resumed under `THROTTLE_RULING=delayed-entry-module`: the delayed-hydration controls and the fixes
+
+```
+NEG_CONTROL_MECHANISM=delayed-entry-module
+NEG_CONTROL_DELAY_MS=12000
+NEG_CONTROL_REQUEST_MATCHED=/@sveltejs/kit/src/runtime/client/entry.js (regex \/@sveltejs\/kit\/src\/runtime\/client\/entry\.js(\?|$)); served here as http://localhost:5273/@fs/<checkout>/node_modules/@sveltejs/kit/src/runtime/client/entry.js
+NEG_CONTROL_SCOPE=the cand-home scan entry (both themes) of contestant-a11y.spec.ts and every test of contestant-terms-gate-phone.spec.ts
+NEG_CONTROL_CAND_HOME_FAILED_AT_NEXT_STEP=yes
+NEG_CONTROL_CAND_HOME_RUN=tests/e2e-runs/187-27-delay-a11y-head-b-20261116T183351Z: 42 passed, 2 failed (cand-home, cand-home (dark)), each at toHaveAttribute data-next-step "preview" of contestant-home-continue, received "", 10000 ms
+NEG_CONTROL_CAND_HOME_FIRST_ATTEMPT=tests/e2e-runs/187-27-delay-a11y-head-20261116T183057Z: wrapper exit 5, the dev server exited before listening, no Playwright run (see below)
+THROTTLED_TERMS_AT_HEAD=failed
+DELAYED_TERMS_AT_HEAD_RUN=tests/e2e-runs/187-27-delay-terms-head-20261116T183144Z: 4 passed, 2 failed, each at open()'s focus-reset wait ("the page did not hydrate"), 10000 ms, the slowPage budget the 12 s delay exceeds
+NEG_CONTROL_TERMS_FAILED_AT_SUBMIT_ENABLED=yes
+NEG_CONTROL_TERMS_RUN=tests/e2e-runs/187-27-delay-terms-mut-20261116T183247Z: 4 passed, 2 failed, each at toBeEnabled of terms-of-use-submit, received disabled, 5000 ms
+NEG_CONTROL_TERMS_RESTORED=yes
+SETTLE_HYDRATION_WAIT=not-applied:cand-preview
+SETTLE_PROBE_RUN=tests/e2e-runs/187-27-delay-a11y-fixed-20261116T183535Z: with the settle wait applied, cand-home and cand-home (dark) passed in 14.1 s under the delay, and cand-preview and cand-preview (dark), not delayed, failed at the settle wait at the 90 s test ceiling ("the page did not hydrate: the post-navigation focus reset never landed"); 42 passed, 2 failed
+THROTTLED_A11Y_AFTER=passed
+DELAYED_A11Y_AFTER_RUN=tests/e2e-runs/187-27-delay-a11y-fixed-b-20261116T183921Z: 44 passed, 0 failed; cand-home 15.3 s and cand-home (dark) 15.4 s under the delay
+THROTTLED_TERMS_AFTER=passed
+DELAYED_TERMS_AFTER_RUN=tests/e2e-runs/187-27-delay-terms-fixed-20261116T183808Z: 6 passed, 0 failed; the two terms tests 13.4 s each under the delay
+THROTTLE_PATCH_REVERTED=yes
+DELAY_PATCH_REVERTED=yes
+PRIVATE_FOCUS_RESET_COPIES_REPLACED=tests/tests/specs/voter/analytics-gpc.spec.ts,tests/tests/specs/voter/voter-journey.spec.ts,tests/tests/specs/voter/voter-prefs-tracking.spec.ts,tests/tests/specs/voter/voter-tracking-consent-free.spec.ts
+NOT_A_COPY=tests/tests/fixtures/admin/adminLoginPage.fixture.ts (its settle combines the predicate with the login form's state; left as it is)
+READINESS_FIX_COMMIT=b29c91405
+PROBE_FIX_COMMIT=e56db5391
+```
+
+- **The request, by measurement.** CI's trace of cand-home (`tr/1c571c65…/1-trace.network`) shows, after the two document GETs, the first module requests `…/@sveltejs/kit/src/runtime/client/entry.js` and `…/.svelte-kit/generated/client/app.js`, both imported by the document's inline start script; `entry.js` is SvelteKit's client entry, and the router starts only once it has loaded. Every delayed test recorded the URL its route held in a `delayed-entry-module` annotation, and each names `entry.js` on port 5273. The same trace shows CI's module loading running from 413.4 s to past 418.2 s, over 5 s, which is the slowness the delay stands in for.
+- **The patch.** `tmp/187-27/delay/delay.patch` adds one top-level `test.beforeEach` to each of the two specs. It registers a `page.route` on that request that waits 12 000 ms and then continues it: in the a11y spec only for a test whose title holds `— cand-home`, and in the phone spec for every test. It was applied with `git apply` for the seven delayed runs, reverted with `git apply -R`, and never committed; `git diff --quiet` of `contestant-terms-gate-phone.spec.ts` exits 0 afterwards, the a11y spec's diff held only the fix, and after the fix commit `git diff --quiet HEAD -- tests` exits 0. No `page.route` and no `delayed-entry-module` remains in either spec.
+- **The controls, at HEAD.** cand-home fails at CI's exact assertion and budget, and the terms fixture with the one line `      await waitForNavigationFocusReset(page);` removed from `open()` (count 1, diffstat `1 -`), the form CI ran, fails at CI's exact assertion (`toBeEnabled` of terms-of-use-submit, 5000 ms). `git checkout --` of the fixture and `git diff --quiet` exit 0 afterwards. HEAD's terms fixture, with the wait at `slowPage`, fails at that wait under a 12 s delay; that is a reading of the budget, not a control.
+- **The first cand-home attempt.** Its dev server exited before listening: Vite's forced dependency re-optimisation failed with `[UNRESOLVED_ENTRY] Cannot resolve entry module ../../node_modules/@openvaa/data/dist/index.js` while the package watcher's tsup rebuild of `@openvaa/data` (a turbo cache miss) was cleaning that `dist`. The wrapper exited 5, Playwright never started, and there is no result to read; the control was made again under a new directory. This is a race in the dev stack's own start (`yarn dev`'s watcher against Vite's optimiser), not in this plan's change; it is recorded in `deferred-items.md`.
+- **The settle wait.** With the hydration wait added before `entry.reach` in `toScanEntry`, cand-preview's page never shows the focus reset: neither `[data-focus-on-nav]` nor its first `h1` holds focus after its cold load, so the wait runs to the test ceiling. By the plan, the settle is left as it was (`SETTLE_HYDRATION_WAIT=not-applied:cand-preview`), and `contestantAxeScan.ts` is unchanged. cand-home is closed by its own reach: `expectNextStep('preview', { timeout: TIMEOUTS.testMax })`.
+- **The fixes** (`b29c91405`). `waitForNavigationFocusReset(page, options)` takes `{ timeout?: number }`, defaulting to `TIMEOUTS.slowPage`, with the parameter in its TSDoc. The terms fixture's `open()` waits with `TIMEOUTS.testMax` under a `// reason:` line naming the hydration a cold load spans. `expectNextStep(step, options)` takes `{ timeout?: number }`, defaulting to `TIMEOUTS.slowPage`, and the cand-home reach passes `TIMEOUTS.testMax` under its own `// reason:` line. The four voter specs drop their private copies of the poll and call the shared helper with `{ timeout: TIMEOUTS.page }`, the budget each copy had; voter-journey's key-press rationale and the hydration reasons of analytics-gpc and voter-prefs-tracking stay at the calls they explain. A `git grep` of `tests/tests/specs` for the copied predicate finds nothing. Prettier and ESLint on the eight files, `tsc -p tests/tsconfig.json --noEmit` and `yarn assert:comment-hygiene` each exit 0.
+- **Deviation (Rule 3, under the ruling).** Task 3's verify reads `THROTTLE_RATE=(4|6)` and fails on `THROTTLE_REPRODUCES_CI=no`, both recorded above in the throttle section. Under `THROTTLE_RULING=delayed-entry-module` the control is the delayed entry module, so those two checks are read as satisfied by `NEG_CONTROL_MECHANISM=delayed-entry-module` and the four delayed lines; every other check of the verify applies unchanged. `THROTTLED_A11Y_AFTER` and `THROTTLED_TERMS_AFTER` carry the delayed readings under the names the verify reads.
+- **The probe (`e56db5391`, Rule 1 under `PROBE_RULING=fix-in-187-27`).** `functions.identity-callback-unverified` now expects a keyless GET to answer 400 with the function's own `{"result":"bad_request"}`, and a keyless POST of `{}` (no server credential header) to answer 401 with its own `{"result":"refused"}`, from `identity-callback/index.ts` (`req.method !== 'POST'` → `bad_request`; no `x-identity-callback-secret` header → `refused`) and `requestContract.ts` (400 and 401). `bodyKind` recognises the two exact bodies, so a gateway 401 with its own body is still `other` and still fails the check, and the check's purpose holds: the gateway demands no JWT, and an unverified caller is refused with a fixed body and no detail. Two new cases pin the pre-change answers (GET 405, POST 500) as failures. `vitest run --config infra/vitest.config.ts probe-hosted.test.ts` exit 0, 98 of 98; with HEAD's `checks.mjs` put back in place for one run, exit 1 with 51 failed (the correct-response fixture now holds HEAD's answers), and the fixed file restored byte-identical (`cmp` exit 0). Prettier on the four files exit 0.
+
+### The targeted unthrottled runs (at `b29c91405`, the delay patch reverted)
+
+```
+TARGETED_PROJECTS=contestant-a11y-scan,contestant-terms-gate-phone,voter-journey,analytics-default-standalone,analytics-consent-free
+TARGETED_RUN=contestant-a11y-scan tests/e2e-runs/187-27-tgt-a11y-20261116T184130Z 44 passed, 0 failed, 0 flaky, 0 did not run
+TARGETED_RUN=contestant-terms-gate-phone tests/e2e-runs/187-27-tgt-terms-phone-20261116T184245Z 6 passed, 0 failed, 0 flaky, 0 did not run
+TARGETED_RUN=voter-journey tests/e2e-runs/187-27-tgt-voter-journey-20261116T184339Z 4 passed, 0 failed, 0 flaky, 0 did not run
+TARGETED_RUN=analytics-default-standalone tests/e2e-runs/187-27-tgt-analytics-standalone-20261116T184531Z 22 passed, 0 failed, 0 flaky, 0 did not run
+TARGETED_RUN=analytics-consent-free tests/e2e-runs/187-27-tgt-consent-free-20261116T184647Z 7 passed, 0 failed, 0 flaky, 0 did not run
+TARGETED_UNTHROTTLED_RUNS=green
+```
+
+- Each through `tests/scripts/e2e-run.sh --run-dir <dir> --no-db-reset --project <project>` (`tmp/187-27/delay/targeted.sh`, in the background); every wrapper exit 0, preflight successes 1 and failures 0, no void marker, and `e2e-spec-verdict.mjs <dir> --no-flaky` exit 0 with `VERDICT OK`.
+- **Which projects.** The projects of the specs whose code path changed. contestant-a11y.spec.ts (`contestant-a11y-scan`), the two callers of the terms fixture's `open()` (`contestant-terms-gate-phone`, and `contestant-terms-tracking.spec.ts`), voter-journey.spec.ts (`voter-journey`), and analytics-gpc, voter-prefs-tracking and voter-tracking-consent-free. The default run places contestant-terms-tracking, analytics-gpc and voter-prefs-tracking in the perm chain's `voter-prefs-tracking` project, whose dependencies are most of the suite, so they ran in that chain's stand-alone form, `analytics-default-standalone` (the same four spec files on the same dataset, with `PLAYWRIGHT_ANALYTICS_STANDALONE=1`). The consent-free spec runs only as `analytics-consent-free`, with `PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free`, as the config's header prescribes. The other importers of the changed modules (the identity-provider and perm specs) reach only code whose default is unchanged (`waitForNavigationFocusReset` and `expectNextStep` without options, and `toScanEntry`, which is unchanged); the closing full run of Task 6 covers every project.
+
+## Task 5: the gates on the final tree, the evidence commits, their builds and the green commit's scan
+
+### The gates (2026-11-16)
+
+```
+GATES_HEAD=fabe70c1b4b9493eb181d3cc7cd139b8e004a8a4
+lint:check exit=0
+format:check exit=0
+typecheck exit=0
+test:unit exit=0
+lint:workflows exit=0
+INFRA_TESTS_PASSED=bootstrap-tfvars.test.ts,build-push-image.test.ts,check-destroy-plan.test.ts,deploy-workflow.test.ts,destroy-workflow.test.ts,infra-plan-workflow.test.ts,main-e2e-workflow.test.ts,probe-hosted.test.ts,push-migrations.test.ts,request-loop.test.ts,running-image-digest.test.ts,workflows.test.ts
+GUARD_DEPLOYED_SMOKE=passed
+TF_FMT_EXIT=0
+TF_ROOTS_VALIDATED=8
+TF_MODULES_TESTED=frontend-service,github-oidc
+TF_EXAMPLE_PLANS=example/aws,example/dns-mail,example/supabase
+SC4_LOCAL_GATE_DIFF=empty
+PHASE_APP_DIFF=apps/frontend/src/hooks.server.ts,packages/dev-seed/tests/checkDriftLinkedGuard.test.ts,tests/README.md,tests/tests/fixtures/contestant/contestantHomePage.fixture.ts,tests/tests/fixtures/contestant/contestantTermsOfUsePage.fixture.ts,tests/tests/helpers/navigation.ts,tests/tests/specs/a11y/contestant-a11y.spec.ts,tests/tests/specs/voter/analytics-gpc.spec.ts,tests/tests/specs/voter/voter-journey.spec.ts,tests/tests/specs/voter/voter-prefs-tracking.spec.ts,tests/tests/specs/voter/voter-tracking-consent-free.spec.ts,tests/tests/utils/deployedTarget.test.ts
+```
+
+- **The repository gates** (`tmp/187-27/t1/run-gates.sh tmp/187-27/t5/gates`, in the background, one after another, `TURBO_CACHE_DIR=tmp/187-27/turbo-cache`). HEAD was `fabe70c1b` before and after. `lint:check` 18:48:57Z to 18:49:52Z, `format:check` to 18:50:12Z, `typecheck`, `test:unit` 18:50:12Z to 18:51:12Z (`Tasks: 26 successful, 26 total`), `lint:workflows` (`actionlint found nothing in 3 workflows`). Every exit 0 on the first run; no Terraform loop ran during them.
+- **`INFRA_TESTS_PASSED`.** `vitest run --config infra/vitest.config.ts --reporter=verbose` exit 0, `Test Files 12 passed (12)`, `Tests 323 passed (323)` (two more than 187-26's 321: the probe's two new cases).
+- **`GUARD_DEPLOYED_SMOKE=passed`.** `vitest run --config tests/vitest.config.ts --reporter=verbose` exit 0, `Tests 358 passed (358)`, with 16 `✓ tests/utils/deployedSmokeGuards.test.ts` lines and no failed test.
+- **Terraform** (`tmp/187-27/run-tf.sh t5`, after the gates, alone): fmt exit 0; the eight roots init and validate exit 0; `frontend-service` `Success! 33 passed, 0 failed.`, `github-oidc` `Success! 11 passed, 0 failed.`; the three example roots each `Success! 1 passed, 0 failed.`. `git status --porcelain` afterwards listed only the untracked ledger.
+- **`SC4_LOCAL_GATE_DIFF=empty`.** `git diff --quiet 36a676018 -- tests/playwright.config.ts tests/global-setup.ts tests/tests/support/preflight.ts` exit 0, with `36a676018` the rebased counterpart of `a7a4222a8` (`REBASE_COUNTERPART_a7a4222a8`).
+- **`PHASE_APP_DIFF`.** `git diff --name-only d35c1bb6a..HEAD -- apps packages tests`, with `d35c1bb6a` the rebased counterpart of `ee85b83a3`. Beyond 187-26's `tests/README.md` and `tests/tests/utils/deployedTarget.test.ts`, it holds this plan's changes: the fallout fix (`apps/frontend/src/hooks.server.ts`, the one path under `apps/`, named in the `REBASE_FALLOUT=` line), the drift guard test, and the readiness fix's eight test files.
+
+### The evidence commits and the green commit's scan
+
+```
+GREEN_COMMIT_OF_RECORD=2b0842fd46bf6f26dfa6dad009a13b2297197b30
+RED_COMMIT_OF_RECORD=3e03b96481149573ac168d78201513335104ea22
+PUSH_SCAN_HEAD=2b0842fd46bf6f26dfa6dad009a13b2297197b30
+PUSH_SCAN_BASE=340a200708c28fb7ed078d452138712f3400c789
+PUSH_SCAN_EXIT=0
+PUSH_SCAN_RESULTS=0
+```
+
+- The green and red commits, their archive builds (green exit 0, red exit 1 at the frontend build naming the missing module) and the builder-cache prune are recorded in `187-12-evidence-commits.md` § Re-run 2026-11-16 (plan 187-27).
+- **The scan.** `tmp/187-27/scan.sh green 340a20070 refs/evidence/187/green` (Task 1's command, trufflehog 3.97.9 at digest `sha256:52e67fef…`) in a fresh `git init` repository fetched from this checkout. The `--github-actions` run exit 0, `"verified_secrets": 0, "unverified_secrets": 0` over 4186 chunks, no annotation. The `--json` run exit 0 with no result; its mode-700 directory was deleted, the scan repository removed, and `tmp/187-27/scan/` removed after it.
+
+## Task 6: the closing E2E window
+
+```
+DEV_ENV_STAT_BEFORE=342396339 10343 1791823238
+E2E_FUNCTIONS_ENV=template
+TEMPLATE_LINK_SAME_INODE=yes
+DEV_FUNCTIONS_ENV_ASIDE_DURING_RUN=yes
+DEV_ENV_STAT_AFTER=342396339 10343 1791823238
+FUNCTIONS_ENV_RESTORED=yes
+EDGE_RUNTIME_RESTARTED_AFTER_RESTORE=yes
+GSD_SESSION_MUST_RESET=yes
+```
+
+- **Before.** Neither `tmp/187-27/env-aside/functions-dotenv.aside` nor `tmp/187-26/env-aside/functions-dotenv.aside` existed; the developer's file existed (`test -e`); `refs/evidence/187/green`'s tree equals HEAD's without `.planning/`; 161 GiB free and Docker build cache 0 B; no listener on 5273, 8777 or 9443 (`lsof` exit 1 each); the edge runtime Up. `stat -f '%i %z %m'` of the file gave the line above. The template's inode is 395205672.
+- **The window.** One background zsh command, written out on its command line, every step's status in its own file under `tmp/187-27/window/`. Before anything moved it set its restore as the trap on EXIT and, through a once-only guard, on INT, TERM and HUP.
+  - **a. Aside** (19:01:05Z). `mkdir -p -m 700 tmp/187-27/env-aside`, then `mv` of the file to `tmp/187-27/env-aside/functions-dotenv.aside`, exit 0. No hook or permission refusal occurred.
+  - **b. The template.** `ln` of the template to the file's path exit 0, `test -ef` against the template exit 0, and `stat` showed the path at the template's inode 395205672. `yarn db:stop` and `yarn db:start` exit 0. The applied migration count read `22`, HEAD's `.sql` count, so no reset was needed. Then the full run (`187-13-closing-e2e.md` § Re-run 2026-11-16 (plan 187-27)), and `docker logs` of the edge runtime to `edge-template.log` (8 lines, no error line).
+  - **c. The restore** (19:20:30Z). The path was `-ef` the template, so it was removed with `rm` (exit 0), then the aside file was moved back with `mv` (exit 0). `yarn db:stop` and `yarn db:start` exit 0, and `rmdir tmp/187-27/env-aside` exit 0. `stat` of the file afterwards equals the line before, the template's link count is 1 again, and the edge runtime's `StartedAt` is 2026-11-16T19:20:48Z, after the restore; it is Up.
+- **Judging the run.** Wrapper exit 0, no void marker, `e2e-evidence.mjs` exit 0 (729 passed, 0 failed, 0 flaky, 0 skipped, 0 did not run) and `e2e-spec-verdict.mjs --no-flaky` exit 0, so `E2E_GATE=green`.
+- **The file's content was not read.** The only operations on the developer's file or its path were `test -e`, `stat -f '%i %z %m'`, `mv` (twice), `ln`, `test -ef` and `rm` of the link while it was the template.
+- **The shared stack.** It was restarted by the window and by the wrapper's own restore, and runs with the developer's environment. The -gsd worktree shares it, so `GSD_SESSION_MUST_RESET=yes`.
+
+### What would be pushed (read-only; one remote read, `git ls-remote`)
+
+```
+PUSH_COMMIT=2b0842fd46bf6f26dfa6dad009a13b2297197b30
+PUSH_TREE=6de8539cf8f28bd2eeb835753e041ddcaec44d27
+PUSH_PARENT=340a200708c28fb7ed078d452138712f3400c789
+PUSH_PATHS=3533
+PUSH_TREE_MATCHES_HEAD=yes
+PUSH_TREE_COVERED_BY_E2E=yes
+PUSH_PLANNING_PATHS=0
+PUSH_EXCLUSIONS=unchanged
+PUSH_TARGET_REF=refs/heads/ci-evidence/187-final-3
+BRANCH_ABSENT=yes
+MAIN_YAML_TRIGGERS_ON_CI_EVIDENCE=yes
+MAIN_YAML_JOB_COUNT=13
+MAIN_YAML_ASSUMES_NO_AWS_ROLE=yes
+READY_TO_PUSH=yes
+```
+
+- **`PUSH_COMMIT`.** `refs/evidence/187/green`, `GREEN_COMMIT` of `187-12-evidence-commits.md` (re-run 2026-11-16, plan 187-27), tree `6de8539cf`, parent `340a20070`. `git for-each-ref --contains` prints only `refs/evidence/187/green`.
+- **`PUSH_TREE_MATCHES_HEAD=yes`.** `git diff --quiet HEAD refs/evidence/187/green -- . ':!.planning'` exit 0 with HEAD `e6f1e114e`, and the green tree was written from HEAD's tree without `.planning/` in a temporary index; the real index untouched.
+- **`PUSH_TREE_COVERED_BY_E2E=yes`.** `git diff --quiet e6f1e114e 2b0842fd4 -- . ':!.planning'` exit 0, where `e6f1e114e` is `E2E_TREE_SHA`.
+- **`PUSH_PLANNING_PATHS=0`.** `git ls-tree -r --name-only` of the commit lists 3533 paths and none under `.planning/`.
+- **`PUSH_EXCLUSIONS=unchanged`.** This plan added no entry; `.github/trufflehog-exclude-paths.txt` is identical at plan 187-26's pushed commit `102202f7a` and at this commit (`git diff --quiet` exit 0).
+- **`BRANCH_ABSENT=yes`.** `git ls-remote origin refs/heads/ci-evidence/187-final-3` exit 0 printed nothing, before the window and again after it.
+- **`MAIN_YAML_TRIGGERS_ON_CI_EVIDENCE=yes`.** The commit's `main.yaml`, parsed with the root `yaml` package, has `on.push.branches` `main` and `ci-evidence/**`; `paths-ignore` (`**.md` and the `.env.example` paths) does not suppress the run, since 4026 of the 4488 paths the commit changes against its parent are not `.md` files. It names 13 jobs (`MAIN_YAML_JOB_COUNT`).
+- **`MAIN_YAML_ASSUMES_NO_AWS_ROLE=yes`.** Over the commit's `main.yaml`, comment lines excluded, `grep -ciE 'role-to-assume|aws-actions|id-token: write'` counts 0.
+- **`READY_TO_PUSH=yes`** holds for every line above. Nothing was pushed.
+
+## Task 7: the push (made by the orchestrator at top level, 2026-11-16)
+
+```
+PUSH_ATTEMPT=20261116T192353Z.8b93ad083
+PUSH_APPROVAL=answer_push=approve (standing, of 2026-11-16, stored with put)
+PUSH_VERIFY_EXIT=0
+PUSH_BRANCH_ABSENT_AT_PUSH=yes
+PUSH_COMMAND=git push origin 2b0842fd46bf6f26dfa6dad009a13b2297197b30:refs/heads/ci-evidence/187-final-3
+PUSH_EXIT=0
+```
+
+- **The approval.** The orchestrator ran `bash "$A" new 187-27-7`, which made attempt `20261116T192353Z.8b93ad083`, and stored the standing approval with `put`. `put`, `bound 187-27-7 OPERATOR_REPLY plan=187-27 task=7` and `has 187-27-7 '^answer_push=approve$'` each exited 0.
+- **The verify.** Task 7's verify ran in full immediately before the push and exited 0. A first extraction of the verify command came out empty and is not counted.
+- **The branch.** `git ls-remote origin refs/heads/ci-evidence/187-final-3` exit 0 printed nothing before the push.
+- **The push** exited 0 and created a new branch, with no lease, as the first push of a branch.
+- **Read back by the executor (Task 8).** `bash "$A" id 187-27-7` printed `20261116T192353Z.8b93ad083`; `bound 187-27-7 OPERATOR_REPLY plan=187-27 task=7` exit 0 and `has 187-27-7 '^answer_push=approve$'` exit 0. `git ls-remote origin refs/heads/ci-evidence/187-final-3` exit 0 printed `2b0842fd46bf6f26dfa6dad009a13b2297197b30`.
+
+## Task 8: the run job by job (read 2026-11-16T19:24Z to 19:44Z)
+
+**The run.** `gh run list --branch ci-evidence/187-final-3 --workflow main.yaml --json databaseId,headSha,…` exited 0 and listed one run, `43938990256`, at head `2b0842fd46bf6f26dfa6dad009a13b2297197b30`, event `push`, created 2026-11-16T19:24:22Z. A background poll of `gh run view --json status` every 30 s ran until the status was `completed` (19:43:46Z). Each conclusion below was read at job level from `gh run view 43938990256 --json jobs` (exit 0), never from the run's conclusion.
+
+```
+PUSHED=yes
+CI_RUN_ID=43938990256
+CI_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/43938990256
+CI_RUN_HEAD_SHA=2b0842fd46bf6f26dfa6dad009a13b2297197b30
+CI_RUN_JOBS=13
+JOB=secret-scan conclusion=success
+JOB=skill-drift-check conclusion=success
+JOB=docker-image-build conclusion=success
+JOB=supabase-tests conclusion=success
+JOB=node-engine-range-negative-control conclusion=success
+JOB=sql-lint conclusion=success
+JOB=supabase-types-drift conclusion=success
+JOB=frontend-and-shared-module-validation conclusion=success
+JOB=e2e-tests conclusion=failure
+JOB=dev-seed-integration conclusion=success
+JOB=dependency-audit conclusion=failure
+JOB=infra-validate conclusion=success
+JOB=e2e-visual conclusion=failure
+SECRET_SCAN=success
+FRONTEND_AND_SHARED_MODULE_VALIDATION=success
+E2E_TESTS=failure
+E2E_VISUAL=failure
+INFRA_VALIDATE=success
+DEPENDENCY_AUDIT=failure
+DEPENDENCY_AUDIT_SUMMARY=Summary: 17 new advisory(ies) at high+, 0 accepted
+DEPENDENCY_AUDIT_ADVISORIES=GHSA-cg2g-xh64-v4q7 GHSA-pqg4-j6r4-53mv GHSA-3r8g-jcqq-3p5j GHSA-vc2v-76pw-4v95 GHSA-mrv2-3pqr-j5jr GHSA-587h-7wmj-h5pm GHSA-68fv-2mgg-jv7q GHSA-xjj6-f33q-929c GHSA-4w7w-5xrc-9h26 GHSA-2m5v-pch6-74hx GHSA-qrxm-fqhp-jwvm GHSA-mrhx-c7xc-m3w5
+DEPENDENCY_AUDIT_NEW_SINCE_TODO=GHSA-3r8g-jcqq-3p5j (@sveltejs/kit, audit id 1247438)
+WORKSTREAM_ADDED_PACKAGES=js-yaml
+DEPENDENCY_AUDIT_ACCEPTED=per-phase-189-todo
+E2E_VISUAL_RESULT=2 failed, 6 passed (58.9s); preflight failures 0, successes 1
+E2E_VISUAL_FAILED=visual-regression.spec.ts:119 Voter Results - Desktop (7830 pixels, ratio 0.01, differ from voter-results-desktop.png); visual-regression.spec.ts:139 Voter Results - Mobile (7841 pixels, ratio 0.01, differ from voter-results-mobile.png)
+E2E_VISUAL_CAUSE=confirmed: every differing pixel lies in a candidate portrait. The base template gained the candidate test-e2e-base-ca-admin-flows in db9e314b2 (-gsd stream, 179.2-04, 2026-11-12); the dev-seed writer assigns portraits as portraits[i % 30] over the candidates sorted by external_id, so the new row shifts the portrait of every candidate after it, and the baselines (e811fd2f1, 2026-11-07) predate it
+E2E_VISUAL_OWNER=-gsd stream (packages/dev-seed/src/templates/e2e/base.ts and tests/tests/specs/visual/__screenshots__/visual-regression.spec.ts/voter-results-*.png; no commit of this workstream touches either)
+E2E_TESTS_RESULT=7 failed, 511 did not run, 211 passed (13.3m); preflight failures 0, successes 1; no Retry line
+E2E_TESTS_FAILED=voter-nominations.spec.ts:21 (voter-nominations-list not visible in 10000 ms); contestant-code-registration.spec.ts:143 (register-submit still disabled after 10000 ms, contestantRegisterPage.fixture.ts:157); voter-results-redraw.spec.ts:440 (voter-results-list not visible in 10000 ms); contestant-email-registration.spec.ts:145 (contestant-home-status not visible in 10000 ms, contestantEntityHomePage.fixture.ts:113); admin-account-flows.spec.ts:133 (admin-set-password-gate not visible in 10000 ms, adminSetPasswordGate.fixture.ts:31); contestant-email-registration.spec.ts:481 (the focus reset never landed in 10000 ms, contestantLoginPage.fixture.ts:441 signInScriptLoaded via helpers/navigation.ts:128); entity-selection.setup.ts:57 (locator.waitFor 10000 ms at registerAndStoreSession.ts:89)
+E2E_TESTS_CAUSE=unconfirmed: seven readiness waits at the 10 s render and hydration buckets, each the first wait after a cold load or a mailed-link landing, the class this plan's two fixes closed for cand-home and the terms gate (both passed here); the 511 did-not-run tests are downstream of these, chiefly of data-setup-entity-selection
+E2E_TESTS_OWNER=-gsd stream (every failing spec, fixture and setup file above; no commit of this workstream touches any of them; helpers/navigation.ts is shared and this plan added only its optional budget, with the default unchanged)
+E2E_TESTS_FIXED_HERE_HELD=yes (contestant-a11y-scan's cand-home and contestant-terms-gate-phone did not fail)
+ALL_JOBS_GREEN_EXCEPT_DEPENDENCY_AUDIT=no
+G03_CLOSED=no
+PLAN_STOPPED=yes
+STOP_REASON=e2e-visual failed on portrait baselines shifted by a -gsd base-template row (cause confirmed), and e2e-tests failed on seven CI-only readiness timeouts in -gsd-owned specs and fixtures (cause unconfirmed); the fix is a new plan, and plans 187-15 and 187-26 are not closed
+```
+
+The job logs were read with `gh api --allow-escape-sequences repos/OpenVAA/voting-advice-application/actions/jobs/<job id>/logs` (each exit 0); they are kept in `tmp/187-27/ci/` (ignored) and not reproduced here. The visual artifact `e2e-run-visual` was downloaded with `gh run download` into an empty scratch directory to compare the expected, actual and diff images; nothing of it is kept in the repository.
+
+- **`secret-scan` (job of run 43938990256): success.** The range step scanned from the merge-base `340a200708c28fb7ed078d452138712f3400c789`; trufflehog reported `"verified_secrets": 0`, `"unverified_secrets": 0` over 4186 chunks, the local scan's exact count.
+- **`frontend-and-shared-module-validation`: success.** It ran `checkDriftLinkedGuard.test.ts (13 tests)` on the Linux runner and the infra tests including the probe's.
+- **`infra-validate`: success.**
+- **`dependency-audit` (job 133551106113): failure, accepted per the phase-189 todo.** 17 table rows: the todo's 16 rows unchanged, and one new row, `@sveltejs/kit` 1247438 `GHSA-3r8g-jcqq-3p5j` ("SvelteKit: DoS while parsing form data from a remote functions `form`"), brought by the rebase's lockfile. `git diff c2b3bff15..HEAD` of the manifests adds one dependency, `js-yaml` (root devDependency, plan 187-08); `@sveltejs/kit` is not one this workstream added, so the plan does not stop on it, and the row was appended to the todo with the date and the run id. One more GHSA id appears only inside a dompurify advisory's description and is not a row.
+- **`e2e-visual` (job 133551106526): failure; the plan stops.** Only the two Voter Results screenshots differ, by about 1% of the pixels. The diff image marks the candidate portraits alone; the cropped first card shows a different photograph for "Polar-Max BB One" in the actual and the expected image, with every other pixel equal. Candidate Preview desktop and mobile matched. The pre-rebase tree passed this job on run 43839245785 because it held neither `db9e314b2` nor its row. Regenerating the two Linux baselines, or giving the new row a portrait-neutral sort position, is the -gsd stream's call.
+- **`e2e-tests` (job 133551106103): failure; the plan stops.** The step `Run E2E tests` failed; the edge-runtime log and the run directory were uploaded. The seven failures are readiness waits, each on a page reached by a cold load or a mailed link, at the 10 s `slowPage` bucket; none is in a test this plan changed, and the two waits this plan fixed passed. The closing local run on the same source tree passed 729 of 729. A new plan has to diagnose them the way this plan did, with a delayed-hydration control per wait, before any budget changes.

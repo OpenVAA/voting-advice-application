@@ -19,7 +19,7 @@ The auth service hands every mail it would send to a hook instead of sending it.
 - **What it does not change.** What the auth service's endpoints answer; see [Known residuals](/developers-guide/backend/authentication#known-residuals).
 - **A change of address** asked through the auth service gets no confirmation mail, so a user cannot complete one.
 - **Confirmation.** `[auth.email]` sets `enable_confirmations = true` and `[auth]` sets `enable_signup = false`, so an address is confirmed only by a mailed link, or by the service role when it creates the user; see [Who can create an account](/developers-guide/backend/authentication#who-can-create-an-account).
-- **A hosted project** adopts the hook in its dashboard; see [Auth settings of a hosted project](/developers-guide/deployment#auth-settings-of-a-hosted-project).
+- **A hosted project** gets the hook from Terraform: the Supabase module writes `hook_send_email_enabled` and `hook_send_email_uri`, the hook on and pointed at `public.send_email_hook`, while the root's `enable_send_email_hook` is `true`; see [Auth settings of a hosted project](/developers-guide/deployment#auth-settings-of-a-hosted-project).
 
 ## The sign-in link
 

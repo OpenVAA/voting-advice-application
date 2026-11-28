@@ -9,7 +9,7 @@ variable "zone_id" {
 }
 
 variable "aws_region" {
-  description = "The region SES sends from. It names the MAIL FROM feedback host and the SMTP endpoint, and must equal the provider's region."
+  description = "The region SES sends from. It names the MAIL FROM feedback host and the SMTP endpoint, and must equal the provider's region: a plan with any other value fails."
   type        = string
 }
 

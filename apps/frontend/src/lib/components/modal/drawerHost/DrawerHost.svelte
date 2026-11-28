@@ -31,6 +31,7 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
   import { prefersReducedMotion } from '$lib/utils/motion';
   import { DELAY } from '$lib/utils/timing';
   import { drawerHost } from './drawerHostState.svelte';
+  import { isTopmostDialog, pushOpenDialog, removeOpenDialog } from '../openDialogs';
   import type { HostedDrawerPayload } from './drawerHostState.svelte';
 
   const { t } = getComponentContext();
@@ -57,6 +58,11 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
   });
 
   $effect(() => {
+    const own = dialog;
+    return () => removeOpenDialog(own);
+  });
+
+  $effect(() => {
     const next = drawerHost.current;
     untrack(() => {
       if (!dialog) return;
@@ -65,6 +71,7 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
         shown = next;
         if (!dialog.open) {
           dialog.showModal();
+          pushOpenDialog(dialog);
           const openedKey = next.key;
           // One frame in the closed-state styles first, so the slide-up / fade-in transitions run. The reveal is skipped if the drawer was closed or given another payload in the meantime.
           requestAnimationFrame(() =>
@@ -88,10 +95,12 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
         // Under reduced motion both transitions are off, so waiting out the animation would leave the dialog sitting there with no motion at all.
         if (prefersReducedMotion()) {
           dialog.close();
+          removeOpenDialog(dialog);
           shown = null;
         } else {
           closeTimer = setTimeout(() => {
             dialog?.close();
+            removeOpenDialog(dialog);
             shown = null;
           }, CLOSE_DELAY);
         }
@@ -106,11 +115,13 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
     else drawerHost.close(shown.key);
   }
 
-  /** Escape via a document-level handler rather than the dialog's native close, for `ModalContainer`'s stated reason: the native behaviour closes the dialog before any cleanup can run. The dialog's own `cancel` is suppressed below so the two cannot both fire. */
+  /** Escape via a document-level handler rather than the dialog's native close, for `ModalContainer`'s stated reason: the native behaviour closes the dialog before any cleanup can run. The dialog's own `cancel` is suppressed below so the two cannot both fire. The drawer takes the key only while it is the topmost open modal (see `openDialogs.ts`), so a modal shown above it, such as a consent prompt, takes the Escape first. The key's propagation is stopped and its default action cancelled too, so the browser's own Escape handling sends no `cancel` to another modal dialog, such as a consent prompt open under the drawer. */
   function handleEscape(e: KeyboardEvent): void {
+    if (e.defaultPrevented || !isTopmostDialog(dialog)) return;
     if (shown && e.key === 'Escape') {
       dismiss();
       e.stopPropagation();
+      e.preventDefault();
     }
   }
 
@@ -121,6 +132,7 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
     visible = false;
     shown = null;
     dialog?.close();
+    removeOpenDialog(dialog);
     drawerHost.close();
   }
 

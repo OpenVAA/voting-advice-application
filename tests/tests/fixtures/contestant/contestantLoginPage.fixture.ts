@@ -58,7 +58,14 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import {
+  IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT,
+  SIGN_IN_REDIRECT_TIMEOUT,
+  SIGN_IN_TO_TARGET_TIMEOUT,
+  SIGN_OUT_TIMEOUT,
+  TIMEOUTS,
+  waitForNavigationFocusReset
+} from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { expectLabelInRow, expectLabelOnOneLine } from '../../utils/labelInRow';
 import { messageOf, messagesOf } from '../../utils/messages';
@@ -254,7 +261,7 @@ export function createContestantLoginPage(page: Page) {
       const loginPage = new URL(page.url());
       await signIn.click();
       await page.waitForURL((url) => url.origin === loginPage.origin && url.pathname !== loginPage.pathname, {
-        timeout: TIMEOUTS.slowPage
+        timeout: IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT
       });
     },
 
@@ -308,7 +315,7 @@ export function createContestantLoginPage(page: Page) {
     async expectEndedOnEntry(): Promise<void> {
       const entryPath = buildRoute({ route: 'ContestantAppLogin', locale: 'en' });
       await expect(page).toHaveURL((url) => url.pathname === entryPath && url.search === '', {
-        timeout: TIMEOUTS.slowPage
+        timeout: SIGN_OUT_TIMEOUT
       });
       await expect(page.getByTestId(ids.page)).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect(page.getByTestId(ids.signInLink)).toBeVisible();
@@ -323,7 +330,8 @@ export function createContestantLoginPage(page: Page) {
      */
     async expectOnEntry(): Promise<void> {
       const entryPath = buildRoute({ route: 'ContestantAppLogin', locale: 'en' });
-      await expect(page).toHaveURL((url) => url.pathname === entryPath, { timeout: TIMEOUTS.slowPage });
+      // A sign-out, or a page's data answered with a redirect, is followed by the login page's data: two answers.
+      await expect(page).toHaveURL((url) => url.pathname === entryPath, { timeout: SIGN_OUT_TIMEOUT });
       await expect(page.getByTestId(ids.page)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
 
@@ -343,8 +351,9 @@ export function createContestantLoginPage(page: Page) {
      */
     async expectLedToSettings(): Promise<void> {
       const settings = buildRoute({ route: 'ContestantAppSettings', locale: 'en' });
+      // A sign-in that carries the settings as its redirect target reaches them after the form's post and the settings' data: two answers.
       await expect(page).toHaveURL((url) => url.pathname.replace(/^\/en(?=\/)/, '') === settings, {
-        timeout: TIMEOUTS.slowPage
+        timeout: SIGN_IN_TO_TARGET_TIMEOUT
       });
       await expect(page.getByTestId(testIds.contestant.settings.updateButton)).toBeVisible({
         timeout: TIMEOUTS.slowPage
@@ -386,10 +395,10 @@ export function createContestantLoginPage(page: Page) {
     },
 
     /**
-     * Assert that the sign-in screen is not rendered, as where another page is shown at its address.
+     * Assert that the sign-in screen is not rendered, as where another page is shown at its address. The screen may be left by a sign-in, so the wait has the sign-in's budget.
      */
     async expectSignInNotShown(): Promise<void> {
-      await expect(page.getByTestId(ids.signInPage)).toHaveCount(0);
+      await expect(page.getByTestId(ids.signInPage)).toHaveCount(0, { timeout: SIGN_IN_REDIRECT_TIMEOUT });
     },
 
     /**

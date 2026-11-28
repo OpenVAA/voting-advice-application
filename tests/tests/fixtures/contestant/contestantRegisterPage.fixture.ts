@@ -28,6 +28,7 @@
  *  - pressContinue()               — press the screen's main button.
  *  - expectModesError()            — the group of modes shows its error and the first radio has focus.
  *  - expectFieldError(field, reason) — the email or the code field is in error, for this reason, and has focus.
+ *  - expectEmailWait(minutes)      — the email field names the wait of a request refused over the per-caller limit, still holds what was typed, and has focus.
  *  - expectCodeUnconfirmed()       — the code was not confirmed: its error says so, the code is still in its field, and the field has focus.
  *  - expectCodeInputAttributes()   — the code control tells a browser it holds neither a password nor a one-time code.
  *  - expectEmailInputAttributes()  — the email mode's control tells a browser it holds an address.
@@ -65,7 +66,7 @@
 import { expect } from '@playwright/test';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
-import { TIMEOUTS } from '../../helpers';
+import { IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { messageOf, messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
@@ -96,6 +97,13 @@ const IDENTITY_PROVIDER_MESSAGES = (
 
 /** The sentence the code field shows for a code that was not confirmed, read from the message source rather than copied. */
 const CODE_UNCONFIRMED_MESSAGE = messageOf('contestantApp.register', 'codeUnconfirmed');
+
+/** The sentence for a wait of several minutes, after a request refused over the per-caller limit, read from the message source rather than copied. */
+const TOO_MANY_ATTEMPTS_MESSAGE = (
+  messagesOf('common') as {
+    account: { tooManyAttempts: Array<{ match: Record<'minutes=1' | 'minutes=*', string> }> };
+  }
+).account.tooManyAttempts[0].match['minutes=*'];
 
 /** The sentence under the email field for each reason it can be in error, read from the message source rather than copied. */
 const EMAIL_ERROR_MESSAGES: Readonly<Record<ContestantRegisterFieldReason['email'], string>> = Object.freeze({
@@ -364,7 +372,7 @@ export function createContestantRegisterPage(page: Page) {
       const registerPage = new URL(page.url());
       await page.getByTestId(ids.submit).click();
       await page.waitForURL((url) => url.origin === registerPage.origin && url.pathname !== registerPage.pathname, {
-        timeout: TIMEOUTS.slowPage
+        timeout: IDENTITY_PROVIDER_ROUND_TRIP_TIMEOUT
       });
     },
 
@@ -417,6 +425,20 @@ export function createContestantRegisterPage(page: Page) {
         await expect(error).toHaveAttribute('data-reason', reason);
       }
       await expect(control).toHaveAttribute('aria-invalid', 'true');
+      await expect(control).toBeFocused();
+    },
+
+    /**
+     * Assert that the email field names the wait of a request refused over the per-caller limit: its error holds the sentence the message source has for the wait, the field still holds what was typed, and focus is on the field.
+     *
+     * @param minutes - The wait the sentence names, in whole minutes; more than one.
+     */
+    async expectEmailWait(minutes: number): Promise<void> {
+      const { control, error } = fieldOf('email');
+      await expect(error).toBeVisible();
+      await expect(error).toContainText(TOO_MANY_ATTEMPTS_MESSAGE.replace('{minutes}', String(minutes)));
+      await expect(control).toHaveAttribute('aria-invalid', 'true');
+      await expect(control).not.toHaveValue('');
       await expect(control).toBeFocused();
     },
 

@@ -1,11 +1,19 @@
 /**
- * Specification for the analytics configuration resolver: the defaults with nothing set, normalisation, each vocabulary, the PostHog key and host, the fail-safe to provider `none` on any problem, the projection, and the start-up rule that names variables and never a key.
+ * Specification for the analytics configuration resolver: the defaults with nothing set, normalisation, each vocabulary, the PostHog key and host, the flush interval and its bounds, the fail-safe to provider `none` on any problem, the projection, and the start-up rule that names variables and never a key.
  *
  * @vitest-environment node
  */
 
 import { describe, expect, it } from 'vitest';
-import { analyticsStartupProblems, DEFAULT_POSTHOG_HOST, resolveAnalyticsConfig, toProjection } from './config';
+import {
+  analyticsStartupProblems,
+  DEFAULT_FLUSH_INTERVAL_MS,
+  DEFAULT_POSTHOG_HOST,
+  MAX_FLUSH_INTERVAL_MS,
+  MIN_FLUSH_INTERVAL_MS,
+  resolveAnalyticsConfig,
+  toProjection
+} from './config';
 
 /** A key value planted to prove it never reaches a problem or a start-up line. */
 const PLANTED_KEY = 'phc_planted_zz9';
@@ -13,14 +21,14 @@ const PLANTED_KEY = 'phc_planted_zz9';
 describe('resolveAnalyticsConfig', () => {
   it('resolves an empty environment to provider `none`, the gated consent mode and the memory visit-id mode', () => {
     expect(resolveAnalyticsConfig({})).toEqual({
-      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory' },
+      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
       problems: []
     });
   });
 
   it('normalises case and surrounding whitespace before the vocabulary check', () => {
     expect(resolveAnalyticsConfig({ ANALYTICS_PROVIDER: '  LOG  ' })).toEqual({
-      config: { provider: 'log', consentMode: 'gated', visitIdMode: 'memory' },
+      config: { provider: 'log', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
       problems: []
     });
   });
@@ -29,21 +37,21 @@ describe('resolveAnalyticsConfig', () => {
     expect(
       resolveAnalyticsConfig({ ANALYTICS_PROVIDER: '   ', ANALYTICS_CONSENT_MODE: ' ', ANALYTICS_VISIT_ID_MODE: '\t' })
     ).toEqual({
-      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory' },
+      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
       problems: []
     });
   });
 
   it('reports a provider outside the vocabulary and resolves to `none`', () => {
     expect(resolveAnalyticsConfig({ ANALYTICS_PROVIDER: 'umbrella' })).toEqual({
-      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory' },
+      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
       problems: [{ variable: 'ANALYTICS_PROVIDER', reason: 'invalid', provided: 'umbrella' }]
     });
   });
 
   it('reports `posthog` with no key as a missing key, without a provided value, and resolves to `none`', () => {
     expect(resolveAnalyticsConfig({ ANALYTICS_PROVIDER: 'posthog' })).toEqual({
-      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory' },
+      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
       problems: [{ variable: 'ANALYTICS_POSTHOG_KEY', reason: 'missing' }]
     });
   });
@@ -54,6 +62,7 @@ describe('resolveAnalyticsConfig', () => {
         provider: 'posthog',
         consentMode: 'gated',
         visitIdMode: 'memory',
+        flushIntervalMs: 2000,
         posthog: { host: DEFAULT_POSTHOG_HOST, key: PLANTED_KEY }
       },
       problems: []
@@ -73,6 +82,7 @@ describe('resolveAnalyticsConfig', () => {
         provider: 'posthog',
         consentMode: 'gated',
         visitIdMode: 'memory',
+        flushIntervalMs: 2000,
         posthog: { host: 'https://posthog.example.org:8443', key: PLANTED_KEY }
       },
       problems: []
@@ -95,6 +105,7 @@ describe('resolveAnalyticsConfig', () => {
           provider: 'posthog',
           consentMode: 'gated',
           visitIdMode: 'memory',
+          flushIntervalMs: 2000,
           posthog: { host: origin, key: PLANTED_KEY }
         },
         problems: []
@@ -117,7 +128,7 @@ describe('resolveAnalyticsConfig', () => {
           ANALYTICS_POSTHOG_HOST: host
         })
       ).toEqual({
-        config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory' },
+        config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
         problems: [{ variable: 'ANALYTICS_POSTHOG_HOST', reason: 'invalid' }]
       });
     }
@@ -131,14 +142,14 @@ describe('resolveAnalyticsConfig', () => {
         ANALYTICS_VISIT_ID_MODE: 'none'
       })
     ).toEqual({
-      config: { provider: 'log', consentMode: 'free', visitIdMode: 'none' },
+      config: { provider: 'log', consentMode: 'free', visitIdMode: 'none', flushIntervalMs: 2000 },
       problems: []
     });
   });
 
   it('reports a consent mode outside its vocabulary and resolves the provider to `none`', () => {
     expect(resolveAnalyticsConfig({ ANALYTICS_PROVIDER: 'log', ANALYTICS_CONSENT_MODE: 'always' })).toEqual({
-      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory' },
+      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
       problems: [{ variable: 'ANALYTICS_CONSENT_MODE', reason: 'invalid', provided: 'always' }]
     });
   });
@@ -151,7 +162,7 @@ describe('resolveAnalyticsConfig', () => {
         ANALYTICS_VISIT_ID_MODE: 'cookie'
       })
     ).toEqual({
-      config: { provider: 'none', consentMode: 'free', visitIdMode: 'memory' },
+      config: { provider: 'none', consentMode: 'free', visitIdMode: 'memory', flushIntervalMs: 2000 },
       problems: [{ variable: 'ANALYTICS_VISIT_ID_MODE', reason: 'invalid', provided: 'cookie' }]
     });
   });
@@ -165,7 +176,7 @@ describe('resolveAnalyticsConfig', () => {
           ANALYTICS_POSTHOG_HOST: 'not a url'
         })
       ).toEqual({
-        config: { provider, consentMode: 'gated', visitIdMode: 'memory' },
+        config: { provider, consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
         problems: []
       });
     }
@@ -174,12 +185,13 @@ describe('resolveAnalyticsConfig', () => {
   it('never throws and resolves to defaults for a non-string value', () => {
     const hostile: ReadonlyArray<unknown> = [null, 0, true, {}, [], () => 'log'];
     for (const value of hostile) {
-      const env = { ANALYTICS_PROVIDER: value, ANALYTICS_CONSENT_MODE: value } as unknown as Record<
-        string,
-        string | undefined
-      >;
+      const env = {
+        ANALYTICS_PROVIDER: value,
+        ANALYTICS_CONSENT_MODE: value,
+        ANALYTICS_FLUSH_INTERVAL_MS: value
+      } as unknown as Record<string, string | undefined>;
       expect(resolveAnalyticsConfig(env)).toEqual({
-        config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory' },
+        config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
         problems: []
       });
     }
@@ -196,14 +208,70 @@ describe('resolveAnalyticsConfig', () => {
   });
 });
 
+describe('resolveAnalyticsConfig: the flush interval', () => {
+  it('pins the default at 2000 ms and the accepted range at 500 to 600000 ms', () => {
+    expect(DEFAULT_FLUSH_INTERVAL_MS).toBe(2000);
+    expect(MIN_FLUSH_INTERVAL_MS).toBe(500);
+    expect(MAX_FLUSH_INTERVAL_MS).toBe(600000);
+  });
+
+  it.each([
+    ['unset', undefined],
+    ['blank', ''],
+    ['whitespace only', ' \t ']
+  ])('resolves an interval that is %s to the default, with no problem', (_label, value) => {
+    expect(resolveAnalyticsConfig({ ANALYTICS_PROVIDER: 'log', ANALYTICS_FLUSH_INTERVAL_MS: value })).toEqual({
+      config: { provider: 'log', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
+      problems: []
+    });
+  });
+
+  it.each([
+    ['500', 500],
+    ['600000', 600000],
+    [' 2000 ', 2000]
+  ])('takes the interval %j as %i ms, trimmed as every value is', (value, expected) => {
+    expect(resolveAnalyticsConfig({ ANALYTICS_PROVIDER: 'log', ANALYTICS_FLUSH_INTERVAL_MS: value })).toEqual({
+      config: { provider: 'log', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: expected },
+      problems: []
+    });
+  });
+
+  it.each(['499', '600001', '2s', '1e3', '-1'])(
+    'reports the interval %j as invalid, without a provided value, and resolves the provider to `none` and the interval to the default',
+    (value) => {
+      expect(resolveAnalyticsConfig({ ANALYTICS_PROVIDER: 'log', ANALYTICS_FLUSH_INTERVAL_MS: value })).toEqual({
+        config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 },
+        problems: [{ variable: 'ANALYTICS_FLUSH_INTERVAL_MS', reason: 'invalid' }]
+      });
+    }
+  );
+
+  it('keeps a valid interval when another variable has a problem', () => {
+    expect(resolveAnalyticsConfig({ ANALYTICS_PROVIDER: 'umbrella', ANALYTICS_FLUSH_INTERVAL_MS: '600000' })).toEqual({
+      config: { provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 600000 },
+      problems: [{ variable: 'ANALYTICS_PROVIDER', reason: 'invalid', provided: 'umbrella' }]
+    });
+  });
+
+  it('never puts the interval value into a problem', () => {
+    const value = '7777777';
+    const { problems } = resolveAnalyticsConfig({ ANALYTICS_FLUSH_INTERVAL_MS: value });
+    expect(problems).toEqual([{ variable: 'ANALYTICS_FLUSH_INTERVAL_MS', reason: 'invalid' }]);
+    expect(JSON.stringify(problems)).not.toContain(value);
+  });
+});
+
 describe('toProjection', () => {
   it('projects exactly three members, inactive only for provider `none`', () => {
-    expect(toProjection({ provider: 'none', consentMode: 'gated', visitIdMode: 'memory' })).toEqual({
+    expect(
+      toProjection({ provider: 'none', consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 })
+    ).toEqual({
       active: false,
       consentMode: 'gated',
       visitIdMode: 'memory'
     });
-    expect(toProjection({ provider: 'log', consentMode: 'free', visitIdMode: 'none' })).toEqual({
+    expect(toProjection({ provider: 'log', consentMode: 'free', visitIdMode: 'none', flushIntervalMs: 2000 })).toEqual({
       active: true,
       consentMode: 'free',
       visitIdMode: 'none'
@@ -213,6 +281,7 @@ describe('toProjection', () => {
         provider: 'posthog',
         consentMode: 'gated',
         visitIdMode: 'memory',
+        flushIntervalMs: 2000,
         posthog: { host: DEFAULT_POSTHOG_HOST, key: PLANTED_KEY }
       })
     ).toEqual({ active: true, consentMode: 'gated', visitIdMode: 'memory' });
@@ -223,6 +292,7 @@ describe('toProjection', () => {
       provider: 'posthog',
       consentMode: 'gated',
       visitIdMode: 'memory',
+      flushIntervalMs: 2000,
       posthog: { host: DEFAULT_POSTHOG_HOST, key: PLANTED_KEY }
     });
     expect(Object.keys(projection).sort()).toEqual(['active', 'consentMode', 'visitIdMode']);
@@ -249,6 +319,11 @@ describe('analyticsStartupProblems', () => {
         ANALYTICS_POSTHOG_HOST: 'http://example.org'
       })
     ).toEqual(['ANALYTICS_CONSENT_MODE', 'ANALYTICS_VISIT_ID_MODE', 'ANALYTICS_POSTHOG_KEY', 'ANALYTICS_POSTHOG_HOST']);
+  });
+
+  it('names the flush interval for an invalid value and nothing for a valid one', () => {
+    expect(analyticsStartupProblems({ ANALYTICS_FLUSH_INTERVAL_MS: '2s' })).toEqual(['ANALYTICS_FLUSH_INTERVAL_MS']);
+    expect(analyticsStartupProblems({ ANALYTICS_FLUSH_INTERVAL_MS: '600000' })).toEqual([]);
   });
 
   it('returns no string that holds the key value', () => {

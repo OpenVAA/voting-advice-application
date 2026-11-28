@@ -12,8 +12,8 @@
         },
         "name": {
           "locked": {
-            "candidate": "Dit navn er angivet af administratoren eller hentet fra din identifikation, og du kan ikke ændre det her. Hvis det er forkert, bedes du kontakte support.",
-            "organization": "Dit partis navn og forkortelse er bekræftet af administratoren, og du kan ikke ændre dem her. Hvis de er forkerte, bedes du kontakte support."
+            "candidate": "Dit navn er angivet af administratoren eller hentet fra din identifikation, og du kan ikke ændre det her. Hvis det er forkert, {contactSupportLink}.",
+            "organization": "Dit partis navn og forkortelse er bekræftet af administratoren, og du kan ikke ændre dem her. Hvis de er forkerte, {contactSupportLink}."
           },
           "editable": {
             "candidate": "Du kan ændre dit navn, indtil en administrator har bekræftet din profil.",

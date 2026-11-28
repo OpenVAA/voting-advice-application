@@ -67,8 +67,8 @@ afterEach(() => {
 });
 
 /** Mount the screen as the Admin App's page renders it, with a request function that records its requests. */
-function mountScreen() {
-  const sendEntryLink = vi.fn(async () => undefined);
+function mountScreen(answer: { retryAfterSeconds: number } | undefined = undefined) {
+  const sendEntryLink = vi.fn(async () => answer);
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(ForgotPasswordScreen, {
@@ -116,6 +116,21 @@ describe('ForgotPasswordScreen', () => {
     expect(sendEntryLink).toHaveBeenCalledTimes(1);
     expect(sendEntryLink).toHaveBeenCalledWith({ origin: 'forgotPassword', email: ADDRESS });
     expect(goto).toHaveBeenCalledWith('/admin/email-sent');
+  });
+
+  it('stays on a request refused over the per-caller limit, and names the wait at the field, which takes focus', async () => {
+    const { target, sendEntryLink } = mountScreen({ retryAfterSeconds: 61 });
+
+    await submit(target, ADDRESS);
+    await tick();
+
+    expect(sendEntryLink).toHaveBeenCalledTimes(1);
+    expect(goto).not.toHaveBeenCalled();
+    expect(target.querySelector('[data-testid="forgot-password-email-error"]')?.textContent).toContain(
+      'common.account.tooManyAttempts {"minutes":2}'
+    );
+    expect(document.activeElement).toBe(target.querySelector('[data-testid="forgot-password-email"]'));
+    expect(target.querySelector<HTMLInputElement>('[data-testid="forgot-password-email"]')?.value).toBe(ADDRESS);
   });
 
   it('takes another press once the navigation to the "email sent" address has failed', async () => {

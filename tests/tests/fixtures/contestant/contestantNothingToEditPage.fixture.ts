@@ -16,7 +16,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS } from '../../helpers';
+import { SIGN_OUT_TIMEOUT, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantAppRootUrlRe } from '../../utils/contestantEntityUrl';
 import { messageOf, messagesOf } from '../../utils/messages';
@@ -86,7 +86,7 @@ export function createContestantNothingToEditPage(page: Page) {
     async logoutWithoutDialog(): Promise<void> {
       await container.getByTestId(testIds.contestant.nothingToEdit.logout).click();
       await expect(page.getByRole('dialog')).toHaveCount(0);
-      await expect(page).toHaveURL(/\/contestant\/login/);
+      await expect(page).toHaveURL(/\/contestant\/login/, { timeout: SIGN_OUT_TIMEOUT });
       await expect(page.getByTestId(testIds.contestant.login.page)).toBeVisible();
     }
   };

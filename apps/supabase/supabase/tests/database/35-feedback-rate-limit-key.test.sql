@@ -2,13 +2,13 @@
 --
 -- `check_feedback_rate_limit` allows five feedback inserts per five minutes per client. It keys the counter on `private.feedback_client_ip`, passing `private.deployment_settings.behind_cloudflare` as the helper's trust flag, and a missing settings row reads as false.
 --
--- With the flag true the key is `cf-connecting-ip`, which Cloudflare sets to the connecting client. With the flag false a client-sent `cf-connecting-ip` is ignored. Either way the fallback is the last `x-forwarded-for` entry, which the gateway appends from the connection's peer, and otherwise `unknown`. The earlier `x-forwarded-for` entries are written by the client and are never read.
+-- With the flag true the key is the bucket `private.client_address_bucket` gives `cf-connecting-ip`, which Cloudflare sets to the connecting client: its host, or the /64 of an IPv6 address. With the flag false a client-sent `cf-connecting-ip` is ignored. Either way the fallback is the last `x-forwarded-for` entry, which the gateway appends from the connection's peer, and otherwise `unknown`. The earlier `x-forwarded-for` entries are written by the client and are never read.
 --
 -- Each trigger block sets the flag explicitly at its start, as postgres, so the value `seed.sql` supplies never decides an assertion. Each insert sets `request.headers` to exactly the headers of that request, as PostgREST does. Client-written values use 192.0.2.0/24 (TEST-NET-1) and the values a key can land on use 198.51.100.0/24 (TEST-NET-2).
 --
 -- Before each block the rate-limit rows in both ranges are deleted, so leftover local state cannot decide an assertion. The final ROLLBACK undoes the deletions and every settings change.
 --
--- Direct calls to the helper pin its precedence for both flag values, the fallbacks for missing, empty and malformed values, IPv6 normalisation, and that neither API role can execute it. The settings table's default, its single-row constraint and its privileges are pinned as well.
+-- Direct calls to the helper pin its precedence for both flag values, the fallbacks for missing, empty and malformed values, the /64 key of a trusted IPv6 `cf-connecting-ip` and the host of an IPv6 last hop, and that neither API role can execute it. The settings table's default, its single-row constraint and its privileges are pinned as well.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, reset_role, create_test_data, test_id).
 BEGIN;
@@ -21,7 +21,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (56);
+  plan (58);
 
 SELECT
   create_test_data ();
@@ -781,8 +781,25 @@ SELECT
 SELECT
   is (
     private.feedback_client_ip ('{"cf-connecting-ip":"2001:DB8::1"}'::json, true),
+    '2001:db8::/64',
+    'trusted, the helper keys an IPv6 cf-connecting-ip by its /64'
+  );
+
+SELECT
+  is (
+    private.feedback_client_ip (
+      '{"cf-connecting-ip":"2001:db8::ffff"}'::json,
+      true
+    ),
+    private.feedback_client_ip ('{"cf-connecting-ip":"2001:db8::1"}'::json, true),
+    'trusted, two cf-connecting-ip addresses of one /64 share one key'
+  );
+
+SELECT
+  is (
+    private.feedback_client_ip ('{"x-forwarded-for":"2001:DB8::1"}'::json, true),
     '2001:db8::1',
-    'the helper normalises an IPv6 address'
+    'the helper normalises an IPv6 last hop by its host'
   );
 
 SELECT

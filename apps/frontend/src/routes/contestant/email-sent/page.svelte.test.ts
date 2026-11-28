@@ -386,7 +386,9 @@ describe('asking again', () => {
     await settle();
     expect(resendEntryLink).toHaveBeenCalledTimes(1);
     expect(resendEntryLink).toHaveBeenCalledWith();
-    expect(one(target, STATUS).textContent?.trim()).toBe('common.account.emailSent.resendRequested');
+    expect(one(target, STATUS).textContent?.trim(), 'nothing is announced as requested before the repeat answers').toBe(
+      'common.account.emailSent.resendReady'
+    );
     const resend = one(target, RESEND);
     expect(resend.getAttribute('aria-busy')).toBe('true');
     expect(resend.getAttribute('aria-disabled')).toBe('true');

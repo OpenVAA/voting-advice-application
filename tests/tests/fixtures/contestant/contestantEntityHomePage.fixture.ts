@@ -20,7 +20,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantHomeUrlRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
@@ -108,11 +108,11 @@ export function createContestantEntityHomePage(page: Page, admin: SupabaseAdminC
     /**
      * Assert that the page is the home of `entity`: the home's status message is shown, the URL is an entity home, and it carries the entity's type and id.
      *
-     * A selection screen, a gate and the login page each fail the first assertion, and another entity's home fails the last.
+     * A selection screen, a gate and the login page each fail the first assertion, and another entity's home fails the last. The home may be reached by a sign-in, so the first assertion has the sign-in's budget.
      */
     async expectLanded(entity: EntityGrantTarget): Promise<void> {
       await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
-        timeout: TIMEOUTS.slowPage
+        timeout: SIGN_IN_REDIRECT_TIMEOUT
       });
       await expect(page).toHaveURL(contestantHomeUrlRe());
       const entityId = await admin.entityId(entity);

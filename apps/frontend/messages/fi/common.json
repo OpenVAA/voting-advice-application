@@ -42,7 +42,17 @@
         "title": "Valitse salasana",
         "why": "Tililläsi ei ole vielä salasanaa. Valitse salasana, niin voit kirjautua sähköpostiosoitteellasi ja salasanallasi."
       },
-      "signedInAs": "Kirjautuneena osoitteella"
+      "signedInAs": "Kirjautuneena osoitteella",
+      "tooManyAttempts": [
+        {
+          "declarations": ["input minutes"],
+          "selectors": ["minutes"],
+          "match": {
+            "minutes=1": "Verkostasi on tehty liian monta yritystä. Yritä uudelleen minuutin kuluttua.",
+            "minutes=*": "Verkostasi on tehty liian monta yritystä. Yritä uudelleen {minutes} minuutin kuluttua."
+          }
+        }
+      ]
     },
     "alliance": {
       "plural": "vaaliliitot",

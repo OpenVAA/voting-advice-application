@@ -35,6 +35,11 @@ export type EntryLinkRequest = {
   code?: string;
 };
 
+/** What a link request resolves to when the function refused the caller for making more requests than its per-caller limit admits: the whole seconds, at least 1, until the caller may ask again. The refusal comes before the function reads the address or the code, so it says nothing about either. */
+export type EntryLinkRefusal = {
+  retryAfterSeconds: number;
+};
+
 /** A registration code the flow holds between the screen that checked it and the screen that uses it, with the check's answer. */
 export type EntryHeldCode = {
   code: string;

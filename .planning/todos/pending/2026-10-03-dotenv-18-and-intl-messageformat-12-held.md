@@ -6,10 +6,12 @@ severity: follow-up (no advisory on the held versions), time-boxed
 source: Phase 169 plan 169-10 Task 2 step 5 and Task 3 step 2 (D-23, D-03); evidence 169-EVIDENCE.md § 1 and § 3 (169-10)
 re_check_trigger: "intl-messageformat on or after 2026-10-15T12:27Z; dotenv on or after 2026-10-17T21:18Z"
 files:
-  - .yarnrc.yml (catalog `dotenv: ^17.3.1`, resolves 17.4.2)
-  - tests/playwright.config.ts, tests/seed-test-data.ts (`import dotenv from 'dotenv'`)
-  - apps/frontend/package.json (`"intl-messageformat": "^11.1.3"`, resolves 11.2.15)
-  - apps/frontend/src/lib/i18n/overrides.ts (`import { IntlMessageFormat } from 'intl-messageformat'`)
+  - '.yarnrc.yml (catalog `dotenv: ^17.3.1`, resolves 17.4.2)'
+  - 'tests/playwright.config.ts, tests/seed-test-data.ts (`import dotenv from ''dotenv''`)'
+  - 'apps/frontend/package.json (`"intl-messageformat": "^11.1.3"`, resolves 11.2.15)'
+  - 'apps/frontend/src/lib/i18n/overrides.ts (`import { IntlMessageFormat } from ''intl-messageformat''`)'
+tags: [frontend, tests, tooling, improvement]
+keywords: [dotenv, intl-messageformat, dependency-bump, age-rule, major-version]
 ---
 
 ## Problem

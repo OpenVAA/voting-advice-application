@@ -58,6 +58,7 @@ const EmailSentScreen = (await import('./EmailSentScreen.svelte')).default;
 const ADDRESS = 'admin@example.test';
 const SETTLED_AT = Date.UTC(2030, 0, 1, 12, 0, 0);
 const FRAME = '[data-testid="admin-email-sent"]';
+const REQUESTED = 'common.account.emailSent.resendRequested';
 
 let teardown: Array<() => void> = [];
 
@@ -85,9 +86,21 @@ function recoveryRequest(given: Partial<EntryHeldRequest> = {}): EntryHeldReques
   };
 }
 
-/** Mount the screen as the Admin App's page renders it. */
-function mountScreen(request: EntryHeldRequest | undefined) {
-  const resendEntryLink = vi.fn(async () => undefined);
+type ResendAnswer = { retryAfterSeconds: number } | undefined;
+
+/** A repeat whose answer the test gives itself, with `answer`, while the press waits on it. */
+function pendingResend() {
+  let resolveAnswer: ((value: ResendAnswer) => void) | undefined;
+  const promise = new Promise<ResendAnswer>((resolve) => (resolveAnswer = resolve));
+  function answer(value: ResendAnswer): void {
+    resolveAnswer?.(value);
+  }
+  return { promise, answer };
+}
+
+/** Mount the screen as the Admin App's page renders it. `answer` is what the repeat answers, or a promise of it. */
+function mountScreen(request: EntryHeldRequest | undefined, answer: ResendAnswer | Promise<ResendAnswer> = undefined) {
+  const resendEntryLink = vi.fn(() => Promise.resolve(answer));
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(EmailSentScreen, {
@@ -104,6 +117,11 @@ function mountScreen(request: EntryHeldRequest | undefined) {
   teardown.push(() => unmount(component));
   flushSync();
   return { target, resendEntryLink };
+}
+
+/** What the screen's polite status region says. */
+function statusText(target: HTMLElement): string | undefined {
+  return target.querySelector('[data-testid="email-sent-status"]')?.textContent?.trim();
 }
 
 describe('EmailSentScreen', () => {
@@ -148,5 +166,55 @@ describe('EmailSentScreen', () => {
     flushSync();
 
     expect(resendEntryLink).toHaveBeenCalledTimes(1);
+  });
+
+  it('names the wait by the button when the repeat was refused over the per-caller limit, and says no email was requested', async () => {
+    const pending = pendingResend();
+    const { target, resendEntryLink } = mountScreen(recoveryRequest(), pending.promise);
+    const refused = '[data-testid="email-sent-resend-refused"]';
+    expect(target.querySelector(refused)).toBeNull();
+
+    await vi.advanceTimersByTimeAsync(RESEND_WAIT_SECONDS * 1000 + 1000);
+    flushSync();
+    const statusBeforePress = statusText(target);
+    target.querySelector<HTMLButtonElement>('[data-testid="email-sent-resend"]')?.click();
+    await vi.advanceTimersByTimeAsync(0);
+    flushSync();
+
+    expect(resendEntryLink).toHaveBeenCalledTimes(1);
+    expect(statusText(target)).toBe(statusBeforePress);
+    expect(statusText(target)).not.toContain(REQUESTED);
+
+    pending.answer({ retryAfterSeconds: 120 });
+    await vi.advanceTimersByTimeAsync(0);
+    flushSync();
+
+    const sentence = target.querySelector(refused);
+    expect(sentence?.getAttribute('role')).toBe('alert');
+    expect(sentence?.textContent).toContain('common.account.tooManyAttempts {"minutes":2}');
+    expect(statusText(target)).toBe('');
+    expect(target.querySelector(FRAME)).not.toBeNull();
+  });
+
+  it('says a new email was requested only once a repeat that is not refused has been answered', async () => {
+    const pending = pendingResend();
+    const { target } = mountScreen(recoveryRequest(), pending.promise);
+
+    await vi.advanceTimersByTimeAsync(RESEND_WAIT_SECONDS * 1000 + 1000);
+    flushSync();
+    const statusBeforePress = statusText(target);
+    target.querySelector<HTMLButtonElement>('[data-testid="email-sent-resend"]')?.click();
+    await vi.advanceTimersByTimeAsync(0);
+    flushSync();
+
+    expect(statusText(target)).toBe(statusBeforePress);
+    expect(statusText(target)).not.toContain(REQUESTED);
+
+    pending.answer(undefined);
+    await vi.advanceTimersByTimeAsync(0);
+    flushSync();
+
+    expect(statusText(target)).toBe(REQUESTED);
+    expect(target.querySelector('[data-testid="email-sent-resend-refused"]')).toBeNull();
   });
 });

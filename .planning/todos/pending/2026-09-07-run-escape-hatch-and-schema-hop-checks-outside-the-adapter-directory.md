@@ -1,3 +1,8 @@
+---
+tags: [tooling, improvement]
+keywords: [project-scoped-queries, guard, escape-hatch, schema-hop]
+---
+
 # Run the escape-hatch and schema-hop checks over the outside corpus
 
 **Filed:** 2026-09-07

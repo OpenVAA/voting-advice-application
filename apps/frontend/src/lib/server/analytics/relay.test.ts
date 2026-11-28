@@ -40,7 +40,12 @@ const VISIT_ID = uuidv7(NOW - 60_000, new Uint8Array(10).fill(0x5a));
 const VOTER_ROUTE = ROUTE.ResultEntity;
 
 /** A configuration that keeps events, in the default modes. */
-const LOG_CONFIG: AnalyticsConfig = { provider: 'log', consentMode: 'gated', visitIdMode: 'memory' };
+const LOG_CONFIG: AnalyticsConfig = {
+  provider: 'log',
+  consentMode: 'gated',
+  visitIdMode: 'memory',
+  flushIntervalMs: 2000
+};
 
 /** A value placed in a rejected event, so that its absence from the log can be checked. */
 const REJECTED_MARKER = 'zz9plural-rejected-value';

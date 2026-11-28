@@ -8,6 +8,8 @@ files:
   - apps/supabase/supabase/schema/103-questions.sql
   - apps/supabase/supabase/migrations/00001_initial_schema.sql
 related_phase: 157
+tags: [supabase, data, improvement]
+keywords: [jsonb, foreign-key, referential-integrity, questions, election-ids, constituency-ids]
 ---
 
 ## Problem

@@ -52,7 +52,7 @@ key-decisions:
   - "The queue logs one warn record with the dropped count at the next flush; the relay logs one debug record with the parser's dropped count; neither logs a value"
   - "registerShutdownFlush stops the timer and starts one flush; adapter-node does not wait for it, so the last flush is best effort"
 
-requirements-completed: []
+requirements-completed: [RELAY-07]   # marked at the v2.17 milestone audit (2026-11-21) from the phase VERIFICATION.md
 
 duration: ~25 min
 completed: 2026-10-19

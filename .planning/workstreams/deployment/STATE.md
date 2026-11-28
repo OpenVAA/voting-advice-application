@@ -2,55 +2,54 @@
 gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
-current_phase: 183
-current_phase_name: Terraform Foundation and Supabase as Code
+current_phase: "190"
 current_plan: 14
-status: executing
-stopped_at: Phase 181 complete (verification passed); next is Phase 183, plan 183-16
-last_updated: "2026-10-21T08:18:29.376Z"
-last_activity: 2026-10-21
-last_activity_desc: Phase 183 execution started
-state_head: e5728aa9986bd8520d5895102b4c152bcdc9fbd0
+status: completed
+stopped_at: "Phase 190 complete: 14/14 plans, VERIFICATION passed after operator rulings (destroy.yml object form fixed; PR plan job deferred; 6 scopable + 7 unscopable cross-deployment reads accepted)"
+last_updated: "2026-11-27T10:30:00.000Z"
+last_activity: 2026-11-27
+last_activity_desc: Phase 190 complete
+state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
-  total_phases: 10
-  completed_phases: 2
-  total_plans: 82
-  completed_plans: 69
-  percent: 20
+  total_phases: 14
+  completed_phases: 12
+  total_plans: 273
+  completed_plans: 254
+  percent: 92
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (shared with the v2.16 stream; read only from this workstream)
+See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 after Phase 187, by additions only)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 183 — Terraform Foundation and Supabase as Code
+**Current focus:** Phase 190 — Multi-deployment bootstrap
 
 ## Current Position
 
-Phases 181 and 182 are complete; phase 183 is in progress (15/28 plans).
+Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 183 (Terraform Foundation and Supabase as Code) — EXECUTING
-Plan: 14 of 28
-Status: Executing Phase 183
-Last activity: 2026-10-21 — Phase 183 execution started
+Phase: 190 (Multi-deployment bootstrap) — COMPLETE 2026-11-27
+Plan: 14 of 14 (all executed; VERIFICATION passed after the operator rulings of 2026-11-27)
+Status: In progress (branch planning/deployment-190, rebased 2026-11-26 onto feat/deployment-terraform-supabase 8bbe93f9f; requirement ids renumbered to INFRA-21 to INFRA-24, PIPE-13 and PIPE-14, since 189.1.1 holds INFRA-20 and PIPE-12)
+Last activity: 2026-11-27 — 190-13 complete: every gate 0 on GATES_HEAD 80903cde1, full E2E 747/747 (tests/e2e-runs/190-13-full), VALIDATION signed; evidence deploy repeated green after the rebase onto 189.1.1 (run 45963033722); verifier human_needed 11/14
 
-Progress: [██░░░░░░░░] 20%
+Progress: [██████████████████░░] 172/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
-**Phases Complete:** 0 of 9
+**Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
 **Current Plan:** 14
 
-Phases 181, 182 and 183 do not depend on each other in what they build, but their executors share one checkout, so they are not run at the same moment: whole-repo gates need a tree with no uncommitted tracked change, and phase 182 holds the other two during its cutover span and its E2E windows. Phase 181's freeze (181-17) waits for plan 182-02. 183 needs the operator from plan 183-14 on. From 184 on, the numeric order is the dependency order.
+From 184 on, the numeric order is the dependency order.
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23
+- Total plans completed: 187
 - Average duration: 14 min
 - Total execution time: 0.2 hours
 
@@ -60,6 +59,14 @@ Phases 181, 182 and 183 do not depend on each other in what they build, but thei
 |-------|-------|-------|----------|
 | 181.1 | 4 | - | - |
 | 181 | 19 | - | - |
+| 183 | 28 | - | - |
+| 184 | 25 | - | - |
+| 185 | 22 | - | - |
+| 186 | 8 | - | - |
+| 187 | 31 | - | - |
+| 188 | 20 | - | - |
+| 189 | 20 | - | - |
+| 189.1 | 10 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -103,6 +110,152 @@ Phases 181, 182 and 183 do not depend on each other in what they build, but thei
 | Phase 181 P17 | 242min | 3 tasks | 5 files |
 | Phase 181 P18 | 364min | 3 tasks | 6 files |
 | Phase 181 P19 | 712min | 3 tasks | 1 files |
+| Phase 183 P15 | 2h40m | 3 tasks | 2 files |
+| Phase 183 P14 | about 5 h wall clock (operator waits) | 3 tasks | 5 files |
+| Phase 183 P16 | 6h15m | 3 tasks | 4 files |
+| Phase 183 P17 | 11h15m | 2 tasks | 5 files |
+| Phase 183 P18 | 61 min | 2 tasks | 2 files |
+| Phase 183 P19 | 30min | 2 tasks | 4 files |
+| Phase 183 P21 | 7h07m | 2 tasks | 7 files |
+| Phase 183 P22 | 45min | 2 tasks | 2 files |
+| Phase 183 P24 | 13h33m | 2 tasks | 6 files |
+| Phase 183 P23 | 4h20m | 3 tasks | 3 files |
+| Phase 183 P25 | 50min | 2 tasks | 2 files |
+| Phase 183 P20 | 2026-10-22T08:41Z to 2026-10-25 (operator wait); executor about 15 min | 2 tasks | 3 files |
+| Phase 183 P27 | 7min | 2 tasks | 1 files |
+| Phase 184 P01 | 6min | 2 tasks | 8 files |
+| Phase 184 P04 | 14min | 2 tasks | 4 files |
+| Phase 184 P05 | 10 min | 2 tasks | 2 files |
+| Phase 184 P06 | 10min | 2 tasks | 8 files |
+| Phase 184 P02 | 12min | 2 tasks | 5 files |
+| Phase 184 P07 | 12min | 3 tasks | 4 files |
+| Phase 184 P03 | 14min | 3 tasks | 5 files |
+| Phase 184 P08 | 5 min | 2 tasks | 5 files |
+| Phase 184 P09 | 25min | 3 tasks | 6 files |
+| Phase 184 P10 | 20min | 3 tasks | 2 files |
+| Phase 184 P11 | 25 min | 3 tasks | 3 files |
+| Phase 184 P12 | 20min | 2 tasks | 2 files |
+| Phase 184 P13 | 30 min | 3 tasks | 2 files |
+| Phase 184 P14 | 35 min | 2 tasks | 4 files |
+| Phase 184 P15 | 23h | 3 tasks | 2 files |
+| Phase 184 P16 | 70min | 3 tasks | 3 files |
+| Phase 184 P17 | 4min | 3 tasks | 2 files |
+| Phase 184 P18 | 2h10m | 3 tasks | 4 files |
+| Phase 184 P19 | 70 min | 2 tasks | 3 files |
+| Phase 184 P20 | 50 min | 3 tasks | 3 files |
+| Phase 184 P21 | 4h30m | 3 tasks | 2 files |
+| Phase 184 P22 | 15 min | 3 tasks | 2 files |
+| Phase 184 P23 | 25min | 3 tasks | 4 files |
+| Phase 184 P24 | about 30 min of work (11 h wall, waiting for the operator) | 3 tasks | 6 files |
+| Phase 184 P25 | about 25 min of gates (orchestrator) and 10 min of recording | 2 tasks | 2 files |
+| Phase 186 P01 | 4min | 2 tasks | 2 files |
+| Phase 186 P04 | 8min | 2 tasks | 4 files |
+| Phase 186 P02 | 12min | 2 tasks | 6 files |
+| Phase 186 P03 | 7min | 2 tasks | 4 files |
+| Phase 186 P05 | 4min | 2 tasks | 1 files |
+| Phase 186 P06 | 3 min | 2 tasks | 2 files |
+| Phase 186 P07 | about 20 min | 2 tasks | 2 files |
+| Phase 187 P01 | 9min | 3 tasks | 8 files |
+| Phase 187 P02 | 3min | 2 tasks | 9 files |
+| Phase 187 P03 | 3min | 2 tasks | 2 files |
+| Phase 187 P04 | 3min | 2 tasks | 3 files |
+| Phase 187 P05 | 11min | 2 tasks | 5 files |
+| Phase 187 P06 | 6min | 2 tasks | 3 files |
+| Phase 187 P07 | 8min | 2 tasks | 3 files |
+| Phase 187 P08 | 7min | 2 tasks | 5 files |
+| Phase 187 P09 | 7min | 2 tasks | 2 files |
+| Phase 187 P10 | 7min | 2 tasks | 4 files |
+| Phase 187 P11 | 8min | 3 tasks | 6 files |
+| Phase 187 P12 | 12min | 3 tasks | 2 files |
+| Phase 187 P13 | 18min | 2 tasks | 3 files |
+| Phase 187 P14 | 3h45min (operator checkpoint) | 3 tasks | 1 files |
+| Phase 187 P17 | 65 min | 3 tasks | 1 files |
+| Phase 187 P16 | 11h05min | 3 tasks | 3 files |
+| Phase 187 P26 | 100min | 7 tasks | 11 files |
+| Phase 187 P27 | 140min | 8 tasks | 20 files |
+| Phase 187 P28 | 8h15min | 5 tasks | 9 files |
+| Phase 187 P29 | 55min | 7 tasks | 12 files |
+| Phase 187 P18 | 6h30min | 3 tasks | 3 files |
+| Phase 187 P24 | 122 min | 3 tasks | 2 files |
+| Phase 187 P25 | about 2 h | 3 tasks | 3 files |
+| Phase 188 P01 | 8 min | 1 tasks | 12 files |
+| Phase 188 P04 | 9min | 2 tasks | 11 files |
+| Phase 188 P02 | 6min | 2 tasks | 9 files |
+| Phase 188 P05 | 46min | 2 tasks | 12 files |
+| Phase 188 P06 | 11min | 2 tasks | 5 files |
+| Phase 188 P07 | 23min | 3 tasks | 8 files |
+| Phase 188 P20 | 15 min | 2 tasks | 5 files |
+| Phase 188 P03 | 10min | 3 tasks | 10 files |
+| Phase 188 P08 | 27min | 2 tasks | 4 files |
+| Phase 188 P09 | 8 min | 3 tasks | 1 files |
+| Phase 188 P10 | 3h10m | 3 tasks | 6 files |
+| Phase 188 P11 | 32min | 3 tasks | 2 files |
+| Phase 188 P16 | 59min | 3 tasks | 4 files |
+| Phase 188 P12 | about 3 h | 3 tasks | 2 files |
+| Phase 188 P13 | 35min | 3 tasks | 2 files |
+| Phase 188 P14 | 25min | 3 tasks | 2 files |
+| Phase 188 P15 | 40 min | 3 tasks | 2 files |
+| Phase 188 P17 | 50 min | 3 tasks | 2 files |
+| Phase 188 P18 | 80 min | 3 tasks | 7 files |
+| Phase 188 P19 | 20min | 3 tasks | 1 files |
+| Phase 189 P01 | 5min | 3 tasks | 12 files |
+| Phase 189 P02 | 29min | 3 tasks | 8 files |
+| Phase 189 P03 | 25min | 2 tasks | 3 files |
+| Phase 189 P04 | 41min | 3 tasks | 7 files |
+| Phase 189 P05 | 12min | 3 tasks | 3 files |
+| Phase 189 P06 | 6min | 3 tasks | 2 files |
+| Phase 189 P08 | 21min | 2 tasks | 2 files |
+| Phase 189 P09 | 27min | 2 tasks | 2 files |
+| Phase 189 P10 | 20min | 3 tasks | 4 files |
+| Phase 189 P13 | 7min | 2 tasks | 1 files |
+| Phase 189 P19 | 9min | 3 tasks | 7 files |
+| Phase 189 P11 | 75min | 3 tasks | 2 files |
+| Phase 189 P12 | 8 min | 2 tasks | 1 files |
+| Phase 189 P17 | 15 min | 3 tasks | 4 files |
+| Phase 189 P18 | 12min | 3 tasks | 6 files |
+| Phase 189 P07 | 15h (sitting wait) | 3 tasks | 2 files |
+| Phase 189 P14 | 8min | 2 tasks | 3 files |
+| Phase 189 P15 | 4min | 3 tasks | 5 files |
+| Phase 189 P16 | 12min | 3 tasks | 11 files |
+| Phase 189 P20 | 283min | 3 tasks | 3 files |
+| Phase 189.1 P01 | 2 min | 2 tasks | 2 files |
+| Phase 189.1 P02 | 2min | 2 tasks | 5 files |
+| Phase 189.1 P04 | 4min | 2 tasks | 3 files |
+| Phase 189.1 P03 | 4 min | 2 tasks | 3 files |
+| Phase 189.1 P05 | 4min | 2 tasks | 5 files |
+| Phase 189.1 P06 | 3min | 2 tasks | 4 files |
+| Phase 189.1 P07 | 5h | 3 tasks | 3 files |
+| Phase 189.1 P08 | 10.5h (checkpoint wait) | 3 tasks | 3 files |
+| Phase 189.1 P09 | 15 min | 3 tasks | 4 files |
+| Phase 189.1 P10 | 30 min | 3 tasks | 2 files |
+| Phase 189.1.1 P01 | 4 min | 3 tasks | 3 files |
+| Phase 189.1.1 P02 | 10min | 3 tasks | 5 files |
+| Phase 189.1.1 P04 | 61 min | 2 tasks | 12 files |
+| Phase 189.1.1 P05 | 8 min | 3 tasks | 2 files |
+| Phase 189.1.1 P06 | 21min | 3 tasks | 8 files |
+| Phase 189.1.1 P08 | 52min | 3 tasks | 13 files |
+| Phase 189.1.1 P09 | 18min | 3 tasks | 9 files |
+| Phase 189.1.1 P10 | 15min | 3 tasks | 7 files |
+| Phase 189.1.1 P03 | 25min | 3 tasks | 3 files |
+| Phase 189.1.1 P07 | 5min | 2 tasks | 3 files |
+| Phase 189.1.1 P11 | 52min | 3 tasks | 1 files |
+| Phase 189.1.1 P12 | 50min | 3 tasks | 5 files |
+| Phase 189.1.1 P13 | 4h 40min | 3 tasks | 10 files |
+| Phase 189.1.1 P14 | 10min | 2 tasks | 3 files |
+| Phase 189.1.1 P15 | 36min | 3 tasks | 6 files |
+| Phase 189.1.1 P16 | 22 min | 3 tasks | 7 files |
+| Phase 189.1.1 P17 | 45 min | 3 tasks | 4 files |
+| Phase 189.1.1 P18 | 5min | 3 tasks | 8 files |
+| Phase 189.1.1 P19 | 40min | 4 tasks | 3 files |
+| Phase 189.1.1 P22 | 2h20m | 3 tasks | 13 files |
+| Phase 189.1.1 P21 | 35min | 2 tasks | 2 files |
+| Phase 189.1.1 P20 | 29min | 3 tasks | 3 files |
+| Phase 190 P01 | 20 min | 3 tasks | 3 files |
+| Phase 190 P02 | 15 min | 2 tasks | 4 files |
+| Phase 190 P03 | 10 min | 2 tasks | 7 files |
+| Phase 190 P04 | 15 min | 3 tasks | 17 files |
+| Phase 190 P08 | 10 min | 2 tasks | 5 files |
+| Phase 190 P11 | about 4 h 45 min (operator applies) | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -176,10 +329,274 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 181.1]: 181.1-04: Supabase agent skills installed per user by the operator at 544bfc56 (diff -r 0 both) after the auto-mode classifier refused the agent's write to $HOME/.claude/skills/ ([Self-Modification]); planned fallback, no workaround
 - [Phase 182]: 182-01: the tracked phase-181 harness is used unchanged; db mode suffices for the pgTAP baseline
 - [Phase 182]: 182-01: plan 182-02 rebuilds the isolated instance p182 with supabase db reset --workdir (HARNESS_RESET=ok); p182 is left running on ports 56200-56209
-- [Phase 183]: 183-13: both new guards seen red through yarn lint:check (exit 1 each) in a throwaway worktree of 46099edc1, which needed yarn install --immutable plus yarn build before the clean run was 0; Task 2 not raised (chain observation made); the three gates are 0 on the finished tree at 5322ab1f6. INFRA-17 and SUPA-11 left open for their account-state and applied-settings clauses
 - [Phase 181]: 181-17: baseline 00001_initial_schema.sql frozen by 12c98aa5c; manifest names parent 81e6a3f22, sha256 79bed444… equals the blob there; guard in lint:check runs frozen mode, schema:regenerate refuses
 - [Phase 181]: 181-18: lint:check seen exit 1 (EDITED FROZEN MIGRATION) on an edited real baseline and exit 0 on an appended 00002 migration in a scratch checkout of 78fa17897; check-drift.sh 0 clean / 1 planted on the real manifest; four local gates 0 on 58cf7a564 (attempt 20261020T185902Z, shared stack running for the dev-seed integration tier). SUPA-10 closes with 181-19
 - [Phase 181]: 181-19: closing E2E gate green on 4c9fba56b (548/0/0) after attempt 1 failed on a root .env missing the three ANALYTICS_* keys; operator added them, tree unchanged
+- [Phase 183]: Every apply, import and credentialed call is an operator checkpoint, and the agent holds no credential. Terraform is applied by hand through an IAM Identity Center permission set with AWS-managed AdministratorAccess (183-R1, profile `openvaa-admin`), per session (183-R2). Hand-applied roots keep state under `hand/`, the pipeline root under `pipeline/`. DMARC reports go to dmarc_agg@vali.email (183-R3). The per-plan record is in the 183 SUMMARYs; PROJECT.md Key Decisions holds the summary
+- [Phase 183]: Terraform's `supabase_settings` is the only writer of hosted settings (D-15); `supabase config push` is used nowhere, and the parity guard in `yarn lint:check` refuses it. The provider is pinned `= 1.11.0`. The persistent project `cofbsatfrdysyphajsky` (`openvaa-staging`, eu-north-1, organisation `gulgrbzofwnwepdnrgrl`) was created by hand and imported, keeps `prevent_destroy`, and has its settings applied with both auth hooks on, after the rehearsal on the throwaway project showed both hooks accepted before their functions exist. `oauth_server_enabled` and `oauth_server_allow_dynamic_registration` are no longer sent (hosted API 400)
+- [Phase 183]: INFRA-15 closed on the operator ruling accept-console-alert (2026-10-23): the alert of the 1 USD test budget was seen triggered in the AWS Budgets console, and no mail arrived; mail delivery is not observed (WINDOWS row 289). The budget stands at 100 USD. SES production access in eu-north-1 was already granted, so no request was filed; staging sets `manage_account_suppression = false` because other identities share the account setting
+- [Phase 183]: Code-review fix pass: CR-01 and 25 of 26 warnings fixed (WR-01 and WR-03 in part), WR-04 deferred; the bootstrap plan-role deny policy re-applied and the staging Supabase plan seen empty (2026-10-26). Operator rulings of 2026-10-26: WR-01 option (a), keep `ReadOnlyAccess` with the current denies; WR-04 deferred, decision A-08 kept; the WR-03 remainder deferred. All three go to phase 184 (SECURITY T-183-09/10/11, AR-183-01/02, TR-183-01/02)
+- [Phase 183]: SUPA-11 observed (183-27): `lint:check` and `format:check` exit 0 on the final tree de904bfff, and criterion 5 clauses C5.1 to C5.6 all read seen. C5.6 rests on the CI run at 18fdcd6ca; later infra edits were validated locally only. Verification 9/9 passed (one override, INFRA-15)
+- [Phase 184]: 184-01: probe collect() preflights every requested source before any read; responses grouped by endpoint ({ management: { postgrest: { max_rows } } }); requests are GET with redirect manual and a 30 s timeout; unsafe finding/reason text is withheld, never printed
+- [Phase 184]: 184-04: check-drift --target linked refuses PGHOSTADDR/PGSERVICE and non-exact pooler hosts besides the planned ref/PGHOST/PGUSER/6543 rules; direct host leaves PGUSER free
+- [Phase 184]: 184-04: push-migrations.sh kills a CLI child 10 s after an interrupt (the CLI binary was seen ignoring SIGTERM); a dry run matching neither up-to-date nor a migration list is exit 2, never a push
+- [Phase 184]: 184-05: functions.identity-callback/verify_jwt is a not-compared row of the parity guard (the CLI deploys it from config.toml; the conformance probe compares the served value); every [functions.*] key must be classified or lint:check fails
+- [Phase 184]: 184-06: Edge Function secrets are set by one supabase_edge_function_secrets in the Supabase module, gated on public_project_id; SMTP_* derive from the same smtp object/variables as Auth; no IDENTITY_PROVIDER_* or SUPABASE_* secret
+- [Phase 184]: 184-02: probe findings show booleans, numbers and plain-alphabet strings that pass the paste screen; address, user-name and credential fields are named by field only
+- [Phase 184]: 184-02: the NOTE key-model line never changes the exit status; a failed key read prints as not read, a 404 from /api-keys/legacy as endpoint gone
+- [Phase 184]: 184-02: auth.smtp fails on a root without an smtp object, so staging fails it until its smtp object is added; the batched break also plants hook_send_email_enabled false
+- [Phase 184]: PUBLIC_PROJECT_ID is canonical 00000000-0000-0000-0000-000000000001 on both hosted projects (operator ruling 2026-10-26)
+- [Phase 184]: Scratch faults.tf plants batched-break settings faults only via -var fault_set=redirect|all, incl. hook_send_email_enabled=false; revert = fault_set=none + -replace of module settings
+- [Phase 184]: 184-03: storage.buckets reads GET /v1/projects/{ref}/storage/buckets (bucket source ruled management-api by the operator 2026-10-26)
+- [Phase 184]: 184-03: a root without public_project_id reads as null; the probe's public source then stops with COULD NOT RUN public before any request
+- [Phase 184]: 184-03: the probe's catalog source refuses PGHOST of another ref, PGPORT 6543, PGHOSTADDR/PGSERVICE before psql, and a role neither superuser nor rolbypassrls after the catalog query
+- [Phase 184]: Hosted projects are opened for voters through BOOTSTRAP_OPEN_FOR_VOTERS=true at each hosted bootstrap, not by the smoke template (ruled by the operator, 2026-10-26)
+- [Phase 184]: The smoke template states the perm family's MINIMAL_BASE_APP_SETTINGS: every built-in must state a contestantApp root, and the hosted bootstrap writes an empty settings row
+- [Phase 184]: 184-09: the linked work directory is tmp/supabase-linked/<ref>; apps/supabase is never linked
+- [Phase 184]: 184-09: psql connects direct first, session pooler on 5432 as fallback, never port 6543
+- [Phase 184]: 184-09: a scratch fault plan is applied only when its named lines equal the step's; a project create/destroy/replace is never applied
+- [Phase 184]: 184-09: the first administrator is created in the dashboard with auto-confirm, never by an invitation mail
+- [Phase 184]: 184-10: scratch state restored by re-import (reimport, ruled 2026-11-08); first scratch plan sha256 9ea24b40518b08b3487fe531606be51639e054bb489f403a2fdc50bd8bf63e94 reviewed ok
+- [Phase 184]: 184-10: throwaway recreated as begckvkapaopoztbreqc in eu-west-1; the hook-on/function-absent sign-in moves to 184-11 between the settings apply and the push
+- [Phase 184]: 184-10: throwaway logging would log a >10 s statement's parameters via auto_explain (10s, -1); D-10 gate for 184-15
+- [Phase 184]: 184-11: check-drift.sh keeps the CLI default schema set for --target linked; a clean hosted database gave an empty diff (2026-11-09/10)
+- [Phase 184]: 184-11: sign-in fails with 500 unexpected_failure from a project's first settings apply until its migrations are pushed, while the access-token hook is on
+- [Phase 184]: 184-11: the CLI read-only login role has rolbypassrls=f and cannot count storage.buckets; postgres has rolbypassrls=t (input for 184-17's catalog role)
+- [Phase 184]: 184-12: D09_TRIGGER=yes — the hosted gateway refuses an apikey-only call to a verify_jwt function (401 UNAUTHORIZED_NO_AUTH_HEADER); 184-14 sets verify_jwt = false for account-access (2026-11-10)
+- [Phase 184]: 184-12: D04_FAILS_CLOSED=yes — served identity-callback answers GET 405 and POST {} 500 with its own fixed bodies (2026-11-10)
+- [Phase 184]: 184-12: D12_LEGACY_ANON=works — legacy anon key works for REST, auth and functions; the publishable key passed the gateway JWT check too; stay on legacy keys (2026-11-10)
+- [Phase 184]: 184-13: BEHIND_CLOUDFLARE=true — Cloudflare refuses a client-sent cf-connecting-ip (403, error code 1000) and it is the connecting client on every served request (2026-11-10)
+- [Phase 184]: 184-13: drift check seen red (exit 1, planted functions) and green (exit 0) on a hosted database; guard refuses port 6543 and another ref (exit 2); anon 9 s RPC cut at about 8 s with 57014 (2026-11-10)
+- [Phase 184]: 184-14: D09_APPLIED=yes — account-access declares verify_jwt = false in config.toml (guard row not compared, spec cases); 184-15 begins with its redeploy and a re-measurement of shapes (a) and (b) (2026-11-10)
+- [Phase 184]: 184-14: D12_RAISED=no, ruled by the operator 2026-11-10 — the deployment stays on the legacy keys; retirement 'early 2027' goes to the FUT-02 todo in 184-23
+- [Phase 184]: 184-15: LOGGING_GATE=session-timeout (operator, 2026-11-10); the timeout is set by an in-session SET, because the session pooler drops PGOPTIONS (show statement_timeout read 2min)
+- [Phase 184]: 184-15: D12_SERVICE_ROLE=works on the throwaway (bootstrap stored key and dev-seed writes); 184-14's key-model checkpoint is not raised again
+- [Phase 184]: 184-15: SUPA-06 twice-run equality seen on the throwaway (1,1,1,2,1 both runs); the admin token carries the hook's grants claim; 1001 nominations read anonymously
+- [Phase 184]: SLOT_PROOF=port-2465 (operator, 2026-11-11): the OBS-05 failed send was made on 2465 after the planned 587 send was delivered; 587 is open from a hosted Edge Function
+- [Phase 184]: SMTP_PORT_DELIVERS=2587 (184-16): DKIM, SPF and DMARC pass on the served account-access mail; 184-20 writes 2587 into the staging root
+- [Phase 184]: 184-17: CATALOG_ROLE=postgres (operator, 2026-11-11): the only role 184-11 measured to bypass RLS, so the only one the probe's catalog preflight accepts
+- [Phase 184]: 184-17: no-seed covers seed.sql residue only (openvaa.test or fixed-id users, local storage_config address, demo key); no probe check detects dev-seed content rows, which D-18 intends on the persistent project
+- [Phase 184]: 184-18: MAJOR_RED=expectation-override and item 2 rule module-refresh, ruled by the operator 2026-11-11; red run 21/22, functions.identity-callback-unverified not seen failing, SUPA-07 open
+- [Phase 184]: 184-18: CHECK_KEY=no-key, ruled by the operator 2026-11-11: functions.identity-callback-unverified calls carry no apikey and no Authorization (a publishable key in apikey passes the gateway's JWT check); the rerun on the broken throwaway failed it with 401, so every check of the probe has been seen failing (SUPA-07)
+- [Phase 184]: 184-19: the OAuth server flags are reverted by a Management API update of /config/auth (both false, with the authorization path), because the module sends neither flag
+- [Phase 184]: 184-19: a bucket fault's revert restores the bucket's storage.objects policies from the migration and is checked with the drift check; the probe reads no storage policy (deferred: a probe check of them)
+- [Phase 184]: 184-20: staging plan PLAN_REVIEWED=ok (sha256 caeebee2...dc13): settings update in place, smtp_secret[0] and function secrets created, Plan: 2 to add, 1 to change, 0 to destroy; tfplan kept for 184-21
+- [Phase 184]: 184-20: persistent project uses the session pooler (direct host not resolved); host from GET /config/database/pooler, shard aws-0, eu-north-1; logging settings identical to the throwaway's
+- [Phase 184]: 184-21: D01_GATE=proceed (operator, 2026-11-11); staging plan applied, baseline 00001 pushed with drift CLEAN, second push up to date, three functions ACTIVE on cofbsatfrdysyphajsky
+- [Phase 184]: 184-22: LOGGING_GATE=session-timeout for the persistent project, applied by the orchestrator on 2026-11-11 under the operator's instruction to continue; values identical to the throwaway's, which the operator ruled session-timeout
+- [Phase 184]: 184-22: the persistent project's first administrator was created through the Auth Admin API (email_confirm true) instead of the dashboard because the operator was away; same effect, recorded as a deviation from Step 21 item 1
+- [Phase 184]: 184-23: the persistent project's conformance probe passed (22 PASS, exit 0) and its 39 auth and 3 API settings are served as declared; FUT-02 holds both projects' key model, legacy keys retiring early 2027
+- [Phase 184]: 184-24: SCRATCH_SCOPE=keep-root (2026-11-11, the plan's auto-selected recommended option, applied by the orchestrator while the operator was away); the throwaway begckvkapaopoztbreqc was deleted by the operator (reported 2026-11-12T06:10Z), Management API 404, local state removed
+- [Phase 184]: 184-25: the phase closes green on dccdf490842d: lint, format and unit exit 0 (infra 96/96) and the full E2E suite 548/548 in tests/e2e-runs/184-25-20261112T062610Z; the two red first runs were the -gsd worktree's hold on the shared stack (its 00001-00010 schema, and its functions mounted in the edge runtime), cleared by db:reset and by db:stop plus db:start from -infra
+- [Phase 186]: 186-01: SUPA-09 stays Pending until the hosted run of 186-08; the pure deployed-target gate module alone does not meet it
+- [Phase 186]: 186-01: the deployed gate reads the expected Supabase ref and project id only from infra/envs/staging/supabase/terraform.tfvars; runDeployedGate has no identity parameter
+- [Phase 186]: 186-04: grant-smoke-contestant.sql refuses 'holds another grant' before 'another user edits the candidate', locks the chosen candidate FOR UPDATE and orders COLLATE "C"
+- [Phase 186]: 186-04: the Step 22 contestant items pass the service-role key and the contestant token to curl as -H @file header files in $L, never on argv
+- [Phase 186]: The deployed config adds its JSON reporter only when PLAYWRIGHT_JSON_OUTPUT_FILE is set, so --list never prints a JSON report to stdout
+- [Phase 186]: Contestant smoke inputs fail only that test by name (requireSmokeInputs), never a skip or a gate check; trace/screenshot/video off in that file
+- [Phase 186]: Playwright writes error-context.md with an aria snapshot on failure even with trace off; 186-08/187 credentialed runs should set PLAYWRIGHT_NO_COPY_PROMPT=1 or check the file for an address
+- [Phase 186]: 186-03: the import walk fails closed - an unresolved relative specifier counts as a forbidden reach
+- [Phase 186]: 186-03: forbidden packages match their subpaths too (dotenv/config, @supabase/supabase-js/...), stricter than the lint lock's exact names
+- [Phase 186]: 186-03: RED evidence for vitest guards uses the JUnit report; the classifier rejects vitest's TAP multi-line YAML
+- [Phase 186]: 186-05: all three negative controls seen red on real targets, each failing only its own gate check (sha, project-id, ref); research A3 held (a project id with no rows still serves data-project-id and the env block)
+- [Phase 186]: 186-06: the error-context.md aria-snapshot risk is documented in tests/README.md § Deployed smoke run (a failed contestant run directory is never published); PLAYWRIGHT_NO_COPY_PROMPT is not recommended there, left to 186-08/187
+- [Phase 186]: 186-07: the local E2E run of record is tests/e2e-runs/186-close-20261114T233139Z at E2E_TREE_SHA=ac3d8d42bc20060f4c46825d51d2bcce3826dfc1 (548 passed, 0 failed/flaky/did-not-run); 186-08 must show nothing under apps/, packages/ or tests/ changed after it
+- [Phase 187]: 187-01: network creates split by evaluated resource — new resources need request tags; creates naming a parent VPC or security group also need the root's tags on the parent
+- [Phase 187]: 187-01: creates_carry_request_tags checks an explicit list of 12 tagged-create calls; CreateRoute, CreateTags on existing resources, CreateListener and CreateRule are untaggable or name-scoped
+- [Phase 187]: The frontend task image is <registry_url>@<image_digest>; image_digest is required (sha256: + 64 lower-case hex), given per plan as -var image_digest= and never written to a tfvars file (C-01). The ECR tag and BUILD_SHA stay the commit id.
+- [Phase 187]: 187-03: build-push-image.sh builds from git archive of the commit extracted into its temporary directory; a write or extract failure prints failed=context and builds nothing (C-02, CR-01 closed in code)
+- [Phase 187]: 187-03: exit 3 of build-push-image.sh (tag_exists=yes image_digest=<digest>) means the registry already holds this commit's image; the caller deploys it as it is
+- [Phase 187]: push-migrations.sh --confirmed-ref is refused (exit 2, before the CLI) unless it equals --ref, GITHUB_ACTIONS=true and OPENVAA_DEPLOY_ENVIRONMENT=staging; GITHUB_ENVIRONMENT is never read (C-04 as amended)
+- [Phase 187]: push-migrations.sh prints push_confirmation=environment or push_confirmation=terminal between push_pending= and push_status=; an empty --confirmed-ref is a usage error
+- [Phase 187]: 187-05: Both bootstrap trusts carry repository_id 546467466 and repository_owner_id 115159211; the deploy trust adds environment:staging-destroy; plan_lock removed so the plan role is read-only and pull-request plans must use -lock=false (written, applied in 187-16)
+- [Phase 187]: 187-05: Bootstrap Step 9 CloudTrail destroy window opens at 09:47Z (not 09:40Z) to exclude the 09:46Z read-only dns-mail plan; every simulator case uses all eleven deploy-role policies
+- [Phase 187]: 187-06: running-image-digest.sh reads only the first container's image through --query and resolves a tag image to its digest in ECR; every hand plan of the staging AWS root passes -var image_digest (Step 5 by the named commit, Steps 8-12 the running digest, Steps 16-17 the digest Step 15 read)
+- [Phase 187]: 187-06: no hand apply of the staging AWS root while a pipeline run is waiting or running; a cut-short pipeline apply is recovered with terraform force-unlock after confirming no run is active
+- [Phase 187]: 187-07: the Supabase example test asserts on the module's name outputs (Edge Function secrets, smtp_host auth key), not on project_ref, because a mock import's id is the override's stand-in
+- [Phase 187]: 187-08: the shared workflow rule no-expression-in-run rejects ANY ${{ }} expression inside a run: script (secrets, event text and step outputs alike); deploy.yml and destroy.yml route every value through env
+- [Phase 187]: 187-08: workflowGuards.ts violations are "<rule-id>: <message>" with ids from SHARED_RULES; the show -json prohibition is per-file (infra-plan.yml), not a shared rule, so a later workflow may write a JSON plan into $RUNNER_TEMP for jq
+- [Phase 187]: 187-09: deploy.yml's stable check reads cluster_name/service_name from the AWS root outputs and the floor from task_floor; it fails unless the primary deployment runs the applied task definition, COMPLETED, running >= floor
+- [Phase 187]: 187-09: the smoke step runs under env -u for the three AWS session variables, so the deploy role's session never reaches the Playwright run; its env holds only SMOKE_EXPECTED_SHA and the two contestant secrets
+- [Phase 187]: 187-09: the alert maps the first failed stage step (link and migrations -> migrations, apply -> rollout, served-build -> smoke), else setup when job.status is failure, else cancelled; it prints only the AWS error code of a failed publish
+- [Phase 187]: 187-09: the always-run cleanup removes the linked work directory and the push-migrations log directory (unredacted CLI debug output naming the database address) along with the plan and smoke output
+- [Phase 187]: 187-10: check-destroy-plan.sh passes only managed deletes under module.frontend. equal in number to the state's managed resources; prints nothing of the plan
+- [Phase 187]: 187-10: destroy.yml is two staging-destroy jobs, each re-planning into its own RUNNER_TEMP file; plan output goes to a file so nothing is printed before the guard
+- [Phase 187]: 187-10: the Supabase-root refusal needs both reads to fail and name AccessDenied/403/Forbidden; the role is named by literal ARN, alert address a placeholder
+- [Phase 187]: 187-11: apply-root guard scans every workflow and asserts the exact mutating-command list, so it cannot pass vacuously
+- [Phase 187]: 187-11: no-main-push also fails an unfiltered push, branches-ignore, or bare on: push
+- [Phase 187]: 187-11: lint-workflows maps docker status 125 to 2, never an actionlint result
+- [Phase 187]: 187-11: workstation SMOKE_EXPECTED_SHA is the tip of deploy/staging via git ls-remote --exit-code
+- [Phase 187]: 187-12: the red commit fails in the Dockerfile's shared-stage RUN yarn build (line 28, turbo task @openvaa/frontend#build), one stage before the production step; the pipeline's build step still ends failed=build before any hosted write
+- [Phase 187]: Plan 186-08's tree reference is now phase 187's closing run (54e79823b), and its expected SHA is 712947a1b from 186-08-readiness.md while staging serves it (then the tip of deploy/staging)
+- [Phase 187]: 187-14: GitHub Environments staging and staging-destroy exist and are read back before any push: one User reviewer, self-review allowed, admin bypass off, branch rules exactly deploy/staging and deploy-evidence/* (none admits main); staging holds the three secrets and three variables, staging-destroy none; the repository holds AWS_PLAN_ROLE_ARN and ALERT_EMAIL
+- [Phase 187]: 187-17: plan 186-08 was already complete, so the handoff needed no resumption; the operator added SMOKE_CONTESTANT_EMAIL and SMOKE_CONTESTANT_PASSWORD to the staging environment only (read back by name: five staging secrets)
+- [Phase 187]: 187-12/187-13 re-run after the review fixes: green 395b71c71 (tree 3c82ab567 = HEAD 1e10dff7f without .planning/) builds, red 700c18362 fails in @openvaa/frontend#build; closing E2E re-run 548/548 green on 3c7be6128 (tests/e2e-runs/187-13-rerun-20261115T202406Z); the 186-08 handoff's tree reference follows it, the expected SHA stays 712947a1b
+- [Phase 187]: 187-15: dependency-audit's 16 high+ advisories are third-party (the workstream's only lockfile change is js-yaml, named by none); filed for phase 189
+- [Phase 187]: 187-16: Step 9 applied with s9c_uncovered_count=16, not 0, on the operator's ruling that none is a call of the staging AWS root (7 Application Auto Scaling actions logged under autoscaling.amazonaws.com, 8 dns-mail root reads, 1 SSO credential fetch); recorded as STEP9_DEVIATION. Item 4 now maps Application Auto Scaling and drops sso:GetRoleCredentials; Step 9 braces variables before a colon for zsh
+- [Phase 187]: 187-26 stops at Task 7: run 43839245785 on ci-evidence/187-final-2 cleared run 43817899191's red jobs (secret-scan 0 results, push-migrations green on Linux, no awaitLinkWitness), but e2e-tests is red on three CI-only contestant readiness timeouts (cause unconfirmed); a new plan fixes it, and 187-15 stays open
+- [Phase 187]: Drift guard (operator ruling push-now-fix-in-follow-up): link the docker stand-in in checkDriftLinkedGuard.test.ts to an existing binary before the milestone's final evidence push (todo 2026-11-16-drift-guard-docker-stand-in-link.md)
+- [Phase 187]: 187-27 stops at Task 8: run 43938990256 on ci-evidence/187-final-3 held this plan's fixes (cand-home and the terms gate passed; drift guard linked, ced5b42bb; probe updated, e56db5391), but e2e-visual is red on candidate-portrait baselines shifted by the -gsd base-template row of db9e314b2 (cause confirmed) and e2e-tests is red on seven CI-only 10 s readiness timeouts in -gsd-owned specs, 511 did not run (cause unconfirmed); 187-15 and 187-26 stay open
+- [Phase 187]: Next step (operator rulings, 2026-11-16): the -gsd-owned failures are fixed in the -gsd worktree on a new branch on top of ship/v2.16-12-planning, then the -infra stack is rebased onto it; the work starts by measuring CI (worker count and warm-up experiments on ci-evidence/* branches), because only the runner reproduces the timeouts
+- [Phase 187]: 187-28: G-03 closed on run 44033456141 (ci-evidence/187-final-4, 68a54299a): every job success at job level except dependency-audit (17 rows, all the phase-189 todo's); e2e-tests 729/729 on 4 workers; e2e-visual green on attempt 2 after the operator ruled attempt 1's supabase start port collision (54326) void ('void + rerun'). Plans 187-15, 187-26 and 187-27 closed by pointer; SUPA-08, PIPE-02, PIPE-06 advanced
+- [Phase 187]: 187-28: the fix tip moved to -gsd cecf649d8 (trace comment line break joined) after Task 1's first attempt stopped on lint:check; the red archive build's out-of-memory at yarn install was ruled void and made once more
+- [Phase 187]: 187-29: pipeline steps capture every read status as name=0 then cmd || name=$?, errexit left on; red run re-observed on deploy-evidence/187-red-2 (run 44088753181 failed=build printed; run 44088753527 wrong-subject success, both roles AccessDenied); old runs not re-run
+- [Phase 187]: 187-18: stopped at Task 3; run 44042442257 red at the build with the alert published (mail arrived 09:00Z) and nothing deployed; the five lines the runner's bash -e hid (failed=build, wrong-subject success, token_subject, both AccessDenied codes) closed by 187-29 on deploy-evidence/187-red-2; requirements advanced, not complete
+- [Phase 187]: 187-24: the real destroy ran as a re-run (attempt 2) of 187-23's destroy run, behind both staging-destroy reviews; nothing was pushed
+- [Phase 187]: 187-25: the redeploy from nothing was a re-run (attempt 2) of 187-22's run 44276384977; the tag exists, so the same digest was deployed and nothing was pushed
+- [Phase 187]: 187-25: both bootstrap not-yet-observed rows checked by the first pipeline deploy from nothing (deploy-role permissions; edge tag aws:ResourceTag test) moved to Observations
+- [Phase 187]: closed 2026-11-18, verified 12/12 (31 plans); PIPE-01 to PIPE-10, INFRA-16, INFRA-19 and SUPA-08 complete. The verifier's reading that the deploy role's two environments (staging, staging-destroy) satisfy "one GitHub Environment" is written as a suggested override only; the acceptance is the operator's. Full Key Decisions in PROJECT.md
+- [Phase 188]: ANALYTICS_FLUSH_INTERVAL_MS is read last and sits last in ANALYTICS_ENV; a valid interval is kept when another variable forces provider none
+- [Phase 188]: invitation_caller_take returns 0 when admitted or untrusted, else the whole seconds left in the caller's 10-minute window (at least 1); 30 takes per caller per project
+- [Phase 188]: No partial index for deleting ended caller: throttle rows; one can be appended later
+- [Phase 188]: 188-02: the example root's stop-timeout assertion reads a new module output, container_stop_timeout_seconds, decoded from the task definition's container definition, since a root test cannot reference a module's resources
+- [Phase 188]: 188-02: the example root takes the same stop_timeout_seconds = 40 as staging (SHUTDOWN_TIMEOUT 25 + 10-second forward + 5)
+- [Phase 188]: 188-05: the caller take fails closed (500 internal on an RPC error); confirm-address stays outside it
+- [Phase 188]: 188-05: code-sign-in stays inside the take per E-02, though it is called from the frontend server; recorded as a pre-launch risk for an operator decision before 188-10
+- [Phase 188]: 188-06: relay-refusals.sh sends every C-01 case with a valid envelope and its own suffixed question id, so a 403/400 comes only from the origin or envelope rule and a wrongly accepted request would show at the provider
+- [Phase 188]: 188-06: posthog-read.sh accepts only https://eu.posthog.com outside its self-test; the key reaches curl through a 077 header file; output is ph_* named counts only, ph_query_status=<n> or ph_result=unexpected_shape on failure
+- [Phase 188]: 188-06: the HogQL of posthog-read.sh (property names, persons subquery, anonymize_ips field) is assumption A10 and is checked against the real project by 188-09 Task 3 before any capture
+- [Phase 188]: 188-07: a load-check journey file is { base, routeId, locale, requests }; journey-from-trace.mjs replays reads only (GET/HEAD and /rest/v1/rpc/ POSTs with bodies from --resources), never a header, cookie or write
+- [Phase 188]: 188-07: the load-check figure is the rate of the highest step with page p95 < 1000 ms, relay p95 < 300 ms and errors < 1 %, read from k6 2.4.0's per-step sub-metric values; a local dry run needs the dev server bound to 127.0.0.1 for host.docker.internal
+- [Phase 188]: 188-20: createQueue's in-flight guard covers the timer only; flush() and the shutdown flush are neither skipped nor made to wait, so a hung provider holds at most the cap plus one taken batch
+- [Phase 188]: 188-03: relay_rate_limit's upper bound is the provider's own 2000000000 (IntBetween(10, 2000000000) on rate_based_statement.limit)
+- [Phase 188]: 188-03: a root's terraform test cannot reference a module's resources, so the example root's no-web-ACL assertion reads module outputs relay_web_acl_arn and distribution_web_acl_id
+- [Phase 188]: Phase 188 local half closed: E2E_TREE_SHA=9789bbcf6fc51885748972b84d8631a0e9c36f2b, full suite 729/729 green (tests/e2e-runs/188-close-20261118T195528Z), no project delta against 187-28-close; plans 188-10 to 188-19 diff apps/, packages/ and tests/ against it
+- [Phase 188]: 188-09: the PostHog Product analytics limit is 20 USD (operator's setting; plan asked about 10); other products left above lowest by operator overrule (A-02), so BILLING_OTHER_PRODUCTS=operator-set fails the plan's enum check by design
+- [Phase 188]: 188-09: posthog-read.sh reads with a personal API key (phx_, query+project read, project 347462); the project secret key first stored got 401; ph_anonymize_ips=true and all four modes answer 0
+- [Phase 188]: 188-10: phase 188 deployed to staging by run 44491292876 (green); DEPLOY_COMMIT=a7003b490 is the expected SHA of later smoke runs; migration 00023 on the hosted project, drift 0; PostHog on with the key from the parameter store
+- [Phase 188]: 188-10: the first deploy commit was refused by push protection over the posthog-read fixture key; the fixture is now assembled from two parts (8665ff699) and the commit rebuilt
+- [Phase 188]: 188-11: B-03 judged on the second, consenting journey; the first ran with staging analytics.trackEvents=false and sent pageviews only
+- [Phase 188]: 188-11: PostHog reads the top-level distinct_id when both placements are set (capture docs, read 2026-11-19); the properties duplicate is inert
+- [Phase 188]: 188-16: the hosted per-caller limit seen refusing CloudShell at its 31st check-code while the workstation was answered in the same window (39 s later), then refusing the workstation at its own 31st and releasing it after its window; todo 2026-10-07-174 closed, its scan item moved
+- [Phase 188]: 188-12: the first run was halted after the observation apply, because the deployed voter smoke was red with staging's trackEvents=true. Staging was restored at once. The operator set trackEvents back to false, and the second attempt observed B-04 (7 of 7 at PostHog).
+- [Phase 188]: 188-12: the analytics queue timer starts on the task's first /api/usage request, not at startedAt. The tick-free window is bounded by startedAt+600 s and the end of the smoke run plus 600 s.
+- [Phase 188]: 188-13: the full-queue memory baseline is the minutes the one task ran alone (8.887 %), not the literal five-minute window whose rollout minute read 14.99 %; rise 0.634 points
+- [Phase 188]: 188-14: a services-stable waiter that returns non-zero across a host suspend is void; read the service state, rerun the waiter and keep long waits under caffeinate -i
+- [Phase 188]: 188-14: fail-open observed on staging: with ANALYTICS_POSTHOG_HOST unresolvable the smoke run was green, the relay answered 204 in 0.26 s and the forward failure was logged as transport ENOTFOUND only; restored to :18
+- [Phase 188]: 188-15: no rebuild is proved by the same digest on the new revision, an unchanged registry image count and newest image, and the same newest deploy.yml run
+- [Phase 188]: 188-15: provider none silenced PostHog from the rollout's COMPLETED to the restore; a control window under posthog read 11, so the zero is a reading
+- [Phase 188]: 188-17: the WAF rule's distribution change is read from the union of before and after keys plus after_unknown, because web_acl_id is unknown until the ACL exists
+- [Phase 188]: 188-17: a saved-plan script reads the plan JSON and keeps redacted Error: diagnostics before removing anything, and counts plan files and JSONs left
+- [Phase 188]: 188-18: the voter-journey capacity figure is 40 journeys a minute on staging (2026-11-19, a7003b490, 1 task, CPU 44.86 %), a lower bound: no step failed (LOAD_BOUND=none-reached) and 40 is the hosted plan's step cap
+- [Phase 188]: 188-18: the figure rests on a pageview-only journey (trackEvents=false); a deployment with trackEvents on carries more relay load per journey
+- [Phase 188]: 188-18: voter-journey.js keeps the data requests' per-step p95 through an observe-only threshold, for the bound rule
+- [Phase 188]: 188-19: staging ends phase 188 on :22 (a7003b490 by digest, posthog, flush 2000, stop 40, 1..2, no web ACL); a final plan with the running digest only reads No changes.
+- [Phase 188]: 188-19: the personal PostHog read key is revoked (operator, 2026-11-19; keychain item absent); phase 189 needs a new read key to read events
+- [Phase 189]: 189-01: the Render gateway timeout in two Admin job comments is removed under F-01; the docs-home demo link and the assert-test-keys-scope fixture label are the two Render mentions kept
+- [Phase 189]: 189-02: B-03 as measured - no reader or dynamic read of PUBLIC_BROWSER_FRONTEND_URL / PUBLIC_SERVER_FRONTEND_URL outside constants.ts, so both are removed from the frontend, its four auth mocks, .env.example and the root compose
+- [Phase 189]: 189-02: DOCS-04 stays Pending until 189-09 rewrites the env page (its line 97 still lists both variables)
+- [Phase 189]: 189-03 F-02: re-grep found no reference to apps/frontend/docker-compose.dev.yml or the development target, so both are retired; the production image still builds
+- [Phase 189]: 189-03 F-03: root docker-compose.dev.yml and its tests kept: the documented local production-image run, and its tests pin the variables it passes
+- [Phase 189]: 189-04: NAV_DECISION=generator-overview (operator) — the docs nav generator lists a subsection's own page as its first child, titled Overview (fixedTitle); /developers-guide/deployment stays at its path with no redirect
+- [Phase 189]: 189-05: sitting 1 (read-only) approved and bound; probe on the persistent project status 0, 22 PASS incl. functions.verify-jwt and functions.identity-callback-unverified; postgres has UPDATE on auth.users (t); DMARC p=none on openvaa.org, p=quarantine on staging.openvaa.org
+- [Phase 189]: 189-06: the persistent project's backups read (2026-11-20 13:55Z) answered 200 with PITR off, WAL-G on, 8 backups all COMPLETED and both physical-backup times null; the nulls are recorded as printed, no cause claimed
+- [Phase 189]: 189-08: the hosted-settings guard takes probe check names from the imported CHECKS of checks.mjs; the reference page cites no check whose name holds the word unverified
+- [Phase 189]: 189-09: the env-page guard (environmentReference.test.ts) requires every name of task-environment.json, REQUIRED_ENV, ANALYTICS_ENV and the \getenv reads of bootstrap.sql as whole backticked tokens
+- [Phase 189]: 189-09: the env page states bank authentication is not wired on the AWS path (no identity-provider variable or IDENTITY_CALLBACK_SERVER_SECRET in the task environment or the function secrets)
+- [Phase 189]: 189-10: the analytics page describes the tree, where the pageview is sent whatever trackEvents and the consent choice are (gates.ts maySendPageview). Reading 1 of B7 had trackEvents off stopping it too, so that reading is not built
+- [Phase 189]: 189-10: the deployer's checklist states each item as the deployer's own determination with the repository's default and where it is changed. The feedback limit's address retention with no expiry is a pending todo
+- [Phase 189]: 189-13: the operations page links the capacity to the AWS runbook's 2026-11-19 Observations row and the load-check README, not to .planning evidence
+- [Phase 189]: 189-13: election day and Admin jobs both forbid a deploy inside their window (a push to deploy/staging applies the root; a rollout runs two tasks briefly)
+- [Phase 189]: 189-19: INFRA-13 closed Complete on the operator's short-window ruling; the row and 185-VERIFICATION note state the 36.96 USD/month figure is a two-day measurement
+- [Phase 189]: 189-11: on a new account the deployment guide has the deployer put the PostHog SSM parameter before bootstrap's first plan, because bootstrap's execution role reads alias/aws/ssm, which exists only after a first SecureString (bootstrap Step 8 precondition)
+- [Phase 189]: 189-11: the guide states as fact that deploy.yml, destroy.yml and the deployed smoke run name infra/envs/staging/* and the GitHub environment staging; a fork with other names changes them
+- [Phase 189]: 189-11: DOCS-01 and DOCS-03 advanced, not complete; plan 189-12 owns the hosted-project sections, including the dashboard-names sentence that still carries a recorded-search word
+- [Phase 189]: 189-12: the guide's hosted-project sections name the repository's writer of each setting (settings resource, function-secrets.tf, bootstrap.sql) and carry dated staging observations; the two sign-up switches are named by the labels observed on 2026-11-08/09
+- [Phase 189]: 189-17: the OTP length is observed by auth.other-settings PASS; of the identity-callback secret checks only the keyless refusal is observed, the rest and the shared sign-in budget move to the pre-launch auth checks todo
+- [Phase 189]: 189-17: G04 closing check re-measured 2026-11-20 — opaque replies, sub on all four claim-config sites, verify_jwt false (config.toml:436) and PASS hosted; drift guard none, todo filed
+- [Phase 189]: 189-18: the log-sink evaluation closes on the milestone's scoping (CloudWatch 90-day server sink, PostHog Cloud EU for analytics, self-hosting out of scope); the browser half is FUT-08
+- [Phase 189]: 189-18: the hosted-settings page has no row for the anon statement_timeout or db.anon-timeout; logged in deferred-items.md and cited under the API-limits closure's What remains
+- [Phase 189]: 189-07: origin header secret rotated on staging by Step 19 in one apply; 5 403s over 5 s, no 5xx, plan after reads No changes.
+- [Phase 189]: 189-07: direct load balancer checks recorded as observed (000, curl exit 28), never 403; the security group admits CloudFront only, so the listener rule's 403 stays Step 9's observation
+- [Phase 189]: 189-14: the origin header rotation is documented as recorded (5 x 403 over 5 s through the CDN, converged plan); direct load balancer requests are stated as no answer (000, curl exit 28), never as 403
+- [Phase 189]: 189-14: restore to a new project runs bootstrap.sql before the copy takes any write, because the copied storage_config rows point at the source project and pg_net runs at once
+- [Phase 189]: 189-14: legacy anon/service-role keys rotate only with the JWT secret, signing out every user (cited to Supabase's signing-keys page); publishable and secret keys are the future path (FUT-02)
+- [Phase 189]: 189-15: S11 (running-image-digest.sh on a tag-named task definition) became a dated 2026-11-17 row from run 44104573552 instead of a todo entry, under C-01's rule that an existing record settles it; new 2026-11-17 rows sit after each table's last 2026-11-17 row to keep date order
+- [Phase 189]: 189-16: S18 (staging DMARC record applied in place of the parent's) settled by a 2026-11-20 row reading the 2026-11-11 mail's dmarc=pass under p=QUARANTINE with 189-05's p=none read
+- [Phase 189]: 189-16: orchestrator item 1 (smtp.tf send-condition comment) is C-01 S24, fixed in Task 2's commit 0be877e23 as present tense, settled by the 2026-11-11 mail row
+- [Phase 189]: 189-20: the navigation-idempotence gate formats the generated config from apps/docs (the root .prettierignore lists docs, so a root-level Prettier run is a no-op there)
+- [Phase 189.1]: Phase 189.1 adds new ids OBS-12, OBS-13 and PIPE-11 rather than reopening OBS-09, OBS-10 or SUPA-08, which stay satisfied as written and act as constraints
+- [Phase 189.1]: The deployment settings check asserts and never establishes: it reads private.deployment_settings and names bootstrap.sql with BOOTSTRAP_BEHIND_CLOUDFLARE=true as the remedy
+- [Phase 189.1]: A could-not-run of the settings check exits 3 like a finding; only the check-deployment-settings: message prefix tells them apart
+- [Phase 189.1]: Caller-limit probe reports the admitted count but never judges it; other calls of the same caller may share the window
+- [Phase 189.1]: Caller-limit probe reasons name call, status and Retry-After value or absent, and quote no response body
+- [Phase 189.1]: 189.1-03: the deploy job's settings step runs after the migrations push, so it reads the state the functions and rollout will see; a never-bootstrapped project stops at stage settings with its migrations already pushed
+- [Phase 189.1]: 189.1-03: the settings step prints settings_exit= and psql's own error only; a finding and a could-not-run (both status 3) are told apart in the log by the check-deployment-settings: prefix, as the step comment and the README row say
+- [Phase 189.1]: 189.1-05: the caller-limit spec reads the probe's refusal through a narrowing cast after its hard ok:true assertion, since playwright/no-conditional-in-test refuses an if in the test body
+- [Phase 189.1]: 189.1-05: the voter smoke declines the consent prompt through a spec-local addLocatorHandler; the shared walk keeps showing it raw to the local specs
+- [Phase 189.1]: 189.1-06: tests/README.md states the whole-entry run's 10-minute refusal of the caller's address and names the voter-only run as the way to avoid it
+- [Phase 189.1]: 189.1-07: the settings stage's exit 0 is the verdict that behind_cloudflare reads true on the hosted project (the script prints only DO on success)
+- [Phase 189.1]: 189.1-08 operator ruling: the consent prompt's focus-entirely-obscured overlap becomes a pending frontend todo (answer_wcag=todo), with the fix answer_wcag_fix=modal: the prompt as a modal through ModalContainer, Escape declines, shouldAnimate covers a prompt open at load
+- [Phase 189.1]: 189.1-08 operator ruling: staging ends with analytics.trackEvents true (answer_final_state=keep-on); plan 189.1-09 sets it false for its one off run and back to true at the same sitting
+- [Phase 189.1]: 189.1-09: the off run's after-flip check is carried by the before-run read (trackEvents false read immediately before the run), since statement (a)'s updated_at was not pasted and is overwritten
+- [Phase 190]: 190-07: deploy.yml and destroy.yml start with job `resolve` (contents: read, no id-token, no environment) running resolve-deployment.sh; every other job needs it; environment, role-to-assume, account, region, AWS_ROOT and SUPABASE_ROOT come from needs.resolve.outputs.*; concurrency group aws-pipeline for both; deploy step `resolved-settings` before the first assume refuses an unset or other DEPLOY_ENVIRONMENT or a differing AWS_DEPLOY_ROLE_ARN
+- [Phase 190]: 190-09: infra-plan.yml: job resolve (--mode plan, contents: read) first; plan and wrong-subject need it and run as matrices over fromJSON(needs.resolve.outputs.deployments) with matrix.deployment.{plan_role_arn,deploy_role_arn,cluster_name,service_name,aws_root}; the plan job's aws-region and allowed-account-ids stay literal (plan mode emits no account or region); push trigger excludes deploy-evidence/destroy-*
+- [Phase 190]: 190-09: workflows.test.ts deploy-role-arn final form: no literal IAM role ARN in any workflow file; deploy.yml/destroy.yml assume needs.resolve.outputs.deploy_role_arn, infra-plan.yml matrix.deployment.plan_role_arn. Staging's derived plan role is arn:aws:iam::471112560111:role/openvaa/openvaa-plan (replaces vars.AWS_PLAN_ROLE_ARN)
+- [Phase 190]: 190-10: infra/README.md § Accepted risks carries the thirteen unconfirmed SAR reads as one bullet naming every action, plus ECS task definitions on *, Application Auto Scaling by namespace/dimension, the shared budget and the no-reviewer-gate risk of a deployment without GitHub Environments; rootCopies families are every <env>/<family> holding a main.tf, staging first, scratch in supabase only
+- [Phase 190]: 190-08: deploy.yml takes DEPLOYMENT_KEY, SMOKE_DEPLOYMENT, DOMAIN and TOPIC_ARN from resolve; the settings check (resolved-settings) also refuses a public_origin of the resolved Supabase root other than https://<domain>; destroy.yml heads STATE_BUCKET/SUPABASE_STATE_KEY, and hand/<key>/supabase/terraform.tfstate is held to every Supabase root's declared backend key; workflow names `Deploy` and `Destroy AWS stack`; step names say "the AWS root"
+- [Phase 190]: 190-07: workflows.test.ts adds rule needs-resolve; arm-lock expands a resolved "$AWS_ROOT" to every infra/envs/<key>/aws of the map that exists; errexit stand-ins for resolve outputs come from a run of the resolver for deploy/staging. Still for 190-08: --deployment on push-migrations, smoke/URL/alert/confirm/state-key values, step names, headers
+- [Phase 190]: 190-06: TIGHTEN_COMMIT=7d4ab1242affa84edd6865440f0a8db5275b8ade (the tree of 190-11's second apply); update-only proof vs MOVE_COMMIT: delete 0, replace 0, create 0, moved 0, update 18 (mock JSON), guard pass
+- [Phase 190]: 190-06: EXPECTED_UPDATES = module.github_oidc["staging"].aws_iam_policy.{deploy_edge,deploy_load_balancing,deploy_network,plan_deny} (policy document only; trust JSON and every name/path/description unchanged, by real-provider render diff)
+- [Phase 190]: 190-06: no tag-conditioned cross-deployment read Deny: docs.aws.amazon.com refused by the egress proxy, so the thirteen CloudFront/ELB/SSM/ECS reads are accepted risks for infra/README.md (190-10); operator confirms Environment=staging on every Root=aws resource before apply 2
+- [Phase 189.1]: 189.1-10: Task 2 gate lines committed after the full E2E run so the run sits on GATES_HEAD (189-20 precedent)
+- [Phase 190]: 190-01: BASELINE_INFRA=524 passed / 6 failed (all six host-only, in workflow-errexit.test.ts); no later plan of the phase may add a failure to it
+- [Phase 190]: 190-01: Terraform 1.16.5 lives untracked at $HOME/.cache/openvaa-terraform/1.16.5 (SHA256SUMS OK); the move harness's run module source ../../../base/infra/bootstrap resolves from the root module directory, and the test_plan run name is the field @testrun
+- [Phase 190]: 190-01: control move proof on 46554181e: delete 0, replace 0, moved 0, update 18 (mock policy JSON), guard pass; a temporary registry rename turned it red with replace 2
+- [Phase 190]: 190-02: .gitignore tracks infra/bootstrap/deployments.auto.tfvars.json by one negation after *.auto.tfvars.json; every other auto-loaded variable file stays ignored
+- [Phase 190]: 190-02: resolve-deployment.sh destroy mode: a push matches only deploy-evidence/destroy-<owned key>, a dispatch matches as deploy mode; plan mode refuses --ref/--event; refusals go to stdout as one failed=<reason> line, ambiguity names the keys on stderr
+- [Phase 190]: 190-02: infra unit count after 190-02: 608 passed / 6 failed (the six baseline failures)
+- [Phase 190]: 190-03: push-migrations.sh --confirmed-ref requires --deployment <key> (key ^[a-z][a-z0-9-]*$, <=15 chars, infra/envs/<key>/supabase/terraform.tfvars present, its project_ref = --ref, OPENVAA_DEPLOY_ENVIRONMENT = key, GITHUB_REF = refs/heads/deploy/<key> or deploy-evidence/?*); the typed form validates a given key only. deploy.yml must pass --deployment (190-07): until then the confirmed form refuses with exit 2
+- [Phase 190]: 190-03: deployedTarget.ts exports DEFAULT_SMOKE_DEPLOYMENT='staging', readSmokeDeployment, dedicatedSupabaseTfvars, smokeBaseUrl; requireCredentialOrigin takes the key as a required third argument, runDeployedGate an optional deployment defaulting to readSmokeDeployment(env)
+- [Phase 190]: 190-03: infra unit count after 190-03: 620 passed / 6 failed (the six baseline failures); yarn lint:check red only on 11 comment-hygiene lines in resolve-deployment.sh (190-02), tests:unit:tests one host-only tcpForward timing failure; both in the phase's deferred-items.md
+- [Phase 190]: 190-04: MOVE_COMMIT=ce17178c6945c6514b3a2c5cfde49b322fb0265f (the tree 190-11 plans and applies first); move proof vs 46554181e: moved 37 (= 37 counted keyed addresses), delete 0, replace 0, create 0, update 18 (mock JSON), guard pass; map control vs MOVE_COMMIT: base_map present, moved 0, guard pass
+- [Phase 190]: 190-04: github-oidc takes oidc_provider_arn and iam_name_prefix (plan role, ecr-push, plan-deny, nine deploy-* policies); deploy role and tfstate policy stay on name_prefix-environment; the account's provider is infra/modules/github-oidc-provider; bootstrap derives registry <prefix>-<key>-frontend, IAM prefix <prefix>-<key>, pipeline/<key>/aws/terraform.tfstate unless the entry overrides
+- [Phase 190]: 190-04: check-bootstrap-moves.sh fixed (set -f had kept its *.tf glob literal, so a map-declaring tree was taken for one without); infraValidateJobGate now checks infra/envs/<key>/aws backend keys against the derived pipeline key; infra unit count 630 passed / 6 failed
+- [Phase 190]: 190-05: bootstrap root test pins staging's names and plans a nuorten-2027 stand-in with names of its own (its state policy is openvaa-tfstate-nuorten-2027-aws, the other eleven carry openvaa-nuorten-2027-); seven refusals each confirmed to trip only their own validation
+- [Phase 190]: 190-05: terraform-checks.sh test-bootstrap checks infra/bootstrap/tests with -d (a glob-free loop word survives nullglob); infra-plan.yml checks job runs it under !cancelled(); infra unit count 633 passed / 6 failed
+- [Phase 190]: 190-12 Task 3 (the two workstation smoke runs) moves to after plan 190-14's evidence deploy, operator ruling 2026-11-24: staging serves 2ddc331d1, whose apps/ and packages/ differ from this branch in 616 files, so a run before that deploy could fail on a UI mismatch rather than the gate. The token probe (Task 2) runs now; 190-12 completes after 190-14 Task 2.
+- [Phase 190]: 190-11: a catch-up apply of 46554181e preceded the move (its plan_deny statement DenyObjectReadsOutsidePipeline was never applied live; state last written 2026-11-16, statement first in be6e289c8 on 2026-11-22); apply 1 of MOVE_COMMIT moved 37 with 0 add/change/destroy; apply 2 of TIGHTEN_COMMIT updated exactly the four EXPECTED_UPDATES; staging deploy run 44939177207 success; the operator uses Terraform 1.16.5 darwin_arm64 (1.17.2 darwin_amd64 timed out starting the provider), and the runbook now names the platform build
+- [Phase 190]: 190-14: EVIDENCE_COMMIT=fd57d43396b4f3da85897d9196102f6aa2eb2561, tree d93523b909cd1330604e8a17f6b360c51ac0e436, parent 340a200708c28fb7ed078d452138712f3400c789, built from b647e0d72 with author/committer Claude <noreply@anthropic.com> at 1795554000 +0000 and --no-gpg-sign so the operator rebuilds the same id; the executor pushes nothing
+- [Phase 189.1]: 189.1-10: plan 189.1-07's DEPLOY_COMMIT 2ddc331d1 stands; no gap plan followed 189.1-08 (answer_wcag_fix=modal, frontend todo)
+- [Phase 189.1.1]: Phase-start E2E listing is 742 tests in 129 projects, +13 against the 729 of the last full run; the final plan adds +13 to the phase's own summed deltas (D-06)
+- [Phase 189.1.1]: Svelte 5 event wrappers skip a handler once event.cancelBubble is set, so unguarded nested ModalContainers closed the OUTER on one Escape (inner left open); the topmost-only guard in handleEscape fixes it in either listener order (189.1.1-02)
+- [Phase 189.1.1]: 189.1.1-04: the stop-timeout precondition reads SHUTDOWN_TIMEOUT through a local that honours omit_environment (30, adapter-node's default, when the task does not receive it), since local.environment_values keeps a value omit_environment drops
+- [Phase 189.1.1]: 189.1.1-04: Terraform on this workstation is an x86_64 build under Rosetta; every Terraform run needs GODEBUG=asyncpreemptoff=1 or the x86 AWS provider hangs or times out starting; and validate is run in a clean copy of the tracked tree because local .terraform state caches the S3 backend
+- [Phase 189.1.1]: 189.1.1-05: the reviewer brief describes the consent prompt as the modal of the release under review; plan 06 builds it, so section 6 holds once 06 lands
+- [Phase 189.1.1]: 189.1.1-05: Q6 asks both ways, because a closed project's public pages already follow the stored trackEvents (get_public_app_settings)
+- [Phase 189.1.1]: 189.1.1-06: the voter consent prompt is a Modal opened on mount; every close without a choice records setDataConsent('denied'); the buffered-before-grant spec grants on /privacy on the same document as the menu opening, since a flush under denied discards the buffer
+- [Phase 189.1.1]: 189.1.1-08: every bare .checkbox gets a 2px border in --input-color or base-content from one :where(.checkbox) rule in the un-sublayered @layer utilities block; --input-color stays unset so the check mark survives
+- [Phase 189.1.1]: 189.1.1-08: non-text contrast (SC 1.4.11) is asserted by a computed-style border measurement (tests/tests/utils/nonTextContrast.ts), since axe-core has no 1.4.11 rule
+- [Phase 189.1.1]: 189.1.1-09: the wrapper's absence is pinned by one hasnt_function check in pgTAP 59; the 07, 39c censuses count without it (sixteen, eight, twelve)
+- [Phase 189.1.1]: 189.1.1-09: WRAPPER_REFERENCES is five files: the manifest names migration 00005_drop_invitation_caller_take.sql
+- [Phase 189.1.1]: 189.1.1-10: the shutdown check's stub sends access-control-allow-origin: * and holds only the first request after the in-flight leg arms it; SvelteKit's server fetch refuses a cross-origin answer without the header, and holding every request kept GET / past SHUTDOWN_TIMEOUT
+- [Phase 189.1.1]: 189.1.1-10: the in-flight shutdown leg warms the server with one unsignalled GET / so the measured request is not the cold first render
+- [Phase 189.1.1]: 189.1.1-03: the staging dashboard's prod-ca-2021.crt matched the root the session pooler serves (SHA-256 80:70:25:AD:...:CA:FA, DER equal; CA_MATCH=yes) and is committed byte for byte as infra/certs/supabase-root-2021-ca.crt; credential-free legs TLS_RIGHT_CA=handshake-ok, TLS_WRONG_CA=refused, TLS_WRONG_HOST=refused
+- [Phase 189.1.1]: 189.1.1-03: CHANNEL_BINDING_OFFERED=no (libpq refused at the pooler's mechanism list, no password sent), so plan 07 adds no PGCHANNELBINDING
+- [Phase 189.1.1]: 189.1.1-03: staging's hosted history read read-only over verify-full holds 24 versions (00001-00024) against HEAD's four, confirming Blocker B-1 and plan 12's rebuild
+- [Phase 189.1.1]: 189.1.1-07: deploy.yml's migrations and settings steps connect with PGSSLMODE=verify-full and PGSSLROOTCERT at the committed Supabase root; no PGCHANNELBINDING (plan 03 measured none offered); deploy-workflow.test.ts pins both env blocks, checks the root exists, and is red on each way back (mode to require, root dropped, root missing, per step), shown also by applying each mutation to the real workflow
+- [Phase 189.1.1]: 189.1.1-11: run 45479328374 of main.yaml on ci-evidence/189.1.1-final (cf6326b08) read job by job, all 13 jobs success except dependency-audit, accepted per the 2026-11-15 todo (15 rows, each a todo row; the two dompurify rows gone); e2e-tests 745 passed on 4 workers; D-14i observed
+- [Phase 189.1.1]: Plan 12: the staging rebuild restored analytics.trackEvents and no other hand-set app setting (D-16); the candidate registration mode identity_provider, set by hand before the reset, is left for the operator to restore
+- [Phase 189.1.1]: Plan 12: a failed sitting step was fixed at top level (bootstrap.sql, ed35c98ec) and the sitting resumed with --from 9 instead of being returned as a blocker; the reset ran once
+- [Phase 189.1.1]: Plan 12: SUPA-15 and PIPE-12 are not marked complete; plans 189.1.1-13 and 189.1.1-15 still declare them
+- [Phase 189.1.1]: 189.1.1-13: staging serves 30316b108 (the second deploy commit, recorded as RUN2_DEPLOY_COMMIT and DEPLOYED_COMMIT in evidence 13), not the evidence's DEPLOY_COMMIT be6fc2dd6; migration 00005 was applied by run 45586463676, red at the smoke, and the green run is attempt 2 of run 45601966922, so the plan's third truth is met across two runs
+- [Phase 189.1.1]: 189.1.1-13: three deviations stand on operator rulings relayed by the orchestrator on 2026-11-25: the re-run of the failed checks job of run 45601966922 (a runner network fault in the ungated job), push_connection=unknown in place of pooler (detection deferred, research assumption A5 unsettled), and a deployed tree that differs from the CI-observed one in eight paths
+- [Phase 189.1.1]: 189.1.1-13: the deployed smoke must reach no @openvaa/* package by value, because the deploy job builds no workspace package; deployedSmokeGuards.test.ts refuses one (c2dfaebf8)
+- [Phase 189.1.1]: 189.1.1-14: on staging build 30316b108 with trackEvents true the voter consent prompt reads A11Y_FINDING=none at 1280x720, at 390x844 and in the dark scheme (one dialog:modal, no control under it takes focus, Escape closes it with denied stored); the todo 2026-11-21-voter-consent-prompt-covers-an-answer-control is closed
+- [Phase 189.1.1]: 189.1.1-14: the served build was compared with DEPLOYED_COMMIT of evidence 13, not DEPLOY_COMMIT, as the orchestrator recorded; RELAY-22 is left for plan 189.1.1-15 to mark
+- [Phase 189.1.1]: 189.1.1-16: ModalContainer.handleEscape cancels the default action of an Escape it takes (e.preventDefault()), so an Escape in the consent prompt's information dialog closes that dialog alone and records no consent choice
+- [Phase 189.1.1]: 189.1.1-16: modal unit tests press Escape through dialogPlatform.testUtils.ts pressEscape(), which sends cancel and close to the topmost open dialog when the keydown's default is not cancelled; a new modal test uses it instead of its own polyfill
+- [Phase 189.1.1]: Plan 17: on a cold drawer entry the results drawer is the topmost modal dialog (three measured readings agree); DrawerHost.handleEscape now cancels the Escape default as ModalContainer does, and a browser test pins that one Escape closes the drawer alone with no consent choice stored — The tree already behaved correctly only through listener order (both modals listen on document and Svelte 5 skips a later same-node handler once propagation is stopped), so the browser test was shown red under the named mutation; no topmost check was needed (DRAWER_GUARD=not-needed)
+- [Phase 189.1.1]: 189.1.1-18: IN-03 closed by retitling the deployed voter smoke to 'reaches the results', not by a raw candidate-section read (D-14h)
+- [Phase 189.1.1]: 189.1.1-18: IN-06 (no job timeouts in main.yaml) deferred to todo 2026-11-25-ci-job-timeouts.md for all thirteen jobs; editing main.yaml now would undo D-14i
+- [Phase 189.1.1]: 189.1.1-18: IN-07 (no [db] tag on the 00005 migration commit) deferred to the review restack; rewriting history now would change the SHAs the phase's evidence records
+- [Phase 189.1.1]: 189.1.1-19: the nested-Escape fix counts as observed on staging — the committed script read OPEN_AFTER_ONE_ESCAPE 0 to 1 and CONSENT_AFTER_ONE_ESCAPE denied to none across run 45676071401 (81b80140f), trackEvents true
+- [Phase 189.1.1]: 189.1.1-22: the shared sign-in helper's URL wait has SIGN_IN_REDIRECT_TIMEOUT = 3 x TIMEOUTS.slowPage (post, root, entity home), budget-only fix
+- [Phase 189.1.1]: 189.1.1-22: a URL wait is swept when its action can start a navigation it does not wait for; budget N x TIMEOUTS.slowPage per server answer, N read from the route files
+- [Phase 189.1.1]: 189.1.1-22: the identity provider entries are client-nav (fetch then a full load), N=5; voter (located) navigations are no-server
+- [Phase 189.1.1]: 189.1.1-21: the entity pages' four URL waits wait through one expectPath with TIMEOUTS.slowPage; the switching test's red reproduced by a 7000 ms hold on the questions overview's data request and green on the fix under the same hold
+- [Phase 189.1.1]: 189.1.1-21: Task 2 closed from plan 22's targeted run (48 of contestant-entity-selection passed on a tree holding the fix); the red first targeted run kept on record, UNPLANNED_RED_1_FIXED_BY=189.1.1-22; PLAN_E2E_DELTA=0
+- [Phase 189.1.1]: 189.1.1-20: the tree since the deploy is budget-only on the deployed smoke's paths (two closure files changed in wait budgets alone; the image copies no tests/), so plan 19's deploy observation stands and no redeploy is owed
+- [Phase 189.1.1]: 189.1.1-20: the phase's full E2E run is green on 46386184165f (747 passed = 745 + 2, per project and per title); the red first run stays on record under RED_RUN_1_, fixed by plans 21 and 22
 
 ### Pending Todos
 
@@ -194,16 +611,22 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 - `2026-10-18-pg-delta-migration-authoring-after-freeze` (181.1 D-01)
 - `2026-10-18-native-per-worktree-stack-and-cli-bump-spike` (181.1 D-05, D-06, D-08)
 
+Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
+
+- `2026-11-17-local-supabase-ports-in-ephemeral-range` (run 44033456141 attempt 1: `supabase start` found host port 54326 bound on the runner)
+
+Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
+
+- `2026-11-19-deployed-voter-smoke-fails-when-track-events-is-on` (188-12: the consent prompt covers an answer control, so the deployed voter smoke and the pipeline's smoke stage are red while `trackEvents` is on)
+- `2026-11-19-check-whether-candidate-and-party-images-can-be-cached-or-served-via-a-cdn` (operator, for the end of v2.17: 188-18 measured about 30 MB of portraits per journey from Supabase storage)
+
 ### Blockers/Concerns
 
 - Phase 181: the baseline freeze waits for a cutover commit agreed with the v2.16 session (SUPA-10, C1). The rest of the phase does not wait.
-- Phase 182: the legal position needs a qualified reviewer. Six readings of the operator's notes of 2026-10-11 are written into the context files and listed in `v2.17-181-183-DISCUSSION-POINTS.md`; the operator has not yet confirmed them.
+- Phase 182: the legal position needs a qualified reviewer. The reviewer brief is ready at `.planning/workstreams/deployment/relay-legal-reviewer-brief.md`. It covers what the relay collects, where it goes, how it is anonymised, the consent flow and retention, and it puts the six readings of the operator's notes of 2026-10-11 (still unconfirmed by the operator) to the reviewer as questions Q1 to Q6, with Q7 to Q9 added. The production launch waits for the review. Staging keeps `trackEvents` on.
 - Phase 181: the freeze also waits for one schema change of phase 182 (ruling 182-12).
-- Phase 183: not yet given by the operator (TBA on 2026-10-11): the identity that applies Terraform by hand (needed before the first apply of wave A), the Supabase organisation and the holder of the access token, the persistent Pro project (wave B), and a mailbox for DMARC reports. The region is `eu-north-1` if the dashboard offers it. The parent DNS zone is at Cloudflare. SES production access is requested at the start of the phase. The DNS delegation for `staging.openvaa.org` is entered at the current DNS host during the phase.
 - Phase 181 is planned (19 plans, 11 waves; four check rounds, no open blocker). Waves 1 to 7 need no operator. Plan 181-16 needs a root `.env` in this worktree and a window on the shared local Supabase stack; it stops the stack and resets the database from this worktree, so the v2.16 session must reset from its own worktree afterwards. Plan 181-17, the freeze, waits for v2.16's phase 177.1, the merge of the two branches' schema, and plan 182-02.
-- Execution rule for phases 181 to 183: three phases' executors share this checkout. Whole-repo gates run only on a tree with no uncommitted tracked change. At a pending operator checkpoint of an E2E gate or of the freeze, nobody commits in this checkout, the orchestrator included, or the operator's answer is void. An operator's reply must carry the attempt id the checkpoint shows.
 - The operator has not yet answered `v2.17-181-183-RESEARCH-FOLLOWUPS.md`; the plans rest on each recommended option and name the follow-up id where an overrule changes them.
-- Phase 183 is planned (28 plans, 15 waves; three check rounds, no open blocker). Waves 1 to 5 need no operator and touch no cloud. Every apply, import and credentialed call is an operator checkpoint; the agent holds no credential. The first checkpoint that can block is 183-14: it needs the applying identity (follow-up 183-R1), Terraform 1.16.5 and `jq` on the operator's workstation. The Supabase chain (183-21 to 183-25) first needs the operator at 183-21 and may run by plan beside the waits of 183-19 and 183-20. Operators paste named lines only; the log directories of the checkpoints hold secrets and are removed by the checkpoint's last step.
 - Phase 182 is planned (31 plans, serial; three check rounds, no open blocker). It has seven operator stops: the one-way decision of 182-02 (a typed reply with the attempt id; no default), the span acknowledgement of 182-15, and five windows on the shared local stack (182-11, 182-23, 182-24, 182-31, 182-28). Each window stops the stack and resets the database from this worktree; the v2.16 session then resets from its own worktree. From the first commit of 182-15 to the closing gates of 182-26 the frontend does not typecheck: phases 181 and 183 run no frontend gate in that span. Two human checks stay open at the end of the phase: the operator's reading of the event classification, and a speaker's reading of the six translated catalogues.
 - Phase 188: not yet given by the operator: a PostHog Cloud EU project, its token and a billing limit.
 - Phases 182 and 185 each close 19 requirements. Expect many plans in each.
@@ -212,12 +635,35 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 - Phase 184, from plan 181-11: before the first run of infra/scripts/bootstrap.sql against the hosted project, read the server's parameter-logging settings with SHOW (log_statement, log_parameter_max_length, log_min_duration_statement, pgaudit.log, pgaudit.log_parameter, auto_explain.log_min_duration, auto_explain.log_parameter_max_length). The script binds the service-role key and keeps it out of the log of a failed statement, but a server that logs the parameters of statements that succeed, or of slow ones, logs the key, and the script cannot change those settings. Locally they are ddl, -1, -1, , off, 10000 and -1. Also unobserved there: that postgres owns the five tables and may read auth.users.
 - Plan 181-12, awaiting a ruling: research assumption A2 is recorded as held, but not by the plan's letter. The plan defines held as zero bytes of standard output from supabase db diff on the clean build; its command gave 114, 122 and 142 bytes, a JSON envelope carrying an empty diff, because the CLI detected an agent caller. Zero bytes was seen only with text output selected (--agent no or --output-format text), which the check now passes. If that reading is not accepted, the schema half of infra/scripts/check-drift.sh has to be the dump comparison the plan names as its fallback, and Tasks 2 and 3 of 181-12 are open. Two more departures in the same plan rest on measurements and are also unruled: the header names four blind spots where the plan orders five (a changed policy expression is reported by the diff), and the plan's control 6 is answered by a refusal before either part runs, with a failing psql shown by an added control.
 - Phase 184, from plan 181-12: infra/scripts/check-drift.sh was never run with --target linked. Before a green there is trusted, see the check red on a planted change on the hosted project, and find out whether supabase db diff with no schema list is empty on a clean hosted database; if it is not, narrow the set in the script with that evidence (--schema public,private,storage was empty locally and misses a schema created by hand). Nothing ties the script's PG* connection to the linked project. A green drift check does not show column privileges, role settings, comments or rows. On this host the diff also left a 51 MB cache file under ~/.supabase/cache/shadow-baseline/, which is still there.
+- [Phase 183] Before anyone signs in on the persistent project `cofbsatfrdysyphajsky`, push the migrations to it (phase 184). Both auth hooks are switched on there, and their database functions may not exist yet.
+- [Phase 183] The SUPA-07 probe of phase 184 should read `oauth_server_enabled` and `oauth_server_allow_dynamic_registration`, which the Supabase module no longer sends or compares.
+- [Phase 183] SMTP is not applied on staging (`smtp` is null). When phase 184 sets it, the planning shell needs `TF_VAR_smtp_user` and `TF_VAR_smtp_password`; the first SMTP enablement is untried.
+- [Phase 183] Operator deferrals to phase 184 (SECURITY T-183-09/10/11): WR-04, decision A-08 kept, so a PR job can hold or delete the pipeline lock; the WR-01 remainder, `ReadOnlyAccess` still reads S3 objects, SSM String parameters, Lambda and ECS environments and CloudFormation templates; the WR-03 remainder, numeric GitHub id claims (confirm AWS support for them first), pinning the plan trust to a workflow, and the staging Environment's deployment branch policy.
+- [Phase 183] No CI run of `infra-validate` exists on the final tree; the last observed runs were at 18fdcd6ca. A `ci-evidence/**` push would observe one.
+- [Phase 187] `dependency-audit` stays red in CI on third-party advisories (17 rows on run 44033456141; from this workstream's lockfile change); accepted by the operator and filed for phase 189 (`2026-11-15-dependency-audit-third-party-advisories.md`). `secret-scan` was green (0 results) on that run.
+- [Phase 183] `183-VALIDATION.md` is still draft; the Nyquist audit (`/gsd-validate-phase 183 --ws deployment`) has not run.
+- [Phase 183] 23 info review findings (IN-01 to IN-23) remain open in `183-REVIEW-DISPOSITION.md`. The lock files of the four Supabase-provider directories still record `constraints = "~> 1.11"` while the roots pin `= 1.11.0`.
+- [Phase 187] The verifier's suggested override for PIPE-01 ("one GitHub Environment" read as the two environments staging and staging-destroy) awaits the operator's acceptance; it does not change the phase status.
+- [Phase 187] A red smoke stage was not observed (code- and test-guarded only); the observed red is at build. A real push to `main` cannot be observed before the deploy workflow is merged.
+- [Phase 187] The full `main.yaml` CI last ran on `ci-evidence/187-final-4`; plans 187-29 to 187-31 changed workflows and scripts after it, covered only by the workflows' own `checks` jobs.
+- [Phase 187] `infra/envs/staging/aws/README.md` § Observations has one split table row (a `|` inside a code span; `deferred-items.md`), left open on purpose.
+- Before 188-10: code-sign-in reaches account-access from the frontend server, so its per-caller bucket is likely the server's address (188 deferred-items.md 2); operator to choose exclude / forward under a server secret / keep and measure
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 261123-qht | make "contact support" a link in the locked-name message | 2026-11-23 | 86022676a | [261123-qht-make-contact-support-a-link-in-the-locke](./quick/261123-qht-make-contact-support-a-link-in-the-locke/) |
 
 ### Roadmap Evolution
 
 - Phase 181.1 inserted after Phase 181: Declarative schema on pg-delta (supabase db schema declarative sync), agent-ready local stack ([experimental] stack = true) and Supabase config as code; source: https://supabase.com/blog/select-2026-build-anything. Must be settled before the 181-17 freeze: DML in schema/ (400-storage bucket insert, 107-feedback, 506-invitation-rpcs), timestamped vs five-digit migration names and the manifest/parity guard, and D-15 (Terraform supabase_settings sole writer; config push used nowhere) in phase 183 (URGENT)
 - Phase 181.1 scope-added: Scope added: vendor Supabase agent skills (supabase, supabase-postgres-best-practices from github.com/supabase/agent-skills v0.1.9) into .claude/skills/, pinned and reviewed, reconciled with the project's database skill
 - Phase 181.1 decided 2026-10-18: nothing from Supabase Select 2026 is adopted in v2.17, and pg-delta, the native per-worktree stack and config as code go to todos; the Supabase agent skills are installed per user and are not vendored, an operator ruling (181.1 D-09) that supersedes the "vendor … into .claude/skills/" wording of the scope-added line above; see 181.1-CONTEXT.md
+- Phase 189.1 inserted after Phase 189: Address tech debt: invitation-limit guard and trackEvents smoke (URGENT)
+- Phase 189.1.1 inserted after Phase 189.1: Address tech debt: the consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; UAT todos (3); 20 items from the 2026-11-21 audit (URGENT)
+- Phase 189.1.2 inserted after Phase 189.1.1: Move the deployment to Supabase publishable and secret keys before the legacy keys retire (FUT-02), pulled forward by the operator 2026-11-25 (URGENT)
+- Phase 190 added: Multi-deployment bootstrap — `infra/bootstrap` takes a map of deployments so `OpenVAA/deploy-nuorten-vaalikone-2027` can deploy into the same AWS account (exploration 2026-11-23)
 
 ## Deferred Items
 
@@ -227,6 +673,8 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-21T06:57:31.521Z
-**Stopped At:** Phase 181 complete, ready to verify Phase 181.1
+Last session: 2026-11-24T21:10:00.000Z
+**Stopped At:** Phase 190 complete
 **Resume File:** None
+
+- [Phase 190]: 190-14 evidence deploy attempt 1 (run 45564561423) failed at the migration push: staging's database holds migrations 00005-00024 of the pre-restack history, which the restacked stack dropped (bba309b72). Outside Phase 190; operator ruling 2026-11-25: wait for the session rewriting the staging database, then re-run the run.

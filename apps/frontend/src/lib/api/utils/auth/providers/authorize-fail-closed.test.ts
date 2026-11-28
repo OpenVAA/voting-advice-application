@@ -33,8 +33,6 @@ const { mockConstants, mockPublicConstants } = vi.hoisted(() => ({
     LLM_OPENAI_API_KEY: ''
   },
   mockPublicConstants: {
-    PUBLIC_BROWSER_FRONTEND_URL: '',
-    PUBLIC_SERVER_FRONTEND_URL: '',
     PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-client',
     PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: 'https://signicat.example/authorize',
     PUBLIC_IDENTITY_PROVIDER_TYPE: 'signicat-ftn',

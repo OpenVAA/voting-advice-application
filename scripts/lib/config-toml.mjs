@@ -16,6 +16,45 @@ export const TABLE_HEADER = /^\s*\[\[?\s*([^\]]*?)\s*\]\]?\s*(?:#.*)?$/;
 /** A table name the reader accepts: bare dotted words, no quoted part. */
 export const TABLE_NAME = /^[A-Za-z0-9_.-]+$/;
 
+/**
+ * The name of a table header in its plain form: each dotted part trimmed, and a part that is a quoted bare key written
+ * without its quotes, so `[auth . external . "github"]` is `auth.external.github`.
+ *
+ * @param header - The name inside the brackets, as group 1 of `TABLE_HEADER` gives it.
+ * @returns The plain name, or null when a part is still not a bare key, such as a quoted part holding a dot or a space.
+ */
+export function plainTableName(header) {
+  const name = header
+    .split('.')
+    .map((part) => part.trim().replace(/^"([A-Za-z0-9_-]+)"$|^'([A-Za-z0-9_-]+)'$/, '$1$2'))
+    .join('.');
+  return TABLE_NAME.test(name) ? name : null;
+}
+
+/** The name a table header that cannot be read is written as by `plainHeaders`, so the keys under it belong to that one table. */
+export const UNREADABLE_TABLE = 'unreadable-table-header';
+
+/**
+ * The configuration text with every table header written as `[<plain name>]`, and a header whose name `plainTableName`
+ * cannot read written as `[unreadable-table-header]`.
+ *
+ * @param text - The configuration text.
+ * @returns `text`, the rewritten text, and `unreadable`, `{ line, index }` per header that cannot be read: the header
+ *   line as written and its zero-based line index.
+ */
+export function plainHeaders(text) {
+  const unreadable = [];
+  const lines = text.split('\n').map((line, index) => {
+    const header = TABLE_HEADER.exec(line);
+    if (!header) return line;
+    const name = plainTableName(header[1]);
+    if (name !== null) return `[${name}]`;
+    unreadable.push({ line, index });
+    return `[${UNREADABLE_TABLE}]`;
+  });
+  return { text: lines.join('\n'), unreadable };
+}
+
 /** A `name = value` line. The key is group 1 and the text after `=` group 2. */
 export const KEY_LINE = /^\s*([A-Za-z0-9_-]+)\s*=\s*(.*)$/;
 

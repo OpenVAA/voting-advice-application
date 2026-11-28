@@ -80,7 +80,7 @@ const latentBlock = z
  *
  * The regex below is the 8-4-4-4-12 hex shape from RFC 9562 without the version nibble constraint — matches what Postgres actually accepts.
  */
-const UUID_SHAPE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+export const UUID_SHAPE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 export const TemplateSchema = z
   .object({

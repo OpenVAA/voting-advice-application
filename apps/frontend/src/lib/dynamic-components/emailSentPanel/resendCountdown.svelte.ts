@@ -7,7 +7,7 @@ import type { EmailSentStatus } from './EmailSentPanel.type';
  *
  * The count is computed from two times, the settlement of the last request and the present, and never by counting ticks. It is therefore right however long the page's timers were held back, as while its tab was in the background. The present time is a `WallClock`, read once a second while the count is started and at once when the page is back.
  *
- * The status changes only at two moments: `markRequested()` sets it to `requested`, and the count reaching 0 sets it to `ready`. It does not change while the count runs, so a live region that shows it speaks at those two moments and not in between.
+ * The status changes only at two moments: `markRequested()` sets it to `requested`, and the count reaching 0 sets it to `ready`. `markRefused()` takes it back to nothing, for a request the server refused before it was made. It does not change while the count runs, so a live region that shows it speaks at those two moments and not in between.
  *
  * Everything is held by the instance, so two screens, or two renders on the server, never share a count. The page that shows the count creates one instance and starts and stops it with itself:
  *
@@ -58,6 +58,11 @@ export class ResendCountdown {
   /** Record that a new email was asked for. The status says so until the count that follows has ended. */
   markRequested(): void {
     this.#status = 'requested';
+  }
+
+  /** Record that the email last asked for was refused before it was made, so that the status no longer says one was requested. */
+  markRefused(): void {
+    this.#status = undefined;
   }
 
   /** Begin reading the clock. */

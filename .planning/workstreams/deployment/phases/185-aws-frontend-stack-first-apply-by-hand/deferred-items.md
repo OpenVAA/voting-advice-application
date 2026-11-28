@@ -1,0 +1,9 @@
+# Deferred items: phase 185
+
+## From plan 185-03
+
+- **A server log record is written over several lines.** `configureLogger` in `apps/frontend/src/hooks.server.ts` sets no `sink`, so `@openvaa/app-shared`'s default writes `console.error(record)` (level 40 and above) or `console.info(record)`, and Node prints the record as a multi-line inspected object. The built server's shutdown line came out as 12 lines on standard error (see `evidence/185-03-built-server.md`). A line-based log driver such as the ECS `awslogs` driver would store each line as its own event, so a hosted observation that searches for the shutdown line finds `msg: 'The server is exiting after its stop.'` on one event and its fields on others. Out of scope for 185-03 (its files do not include the logger or its sink). Remedy for whichever plan reads the hosted log: a server-side sink that writes one `JSON.stringify(record)` line per record, or a log query that matches the message line alone.
+
+## From plan 185-14
+
+- **The form-post check posts to a page with no form action.** `infra/local/check-proxy-topology.sh` (`LOGIN_ROUTE="/contestant/login"`, observation 3) and Step 7, item 5 of the staging AWS runbook both post to `/contestant/login`, which holds two links and no action, so the post with the public origin is answered 405 (seen through CloudFront on 2026-11-13, see `evidence/185-14-served-stack.md`). "Not 403" still shows the origin check passed, because SvelteKit checks the origin before routing, but neither check shows that a post reaches an action. The sign-in action is at `/contestant/login/email`; posted there with the public origin and credentials that sign nobody in, it answered 400. Out of scope for 185-14, whose files do not include the script and whose item ran as written. Remedy: point both at `/contestant/login/email` and expect the action's 400.

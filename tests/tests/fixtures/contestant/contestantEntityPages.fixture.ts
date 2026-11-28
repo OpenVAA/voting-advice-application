@@ -24,7 +24,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { PROFILE_SAVE_TIMEOUT, SIGN_IN_REDIRECT_TIMEOUT, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { buildEntityLessRoute, contestantHomeUrlRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
@@ -52,9 +52,16 @@ const ROUTE_OF: Readonly<Record<ContestantEntityPage, Route>> = Object.freeze({
 export function createContestantEntityPages(page: Page, admin: SupabaseAdminClient) {
   /**
    * Assert that the URL is `pattern` and that its path names `entity` by type and id.
+   *
+   * @param timeout - The budget of the chain the action that led to the page makes: by default one server round trip.
    */
-  async function expectUrlOfEntity(entity: EntityGrantTarget, pattern: RegExp, pageName: string): Promise<void> {
-    await expect(page).toHaveURL(pattern, { timeout: TIMEOUTS.slowPage });
+  async function expectUrlOfEntity(
+    entity: EntityGrantTarget,
+    pattern: RegExp,
+    pageName: string,
+    timeout: number = TIMEOUTS.slowPage
+  ): Promise<void> {
+    await expect(page).toHaveURL(pattern, { timeout });
     const entityId = await admin.entityId(entity);
     expect(
       new URL(page.url()).pathname,
@@ -99,10 +106,10 @@ export function createContestantEntityPages(page: Page, admin: SupabaseAdminClie
     },
 
     /**
-     * Assert that the browser ended on the home of `entity`: the URL is an entity home that carries the entity's type and id, and the home's status message is shown.
+     * Assert that the browser ended on the home of `entity`: the URL is an entity home that carries the entity's type and id, and the home's status message is shown. The home may be reached by a sign-in, so the address has the sign-in's budget.
      */
     async expectOnHome(entity: EntityGrantTarget): Promise<void> {
-      await expectUrlOfEntity(entity, contestantHomeUrlRe(), 'home');
+      await expectUrlOfEntity(entity, contestantHomeUrlRe(), 'home', SIGN_IN_REDIRECT_TIMEOUT);
       await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -119,10 +126,10 @@ export function createContestantEntityPages(page: Page, admin: SupabaseAdminClie
     },
 
     /**
-     * Assert that the browser ended on the questions list of `entity`: the URL is a questions-list URL that carries the entity's type and id, and the list's intro is shown.
+     * Assert that the browser ended on the questions list of `entity`: the URL is a questions-list URL that carries the entity's type and id, and the list's intro is shown. The list may be reached by a profile save, so the address has the save's budget.
      */
     async expectOnQuestions(entity: EntityGrantTarget): Promise<void> {
-      await expectUrlOfEntity(entity, contestantUrlRe('/questions'), 'questions list');
+      await expectUrlOfEntity(entity, contestantUrlRe('/questions'), 'questions list', PROFILE_SAVE_TIMEOUT);
       await expect(page.getByTestId(testIds.contestant.questions.intro)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });

@@ -1,6 +1,6 @@
 <script lang="ts">
   import Self from './NavigationItem.svelte';
-  import { hasChildren, isActive } from '../utils/navigation';
+  import { hasChildren, isActive, isCurrentLeaf } from '../utils/navigation';
   import type { NavigationItem as NavigationItemType, NavigationSection } from '$lib/navigation.type';
 
   interface Props {
@@ -12,7 +12,9 @@
   const { item, url, onLinkClick = () => void 0 }: Props = $props();
 
   const itemActive = $derived(
-    isActive(item.route, url) || (hasChildren(item) && item.children.some((child) => isActive(child.route, url)))
+    hasChildren(item)
+      ? isActive(item.route, url) || item.children.some((child) => isActive(child.route, url))
+      : isCurrentLeaf(item, url)
   );
 </script>
 
@@ -34,6 +36,7 @@
     <a
       href={item.route}
       class={[itemActive && 'menu-active bg-base-300 text-neutral', item.isSecondary && 'secondary']}
+      aria-current={itemActive ? 'page' : undefined}
       onclick={onLinkClick}>
       {item.title}
     </a>

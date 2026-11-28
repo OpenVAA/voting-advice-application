@@ -6,6 +6,8 @@ severity: minor
 source: Phase 146 (146-07 Task 0; .planning/debug/seed-determinism-across-resets.md)
 files:
   - tests/tests/utils/selectElection.ts
+tags: [voter, tests, improvement]
+keywords: [determinism, select-election, focus, visual-regression, walk]
 ---
 
 ## Problem

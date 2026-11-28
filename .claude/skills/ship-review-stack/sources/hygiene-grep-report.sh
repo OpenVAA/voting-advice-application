@@ -47,6 +47,14 @@
 # supplementary row with its own subtotal rather than being folded into the comparable total.
 # Folding it in would silently change what the 1,984 number means.
 #
+# THE SUPPLEMENTARY ROWS ALSO CATCH THE ID SHAPES THE FIRST ROWS MISSED. `task-id` takes two-letter
+# prefixes too (`CR-01`, `WR-08`: review-finding ids), `decision-id-alpha` takes lettered decision
+# ids (`D-A4`, `D-L3(a)`), and `phase-plan-id` takes bare phase-plan numbers (`162-16`,
+# `157.1-03`). The phase-plan pattern demands three leading digits and refuses a preceding
+# word character, dot, hyphen, slash, colon or hash, so dates (`2026-11-28`), UUID segments,
+# SVG coordinates (`28.75-28`), ports and anchors do not match; measured at zero false
+# positives over the scan roots when added.
+#
 # Counts drift as the branch advances -- research measured 3,969 reconstructed files, plan 01
 # measured 4,240 -- so nothing here is hard-coded. Every number is derived at run time.
 #
@@ -130,7 +138,9 @@ scan_row section-anchor   strip    '§'                            -- apps/ pack
 scan_row planning-path    strip    '\.planning/'                  -- apps/ packages/ tests/ infra/
 scan_row plan-number      strip    '(?i)\bplans?\s+\d+[-.]\d+'    -- apps/ packages/ tests/ infra/
 scan_row milestone-ver    report   '\bv\d+\.\d+\b'                -- apps/ packages/ tests/ infra/
-scan_row task-id          strip    '\b[A-Z]{3,}-\d{2}\b'          -- apps/ packages/ tests/ infra/
+scan_row task-id          strip    '\b[A-Z]{2,}-\d{2}\b'          -- apps/ packages/ tests/ infra/
+scan_row decision-id-alpha strip   '\bD-[A-Z]{1,2}\d+\b'         -- apps/ packages/ tests/ infra/
+scan_row phase-plan-id    strip    '(?<![\w.\-/:#])\d{3}(?:\.\d+)?-\d{2}\b(?![-:\d])' -- apps/ packages/ tests/ infra/
 
 # ---------------------------------------------------------------------------------------
 
@@ -172,7 +182,7 @@ while IFS=$'\t' read -r id kind occ files bare; do
       expect="-"; verdict="REPORT" ;;
   esac
 
-  if [ "$id" = "task-id" ]; then
+  if [ "$id" = "task-id" ] || [ "$id" = "decision-id-alpha" ] || [ "$id" = "phase-plan-id" ]; then
     SUPPLEMENTARY=$((SUPPLEMENTARY + occ))
   else
     COMPARABLE=$((COMPARABLE + occ))
@@ -193,7 +203,7 @@ UNION="$( cat "$WORK"/files.* | sort -u | wc -l | tr -d ' ' )"
 
 echo ""
 echo "  planning-reference total (8 rows, comparable to the research loop) : $COMPARABLE"
-echo "  task-id supplementary (no counterpart in that loop)                : $SUPPLEMENTARY"
+echo "  id supplementary (task/alpha-decision/phase-plan ids; no counterpart) : $SUPPLEMENTARY"
 echo "  union files touched by any row                                     : $UNION"
 
 if [ -n "$SAVE" ]; then

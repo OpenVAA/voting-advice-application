@@ -38,8 +38,6 @@ const { mockServerConstants, mockPublicConstants, createDataProvider, createSupa
       PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-client-id',
       PUBLIC_IDENTITY_PROVIDER_TYPE: 'idura-ftn',
       PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: '',
-      PUBLIC_BROWSER_FRONTEND_URL: '',
-      PUBLIC_SERVER_FRONTEND_URL: '',
       PUBLIC_DEBUG: false,
       PUBLIC_SUPABASE_URL: 'http://localhost:54321',
       PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key'

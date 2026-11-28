@@ -1182,6 +1182,7 @@ export type Database = {
     };
     Functions: {
       _bulk_upsert_record: { Args: { p_item: Json; p_project_id: string; p_table_name: string }; Returns: boolean };
+      access_caller_take: { Args: { p_address: string; p_project_id: string }; Returns: number };
       bulk_delete: { Args: { p_data: Json }; Returns: Json };
       bulk_import: { Args: { p_data: Json }; Returns: Json };
       claim_invitations: { Args: { p_project_id: string }; Returns: Json };
