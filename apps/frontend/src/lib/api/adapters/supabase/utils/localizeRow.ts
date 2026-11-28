@@ -14,7 +14,7 @@ export function localizeRow(
   row: Record<string, unknown>,
   fields: Array<string>,
   locale: string,
-  defaultLocale: string = 'en'
+  defaultLocale: string
 ): Record<string, unknown> {
   const result: Record<string, unknown> = { ...row };
 

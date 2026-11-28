@@ -79,10 +79,10 @@ export type BaseControllerOptions = {
    * @param message - A message describing the current status of the operation.
    * @param type - Optional, a level of severity for the message. Defaults to 'info'. See {@link Controller} for the available levels.
    */
-  onMessage?: (message: string, type?: LogLevel) => unknown;
+  onMessage?: (message: string, type?: ControllerMessageType) => unknown;
 };
 
 /**
- * The log level for messages. See the associated methods in {@link Controller} for descriptions of the levels.
+ * The severity type of a controller message. See the associated methods in {@link Controller} for descriptions of the levels.
  */
-export type LogLevel = 'warning' | 'error' | 'info';
+export type ControllerMessageType = 'warning' | 'error' | 'info';

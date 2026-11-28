@@ -1,4 +1,4 @@
-import type { BaseControllerOptions, Controller, LogLevel } from './controller.type';
+import type { BaseControllerOptions, Controller, ControllerMessageType } from './controller.type';
 
 /**
  * A simple implementation of the `Controller` interface, which can be provided overrides for the default functions.
@@ -32,12 +32,12 @@ export class BaseController implements Controller {
     this.defaultLogProgress(value);
   }
 
-  protected handleInfo(message: string, type: LogLevel = 'info'): unknown {
+  protected handleInfo(message: string, type: ControllerMessageType = 'info'): unknown {
     if (this.onMessage) return this.onMessage(message, type);
     this.defaultLogInfo(message, type);
   }
 
-  protected defaultLogInfo(message: string, type: LogLevel = 'info'): void {
+  protected defaultLogInfo(message: string, type: ControllerMessageType = 'info'): void {
     switch (type) {
       case 'warning':
         console.warn(message);

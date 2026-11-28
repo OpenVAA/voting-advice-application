@@ -56,7 +56,7 @@ describe('StoredAnswersSchema', () => {
   // `apps/supabase/supabase/schema/011-validation-functions.sql` is the authority on what the `answers` column may hold, so it is the specification these four cases are read off. Each rejection was TOTAL rather than local: `parseAnswersColumn` returns `undefined` for the whole blob on any failure, so one answer of an admitted-by-the-database shape discarded every OTHER answer the entity had — removing it from matching and, under the default `entities.hideIfMissingAnswers.candidate`, from the results list altogether.
   ////////////////////////////////////////////////////////////////////////
 
-  it('accepts a plain-string `info`, which validate_answer_value:171-177 permits alongside a locale object', () => {
+  it('accepts a plain-string `info`, which validate_answer_value permits alongside a locale object', () => {
     // `IF jsonb_typeof(p_answer_info) != 'string' AND NOT public.is_localized_string(p_answer_info)` — a bare string passes the first arm, so the database stores it.
     const input = { q1: { value: 'x', info: 'A plain, unlocalised open answer.' } };
     const result = StoredAnswersSchema.safeParse(input);
@@ -67,7 +67,7 @@ describe('StoredAnswersSchema', () => {
     });
   });
 
-  it('accepts an answer object with no `value` key, which validate_answer_value:165-169 returns early on', () => {
+  it('accepts an answer object with no `value` key, which validate_answer_value returns early on', () => {
     // Two ways this reaches the column: the validator itself returns before any type check when `value` is absent, and `JSON.stringify({ value: undefined, info })` DROPS the key outright, which is what `supabaseDataWriter` forwards to `upsert_answers`.
     const input = { q1: { info: { en: 'Orphan info.' } } };
     const result = StoredAnswersSchema.safeParse(input);
@@ -76,7 +76,7 @@ describe('StoredAnswersSchema', () => {
     expect(result.success && result.data).toEqual({ q1: { value: null, info: { en: 'Orphan info.' } } });
   });
 
-  it('accepts a `multipleText` value of localised items, per validate_answer_value:217-227', () => {
+  it('accepts a `multipleText` value of localised items, per validate_answer_value', () => {
     // `IF jsonb_typeof(p_item) != 'string' AND NOT public.is_localized_string(p_item)` — each item may be a string OR a locale object, and a multilingual write produces the latter.
     const input = { q1: { value: [{ en: 'a', fi: 'a' }, { en: 'b' }] } };
     const result = StoredAnswersSchema.safeParse(input);
@@ -84,8 +84,8 @@ describe('StoredAnswersSchema', () => {
     expect(result.success && result.data).toEqual(input);
   });
 
-  it('accepts numeric choice ids in a `multipleChoiceCategorical` value, per validate_answer_value:197-216', () => {
-    // The multiple-choice branch validates items only through `is_valid_choice_id`, which compares raw JSONB; the sibling single-choice branch at :197-200 states outright that a choice id is a "string or number". The union already admitted a bare `z.number()` for the single-choice case, so rejecting the array form was an internal asymmetry as well as a divergence from the database.
+  it('accepts numeric choice ids in a `multipleChoiceCategorical` value, per validate_answer_value', () => {
+    // The multiple-choice branch validates items only through `is_valid_choice_id`, which compares raw JSONB; the sibling single-choice branch states outright that a choice id is a "string or number". The union already admitted a bare `z.number()` for the single-choice case, so rejecting the array form was an internal asymmetry as well as a divergence from the database.
     const input = { q1: { value: [1, 2] }, q2: { value: ['a', 3] } };
     const result = StoredAnswersSchema.safeParse(input);
     expect(result.success).toBe(true);

@@ -7,7 +7,7 @@ import type { DateQuestion, Image, NumberQuestion } from '../internal';
  *
  * Callers that care about the rendered locale must pass one explicitly (`DataRoot` threads its own `locale` through to every formatter). This constant only decides what happens when nobody did.
  */
-export const DEFAULT_LOCALE = 'en-US';
+const FALLBACK_FORMAT_LOCALE = 'en-US';
 
 /**
  * The default format used for `Date` formatting.
@@ -28,7 +28,7 @@ export function formatBooleanAnswer({ value }: { value: boolean }): string {
 /**
  * Format a non-missing `Date` `Answer.value` for output based on `locale` and the `format` property of the `DateQuestion`.
  *
- * @param locale - The locale to format in. Defaults to `DEFAULT_LOCALE` — never to the ambient
+ * @param locale - The locale to format in. Defaults to `FALLBACK_FORMAT_LOCALE` — never to the ambient
  *   machine locale.
  */
 export function formatDateAnswer({
@@ -41,7 +41,7 @@ export function formatDateAnswer({
   value: Date;
 }): string {
   const format = question.format ?? DEFAULT_DATE_FORMAT;
-  return value.toLocaleDateString(locale ?? DEFAULT_LOCALE, format);
+  return value.toLocaleDateString(locale ?? FALLBACK_FORMAT_LOCALE, format);
 }
 
 /**
@@ -79,7 +79,7 @@ export function formatMultipleTextAnswer({
 /**
  * Format a non-missing `number` `Answer.value` for output.
  *
- * @param locale - The locale to format in. Defaults to `DEFAULT_LOCALE` — never to the ambient
+ * @param locale - The locale to format in. Defaults to `FALLBACK_FORMAT_LOCALE` — never to the ambient
  *   machine locale.
  */
 export function formatNumberAnswer({
@@ -91,7 +91,7 @@ export function formatNumberAnswer({
   question: NumberQuestion;
   value: number;
 }): string {
-  const { format } = new Intl.NumberFormat(locale ?? DEFAULT_LOCALE, question.format ?? undefined);
+  const { format } = new Intl.NumberFormat(locale ?? FALLBACK_FORMAT_LOCALE, question.format ?? undefined);
   return format(value);
 }
 

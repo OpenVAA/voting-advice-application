@@ -1,10 +1,6 @@
 import { z } from 'zod';
 import { StoredImageSchema } from './storedImage.schema';
-
-/**
- * A localised string as it is stored: an object keyed by locale. Mirrors `LocalizedString` in `../localized.type`.
- */
-const LocalizedStringSchema = z.record(z.string(), z.string());
+import { StoredLocalizedStringSchema } from './storedLocalizedString.schema';
 
 /**
  * The stored shape of the `app_settings.customization` JSONB column.
@@ -28,7 +24,7 @@ const LocalizedStringSchema = z.record(z.string(), z.string());
  */
 export const StoredCustomizationSchema = z.strictObject({
   /** The name of the VAA publisher, stored as a locale object. */
-  publisherName: LocalizedStringSchema.optional(),
+  publisherName: StoredLocalizedStringSchema.optional(),
   /** The publisher logo, stored as a storage path. */
   publisherLogo: StoredImageSchema.nullable().optional(),
   /** The Voter App frontpage poster, stored as a storage path. */
@@ -36,13 +32,13 @@ export const StoredCustomizationSchema = z.strictObject({
   /** The Contestant App frontpage poster, stored as a storage path. */
   contestantPoster: StoredImageSchema.nullable().optional(),
   /** Translation overrides keyed by translation key, each value a locale object. */
-  translationOverrides: z.record(z.string(), LocalizedStringSchema).optional(),
+  translationOverrides: z.record(z.string(), StoredLocalizedStringSchema).optional(),
   /** Contestant App FAQ entries, each field a locale object. */
   contestantAppFAQ: z
     .array(
       z.strictObject({
-        question: LocalizedStringSchema,
-        answer: LocalizedStringSchema
+        question: StoredLocalizedStringSchema,
+        answer: StoredLocalizedStringSchema
       })
     )
     .optional()

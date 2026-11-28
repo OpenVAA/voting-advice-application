@@ -39,7 +39,7 @@ describe('StoredSettingsSchema', () => {
     );
   });
 
-  // REGRESSION (157-18). A switched-off notification is stored as `{ show: false }` and carries NO copy — the shape `MINIMAL_BASE_APP_SETTINGS` writes for 23 dev-seed perm templates, and the shape an operator produces by disabling a notification without authoring text. While `title`/`content` were REQUIRED here, this ordinary value failed the parse; and because `SupabaseDataProvider._getAppSettings` degrades a failed parse to `{}` rather than throwing, those two absent fields silently discarded EVERY OTHER SETTING in the column. Asserted on the WHOLE-OBJECT outcome, not on `notifications` alone, because the damage was never local to the notification: the sibling `questions.questionsIntro.show` is what actually changed the app's behaviour, and a test that only parsed a bare notification would pass while the real payload still failed.
+  // REGRESSION. A switched-off notification is stored as `{ show: false }` and carries NO copy — the shape `MINIMAL_BASE_APP_SETTINGS` writes for 23 dev-seed perm templates, and the shape an operator produces by disabling a notification without authoring text. While `title`/`content` were REQUIRED here, this ordinary value failed the parse; and because `SupabaseDataProvider._getAppSettings` degrades a failed parse to `{}` rather than throwing, those two absent fields silently discarded EVERY OTHER SETTING in the column. Asserted on the WHOLE-OBJECT outcome, not on `notifications` alone, because the damage was never local to the notification: the sibling `questions.questionsIntro.show` is what actually changed the app's behaviour, and a test that only parsed a bare notification would pass while the real payload still failed.
   it('accepts a switched-off notification carrying only `show`, and keeps its SIBLING settings', () => {
     const result = StoredSettingsSchema.safeParse({
       questions: { questionsIntro: { show: false, allowCategorySelection: false } },
@@ -92,7 +92,7 @@ describe('StoredSettingsSchema', () => {
     expect(retry.success && retry.data.analytics).toBeUndefined();
   });
 
-  // REGRESSION (157 review, Lot A CR-02). Same shape as the case above, on the other member the docstring's claim was false for: `survey.linkTemplate` and `survey.showIn` were both required.
+  // REGRESSION. Same shape as the case above, on the other member the docstring's claim was false for: `survey.linkTemplate` and `survey.showIn` were both required.
   it('accepts a partial `survey` member, and keeps its SIBLING settings', () => {
     const result = StoredSettingsSchema.safeParse({
       matching: { minimumAnswers: 1 },

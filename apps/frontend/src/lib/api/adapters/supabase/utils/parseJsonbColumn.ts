@@ -1,4 +1,4 @@
-import { StoredAnswersSchema, StoredImageSchema } from '@openvaa/app-shared';
+import { StoredAnswersSchema, StoredImageSchema, StoredLocalizedStringSchema } from '@openvaa/app-shared';
 import { z } from 'zod';
 import { parseAbsent, parseMalformed, parseOk, parseWithPartialPreserve } from './parseOutcome';
 import { parseStoredImage } from './storageUrl';
@@ -32,11 +32,6 @@ const LOCALIZED_STRING_PARSE_FAILURE_MESSAGE = 'A stored localized string did no
  * The event name a colour parse failure is reported under. A constant, never an interpolation, under the same contract as {@link IMAGE_PARSE_FAILURE_MESSAGE}.
  */
 const COLOR_PARSE_FAILURE_MESSAGE = 'A stored colour did not match its schema.';
-
-/**
- * The stored shape of a localized string: an object holding one text for each locale.
- */
-const StoredLocalizedStringSchema = z.record(z.string(), z.string());
 
 /**
  * A hex colour as the database stores one: `#` followed by three or six hexadecimal digits, in either letter case, and nothing before or after.

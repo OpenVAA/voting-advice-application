@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { StoredLocalizedStringSchema } from './storedLocalizedString.schema';
 import {
   canonicalMembersOf,
   CONTESTANT_EDITING_VALUES,
@@ -6,21 +7,16 @@ import {
 } from '../../settings/contestantAppSettings';
 
 /**
- * A localised string as it is stored: an object keyed by locale. Mirrors `LocalizedString` in `../localized.type`.
- */
-const LocalizedStringSchema = z.record(z.string(), z.string());
-
-/**
  * The stored form of `NotificationData`.
  *
  * `title` and `content` are LOCALE OBJECTS here. The declared `NotificationData` in `../../settings/dynamicSettings.type` types them as `LocalizedString` too, so the schema and the type agree on the STORED side; the divergence is on the OUTPUT side, where `SupabaseDataProvider._getAppSettings` replaces both with a plain string resolved for the active locale before returning. A reader who mistakes the provider's return value for `Partial<DynamicSettings>` will get these two fields wrong in the other direction.
  *
- * `title` and `content` are OPTIONAL here while `NotificationData` declares them required, and that is the schema's third deliberate divergence from the application type rather than an oversight. A notification that is switched OFF is stored as `{ "show": false }` and carries no copy at all — the shape 23 of the `@openvaa/dev-seed` perm templates write through `MINIMAL_BASE_APP_SETTINGS`, and the shape any operator produces by disabling a notification without also authoring text for it. Requiring the two fields made that ordinary value fail the parse, and because `SupabaseDataProvider._getAppSettings` degrades a failed parse to `{}` rather than throwing, ONE absent notification title silently discarded EVERY OTHER SETTING in the column — `questions.questionsIntro.show`, `matching.minimumAnswers` and the rest — leaving the app running on shipped defaults with no user-visible signal. Measured, not reasoned: it is what took `perm-1e1cg1co` to the category-selection page instead of the first question, and the accompanying degradation record names the four paths. That record was emitted at the `warn` level when this comment was written; decision **C5(b)** moved it to `error` in `157.1-03`, because a JSONB column that does not match its schema is a data defect a production operator has to act on. The `warn` tier is now empty tree-wide, and deliberately so — see `157.1-OVER-DISCLOSURE-AUDIT.md` § "The empty `warn` tier is the intended end state". `getLocalized` already accepts `null | undefined` and returns `null`, so the provider's localisation pass needs no guard beyond the one it has.
+ * `title` and `content` are OPTIONAL here while `NotificationData` declares them required, the schema's third deliberate divergence from the application type. A notification that is switched off is stored as `{ "show": false }` and carries no copy at all. Requiring the two fields would make that ordinary value fail the parse, and because `SupabaseDataProvider._getAppSettings` degrades a failed parse to `{}`, one absent notification title would discard every other setting in the column. `getLocalized` accepts `null | undefined` and returns `null`, so the provider's localisation pass needs no further guard.
  */
 const StoredNotificationSchema = z.strictObject({
   show: z.boolean().optional(),
-  title: LocalizedStringSchema.optional(),
-  content: LocalizedStringSchema.optional(),
+  title: StoredLocalizedStringSchema.optional(),
+  content: StoredLocalizedStringSchema.optional(),
   icon: z.string().optional()
 });
 

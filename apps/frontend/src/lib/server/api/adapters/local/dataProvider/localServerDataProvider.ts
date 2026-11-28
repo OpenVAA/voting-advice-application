@@ -1,4 +1,4 @@
-import { log, staticSettings } from '@openvaa/app-shared';
+import { getDefaultLocale, log } from '@openvaa/app-shared';
 import { translate } from '@openvaa/data';
 import { json } from '@sveltejs/kit';
 import { filterData } from '$lib/api/utils/filterData';
@@ -33,8 +33,7 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
 
   constructor() {
     super();
-    const locales = staticSettings.supportedLocales;
-    this.defaulLocale = locales.find((l) => l.isDefault)?.code || locales[0].code || 'en';
+    this.defaulLocale = getDefaultLocale();
   }
 
   async getAppSettings(): Promise<Response> {

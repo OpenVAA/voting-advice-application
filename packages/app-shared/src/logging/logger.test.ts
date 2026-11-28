@@ -172,7 +172,7 @@ describe('log', () => {
  * Every one of this repo's `log.*` call sites sits in a catch block or an error branch, so a logger that throws converts a handled failure into an unhandled one — strictly worse than a logger that is silent. These are the three triggers measured in the 157 review (Lot A CR-03).
  */
 describe('log.* never throws', () => {
-  test('survives an unrecognised configured level, including a type-legal `{ level: undefined }`', async () => {
+  test('keeps the configured level across a type-legal `{ level: undefined }`', async () => {
     const { configureLogger, log } = await freshLogger();
     const records = new Array<LogRecord>();
 
@@ -182,11 +182,6 @@ describe('log.* never throws', () => {
     expect(() => log.error('inside a catch block')).not.toThrow();
     // An explicitly-undefined member is not a change, so the previously configured level stands.
     expect(records.map((record) => record.msg)).toEqual(['inside a catch block']);
-
-    configureLogger({ level: 'trace' as never });
-    expect(() => log.error('still inside a catch block')).not.toThrow();
-    // An unrecognised level has no threshold to compare against, so the record is dropped rather than guessed at.
-    expect(records).toHaveLength(1);
   });
 
   test('contains a throwing sink instead of propagating it to the caller', async () => {

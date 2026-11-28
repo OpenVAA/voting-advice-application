@@ -61,3 +61,14 @@ export const staticSettings: StaticSettings = {
     }
   ]
 };
+
+/**
+ * Return the code of the default locale: the one marked `isDefault`, or else the first one.
+ *
+ * @param locales - The supported locales. Defaults to `staticSettings.supportedLocales`.
+ */
+export function getDefaultLocale(
+  locales: StaticSettings['supportedLocales'] = staticSettings.supportedLocales
+): string {
+  return (locales.find((locale) => locale.isDefault) ?? locales[0]).code;
+}

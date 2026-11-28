@@ -11,7 +11,7 @@ describe('toDataObject', () => {
       sort_order: 5,
       custom_data: { foo: 1 }
     };
-    const result = toDataObject(row, 'en');
+    const result = toDataObject(row, 'en', 'en');
     expect(result).toEqual({
       id: 'abc',
       name: 'Election',
@@ -40,7 +40,7 @@ describe('toDataObject', () => {
       info: null,
       color: { light: '#fff' }
     };
-    const result = toDataObject(row, 'en');
+    const result = toDataObject(row, 'en', 'en');
     expect(result.color).toEqual({ light: '#fff' });
   });
 
@@ -50,7 +50,7 @@ describe('toDataObject', () => {
       short_name: null,
       info: null
     };
-    const result = toDataObject(row, 'en');
+    const result = toDataObject(row, 'en', 'en');
     expect(result.name).toBeNull();
     expect(result.shortName).toBeNull();
     expect(result.info).toBeNull();
@@ -64,7 +64,7 @@ describe('toDataObject', () => {
       sort_order: 3,
       custom_data: { key: 'val' }
     };
-    const result = toDataObject(row, 'en');
+    const result = toDataObject(row, 'en', 'en');
     // Column mapping happened
     expect(result.order).toBe(3);
     expect(result.customData).toEqual({ key: 'val' });
@@ -90,9 +90,10 @@ describe('toDataObject', () => {
       info: null,
       sort_order: 7
     };
-    const typedResult = toDataObject(typedRow, 'en');
+    const typedResult = toDataObject(typedRow, 'en', 'en');
     const untypedResult = toDataObject(
       { id: 'nom-1', name: { en: 'Nomination' }, short_name: null, info: null, sort_order: 7 },
+      'en',
       'en'
     );
     expect(typedResult).toEqual(untypedResult);

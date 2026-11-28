@@ -3,12 +3,12 @@ import { getLocalized } from './getLocalized';
 
 describe('getLocalized', () => {
   it('returns exact locale match (tier 1)', () => {
-    expect(getLocalized({ en: 'Hello', fi: 'Hei' }, 'en')).toBe('Hello');
+    expect(getLocalized({ en: 'Hello', fi: 'Hei' }, 'en', 'en')).toBe('Hello');
   });
 
   it('returns correct value for different locales (tier 1)', () => {
-    expect(getLocalized({ en: 'Hello', fi: 'Hei', sv: 'Hej' }, 'fi')).toBe('Hei');
-    expect(getLocalized({ en: 'Hello', fi: 'Hei', sv: 'Hej' }, 'sv')).toBe('Hej');
+    expect(getLocalized({ en: 'Hello', fi: 'Hei', sv: 'Hej' }, 'fi', 'en')).toBe('Hei');
+    expect(getLocalized({ en: 'Hello', fi: 'Hei', sv: 'Hej' }, 'sv', 'en')).toBe('Hej');
   });
 
   it('falls back to default locale when requested not found (tier 2)', () => {
@@ -25,23 +25,23 @@ describe('getLocalized', () => {
   });
 
   it('returns null for null input', () => {
-    expect(getLocalized(null, 'en')).toBeNull();
+    expect(getLocalized(null, 'en', 'en')).toBeNull();
   });
 
   it('returns null for undefined input', () => {
-    expect(getLocalized(undefined, 'en')).toBeNull();
+    expect(getLocalized(undefined, 'en', 'en')).toBeNull();
   });
 
   it('returns null for empty object', () => {
-    expect(getLocalized({}, 'en')).toBeNull();
+    expect(getLocalized({}, 'en', 'en')).toBeNull();
   });
 
   it('requested locale takes priority over default locale', () => {
     expect(getLocalized({ en: 'Hello', fi: 'Hei' }, 'en', 'fi')).toBe('Hello');
   });
 
-  it('uses "en" as default locale when not specified', () => {
-    expect(getLocalized({ en: 'English', fi: 'Finnish' }, 'sv')).toBe('English');
+  it('falls back to the default locale it is given rather than to a fixed one', () => {
+    expect(getLocalized({ en: 'English', fi: 'Finnish' }, 'sv', 'fi')).toBe('Finnish');
   });
 
   /**
@@ -50,21 +50,21 @@ describe('getLocalized', () => {
   describe('is total for any JSONB value the database can hold', () => {
     it('returns null for a scalar, which no constraint prevents a localized column from holding', () => {
       // `'"plain name"'::jsonb` — a JSON string, which is what `JSON.parse('"plain name"')` yields.
-      expect(getLocalized(JSON.parse('"plain name"'), 'en')).toBeNull();
-      expect(getLocalized(42 as never, 'en')).toBeNull();
-      expect(getLocalized(true as never, 'en')).toBeNull();
+      expect(getLocalized(JSON.parse('"plain name"'), 'en', 'en')).toBeNull();
+      expect(getLocalized(42 as never, 'en', 'en')).toBeNull();
+      expect(getLocalized(true as never, 'en', 'en')).toBeNull();
     });
 
     it('returns null for an array rather than its first element', () => {
       // Arrays are objects, so without the guard the first-key tier would return `'a'`.
-      expect(getLocalized(['a', 'b'] as never, 'en')).toBeNull();
-      expect(getLocalized([] as never, 'en')).toBeNull();
+      expect(getLocalized(['a', 'b'] as never, 'en', 'en')).toBeNull();
+      expect(getLocalized([] as never, 'en', 'en')).toBeNull();
     });
 
     it('returns null when the matching tier holds a non-string', () => {
-      expect(getLocalized({ en: 42 } as never, 'en')).toBeNull();
-      expect(getLocalized({ en: null } as never, 'en')).toBeNull();
-      expect(getLocalized({ en: { nested: 'x' } } as never, 'en')).toBeNull();
+      expect(getLocalized({ en: 42 } as never, 'en', 'en')).toBeNull();
+      expect(getLocalized({ en: null } as never, 'en', 'en')).toBeNull();
+      expect(getLocalized({ en: { nested: 'x' } } as never, 'en', 'en')).toBeNull();
     });
 
     it('skips a non-string tier and falls through to the next one', () => {
@@ -75,7 +75,7 @@ describe('getLocalized', () => {
 
     it('does not throw for any of them', () => {
       for (const value of [JSON.parse('"plain name"'), 42, true, ['a'], [], { en: 42 }, { en: null }]) {
-        expect(() => getLocalized(value as never, 'en')).not.toThrow();
+        expect(() => getLocalized(value as never, 'en', 'en')).not.toThrow();
       }
     });
   });

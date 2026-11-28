@@ -16,14 +16,14 @@ const STANDARD_LOCALIZED_FIELDS = ['name', 'short_name', 'info'];
  *
  * @param row - Raw database row from PostgREST/Supabase query
  * @param locale - Requested locale (e.g. "fi")
- * @param defaultLocale - Fallback locale (defaults to "en")
+ * @param defaultLocale - Fallback locale
  * @param additionalLocalizedFields - Extra fields to localize beyond name/short_name/info,
  *   supports dot-notation for nested JSONB paths (e.g. "custom_data.fillingInfo")
  */
 export function toDataObject<TRow extends Record<string, unknown> = Record<string, unknown>>(
   row: TRow,
   locale: string,
-  defaultLocale: string = 'en',
+  defaultLocale: string,
   additionalLocalizedFields: Array<string> = []
 ): Record<string, unknown> {
   const localized = localizeRow(

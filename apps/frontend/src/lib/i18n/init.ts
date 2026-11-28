@@ -1,4 +1,4 @@
-import { isLocalizedObject, log, staticSettings } from '@openvaa/app-shared';
+import { getDefaultLocale, isLocalizedObject, staticSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import { getLocale, locales as paraglideLocales, setLocale } from '$lib/paraglide/runtime';
 import { matchLocale } from './utils';
@@ -15,28 +15,18 @@ export type ParaglideLocale = (typeof paraglideLocales)[number];
 // 1. Determine default locale and locale mappings
 /////////////////////////////////////////////////////
 
-let defaultLocale = '';
-
 export const locales: Array<ParaglideLocale> = [];
 
 if (!supportedLocales?.length) error(500, 'Could not load supported locales from settings');
 
 // NB. Locale *display names* are no longer sourced from settings — they live in the Paraglide message catalog (`messages/{locale}/lang.json`, keyed `lang.<code>`) and are resolved via `t()` in `initI18nContext()`. `supportedLocales` remains the source for which locales are *offered* (the `locales` array + the default).
-for (const { code, isDefault } of supportedLocales) {
+for (const { code } of supportedLocales) {
   if (code == undefined || typeof code !== 'string' || !isParaglideLocale(code))
     error(500, `Invalid locale code in supported locales settings: ${code}`);
   locales.push(code);
-  if (isDefault) defaultLocale = code;
 }
 
-if (!defaultLocale) {
-  log.debug(
-    `[/lib/i18n/init] Using the first locale as default because no locale has isDefault set: ${supportedLocales[0].code}`
-  );
-  defaultLocale = supportedLocales[0].code;
-}
-
-export { defaultLocale };
+export const defaultLocale = getDefaultLocale(supportedLocales);
 
 /////////////////////////////////////////////////////
 // 2. Utility function exports

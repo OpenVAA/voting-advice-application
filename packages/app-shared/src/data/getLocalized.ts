@@ -17,7 +17,7 @@ import type { LocalizedString } from './localized.type';
 export function getLocalized(
   value: LocalizedString | null | undefined,
   locale: string,
-  defaultLocale: string = 'en'
+  defaultLocale: string
 ): string | null {
   // The declared type is not enforced by the column, so a stored value can be a scalar, an array or an object whose values are not strings. Each of those degrades to `null` rather than throwing, because one malformed field must not fail the whole read that contains it.
   if (value == null || typeof value !== 'object' || Array.isArray(value)) return null;

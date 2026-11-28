@@ -119,11 +119,11 @@ function savedResultOf(properties: AnyEditableProps, locale = 'en'): UpdateEntit
   if (properties.image !== undefined) saved.image = properties.image;
   if (properties.name !== undefined) {
     localizedNames.name = properties.name;
-    saved.name = getLocalized(properties.name, locale) ?? '';
+    saved.name = getLocalized(properties.name, locale, 'en') ?? '';
   }
   if (properties.shortName !== undefined) {
     localizedNames.shortName = properties.shortName;
-    saved.shortName = getLocalized(properties.shortName, locale);
+    saved.shortName = getLocalized(properties.shortName, locale, 'en');
   }
   if (properties.color !== undefined) saved.color = properties.color;
   if (properties.firstName !== undefined) saved.firstName = properties.firstName;

@@ -426,7 +426,9 @@ export type NotificationData = {
    */
   content: LocalizedString;
   /**
-   * The `Icon.name` to display in the notification. @default important NB. The proper type is not accessible to `app-shared`.
+   * The `Icon.name` to display in the notification.
+   * NB. The proper type is not accessible to `app-shared`.
+   * @default important
    */
   icon?: string;
 };
