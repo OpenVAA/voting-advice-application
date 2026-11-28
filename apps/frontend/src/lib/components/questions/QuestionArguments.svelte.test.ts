@@ -70,7 +70,7 @@ function mountSubject(subject: QuestionArgumentsProps['question']): void {
 function renderedGroups(): Array<{ id: string; heading: string; content: string }> {
   return [...target.querySelectorAll<HTMLElement>('[data-testid^="voter-questions-argument-group-"]')].map((el) => ({
     id: el.dataset.testid!.replace('voter-questions-argument-group-', ''),
-    heading: el.querySelector('h5')?.textContent?.trim() ?? '',
+    heading: el.querySelector('h3')?.textContent?.trim() ?? '',
     content: el.querySelector('li')?.textContent?.trim() ?? ''
   }));
 }

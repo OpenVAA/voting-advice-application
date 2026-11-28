@@ -3,8 +3,11 @@
     "additionalActions": "Further actions for this question",
     "answers": {
       "bothHaventAnswered": "Neither you nor {entity} has answered this question",
+      "entityAnswerMarker": "{entity}'s answer:",
       "entityHasntAnswered": "{entity} hasn’t answered this question",
+      "numberAnswer": "{label}: {value}",
       "youHaventAnswered": "You haven't answered this question",
+      "yourAndOtherAnswer": "You & {other}",
       "yourAnswer": "You"
     },
     "arguments": {

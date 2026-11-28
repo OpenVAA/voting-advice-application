@@ -211,7 +211,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   /** A 1px rule drawn just above a subcard, separating it from the card or subcard before it. */
   const OFFSET_BORDER =
-    "after:absolute after:top-[calc(-10rem/16)] after:right-0 after:left-0 after:border-t-md after:border-base-300 after:content-['']";
+    "after:absolute after:-top-md after:right-0 after:left-0 after:border-t-md after:border-base-300 after:content-['']";
 
   /** The hover shading of a clickable subcard or card header. */
   const HOVER_SHADE = 'rounded-md hover:bg-base-content/20 hover:ring-4 hover:ring-base-content/20';
@@ -253,7 +253,7 @@ Possibly wraps `content` in a clickable action. The snippet is card-local and is
     <button
       onclick={action}
       data-testid="entity-card-action"
-      {...concatClass({ class: extraClass }, cn('transition-all !text-neutral', shadeOnHover && HOVER_SHADE))}>
+      {...concatClass({ class: extraClass }, 'transition-all !text-neutral', shadeOnHover && HOVER_SHADE)}>
       {@render content()}
     </button>
   {:else if typeof action === 'string'}
@@ -261,7 +261,7 @@ Possibly wraps `content` in a clickable action. The snippet is card-local and is
       href={action}
       data-sveltekit-noscroll={keepScroll ? true : undefined}
       data-testid="entity-card-action"
-      {...concatClass({ class: extraClass }, cn('transition-all !text-neutral', shadeOnHover && HOVER_SHADE))}>
+      {...concatClass({ class: extraClass }, 'transition-all !text-neutral', shadeOnHover && HOVER_SHADE)}>
       {@render content()}
     </a>
   {:else}

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
-  import { cn, concatClass, getUUID } from '$lib/utils/components';
+  import { concatClass, getUUID } from '$lib/utils/components';
   import type { QuestionOpenAnswerProps } from './QuestionOpenAnswer.type';
 
   let { content, ...restProps }: QuestionOpenAnswerProps = $props();
@@ -49,14 +49,12 @@
     style:--full-height={fullHeight}
     {...concatClass(
       restProps,
-      cn(
-        'relative grid max-h-[8rem] overflow-hidden rounded-md bg-base-200 text-center',
-        collapsible && 'transition-all',
-        collapsible &&
-          (expanded
-            ? 'max-h-(--full-height) before:h-0'
-            : "before:absolute before:right-0 before:bottom-0 before:left-0 before:h-lg before:bg-gradient-to-t before:from-base-200 before:content-['']")
-      )
+      'relative grid max-h-[8rem] overflow-hidden rounded-md bg-base-200 text-center',
+      collapsible && 'transition-all',
+      collapsible &&
+        (expanded
+          ? 'max-h-(--full-height) before:h-0'
+          : "before:absolute before:right-0 before:bottom-0 before:left-0 before:h-lg before:bg-gradient-to-t before:from-base-200 before:content-['']")
     )}>
     {#if collapsible}
       <button

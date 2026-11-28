@@ -53,7 +53,7 @@
 </script>
 
 {#if args?.length}
-  <div {...concatClass(restProps, `grid gap-lg ${args.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`)}>
+  <div {...concatClass(restProps, '@container grid grid-cols-1 gap-lg', args.length === 2 && '@lg:grid-cols-2')}>
     {#each sortArguments(args) as argument}
       {#if argument.arguments?.length}
         {@const { choiceId } = argument}
@@ -61,11 +61,11 @@
              by choiceId; otherwise it falls back to the argument `type` (mirrors the keyed feedback-rating-{value} pattern) so the E2E
              expectArguments(q, type) reader can target a group. -->
         <div data-testid="voter-questions-argument-group-{choiceId ?? argument.type}">
-          <h5 class="font-bold">
+          <h3 class="font-bold">
             {t(TITLE_KEYS[argument.type], {
               option: choiceId && isChoiceQuestion(question) ? question.getChoice(choiceId)?.label : ''
             })}
-          </h5>
+          </h3>
           <ul class={argument.arguments.length === 1 ? '!list-none !pl-0' : ''}>
             {#each argument.arguments as line}
               <li>{@html sanitizeHtml(line.content)}</li>

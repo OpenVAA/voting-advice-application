@@ -27,7 +27,7 @@ Show a tab title bar that can be used to switch between different tabs.
 <script lang="ts" generics="TTab extends Tab = Tab">
   import { concatClass } from '$lib/utils/components';
   import { shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
-  import { tabKey } from './tabKey';
+  import { resolveActiveTab, tabKey } from './tabKey';
   import type { Tab, TabsProps } from './Tabs.type';
 
   let {
@@ -38,9 +38,10 @@ Show a tab title bar that can be used to switch between different tabs.
     ...restProps
   }: TabsProps<TTab> = $props();
 
-  const activeKey = $derived(
-    tabs.some((tab) => tabKey(tab) === activeTab) ? activeTab : tabs[0] ? tabKey(tabs[0]) : undefined
-  );
+  const activeKey = $derived.by(() => {
+    const tab = resolveActiveTab(tabs, activeTab);
+    return tab ? tabKey(tab) : undefined;
+  });
 
   function activate(tab: TTab): void {
     const key = tabKey(tab);
@@ -69,6 +70,7 @@ Show a tab title bar that can be used to switch between different tabs.
       class:bg-base-100={active}
       tabindex="0"
       role="tab"
+      aria-selected={active}
       data-testid="tab-{index}"
       onclick={() => activate(tab)}
       onkeydown={(e) => {

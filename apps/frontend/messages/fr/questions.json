@@ -3,8 +3,11 @@
     "additionalActions": "Actions supplémentaires pour cette question",
     "answers": {
       "bothHaventAnswered": "Ni vous ni {entity} n’avez répondu à cette question",
+      "entityAnswerMarker": "Réponse de {entity} :",
       "entityHasntAnswered": "{entity} n’a pas répondu à cette question",
+      "numberAnswer": "{label} : {value}",
       "youHaventAnswered": "Vous n’avez pas répondu à cette question",
+      "yourAndOtherAnswer": "Vous et {other}",
       "yourAnswer": "Vous"
     },
     "arguments": {

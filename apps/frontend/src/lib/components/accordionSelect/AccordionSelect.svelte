@@ -47,10 +47,10 @@ If there's only one option, it is automatically selected and no interactions are
 
   let expanded = $state(activeIndex == null || activeIndex < 0);
 
-  // The handle of `activate`'s pending `DELAY.lg` collapse, so that a LATER change of mind can cancel it. Without the handle the timer is fire-and-forget and owns `expanded` unconditionally for 450 ms after a selection: re-expand the accordion inside that window — which is exactly what clicking the selected option does — and the orphaned timer slams it shut again a moment later, detaching the option the user was reaching for mid-transition. Every write to `expanded` therefore goes through `setExpanded`, which cancels first, so the most recent intent always wins.
+  // Pending collapse from `activate`; every write to `expanded` goes through `setExpanded`, which cancels it.
   let collapseTimer: ReturnType<typeof setTimeout> | undefined;
 
-  // Whether the CURRENT change to `expanded` is a correction rather than something the user asked for. A correction plays no slide, because an animation is the wrong presentation for "this was never meant to be open": the widget has to end up looking as though it had been CONSTRUCTED collapsed. It also has to end up there promptly — a 225 ms outro keeps the de-selected option in the DOM, `inert` and mid-flight but still matching `role=option`, long enough for an observer to read the pre-correction option count and act on it. Read only inside the transition's own parameter expression, which Svelte evaluates once when the transition starts, so a later change never disturbs a running one.
+  // True while `expanded` is being corrected rather than toggled by the user; a correction plays no slide.
   let correcting = $state(false);
 
   function setExpanded(value: boolean, correction = false): void {
@@ -60,17 +60,11 @@ If there's only one option, it is automatically selected and no interactions are
     expanded = value;
   }
 
-  // Cleanup-only effect: it reads nothing, so it runs once and its teardown runs on destroy, cancelling a collapse that would otherwise fire into a destroyed component.
   $effect(() => () => clearTimeout(collapseTimer));
 
-  // Whether `activeIndex` pointed at a real option the last time the reconciliation below ran. A plain `let` rather than `$state` on purpose: it is only ever read and written inside `untrack`, so making it reactive would add a dependency edge that buys nothing and can only create loops.
   let hadSelection = activeIndex != null && activeIndex >= 0;
 
-  // Reconcile `expanded` when `activeIndex` goes from "nothing selected" to a real selection. The initialiser above derives the same predicate, but it runs ONCE, at construction. The results subtree persists across navigation, so an instance that mounts while the parent's lookup is still unresolved (`activeIndex === -1`, e.g. the multi-election results landing with no election in the URL) stays mounted, and only the later transition to a real selection can collapse it. Without this effect the only thing that collapses it is `activate`'s `DELAY.lg` timer, which leaves a ~450 ms window in which the widget is expanded while a selection is already active, and a click arriving just after the window closes lands on `activate`'s toggle branch and re-opens the accordion permanently, with nothing left to collapse it.
-  //
-  // Two properties are deliberate and must survive any later simplification. EDGE-triggered, not level-triggered: clicking the already-active option to re-expand goes through `activate`'s toggle branch and leaves `activeIndex` untouched, so a level rule ("collapse whenever something is selected") would slam the widget shut the instant a user opened it. COLLAPSE-only, never expand: a parent whose lookup momentarily returns `-1` mid-navigation would otherwise flash the accordion open, so nothing here may ever set `expanded = true`.
-  //
-  // Switching from one option to another is not handled here and collapses on `activate`'s `DELAY.lg` timer. Do NOT fold this into the initialiser on the grounds that the initialiser computes the same predicate: an initialiser cannot observe a LATER transition, and that transition is what this effect exists to catch.
+  // Collapse once whenever `activeIndex` goes from no selection to a selection. Edge-triggered so a user can re-expand, and collapse-only so a momentary -1 never flashes it open.
   $effect(() => {
     const hasSelection = activeIndex != null && activeIndex >= 0;
     untrack(() => {

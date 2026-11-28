@@ -65,7 +65,7 @@ The same component can also be used to display the answers of the voter and anot
   import { isMultipleChoiceQuestion, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
-  import { cn, concatClass } from '$lib/utils/components';
+  import { cn, concatClass, getUUID } from '$lib/utils/components';
   import { getEffectiveSelectionBounds } from '$lib/utils/multiChoiceValidity';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
@@ -215,6 +215,9 @@ The same component can also be used to display the answers of the voter and anot
     return getEffectiveSelectionBounds({ minSelections, maxSelections, choiceCount: choices?.length ?? 0 });
   });
 
+  /** The id of the helper text, which describes the checkbox group. */
+  const helperId = getUUID();
+
   // To behave correctly for mouse, touch and keyboard users on different browsers, we listen to several events. The radio inputs' events are fired in this order:
   //
   // 1. `keydown` (keyboard only) or `pointerdown` (mouse/touch only; Chrome also fires this when `disabled`)
@@ -304,6 +307,7 @@ The same component can also be used to display the answers of the voter and anot
   style:--radio-bg={onShadedBg ? 'var(--color-base-200)' : 'var(--color-base-100)'}
   style:--line-bg={onShadedBg ? 'var(--color-base-100)' : 'var(--color-base-200)'}
   style:--num-choices={choices?.length ?? 0}
+  aria-describedby={mode === 'answer' && multiConstraints ? helperId : undefined}
   data-testid="question-choices"
   {...concatClass(restProps, fieldsetClass)}>
   <!-- Add a label for screen readers -->
@@ -314,14 +318,12 @@ The same component can also be used to display the answers of the voter and anot
     {#if vertical}
       <div
         aria-hidden="true"
-        class="absolute left-16 w-4 -translate-x-1/2 bg-(--line-bg)"
-        style="grid-column: 2; height: calc(100% / var(--num-choices) * (var(--num-choices) - 1)); top: calc(50% / var(--num-choices))">
+        class="absolute top-[calc(50%/var(--num-choices))] left-16 col-start-2 h-[calc(100%/var(--num-choices)*(var(--num-choices)-1))] w-4 -translate-x-1/2 bg-(--line-bg)">
       </div>
     {:else}
       <div
         aria-hidden="true"
-        class="absolute top-16 h-4 -translate-y-1/2 bg-(--line-bg)"
-        style="grid-row: 2; width: calc(100% / var(--num-choices) * (var(--num-choices) - 1)); left: calc(50% / var(--num-choices))">
+        class="absolute top-16 left-[calc(50%/var(--num-choices))] row-start-2 h-4 w-[calc(100%/var(--num-choices)*(var(--num-choices)-1))] -translate-y-1/2 bg-(--line-bg)">
       </div>
     {/if}
   {/if}
@@ -343,7 +345,7 @@ The same component can also be used to display the answers of the voter and anot
         {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
         {#if voterSelected && entitySelected}
           <div class={displayLabelClass} {style}>
-            {t('questions.answers.yourAnswer')} & {otherLabel}
+            {t('questions.answers.yourAndOtherAnswer', { other: otherLabel })}
           </div>
         {:else if voterSelected}
           <div class={displayLabelClass} {style}>{t('questions.answers.yourAnswer')}</div>
@@ -370,9 +372,10 @@ The same component can also be used to display the answers of the voter and anot
           checked={selectedMulti.includes(id)}
           onchange={() => handleToggle(id)} />
 
-        <!-- A test id marker for the entity's answer in display mode. -->
+        <!-- Names the entity's answer for screen readers in display mode. -->
         {#if entitySelected}
-          <span data-testid="entity-selected-answer" class="sr-only">entity-selected</span>
+          <span data-testid="entity-selected-answer" class="sr-only"
+            >{t('questions.answers.entityAnswerMarker', { entity: otherLabel })}</span>
         {/if}
 
         <div
@@ -392,7 +395,7 @@ The same component can also be used to display the answers of the voter and anot
         {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
         {#if selectedId == id && otherSelected == id}
           <div class={displayLabelClass} {style}>
-            {t('questions.answers.yourAnswer')} & {otherLabel}
+            {t('questions.answers.yourAndOtherAnswer', { other: otherLabel })}
           </div>
         {:else if selectedId == id}
           <div class={displayLabelClass} {style}>{t('questions.answers.yourAnswer')}</div>
@@ -423,11 +426,10 @@ The same component can also be used to display the answers of the voter and anot
           bind:group={selected}
           onkeyup={(e) => handleKeyUp(e, id)} />
 
-        <!--
-          A test id marker for the entity's answer in display mode. It is a separate sr-only element because the input already carries `data-testid="question-choice"` and an element can have only one `data-testid`.
-        -->
+        <!-- Names the entity's answer for screen readers in display mode. -->
         {#if otherSelected == id}
-          <span data-testid="entity-selected-answer" class="sr-only">entity-selected</span>
+          <span data-testid="entity-selected-answer" class="sr-only"
+            >{t('questions.answers.entityAnswerMarker', { entity: otherLabel })}</span>
         {/if}
 
         <!-- The text label. If we are displaying answers, we only show the label when it's in use to reduce clutter. We do show the answer also, when none are selected, because it would look weird otherwise. Due to Aria concerns we always show it to screenreaders. -->
@@ -444,7 +446,7 @@ The same component can also be used to display the answers of the voter and anot
 <!-- Multi-select constraint helper text. Rendered outside the grid
      `<fieldset>` so it does not create a stray grid cell. -->
 {#if mode === 'answer' && multiConstraints}
-  <p class="small-label text-secondary mt-md text-center" data-testid="question-choice-helper">
+  <p id={helperId} class="small-label text-secondary mt-md text-center" data-testid="question-choice-helper">
     {multiConstraints.effectiveMin === multiConstraints.effectiveMax
       ? t('questions.multiChoice.selectExact', { count: multiConstraints.effectiveMax })
       : t('questions.multiChoice.selectRange', {

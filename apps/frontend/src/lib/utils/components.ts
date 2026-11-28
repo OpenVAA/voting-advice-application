@@ -118,24 +118,24 @@ export function concatProps<TObject extends object>(props: TObject, defaults: Pa
 /**
  * Prepend default class values into `restProps` before passing them to an element or a Svelte component.
  *
- * The component's own `classes` come first and the caller's `props.class` last, combined with `cn`, so the caller wins a conflict: a caller passing `class="h-32"` to a component whose own string says `h-16` gets a 32-unit box.
+ * The component's own `classes` take every argument `cn` takes (strings, conditionals, arrays and records) and come first; the caller's `props.class` comes last, combined with `cn`, so the caller wins a conflict: a caller passing `class="h-32"` to a component whose own string says `h-16` gets a 32-unit box.
  *
  * `props` is never mutated and the result is a shallow copy. A nullish `class` contributes nothing, a non-string one is coerced with `String(...)`, and props with no `class` key gain one holding `classes`.
  *
  * @param props - The passed properties, usually `restProps`
- * @param classes - The base classes to use
+ * @param classes - The base classes to use, in any form `cn` accepts; falsy entries contribute nothing
  * @returns The merged props, based on a shallow copy of `props`, with `classes` and any `props.class` combined and their conflicts resolved
  */
 // reason: SvelteKit's `HTMLAttributes<*>` types lack an index signature, so callers cannot satisfy `Record<string, unknown>` without unsafe casting. `Record<string, any>` is the minimum constraint that accepts every prop-record shape the framework produces.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function concatClass<TProps extends Record<string, any>>(props: TProps, classes: string) {
+export function concatClass<TProps extends Record<string, any>>(props: TProps, ...classes: Array<ClassValue>) {
   // Coerce a non-string class value to a string. A nullish value stays nullish, so `cn` drops it rather than emitting the string "null".
   const callerClass =
     props['class'] == null || typeof props['class'] === 'string' ? props['class'] : String(props['class']);
   // The return type callers type-check against: the props with an optional string `class`.
   return {
     ...props,
-    class: cn(classes, callerClass)
+    class: cn(...classes, callerClass)
   } as unknown as TProps & { class?: string | null };
 }
 

@@ -61,6 +61,10 @@ The split is a dependency rule, not a filing convention: a base component that r
    in `apps/frontend/src/app.css`'s `@theme` block (word-named spacing, t-shirt-sized border widths)
    and must be updated alongside it; it lives in one commented place in `components.ts`.
 
+   **It takes `cn`'s arguments.** After `props`, `concatClass` is variadic over `ClassValue`, so
+   conditional classes are passed straight in — `concatClass(restProps, 'grid', open && 'gap-md')` —
+   and never wrapped in a nested `cn(...)` call.
+
 4. **Every component directory exports through an `index.ts` barrel.** Import
    `$lib/components/button`, never `$lib/components/button/Button.svelte`. Intra-directory imports
    use relative paths (`../loading`).

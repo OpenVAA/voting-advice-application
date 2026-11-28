@@ -6,3 +6,10 @@ import type { Tab } from './Tabs.type';
 export function tabKey(tab: Tab): string {
   return tab.id ?? tab.label;
 }
+
+/**
+ * The tab a `Tabs` component shows as active: the one whose `tabKey` equals `activeTab`, or else the first tab.
+ */
+export function resolveActiveTab<TTab extends Tab>(tabs: Array<TTab>, activeTab: string | undefined): TTab | undefined {
+  return tabs.find((tab) => tabKey(tab) === activeTab) ?? tabs[0];
+}

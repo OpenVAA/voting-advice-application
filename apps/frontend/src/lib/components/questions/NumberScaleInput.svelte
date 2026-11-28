@@ -18,7 +18,7 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
 
 ### Callbacks
 
-- `onChange`: Triggered when the voter releases the slider or steps it with the keyboard, never per drag pixel.
+- `onChange`: Triggered when the voter releases the slider or steps it with the keyboard, never per drag pixel, and when the voter presses an unset slider, which saves the value it shows.
 
 ### Usage
 
@@ -55,11 +55,12 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
 
   const labelId = getUUID();
 
-  // The 2.75rem height gives the range thumb a touch target of at least 44px (WCAG 2.1 AA) without shrinking the track.
-  const RANGE_CLASS = 'range range-primary h-[2.75rem] w-full cursor-pointer disabled:cursor-default';
+  // The height is the touch-target token, so the range thumb meets WCAG 2.1 AA without shrinking the track.
+  const RANGE_CLASS = 'range range-primary h-touch w-full cursor-pointer disabled:cursor-default';
 
   /** A display-mode answer label, positioned along the track. */
-  const MARKER_CLASS = 'text-secondary absolute top-0 -translate-x-1/2 text-xs font-normal whitespace-nowrap uppercase';
+  const MARKER_CLASS =
+    'text-secondary absolute top-0 -translate-x-1/2 rtl:translate-x-1/2 text-xs font-normal whitespace-nowrap uppercase';
 
   ////////////////////////////////////////////////////////////////////
   // Range bounds
@@ -92,13 +93,26 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
     isSet = true;
   }
 
-  /** Persist on release / keyboard step only — never per drag pixel. */
-  function handleChange(event: Event & { currentTarget: HTMLInputElement }): void {
-    const raw = event.currentTarget.valueAsNumber;
+  /** Persist `raw` as the voter's answer. */
+  function commit(raw: number): void {
     if (Number.isNaN(raw)) return;
     liveValue = raw;
     isSet = true;
     onChange?.({ question, value: question.ensureValue(raw) as number });
+  }
+
+  /** Persist on release / keyboard step only — never per drag pixel. */
+  function handleChange(event: Event & { currentTarget: HTMLInputElement }): void {
+    commit(event.currentTarget.valueAsNumber);
+  }
+
+  /** Save the value an unset slider already shows, which a press produces no `change` event for. */
+  function commitIfUnset(): void {
+    if (!isSet) commit(liveValue);
+  }
+
+  function handleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') commitIfUnset();
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -123,38 +137,46 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
   data-testid="number-scale-input">
   {#if mode === 'display'}
     <!-- Read-only dual-marker display -->
-    <div class="relative pt-24">
-      <!-- Markers positioned proportionally above the track -->
-      {#if bothEqual && voterPct != null}
-        <div class={MARKER_CLASS} style="left: {voterPct}%" data-testid="number-scale-voter-marker">
-          {t('questions.answers.yourAnswer')} & {otherLabel}
-        </div>
-      {:else}
-        {#if voterPct != null}
-          <div class={MARKER_CLASS} style="left: {voterPct}%" data-testid="number-scale-voter-marker">
-            {t('questions.answers.yourAnswer')}
+    <div role="group" aria-label={question.text}>
+      <div class="relative pt-24">
+        <!-- Markers positioned proportionally above the track -->
+        {#if bothEqual && voterPct != null}
+          {@const label = t('questions.answers.yourAndOtherAnswer', { other: otherLabel })}
+          <div class={MARKER_CLASS} style:inset-inline-start="{voterPct}%" data-testid="number-scale-voter-marker">
+            <span aria-hidden="true">{label}</span>
+            <span class="sr-only">{t('questions.answers.numberAnswer', { label, value })}</span>
           </div>
+        {:else}
+          {#if voterPct != null}
+            {@const label = t('questions.answers.yourAnswer')}
+            <div class={MARKER_CLASS} style:inset-inline-start="{voterPct}%" data-testid="number-scale-voter-marker">
+              <span aria-hidden="true">{label}</span>
+              <span class="sr-only">{t('questions.answers.numberAnswer', { label, value })}</span>
+            </div>
+          {/if}
+          {#if otherPct != null}
+            <div class={MARKER_CLASS} style:inset-inline-start="{otherPct}%" data-testid="number-scale-entity-marker">
+              <span aria-hidden="true">{otherLabel}</span>
+              <span class="sr-only"
+                >{t('questions.answers.numberAnswer', { label: otherLabel, value: otherValue })}</span>
+            </div>
+          {/if}
         {/if}
-        {#if otherPct != null}
-          <div class={MARKER_CLASS} style="left: {otherPct}%" data-testid="number-scale-entity-marker">
-            {otherLabel}
-          </div>
-        {/if}
-      {/if}
-      <input
-        type="range"
-        class={RANGE_CLASS}
-        {min}
-        {max}
-        step="1"
-        value={value ?? otherValue ?? midpoint}
-        disabled
-        aria-label={question.text}
-        data-testid="question-number-slider" />
-    </div>
-    <div class="flex justify-between">
-      <span class="text-secondary text-sm">{min}</span>
-      <span class="text-secondary text-sm">{max}</span>
+        <input
+          type="range"
+          class={RANGE_CLASS}
+          {min}
+          {max}
+          step="1"
+          value={value ?? otherValue ?? midpoint}
+          disabled
+          aria-hidden="true"
+          data-testid="question-number-slider" />
+      </div>
+      <div class="flex justify-between">
+        <span class="text-secondary text-sm">{min}</span>
+        <span class="text-secondary text-sm">{max}</span>
+      </div>
     </div>
   {:else}
     <!-- Answer mode -->
@@ -180,6 +202,8 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
       value={liveValue}
       oninput={handleInput}
       onchange={handleChange}
+      onclick={commitIfUnset}
+      onkeydown={handleKeydown}
       aria-labelledby={labelId}
       aria-valuenow={isSet ? liveValue : undefined}
       data-testid="question-number-slider" />

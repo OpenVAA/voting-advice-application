@@ -101,7 +101,7 @@ describe('cn — the clsx half: composition', () => {
 });
 
 /**
- * `concatClass` characterisation. Cases 1-6 pin what it does with its inputs: the order of the classes, a missing `class` key, the other props, no mutation, and nullish and non-string classes. Case 7 pins that the caller's class wins a conflict against the component's own.
+ * `concatClass` characterisation. Cases 1-6 pin what it does with its inputs: the order of the classes, a missing `class` key, the other props, no mutation, and nullish and non-string classes. Case 7 pins that the caller's class wins a conflict against the component's own, and case 8 that the component's classes take `cn`'s arguments.
  */
 describe('concatClass — characterisation', () => {
   it('case 1: prepends the component classes before the caller class', () => {
@@ -150,10 +150,18 @@ describe('concatClass — characterisation', () => {
     // The caller's `h-32` replaces the component's `h-16`, rather than both surviving and Tailwind's source order deciding.
     expect(classTokens(concatClass({ class: 'h-32' }, 'h-16'))).toEqual(['h-32']);
   });
+
+  it('case 8: takes cn arguments, dropping a falsy conditional, and the caller still wins a conflict', () => {
+    function flag(on: boolean, token: string): string | false {
+      return on && token;
+    }
+    const result = concatClass({ class: 'p-lg' }, 'grid p-md', flag(false, 'hidden'), flag(true, 'gap-sm'), undefined);
+    expect(classTokens(result)).toEqual(['grid', 'gap-sm', 'p-lg']);
+  });
 });
 
 /**
- * The self-merge identity sweep. For every literal class string passed as the second argument to `concatClass` under `apps/frontend/src`, merging the string with itself alone must drop nothing: `cn(s)` has the same token set as `s`. This catches a component losing a class from its own string because the merge misgrouped it, which needs no caller to trigger.
+ * The self-merge identity sweep. For every literal class string passed as a class argument to `concatClass` under `apps/frontend/src`, merging the string with itself alone must drop nothing: `cn(s)` has the same token set as `s`. This catches a component losing a class from its own string because the merge misgrouped it, which needs no caller to trigger.
  *
  * The population is derived from source at test time, so it cannot go stale, and the non-empty assertion below makes a broken scanner fail rather than pass vacuously.
  */
@@ -177,9 +185,9 @@ function sourceFiles(dir: string, found: Array<string> = []): Array<string> {
 }
 
 /**
- * Every quoted string literal appearing in the SECOND-argument position of a `concatClass(` call.
+ * Every quoted string literal appearing in the class arguments of a `concatClass(` call, everything after its first argument.
  *
- * The span of the second argument is found by a balanced-paren scan that respects quotes, then split off at the first top-level comma. Literals are extracted from that whole span rather than only from a single argument shape, so ternaries (`cond ? 'a b' : ''`) and `+` concatenations contribute their literals too — strictly wider coverage than matching one call shape would give. Template literals carrying an interpolation are skipped, because their runtime value is not knowable here.
+ * The span of the class arguments is found by a balanced-paren scan that respects quotes, then split off at the first top-level comma. Literals are extracted from that whole span rather than only from a single argument shape, so ternaries (`cond ? 'a b' : ''`) and `+` concatenations contribute their literals too — strictly wider coverage than matching one call shape would give. Template literals carrying an interpolation are skipped, because their runtime value is not knowable here.
  */
 function concatClassLiterals(source: string): Array<string> {
   const literals: Array<string> = [];

@@ -3,8 +3,11 @@
     "additionalActions": "Weider Aktiounen zu dëser Fro",
     "answers": {
       "bothHaventAnswered": "Weder Dir nach {entity} hutt dës Fro beäntwert",
+      "entityAnswerMarker": "Äntwert vun {entity}:",
       "entityHasntAnswered": "{entity} huet dës Fro net beäntwert",
+      "numberAnswer": "{label}: {value}",
       "youHaventAnswered": "Dir hutt dës Fro net beäntwert",
+      "yourAndOtherAnswer": "Dir an {other}",
       "yourAnswer": "Dir"
     },
     "arguments": {

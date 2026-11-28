@@ -3,8 +3,11 @@
     "additionalActions": "Rohkem toiminguid selle küsimuse kohta",
     "answers": {
       "bothHaventAnswered": "Sina ja {entity} pole sellele küsimusele vastanud",
+      "entityAnswerMarker": "{entity} vastas:",
       "entityHasntAnswered": "{entity} ei ole sellele küsimusele vastanud",
+      "numberAnswer": "{label}: {value}",
       "youHaventAnswered": "Sa ei ole sellele küsimusele vastanud",
+      "yourAndOtherAnswer": "Sina ja {other}",
       "yourAnswer": "Sina"
     },
     "arguments": {

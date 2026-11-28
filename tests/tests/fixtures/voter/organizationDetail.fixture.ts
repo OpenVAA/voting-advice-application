@@ -38,8 +38,10 @@ import type { Page } from '@playwright/test';
 /** A six-digit hex colour, the one form an avatar's colour property holds. */
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
-/** The text of the marker the detail puts beside the choice an entity selected. It is read by a screen reader as part of that choice's name. */
-const ENTITY_SELECTED_MARKER = 'entity-selected';
+/** The English text of the marker the detail puts beside the choice an entity selected, built from the entity's short name. It is read by a screen reader as part of that choice's name. */
+function entitySelectedMarker(shortName: string): string {
+  return `${shortName}'s answer:`;
+}
 
 /**
  * Create the fixture for an organization as an anonymous voter finds it in the results.
@@ -139,11 +141,14 @@ export function createOrganizationDetail(page: Page) {
      * Assert that the opinions tab of the open detail shows the organization's answer to an opinion question: exactly one question matches `questionText`, and it marks exactly one choice as the organization's.
      * @param questionText - The question's text, or a pattern for it.
      * @param opts.choice - The label of the choice the organization selected. When given, the marked choice is that one.
+     * @param opts.shortName - The organization's short name in English, which names its answer to a screen reader. Required with `choice`.
      * @param opts.comment - The comment the organization wrote beside its answer. When given, the question shows it.
      */
     async expectOpinionAnswer(
       questionText: RegExp | string,
-      opts: { choice?: string; comment?: string } = {}
+      opts:
+        | { choice?: undefined; shortName?: undefined; comment?: string }
+        | { choice: string; shortName: string; comment?: string } = {}
     ): Promise<void> {
       await showTab('opinions');
       const question = detail
@@ -154,7 +159,9 @@ export function createOrganizationDetail(page: Page) {
       await expect(question.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)).toHaveCount(1);
       if (opts.choice !== undefined) {
         // The marker and the choice's label are both inside the choice's own label element, so the marked choice is the one whose name holds both.
-        const marked = new RegExp(`${ENTITY_SELECTED_MARKER}\\s*${escapeRegExp(opts.choice)}`);
+        const marked = new RegExp(
+          `${escapeRegExp(entitySelectedMarker(opts.shortName))}\\s*${escapeRegExp(opts.choice)}`
+        );
         await expect(question.getByRole('radio', { name: marked })).toHaveCount(1);
       }
       if (opts.comment !== undefined) {

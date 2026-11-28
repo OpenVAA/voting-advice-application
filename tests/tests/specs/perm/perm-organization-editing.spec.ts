@@ -497,6 +497,7 @@ test.describe('perm-organization-editing: what was saved, where it is shown', ()
       await voterOrganizationDetail.expectInfoAnswer(ORGANIZATION_INFO_QUESTION, ENTERED_ANSWERS.info);
       await voterOrganizationDetail.expectOpinionAnswer(UNANSWERED_OPINION_QUESTION, {
         choice: ENTERED_ANSWERS.choiceLabel,
+        shortName: CONFIRMED_ORGANIZATION_SHORT_NAME.en,
         comment: ENTERED_ANSWERS.comment
       });
     });

@@ -48,7 +48,7 @@
   import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
-  import { cn, concatClass, getUUID } from '$lib/utils/components';
+  import { concatClass, getUUID } from '$lib/utils/components';
   import type { AlertProps } from './Alert.type';
 
   let {
@@ -95,13 +95,11 @@
   inert={!isOpen}
   {...concatClass(
     restProps,
-    cn(
-      'alert fixed z-30 w-full sm:w-auto max-w-2xl justify-items-stretch shadow-xl transition-all sm:!pr-[2rem]',
-      !icon && 'sm:grid-cols-[minmax(auto,1fr)_auto]',
-      'bottom-0 mx-auto pb-safelgb pl-safelgl rounded-b-none',
-      'sm:bottom-safelgb sm:left-safelgl sm:right-safelgr sm:p-lg sm:rounded-b-[var(--radius-box,1rem)]',
-      !isOpen && 'translate-y-full opacity-0'
-    )
+    'alert fixed z-30 w-full sm:w-auto max-w-2xl justify-items-stretch shadow-xl transition-all sm:!pr-[2rem]',
+    !icon && 'sm:grid-cols-[minmax(auto,1fr)_auto]',
+    'bottom-0 mx-auto pb-safelgb pl-safelgl rounded-b-none',
+    'sm:bottom-safelgb sm:left-safelgl sm:right-safelgr sm:p-lg sm:rounded-b-[var(--radius-box,1rem)]',
+    !isOpen && 'translate-y-full opacity-0'
   )}>
   {#if icon}
     <Icon name={icon} class="justify-self-center" />

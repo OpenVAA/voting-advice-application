@@ -29,7 +29,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 <script lang="ts">
   import { ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
-  import { Tabs } from '$lib/components/tabs';
+  import { resolveActiveTab, Tabs } from '$lib/components/tabs';
   import { getAppContext } from '$lib/contexts/app';
   import { getVoterContext } from '$lib/contexts/voter';
   import { EntityCard } from '$lib/dynamic-components/entityCard';
@@ -84,8 +84,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     return tabs.map((tab) => ({ id: tab, label: t(`entityDetails.tabs.${tab}`) }));
   });
 
-  // `Tabs` shows the first tab when `activeTab` matches none, e.g. after the drawer swaps to an entity without that tab.
-  const activeContent = $derived(contentTabs.find((tab) => tab.id === activeTab)?.id ?? contentTabs[0]?.id);
+  const activeContent = $derived(resolveActiveTab(contentTabs, activeTab)?.id);
 
   let children: Array<MaybeWrappedEntityVariant> = $derived.by(() => {
     const { nomination } = unwrapEntity(entity);

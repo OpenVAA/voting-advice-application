@@ -4,7 +4,7 @@
 
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { tabKey } from './tabKey';
+import { resolveActiveTab, tabKey } from './tabKey';
 import Tabs from './Tabs.svelte';
 import type { Tab } from './Tabs.type';
 
@@ -43,6 +43,16 @@ describe('tabKey', () => {
   });
 });
 
+describe('resolveActiveTab', () => {
+  it('is the tab whose key matches activeTab, else the first tab', () => {
+    expect(resolveActiveTab(TABS, 'opinions')).toBe(TABS[1]);
+    expect(resolveActiveTab(TABS, 'Unkeyed')).toBe(TABS[2]);
+    expect(resolveActiveTab(TABS, 'missing')).toBe(TABS[0]);
+    expect(resolveActiveTab(TABS, undefined)).toBe(TABS[0]);
+    expect(resolveActiveTab([], 'info')).toBeUndefined();
+  });
+});
+
 describe('Tabs', () => {
   it('marks the tab whose id matches activeTab', () => {
     expect(activeLabels(render({ activeTab: 'opinions' }))).toEqual(['Opinions']);
@@ -61,6 +71,21 @@ describe('Tabs', () => {
     unmount(component!);
     target.remove();
     expect(activeLabels(render({ activeTab: 'missing' }))).toEqual(['Basic info']);
+  });
+
+  it('sets aria-selected on the active tab only, including the first-tab fallback', () => {
+    expect(render({ activeTab: 'opinions' }).map((tab) => tab.getAttribute('aria-selected'))).toEqual([
+      'false',
+      'true',
+      'false'
+    ]);
+    unmount(component!);
+    target.remove();
+    expect(render({ activeTab: 'missing' }).map((tab) => tab.getAttribute('aria-selected'))).toEqual([
+      'true',
+      'false',
+      'false'
+    ]);
   });
 
   it('activates a clicked tab and passes the tab object to onChange', () => {

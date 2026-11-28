@@ -3,8 +3,11 @@
     "additionalActions": "Lisää toimintoja tähän kysymykseen liittyen",
     "answers": {
       "bothHaventAnswered": "Sinä ja {entity} ette ole vastanneet tähän kysymykseen",
+      "entityAnswerMarker": "{entity} vastasi:",
       "entityHasntAnswered": "{entity} ei ole vastannut tähän kysymykseen",
+      "numberAnswer": "{label}: {value}",
       "youHaventAnswered": "Et ole vastannut tähän kysymykseen",
+      "yourAndOtherAnswer": "Sinä ja {other}",
       "yourAnswer": "Sinä"
     },
     "arguments": {

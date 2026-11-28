@@ -3,8 +3,11 @@
     "additionalActions": "Ytterligare åtgärder för denna fråga",
     "answers": {
       "bothHaventAnswered": "Varken du eller {entity} har svarat på denna fråga",
+      "entityAnswerMarker": "{entity} svarade:",
       "entityHasntAnswered": "{entity} har inte svarat på denna fråga",
+      "numberAnswer": "{label}: {value}",
       "youHaventAnswered": "Du har inte svarat på denna fråga",
+      "yourAndOtherAnswer": "Du och {other}",
       "yourAnswer": "Du"
     },
     "arguments": {
