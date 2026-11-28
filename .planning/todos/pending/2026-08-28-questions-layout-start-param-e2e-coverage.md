@@ -7,6 +7,8 @@ source: PR #870 review comment (kaljarv) at apps/frontend/src/routes/(voters)/(l
 files:
   - apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte
   - tests/tests/specs/voter
+tags: [voter, tests, improvement]
+keywords: [e2e, start-param, deep-link, questions-layout, first-question-id]
 ---
 
 # E2E coverage for the `start` query-param deep-link handler

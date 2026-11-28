@@ -3,6 +3,8 @@ title: nominations.created_by is readable by anon (the one exemption in the anon
 priority: low
 created: 2026-10-01
 context: Residue of Phase 166 (decision D-02). Phase 166 made the editor grant the only link from an auth user to an entity and removed every auth user id column from the entity tables, but narrowed its "anon can read no auth user id" criterion to the entity tables. nominations.created_by is the one auth user id column anon can still read.
+tags: [supabase, improvement]
+keywords: [rls, anon, created-by, nominations, privacy]
 ---
 
 # nominations.created_by is readable by anon

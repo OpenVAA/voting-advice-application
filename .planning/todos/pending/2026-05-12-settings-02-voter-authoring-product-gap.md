@@ -8,7 +8,8 @@ created: 2026-05-12
 phase-context: 77-settings-matrix-question-customization-gap-fills/Plan-03
 related-phases: [77]
 related-requirements: [SETTINGS-02]
-tags: [voter-app, answer-info, product-gap, open-comments, customData.allowOpen]
+tags: [voter, frontend, contexts, feat]
+keywords: [voter-app, answer-info, product-gap, open-comments, customData.allowOpen, open-answer, allow-open, voter-comments]
 ---
 
 # SETTINGS-02 voter-side `answer.info` authoring PRODUCT-GAP

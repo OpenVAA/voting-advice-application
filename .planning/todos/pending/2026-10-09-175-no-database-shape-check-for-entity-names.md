@@ -11,6 +11,8 @@ files:
   - apps/supabase/supabase/schema/501-bulk-operations.sql
   - apps/frontend/src/lib/utils/parseJsonbColumn.ts
   - apps/frontend/src/lib/utils/localizedText.ts
+tags: [supabase, improvement]
+keywords: [validation, jsonb, localized-text, entity-name, trigger]
 ---
 
 ## Finding

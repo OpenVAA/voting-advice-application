@@ -1,3 +1,8 @@
+---
+tags: [ci, tooling, improvement]
+keywords: [comment-hygiene, planning-references, lint-check, guard]
+---
+
 # Chain D-N1's planning-reference scan into `lint:check`
 
 **Filed:** 2026-09-02, from Phase 158's gate (158-09)

@@ -4,12 +4,14 @@ title: The local stack's storage volume holds about 9.5 GB while storage.objects
 area: Local stack / E2E infrastructure
 severity: minor
 source: the overflow fix between plans 175-12 and 175-13 (175-12-OVERFLOW-FIX.md § Read this first, point 3); the orchestrator's instruction to plan 175-13; filed by 175-13
-owner: the operator: it is the storage volume, the stack or Docker itself, and this host runs a second, unrelated Supabase stack
+owner: 'the operator: it is the storage volume, the stack or Docker itself, and this host runs a second, unrelated Supabase stack'
 files:
   - tests/scripts/e2e-run.sh
   - tests/tests/specs/storage/storage-cleanup.spec.ts
   - apps/supabase/supabase/schema/400-storage.sql
   - packages/dev-seed/src/writer.ts
+tags: [supabase, tests, tooling, bug]
+keywords: [storage-volume, orphan-files, db-reset, disk-space, local-stack]
 ---
 
 ## Finding

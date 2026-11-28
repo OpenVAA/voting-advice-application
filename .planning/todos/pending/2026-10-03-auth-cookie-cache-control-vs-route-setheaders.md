@@ -5,8 +5,9 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: low
 suggested_phase: when a route first needs its own cache-control header
-keywords: [supabase-ssr, cookies, cache-control, setHeaders, sveltekit, auth]
 re_check_trigger: "any new `setHeaders({ 'cache-control': … })` call in apps/frontend"
+tags: [frontend, improvement]
+keywords: [supabase-ssr, cookies, cache-control, setHeaders, sveltekit, auth, set-headers]
 ---
 
 # Duplicate `cache-control` header risk (169-07)

@@ -7,6 +7,8 @@ source: Phase 168 (docs-site rewrite), the `## Findings for todos` of 168-03..07
 related_phase: 168
 files:
   - CLAUDE.md
+tags: [docs, improvement]
+keywords: [claude-md, stale-claims, seed, theme-colors, docs-rewrite]
 ---
 
 ## Why this exists

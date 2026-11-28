@@ -1,3 +1,8 @@
+---
+tags: [tooling, improvement]
+keywords: [project-scoped-queries, guard, client-binding, false-positive]
+---
+
 # Declare a `CLIENT_SUB_OBJECTS` disposition map, so a bound scalar member is not reported as an alias
 
 **Filed:** 2026-09-07

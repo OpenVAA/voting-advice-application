@@ -3,6 +3,8 @@ title: Clear the dependency audit's 16 new third-party advisories at high+ (depe
 priority: medium
 source: Phase 187 plan 187-15 (read 2026-11-16 on run 43817899191, `ci-evidence/187-final` at 395b71c71); carried CI debt G-03
 target: after the stream merges
+tags: [ci, tooling, improvement]
+keywords: [dependency-audit, advisories, yarn-audit, security, sveltekit, undici]
 ---
 
 Note, 2026-11-20: re-targeted from phase 189 because it needs the merged default branch: the advisories to clear are the merged tree's, not this branch's.
@@ -58,3 +60,9 @@ new row from the rebase's lockfile.
 
 `@sveltejs/kit` is a third-party package the deployment workstream did not add (its one added package is still
 `js-yaml`), so the row is appended here and owned by phase 189 like the others.
+
+## Merged from `2026-10-29-179.1-dependency-audit-sixteen-new-advisories.md` (2026-11-28)
+
+This one has the advisory titles and the action list (yarn why per advisory, reachability, resolutions entries).
+
+The merged todo is kept at `.planning/todos/completed/2026-10-29-179.1-dependency-audit-sixteen-new-advisories.md`.

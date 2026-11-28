@@ -11,6 +11,8 @@ files:
   - apps/frontend/src/routes/api/oidc/authorize/+server.ts (`if (result.nonce) cookies.set(COOKIE.oidcNonce, result.nonce, FLOW_COOKIE_OPTIONS);`)
   - apps/frontend/src/lib/api/utils/auth/providers/idura.ts (`const nonce = crypto.randomUUID();`)
   - apps/frontend/src/lib/api/utils/auth/providers/types.ts (the `nonce` docstring)
+tags: [contestant, frontend, bug]
+keywords: [oidc, nonce, security, bank-auth, idura, replay]
 ---
 
 ## Security relevance

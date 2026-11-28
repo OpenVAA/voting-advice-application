@@ -10,6 +10,8 @@ files:
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/questions/+page.svelte
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/questions/[questionId]/+page.svelte
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/settings/+page.svelte
+tags: [contestant, frontend, ui, improvement]
+keywords: [multi-entity, entity-name, ux, questions-page, residual-risk]
 ---
 
 ## The limitation

@@ -8,6 +8,8 @@ files:
   - apps/supabase/supabase/schema/
 resolves_phase: null
 related_phase: 160
+tags: [supabase, docs, improvement]
+keywords: [database-skill, schema-reference, feedback, admin-jobs, skill-drift]
 ---
 
 ## Problem

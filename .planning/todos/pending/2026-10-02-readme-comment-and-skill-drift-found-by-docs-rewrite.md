@@ -13,6 +13,8 @@ files:
   - packages/app-shared/src/settings/dynamicSettings.type.ts
   - .claude/skills/components/SKILL.md
   - apps/docs/scripts/tsconfig.json
+tags: [supabase, docs, improvement]
+keywords: [readme, drift, docs-rewrite, skills, comments]
 ---
 
 ## Why this exists

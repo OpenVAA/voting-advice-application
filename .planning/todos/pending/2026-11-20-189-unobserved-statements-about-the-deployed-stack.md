@@ -10,6 +10,8 @@ files:
   - infra/envs/staging/aws/README.md
   - infra/envs/staging/dns-mail/README.md
   - apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md
+tags: [supabase, infra, improvement]
+keywords: [observations, aws-budgets, ses, oidc-provider, runbooks]
 ---
 
 ## Problem

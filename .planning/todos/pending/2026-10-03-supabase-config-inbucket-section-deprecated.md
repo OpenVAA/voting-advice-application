@@ -5,8 +5,9 @@ source_phase: 169-dependency-bump-to-latest-safe-versions
 source_plan: 13
 priority: low
 suggested_phase: any Supabase-config slot (best with the next CLI bump)
-keywords: [supabase-cli, config-toml, inbucket, local-smtp, mailpit, deprecation]
 re_check_trigger: "the next Supabase CLI bump, or when the CLI turns the warning into an error"
+tags: [supabase, tooling, improvement]
+keywords: [supabase-cli, config-toml, inbucket, local-smtp, mailpit, deprecation]
 ---
 
 # `[inbucket]` deprecation (169-06)

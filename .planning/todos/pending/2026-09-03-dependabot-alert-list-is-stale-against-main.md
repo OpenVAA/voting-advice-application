@@ -5,7 +5,8 @@ source_phase: 163-ci-gates-sql-lint-format-secrets-vulnerability-scanning
 source_plan: 05
 priority: medium
 suggested_phase: post-v2.15-ship
-keywords: [dependabot, audit, cigate-03, security, audit-baseline, yarn-npm-audit, stale-alerts]
+tags: [ci, tooling, improvement]
+keywords: [dependabot, audit, cigate-03, security, audit-baseline, yarn-npm-audit, stale-alerts, main-branch]
 ---
 
 # Dependabot's alert list is stale against `main`, and the two numbers will confuse a reader

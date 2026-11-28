@@ -5,7 +5,8 @@ source_phase: 90-tir5-permutations-missing-nominations-warning-localisation-n
 source_plan: 01
 priority: low
 suggested_phase: future-bundle-perf
-keywords: [vite, paraglide, tree-shaking, bundle-size, i18n, supportedLocales, runtime-override, stage-b, performance]
+tags: [frontend, tooling, translations, improvement]
+keywords: [vite, paraglide, tree-shaking, bundle-size, i18n, supportedLocales, runtime-override, stage-b, performance, vite-plugin, locales]
 ---
 
 # Vite plugin to tree-shake Paraglide translations by tenant-supported locales

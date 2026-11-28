@@ -6,6 +6,8 @@ severity: low
 source: Phase 164 (returns-table nullability) Plan 04 Task 3, per decision D-N2 — an optimisation explicitly NOT a Phase 164 deliverable
 files:
   - .github/workflows/main.yaml
+tags: [ci, improvement]
+keywords: [ci, supabase-start, consolidation, paths-filter, types-drift]
 ---
 
 ## Problem

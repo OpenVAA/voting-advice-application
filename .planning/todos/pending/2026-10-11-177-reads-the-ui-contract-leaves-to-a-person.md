@@ -12,6 +12,8 @@ files:
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/nominations/(edit)/details/+page.svelte
   - apps/frontend/src/lib/dynamic-components/entitySelector/EntitySelector.svelte
   - apps/frontend/src/lib/components/electionSelector/ElectionSelector.svelte
+tags: [contestant, frontend, ui, translations, improvement]
+keywords: [manual-check, a11y, screen-reader, phone-width, nomination-editor, locales]
 ---
 
 Every address below is under `/contestant/<entityType>/<entityId>/nominations`. The E2E suite measures these pages at 320 and 390 px in **English only**, scans thirteen of their states with axe in both themes in **Chromium only**, and runs no screen reader. A local stack with the dataset `perm-contestant-nominations` seeded (`yarn db:seed --template perm-contestant-nominations`) holds what each read needs.

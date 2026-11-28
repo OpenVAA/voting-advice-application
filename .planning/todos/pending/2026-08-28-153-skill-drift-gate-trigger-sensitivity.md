@@ -6,7 +6,8 @@ source_phase: 153-build-tooling-config-correctness
 source_plan: 08
 priority: medium
 suggested_phase: 160-agent-docs-skills-refresh
-keywords: [skill-drift, audit-skill-drift, gate-design, advisory-vs-blocking, OQ-1, D9, D-B1, targets, ci-gate, phase-160, phase-163, phase-164]
+tags: [docs, ci, tooling, improvement]
+keywords: [skill-drift, audit-skill-drift, gate-design, advisory-vs-blocking, OQ-1, D9, D-B1, targets, ci-gate, phase-160, phase-163, phase-164, advisory, blocking, skills]
 ---
 
 # Is a permanently-blocking skill-drift gate the intent?
@@ -115,3 +116,7 @@ No recommendation is recorded here on purpose; this is an operator decision.
 ## Tags
 
 `skill-drift` `gate-design` `advisory-vs-blocking` `OQ-1` `phase-160` `operator-decision-needed`
+
+## Maintainer ruling (2026-11-28)
+
+Narrow the trigger so comment-only diffs under a target do not redden the gate (option iii). The gate stays blocking for behavioural changes.

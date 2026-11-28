@@ -11,6 +11,8 @@ files:
   - packages/dev-seed/src/templates/e2e/perm/perm-organization-editing.ts
   - apps/frontend/src/lib/contexts/voter/nominationAndQuestionState.svelte.ts
   - apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/questions/[questionId]/+page.svelte
+tags: [voter, contestant, tests, improvement]
+keywords: [e2e-coverage, organization-editing, component-tests, hideifmissinganswers]
 ---
 
 ## Finding

@@ -6,6 +6,8 @@ priority: high
 files:
   - apps/frontend/src/lib/supabase/server.ts
   - apps/frontend/src/hooks.server.ts
+tags: [voter, frontend, bug]
+keywords: [dev-server-crash, cookies, supabase-ssr, cold-navigation, auth-refresh]
 ---
 
 ## Problem
