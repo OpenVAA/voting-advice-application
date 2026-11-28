@@ -101,11 +101,11 @@ CLAUDE.md § Comment Hygiene governs every comment the PR adds or changes. The d
 ```bash
 yarn assert:comment-hygiene > /tmp/openvaa-pr-hygiene.log 2>&1; echo "HYGIENE EXIT=$?"
 git diff -U0 origin/$BASE...HEAD -- apps packages tests \
-  | perl -ne 'print if /^\+(?!\+)/ && /(\.planning\/|\bD-\d{2}\b|(?<!see )\b(phase|spike)\s+\d+|\b\d{2,3}-\d{2}-(PLAN|SUMMARY)\b)/i' \
+  | perl -ne 'print if /^\+(?!\+)/ && /(\.planning\/|\bD-\d{2}\b|(?<!see )\b(phase|spike)\s+\d+|\b\d{2,3}-\d{2}-(PLAN|SUMMARY)\b|(?-i:\bD-[A-Z]{1,2}\d+\b|\b[A-Z]{2,}-\d{2}\b)|(?<![\w.\-\/:#])\d{3}(?:\.\d+)?-\d{2}\b(?![-:\d]))/i' \
   > /tmp/openvaa-pr-planrefs.txt; wc -l < /tmp/openvaa-pr-planrefs.txt
 ```
 
-The first is a gate: fix every line it lists. The second lists every added line carrying a planning reference beyond the bare `see phase N` / `see spike N` form. Read each one: a hit in a comment is fixed, while a hit in a runtime string, a test title or a version number is left alone. (`ship-review-stack`'s `hygiene-grep-report.sh` scans the whole tree rather than the diff and is red on pre-existing rows, so it is not this skill's gate.)
+The first is a gate: fix every line it lists. The second lists every added line carrying a planning reference beyond the bare `see phase N` / `see spike N` form. Besides paths, `D-NN` and phase/spike numbers, it catches lettered decision ids (`D-L3`), requirement and review-finding ids (`CIGATE-02`, `CR-01`) and bare phase-plan numbers (`162-16`, `157.1-03`). Read each one: a hit in a comment is fixed, while a hit in a runtime string, a test title or a version number is left alone. (`ship-review-stack`'s `hygiene-grep-report.sh` scans the whole tree rather than the diff and is red on pre-existing rows, so it is not this skill's gate.)
 
 The other half can only be caught by reading. Read every added or changed comment in `git diff origin/$BASE...HEAD` for:
 
