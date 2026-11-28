@@ -209,6 +209,8 @@ The development stack uses Supabase CLI for backend services:
 
 **Docker Compose** (`docker-compose.dev.yml`) is only used for production build testing, not development.
 
+**Claude Code cloud sessions** (claude.ai/code): the environment's settings and its setup script are in `.claude/cloud-environment/README.md` and `.claude/cloud-environment/setup.sh`. In such a session Docker is not started at boot; run `openvaa-stack-up` from the repo root before any `yarn db:*`, `yarn dev` or E2E run.
+
 **Environment variables**: Edit the root `.env` file (copied from `.env.example`).
 
 **Project scoping (`PUBLIC_PROJECT_ID`)**: names the project every query the application issues is scoped to. For a normal local stack the value is the project `apps/supabase/supabase/seed.sql` creates, `00000000-0000-0000-0000-000000000001`. There is deliberately **no fallback**: an unset, empty or non-canonical value throws when the Supabase adapter is constructed — naming the variable and the remedy — rather than letting queries succeed against some other project's rows. The `send-email` Edge Function reads the same variable under the same name; the local edge runtime resolves it from the **process environment** rather than from the root `.env`, so export it in the shell that starts the stack when you need that function locally. `identity-callback` reads no project from its environment: the request names it.
