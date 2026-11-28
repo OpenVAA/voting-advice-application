@@ -1,11 +1,13 @@
 import { fileURLToPath } from 'node:url';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
+import { staticSettings } from '@openvaa/app-shared';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 import { PARAGLIDE_OPTIONS } from './paraglide.options';
 import { resolveProjectIdEnv } from './vite.projectIdEnv';
 import { restartOnRootEnv } from './vite.restartOnRootEnv';
+import { themeFromSettings } from './vite.theme';
 
 // The root `.env` lives two levels above `apps/frontend`. `apps/frontend/package.json` declares `type: module`, so `__dirname` is unavailable here — derive the repo root from `import.meta.url`.
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -19,6 +21,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      themeFromSettings(fileURLToPath(new URL('./src/theme.generated.css', import.meta.url)), staticSettings),
       tailwindcss(),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       paraglideVitePlugin(PARAGLIDE_OPTIONS) as any,

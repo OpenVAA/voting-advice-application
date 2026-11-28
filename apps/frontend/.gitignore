@@ -17,3 +17,5 @@ package-lock.json
 
 # Paraglide generated output
 src/lib/paraglide/
+# Theme stylesheet generated from staticSettings by vite.theme.ts
+src/theme.generated.css

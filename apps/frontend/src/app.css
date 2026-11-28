@@ -6,80 +6,8 @@
   logs: false;
 }
 
-/* Custom light theme */
-@plugin 'daisyui/theme' {
-  name: 'light';
-  default: true;
-  color-scheme: light;
-  --color-primary: #2546a8;
-  --color-primary-content: #ffffff;
-  --color-secondary: #666666;
-  --color-secondary-content: #ffffff;
-  --color-accent: #0a716b;
-  --color-accent-content: #ffffff;
-  --color-neutral: #333333;
-  --color-neutral-content: #ffffff;
-  --color-base-100: #ffffff;
-  --color-base-200: #e8f5f6;
-  --color-base-300: #d1ebee;
-  --color-base-content: #333333;
-  --color-info: #0a716b;
-  --color-info-content: #ffffff;
-  --color-success: #2546a8;
-  --color-success-content: #ffffff;
-  --color-warning: #a82525;
-  --color-warning-content: #ffffff;
-  --color-error: #a82525;
-  --color-error-content: #ffffff;
-  --radius-box: 0.25rem;
-  --radius-field: 0.5rem;
-  --radius-selector: 0.5rem;
-  --border: 0px;
-}
-
-/* Custom dark theme */
-@plugin 'daisyui/theme' {
-  name: 'dark';
-  prefersdark: true;
-  color-scheme: dark;
-  --color-primary: #6887e3;
-  --color-primary-content: #000000;
-  --color-secondary: #8c8c8c;
-  --color-secondary-content: #000000;
-  --color-accent: #11a8a0;
-  --color-accent-content: #000000;
-  --color-neutral: #cccccc;
-  --color-neutral-content: #000000;
-  --color-base-100: #000000;
-  --color-base-200: #101212;
-  --color-base-300: #1f2324;
-  --color-base-content: #cccccc;
-  --color-info: #11a8a0;
-  --color-info-content: #000000;
-  --color-success: #6887e3;
-  --color-success-content: #000000;
-  --color-warning: #e16060;
-  --color-warning-content: #000000;
-  --color-error: #e16060;
-  --color-error-content: #000000;
-  --radius-box: 0.25rem;
-  --radius-field: 0.5rem;
-  --radius-selector: 0.5rem;
-  --border: 0px;
-}
-
-/* Custom non-DaisyUI variables per theme */
-:root,
-[data-theme='light'] {
-  --line-color: #d9d9d9;
-  --progress-color: var(--color-neutral);
-  --progress-label-color: var(--color-neutral);
-}
-[data-theme='dark'] {
-  --line-color: #262626;
-  --progress-color: var(--color-neutral);
-  --progress-label-color: var(--color-neutral);
-}
+/* The light and dark themes, the per-theme custom variables and the font tokens, generated from `staticSettings` by `vite.theme.ts` */
+@import './theme.generated.css';
 
 /* rem-based custom screen breakpoint */
 @custom-variant match-w-xl (@media screen and (min-width: 36rem));
@@ -91,7 +19,6 @@
   --text-*: initial;
   --leading-*: initial;
   --font-weight-*: initial;
-  --font-*: initial;
   --transition-duration-*: initial;
 
   /*
@@ -217,12 +144,6 @@
   /* Font weight */
   --font-weight-normal: 400;
   --font-weight-bold: 700;
-
-  /* Font family */
-  --font-base:
-    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
-    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
   /* Transition duration */
   --transition-duration-none: 0s;
