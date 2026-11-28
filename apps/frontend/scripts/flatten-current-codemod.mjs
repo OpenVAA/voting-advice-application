@@ -115,7 +115,7 @@ function detectDestructureTraps(content) {
 
 // ── Main ────────────────────────────────────────────────────────────────
 
-// Frozen spike-design fixtures (`_spikes-*`) document the ORIGINAL proposed handle shapes (`ReactiveHandle<AppSettings>.current`, `.instance`, `reactive*`) and are git-tracked design artifacts, NOT production consumers (research Assumption A3). They must NEVER be rewritten — their `appSettings.current` reads are producer-input `ReactiveHandle` reads, not the consumer-facing bare accessor.
+// Frozen spike-design fixtures (`_spikes-*`) document the ORIGINAL proposed handle shapes (`ReactiveHandle<AppSettings>.current`, `.instance`, `reactive*`) and are git-tracked design artifacts, NOT production consumers. They must NEVER be rewritten — their `appSettings.current` reads are producer-input `ReactiveHandle` reads, not the consumer-facing bare accessor.
 // Skipping them keeps the codemod idempotent on the `.ts` glob (Total rewrites: 0).
 const SKIP_PATH_RE = /(^|\/)_spikes[\w-]*\//;
 

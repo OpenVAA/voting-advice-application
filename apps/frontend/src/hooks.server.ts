@@ -1,5 +1,5 @@
 /* eslint-disable func-style -- SvelteKit hooks use typed const exports by convention */
-import { configureLogger, log } from '@openvaa/app-shared';
+import { log } from '@openvaa/app-shared';
 import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { building, dev } from '$app/environment';
@@ -21,26 +21,12 @@ import { createInFlightCounter, registerShutdownLog } from '$lib/server/shutdown
 import { missingRequiredEnv } from '$lib/server/startup/requiredEnv';
 import { createSafeGetSession } from '$lib/supabase/safeGetSession';
 import { createSupabaseServerClient } from '$lib/supabase/server';
+import { configureLoggerFromEnv } from '$lib/utils/configureLoggerFromEnv';
 import { constants } from '$lib/utils/constants';
-import { resolveLogLevel } from '$lib/utils/logLevel';
 import type { Handle, HandleServerError, ServerInit } from '@sveltejs/kit';
 
-// Configure the shared logger for the SSR module graph, once at server start and before any handler runs. `hooks.client.ts` makes the same call for the browser module graph, so both run at the same level.
-// Resolve, configure, then emit, in that order: the logger drops records while its threshold is still `'silent'`, so a problem reported before `configureLogger` would be lost.
-const { level: logLevel, problem: logLevelProblem } = resolveLogLevel(
-  constants.PUBLIC_LOG_LEVEL,
-  import.meta.env.DEV,
-  constants.PUBLIC_DEBUG
-);
-configureLogger({ level: logLevel });
-if (logLevelProblem) {
-  // An unset variable falls back to its documented default and is reported at `info`; a value outside the vocabulary is a misconfiguration and is reported at `error`.
-  const emit = logLevelProblem.reason === 'invalid' ? log.error : log.info;
-  emit('PUBLIC_LOG_LEVEL is unusable; the logger fell back to a default level.', {
-    ...logLevelProblem,
-    level: logLevel
-  });
-}
+// Configure the shared logger for the SSR module graph, once at server start and before any handler runs; `hooks.client.ts` makes the same call for the browser, so both run at the same level.
+configureLoggerFromEnv();
 
 // Report each analytics configuration problem by variable name, now that the logger is configured. Any problem resolves the provider to `none`, so nothing is sent. The fields never carry the key's or the host's value.
 for (const problem of analyticsConfigProblems) {
@@ -49,7 +35,7 @@ for (const problem of analyticsConfigProblems) {
 
 // The project id this server queries, published on the HTML root so a caller can observe it.
 // The value is already public: it carries the `PUBLIC_` prefix and ships in the client bundle. Publish no other variable here, and read this one only through `constants`.
-// `.trim().toLowerCase()` is the adapter's whole normalisation, so this equals the id every query is scoped by. The adapter's resolver is not called because it throws on an unusable value, which would turn every page render into a 500; such a value reaches the document as the empty string, which reads as a mismatch.
+// `.trim().toLowerCase()` is the adapter's whole normalisation, so this equals the id every query is scoped by. The adapter's resolver is not called because it throws on an unusable value, which would turn every page render into a 500; an unset value reaches the document as the empty string and an invalid one as given, and either reads as a mismatch.
 const SERVED_PROJECT_ID = constants.PUBLIC_PROJECT_ID.trim().toLowerCase();
 
 /** The requests this server is handling, read by the line it writes as it exits. */

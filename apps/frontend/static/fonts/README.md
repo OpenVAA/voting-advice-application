@@ -2,8 +2,8 @@
 
 **Source:** [`@fontsource/inter@5.3.0`](https://www.npmjs.com/package/@fontsource/inter) (`github.com/fontsource/font-files`, `fonts/google/inter`), taken verbatim — never added as a dependency
 **Count:** 4 `.woff2` files (Inter 400 + 700, `latin` + `latin-ext`, style `normal`) plus `OFL.txt` and `inter.css`
-**Purpose:** The application serves its own typeface from its own origin (VGATE-05), so no page load discloses the visitor's IP and user-agent to a third-party font host — and so the blocking `e2e-visual` CI job has no public-internet dependency for fonts (VGATE-04)
-**Vendored on:** 2026-08-26, via `npm pack @fontsource/inter@5.3.0` (phase 146, plan `146-05`)
+**Purpose:** The application serves its own typeface from its own origin, so no page load discloses the visitor's IP and user-agent to a third-party font host — and so the blocking `e2e-visual` CI job has no public-internet dependency for fonts
+**Vendored on:** 2026-08-26, via `npm pack @fontsource/inter@5.3.0`
 
 ## Provenance
 
@@ -15,14 +15,13 @@
 | `inter-latin-ext-700-normal.woff2` | 36,244 | `143f9504f1377012aa3e39c90c4354ef429cb0494b9ac0e1437f1a81e5412236` |
 
 The two `latin` digests are **identical to the bytes Google Fonts itself serves** for
-`css2?family=Inter:wght@400` and `css2?family=Inter:wght@700` (measured by live fetch in phase 146
-research, § N-1). The provenance is therefore re-verifiable **offline**: re-run
+`css2?family=Inter:wght@400` and `css2?family=Inter:wght@700` (measured by a live fetch when
+vendored). The provenance is therefore re-verifiable **offline**: re-run
 `shasum -a 256 *.woff2` against this table, with no network and no trust in the npm registry required.
 
-Delivery note (§ N-1): the previous default requested **both** weights in one `css2` call, for which
+Delivery note: the previous default requested **both** weights in one `css2` call, for which
 Google serves a single **variable** face. These four files are the corresponding **static** instances.
-The switch is variable-to-static, and the resulting pixel delta is measured in `146-06` and recorded in
-`146-VISUAL-NOISE-LEDGER.md` — it is not assumed to be zero.
+The switch is variable-to-static, so rendering can differ slightly from the variable face.
 
 ## Licence
 
@@ -44,7 +43,7 @@ shasum -a 256 apps/frontend/static/fonts/*.woff2           # update the table ab
 ```
 
 `inter.css`'s `unicode-range` values come from the tarball's `package/unicode.json`, **not** from its
-per-subset CSS files, which omit them (§ N-5) — four rules with no ranges would shadow each other and
+per-subset CSS files, which omit them — four rules with no ranges would shadow each other and
 basic-Latin glyphs would come from the wrong file. `latin-ext` is declared before `latin` to match
 Google's own emission order, and `src` lists `woff2` only, as Google's response does.
 
@@ -62,5 +61,4 @@ source's 15 such usages are dead classes, and there are zero italic usages. Weig
 `latin` + `latin-ext` is the complete rendering surface; vendoring weight 500, 600, any italic face or a
 variable face would smuggle a visual design change into a test-infrastructure change.
 
-The 15 dead weight classes are a **deferred** design decision with a todo filed in `146-09` (D-09), not
-an oversight.
+Whether to add weights 500 and 600 for those classes is an open design decision.
