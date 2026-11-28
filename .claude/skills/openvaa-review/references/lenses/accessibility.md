@@ -21,7 +21,7 @@ Route focus management is owned by the routes lens (`rte-focus-announce`).
 
 ## Where to look
 
-`tests/tests/specs/a11y/`, `scripts/assert-a11y-scan-wiring.mjs`, `apps/frontend/src/lib/utils/aria/`, `apps/frontend/src/lib/utils/motion.ts`, `apps/frontend/src/lib/components/modal/`, `.claude/skills/components/SKILL.md` (the WCAG section).
+`tests/tests/specs/a11y/`, `scripts/assert-a11y-scan-wiring.mjs`, `apps/frontend/src/lib/utils/aria/`, `apps/frontend/src/lib/components/modal/`, `.claude/skills/components/SKILL.md` (the WCAG section).
 
 ## Promote to
 

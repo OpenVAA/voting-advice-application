@@ -39,6 +39,30 @@ export function pluralForEntityType(type: EntityType | undefined): EntityPlural 
 }
 
 /**
+ * Map a plural route segment to its entity type, the inverse of {@link pluralForEntityType}.
+ *
+ * @param plural - `page.params.entityTab`, or any candidate string.
+ * @returns The entity type, or `undefined` when the plural is absent or is not one of the three.
+ */
+export function entityTypeForPlural(plural: string | undefined): EntityType | undefined {
+  const narrowed = narrowEntityPlural(plural);
+  if (narrowed === 'candidates') return 'candidate';
+  if (narrowed === 'organizations') return 'organization';
+  if (narrowed === 'alliances') return 'alliance';
+  return undefined;
+}
+
+/**
+ * Report whether a set of results route params opens the entity drawer: `entity` and `id` must both be present.
+ *
+ * @param params - The route params of a navigation target or of `page`.
+ * @returns `true` when the drawer is open.
+ */
+export function hasEntityDrawer(params: Record<string, string | undefined> | null | undefined): boolean {
+  return !!(params?.entity && params.id);
+}
+
+/**
  * Build the localized `/results` list URL for an election and an entity-type tab, with no entity drawer open.
  *
  * Built by {@link buildRoute}, so the URL carries the locale prefix and the persistent search params (`electionId`, `constituencyId`) of `current`, like every other route the app builds.

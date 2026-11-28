@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { focusNavigationTarget } from './focusNavigationTarget';
 
 /**
- * Specification for the post-navigation focus reset: a focus target that renders after the first frame is still focused, and the wait yields to a focus move, a pointer press, a newer navigation and the timeout.
+ * Specification for the post-navigation focus reset: a focus target that renders after the first frame is still focused, and the wait yields to a focus move, a key press, a pointer press, a newer navigation and the timeout.
  *
  * The first lookup's scheduler is injected, so "the frame ran before the heading rendered" is a controlled ordering here rather than a race.
  */
@@ -121,6 +121,36 @@ describe('focusNavigationTarget', () => {
     appendHeading({ 'data-focus-on-nav': '' });
     await flushMutations();
     expect(document.activeElement).toBe(document.body);
+  });
+
+  it.each([
+    ['a key press that does not move focus', () => new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })],
+    ['a focus event', () => new FocusEvent('focusin', { bubbles: true })]
+  ])('does not focus a target rendered after %s while it was pending', async (_label, makeEvent) => {
+    const frame = manualFrame();
+    focusNavigationTarget({ schedule: frame.schedule });
+    frame.runFrame();
+    document.body.dispatchEvent(makeEvent());
+    appendHeading({ 'data-focus-on-nav': '' });
+    await flushMutations();
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('removes its key and focus listeners on cancel', () => {
+    const addSpy = vi.spyOn(document, 'addEventListener');
+    const removeSpy = vi.spyOn(document, 'removeEventListener');
+    const frame = manualFrame();
+    const cancel = focusNavigationTarget({ schedule: frame.schedule });
+    frame.runFrame();
+    cancel();
+    for (const type of ['keydown', 'focusin']) {
+      const added = addSpy.mock.calls.find(([t]) => t === type);
+      expect(added?.[2]).toMatchObject({ capture: true, passive: true, once: true });
+      const removed = removeSpy.mock.calls.find(([t]) => t === type);
+      expect(removed?.[1]).toBe(added?.[1]);
+    }
+    addSpy.mockRestore();
+    removeSpy.mockRestore();
   });
 
   it('leaves the pointer press to every other listener: it still arrives and its default is not prevented', () => {

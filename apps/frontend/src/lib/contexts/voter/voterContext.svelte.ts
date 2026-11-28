@@ -3,7 +3,7 @@ import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openv
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext, untrack } from 'svelte';
 import { page } from '$app/state';
-import { getImpliedConstituencyIds, getImpliedElectionIds, parseParams } from '$lib/routes';
+import { entityTypeForPlural, getImpliedConstituencyIds, getImpliedElectionIds, parseParams } from '$lib/routes';
 import { resolveOrganizationMatching } from '$lib/utils/organizationMatching';
 import { answerState } from './answerState.svelte';
 import { countAnswers } from './countAnswers';
@@ -210,15 +210,7 @@ export class VoterContextProvider implements VoterContext {
     if (!matchesForElection) return undefined;
     const availableTypes = Object.keys(matchesForElection) as Array<EntityType>;
     if (availableTypes.length === 0) return undefined;
-    const tab = page.params.entityTab;
-    const fromUrl: EntityType | undefined =
-      tab === 'candidates'
-        ? 'candidate'
-        : tab === 'organizations'
-          ? 'organization'
-          : tab === 'alliances'
-            ? 'alliance'
-            : undefined;
+    const fromUrl = entityTypeForPlural(page.params.entityTab);
     if (fromUrl && availableTypes.includes(fromUrl)) return fromUrl;
     return availableTypes[0];
   });

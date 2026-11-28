@@ -24,11 +24,11 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
 <script lang="ts">
   import { log } from '@openvaa/app-shared';
   import { onDestroy, untrack } from 'svelte';
+  import { prefersReducedMotion } from 'svelte/motion';
   import { browser } from '$app/environment';
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';
   import { focusFirstDescendant } from '$lib/utils/aria/focus';
-  import { prefersReducedMotion } from '$lib/utils/motion';
   import { DELAY } from '$lib/utils/timing';
   import { drawerHost } from './drawerHostState.svelte';
   import { isTopmostDialog, pushOpenDialog, removeOpenDialog } from '../openDialogs';
@@ -42,7 +42,7 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
   /**
    * The one duration for both the JS close timer and the CSS transitions.
    *
-   * It reaches the transition utilities as the `--drawer-ms` custom property set on the dialog below, so the timer and the animations cannot drift apart. `Drawer.svelte` flies with the same `DELAY.xs`.
+   * It reaches the transition utilities as the `--drawer-ms` custom property set on the dialog below, so the timer and the animations cannot drift apart.
    */
   const CLOSE_DELAY = DELAY.xs;
 
@@ -93,7 +93,7 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
         clearTimeout(focusTimer);
         visible = false;
         // Under reduced motion both transitions are off, so waiting out the animation would leave the dialog sitting there with no motion at all.
-        if (prefersReducedMotion()) {
+        if (prefersReducedMotion.current) {
           dialog.close();
           removeOpenDialog(dialog);
           shown = null;

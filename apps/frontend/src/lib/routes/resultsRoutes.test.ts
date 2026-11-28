@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildListRoute, narrowEntityPlural, pluralForEntityType } from './resultsRoutes';
+import {
+  buildListRoute,
+  entityTypeForPlural,
+  hasEntityDrawer,
+  narrowEntityPlural,
+  pluralForEntityType
+} from './resultsRoutes';
 import type { BuildRouteCurrent } from './buildRoute';
 
 const locale = vi.hoisted(() => ({ current: 'en', base: 'en' }));
@@ -103,5 +109,26 @@ describe('pluralForEntityType', () => {
     expect(pluralForEntityType('alliance')).toBe('alliances');
     expect(pluralForEntityType('faction')).toBeUndefined();
     expect(pluralForEntityType(undefined)).toBeUndefined();
+  });
+});
+
+describe('entityTypeForPlural', () => {
+  it('maps each plural to its entity type and anything else to undefined', () => {
+    expect(entityTypeForPlural('candidates')).toBe('candidate');
+    expect(entityTypeForPlural('organizations')).toBe('organization');
+    expect(entityTypeForPlural('alliances')).toBe('alliance');
+    expect(entityTypeForPlural('candidate')).toBeUndefined();
+    expect(entityTypeForPlural(undefined)).toBeUndefined();
+  });
+});
+
+describe('hasEntityDrawer', () => {
+  it('is true only when both entity and id are present', () => {
+    expect(hasEntityDrawer({ entity: 'candidate', id: 'c-1' })).toBe(true);
+    expect(hasEntityDrawer({ entity: 'candidate' })).toBe(false);
+    expect(hasEntityDrawer({ id: 'c-1' })).toBe(false);
+    expect(hasEntityDrawer({})).toBe(false);
+    expect(hasEntityDrawer(null)).toBe(false);
+    expect(hasEntityDrawer(undefined)).toBe(false);
   });
 });

@@ -1,3 +1,6 @@
+import { narrowEntityPlural } from '$lib/routes/resultsRoutes';
+import type { EntityPlural } from '$lib/routes/resultsRoutes';
+
 /**
  * SvelteKit param matcher for the plural entity-type segment `entityTab` of `/results/[[electionTab]]/[[entityTab=entityTypePlural]]/[[entity=entityTypeSingular]]/[[id]]`.
  *
@@ -5,6 +8,6 @@
  *
  * The filename must equal the matcher name in the route brackets.
  */
-export function match(param: string): param is 'candidates' | 'organizations' | 'alliances' {
-  return param === 'candidates' || param === 'organizations' || param === 'alliances';
+export function match(param: string): param is EntityPlural {
+  return narrowEntityPlural(param) !== undefined;
 }

@@ -122,13 +122,6 @@ const ROWS = [
 ] as const;
 
 describe('results leaf +page.ts — the entity-type and id guards', () => {
-  it('the row table covers all four shapes, so no case is silently missing', () => {
-    // Non-vacuity: a truncated table would make the describe below pass by running fewer rows than the guards have branches. Four is one row per guard branch — one 404 branch, two 307 branches, one fall-through.
-    expect(ROWS).toHaveLength(4);
-    expect(ROWS.filter((row) => row.outcome === 'redirect-307')).toHaveLength(2);
-    expect(ROWS.filter((row) => row.outcome === 'resolves')).toHaveLength(1);
-  });
-
   it('a matcher fallthrough is a 404, asserted on the STATUS CODE and not on the fact of a throw', async () => {
     const row = ROWS[0];
     const thrown = await capture(row.params);

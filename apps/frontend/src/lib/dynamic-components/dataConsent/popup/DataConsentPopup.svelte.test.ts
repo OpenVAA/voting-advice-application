@@ -11,6 +11,9 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { polyfillDialogs, pressEscape } from '$lib/components/modal/dialogPlatform.testUtils';
 import { startViewTransition, VT_NO_NAMES_CLASS } from '$lib/utils/viewTransition';
 
+// jsdom has no `window.matchMedia`, which `svelte/motion` reads at import through `$lib/utils/viewTransition`; motion is reported as allowed.
+vi.mock('svelte/motion', () => ({ prefersReducedMotion: { current: false } }));
+
 const { context, route, setDataConsent } = vi.hoisted(() => {
   const route: { id: string | null } = { id: '/(voters)' };
   const setDataConsent = vi.fn();

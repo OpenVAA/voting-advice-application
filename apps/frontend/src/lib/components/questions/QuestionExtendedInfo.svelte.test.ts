@@ -10,6 +10,9 @@ import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { QuestionExtendedInfoProps } from './QuestionExtendedInfo.type';
 
+// jsdom has no `window.matchMedia`, which `svelte/motion` reads at import through `$lib/utils/viewTransition`; motion is reported as allowed.
+vi.mock('svelte/motion', () => ({ prefersReducedMotion: { current: false } }));
+
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({
     t: (key: string) => key,

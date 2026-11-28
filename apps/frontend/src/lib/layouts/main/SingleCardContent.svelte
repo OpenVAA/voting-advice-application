@@ -2,7 +2,7 @@
 
 # App `main` content layout for single cards
 
-Defines the layout of the content of the `main` element (following the possible video player) for single cards, such as individual entities, when are not opened in a `Drawer`.
+Defines the layout of the content of the `main` element (following the possible video player) for single cards, such as individual entities, when not opened in the drawer host.
 
 ### Snippets
 

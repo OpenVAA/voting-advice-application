@@ -22,6 +22,9 @@ import type { Mock } from 'vitest';
 import type { AnalyticsProjection } from '$lib/analytics/modes';
 import type { UserPreferences } from '$lib/contexts/app/userPreferences.type';
 
+// jsdom has no `window.matchMedia`, which `svelte/motion` reads at import through `$lib/utils/viewTransition`; motion is reported as allowed.
+vi.mock('svelte/motion', () => ({ prefersReducedMotion: { current: false } }));
+
 const { afterNavigateCallbacks, onNavigateCallbacks, page, appContextHolder } = vi.hoisted(() => ({
   /** The callbacks the layout registers with `afterNavigate`, in registration order. */
   afterNavigateCallbacks: [] as Array<(navigation: AfterNavigate) => void>,

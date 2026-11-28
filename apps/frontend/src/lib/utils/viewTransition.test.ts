@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { isOverlayNavigation, startViewTransition, VT_NO_NAMES_CLASS } from './viewTransition';
-import type { NavigationEnd } from './viewTransition';
+import { isOverlayNavigation, shouldAnimate, startViewTransition, VT_NO_NAMES_CLASS } from './viewTransition';
+import type { NavigationTarget } from '@sveltejs/kit';
+
+// Svelte's `MediaQuery` reads `matchMedia` once at module load, and jsdom has none, so the reduced-motion query is replaced by an object whose `current` each test sets.
+const reducedMotion = vi.hoisted(() => ({ current: false }));
+vi.mock('svelte/motion', () => ({ prefersReducedMotion: reducedMotion }));
 
 /**
  * Specification for the overlay exemption that keeps document View Transitions off the results entity drawer.
@@ -12,7 +16,9 @@ import type { NavigationEnd } from './viewTransition';
  * ⚠ ASSUMPTION, pinned here but not detectable here: the results entity drawer is the ONLY routed overlay in the application, which is what makes `entity` + `id` a sufficient key for "this navigation opens or closes an overlay". A second routed overlay would force the predicate to generalise — to a route-id allowlist, or to an overlay flag on the route's data — and these rows would keep passing while the new overlay transitioned over its own dialog. This table can hold the assumption still; it cannot notice one being broken.
  */
 // Array-of-arrays + %s positional tokens is the repo's house style for table-driven specs, and it dissolves the quoted-object title that an object-shaped table would render.
-const CASES: Array<[string, NavigationEnd | null, NavigationEnd | null, boolean]> = [
+type Target = Pick<NavigationTarget, 'params'> | null;
+
+const CASES: Array<[string, Target, Target, boolean]> = [
   [
     'closing the drawer — both params on `from`, none on `to`',
     { params: { entity: 'candidate', id: 'c-1' } },
@@ -48,6 +54,33 @@ describe('isOverlayNavigation', () => {
         ? 'a navigation that opens or closes the drawer must be exempted from the document VT, or named groups paint above the top-layer dialog'
         : 'an ordinary list navigation must keep its document VT; suppressing it here would silently remove the results page transition'
     ).toBe(expected);
+  });
+});
+
+describe('shouldAnimate', () => {
+  afterEach(() => {
+    Reflect.deleteProperty(document, 'startViewTransition');
+    reducedMotion.current = false;
+  });
+
+  function stubSupport(): void {
+    Object.defineProperty(document, 'startViewTransition', { value: vi.fn(), configurable: true });
+  }
+
+  it('animates where View Transitions are supported and motion is allowed', () => {
+    stubSupport();
+    expect(shouldAnimate(new URL('http://localhost/results'))).toBe(true);
+  });
+
+  it('does not animate when the user prefers reduced motion', () => {
+    stubSupport();
+    reducedMotion.current = true;
+    expect(shouldAnimate(new URL('http://localhost/results'))).toBe(false);
+  });
+
+  it('does not animate with the notr escape hatch', () => {
+    stubSupport();
+    expect(shouldAnimate(new URL('http://localhost/results?notr=1'))).toBe(false);
   });
 });
 

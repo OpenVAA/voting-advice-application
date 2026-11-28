@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { page } from '$app/state';
-import { parseParams } from '$lib/routes';
+import { entityTypeForPlural, parseParams } from '$lib/routes';
 import type { FilterGroup } from '@openvaa/filters';
 import type { FilterContext, InitFilterContextArgs } from './filterContext.type';
 
@@ -41,14 +41,7 @@ class FilterContextProvider implements FilterContext {
     if (!entityType) {
       const pluralRaw = params.entityTab;
       const plural = Array.isArray(pluralRaw) ? pluralRaw[0] : pluralRaw;
-      entityType =
-        plural === 'candidates'
-          ? 'candidate'
-          : plural === 'organizations'
-            ? 'organization'
-            : plural === 'alliances'
-              ? 'alliance'
-              : undefined;
+      entityType = entityTypeForPlural(plural);
     }
     if (!electionId || !entityType) return undefined;
     return tree?.[electionId]?.[entityType];

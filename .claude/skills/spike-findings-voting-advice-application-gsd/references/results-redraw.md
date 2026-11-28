@@ -72,8 +72,11 @@ reads everything tracked.
 
 - **An overlay navigation gets NO document transition at all** — not a nameless
   one. `isOverlayNavigation(from, to)` returns true when either end's params
-  carry both `entity` and `id`, and the root layout skips
-  `startViewTransition` entirely for those. The overlay's own open/close motion
+  carry both `entity` and `id` (`hasEntityDrawer` in `$lib/routes`), and the
+  root layout skips `startViewTransition` entirely for those. It skips the
+  post-navigation focus reset for them too: the dialog moves focus inside on
+  open, and `dialog.close()` returns it to the card link, which keeps focus
+  through the navigation (`data-sveltekit-keepfocus`). The overlay's own open/close motion
   *is* the transition; a nameless whole-viewport cross-fade on top of it is a
   second, competing animation. The name-strip path is the fallback for VTs that
   run **while** a modal is already open (a drawer-tab switch), not a substitute

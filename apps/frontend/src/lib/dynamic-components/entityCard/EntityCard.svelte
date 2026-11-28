@@ -22,7 +22,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 - `showElection`: Whether to show the possible nomination's election and constituency. Default: `false`
 - `headerOnly`: Whether to render the card header only: avatar, title and subtitle. Featured questions, sub-matches and sub-cards are neither rendered nor looked up, so the card needs no question data. Default: `false`
 - `showType`: Whether to show the entity's type, e.g. "candidate" or "party", in the subtitle. Not shown in the `'subcard'` variant. Default: `false`
-- `keepScroll`: Whether a link action keeps the scroll position. Set to `false` when the action navigates to another page rather than opening an overlay over the list. Default: `true`
+- `keepScroll`: Whether a link action keeps the scroll position and keeps focus on the link, so a drawer opened over the list returns focus to the card when it closes. Set to `false` when the action navigates to another page rather than opening an overlay over the list. Default: `true`
 - Any valid attributes of an `<article>` element.
 
 ### Tracking events
@@ -54,6 +54,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { SubMatches } from '$lib/components/subMatches';
   import { getAppContext } from '$lib/contexts/app';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { pluralForEntityType } from '$lib/routes';
   import { cn, concatClass, getUUID } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { getCardQuestions } from '$lib/utils/entityCards';
@@ -113,7 +114,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       action ??
       getRoute.current({
         route: 'ResultEntity',
-        entityTab: type === 'candidate' ? 'candidates' : type === 'alliance' ? 'alliances' : 'organizations',
+        entityTab: pluralForEntityType(type),
         entity: type,
         id,
         nominationId: unwrapped.nomination?.id
@@ -267,6 +268,7 @@ Possibly wraps `content` in a clickable action. The snippet is card-local and is
     <a
       href={action}
       data-sveltekit-noscroll={keepScroll ? true : undefined}
+      data-sveltekit-keepfocus={keepScroll ? true : undefined}
       data-testid="entity-card-action"
       {...concatClass({ class: extraClass }, 'transition-all !text-neutral', shadeOnHover && HOVER_SHADE)}>
       {@render content()}

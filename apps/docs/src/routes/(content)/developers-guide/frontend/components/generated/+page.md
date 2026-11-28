@@ -44,10 +44,6 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
   `import { ConstituencySelector } from '$lib/components/constituencySelector';`
 
-- [Drawer](/developers-guide/frontend/components/generated/components/modal/drawer/Drawer)
-
-  `import { Drawer } from '$lib/components/modal/drawer';`
-
 - [DrawerHost](/developers-guide/frontend/components/generated/components/modal/drawerHost/DrawerHost)
 
   `import { DrawerHost } from '$lib/components/modal/drawerHost';`
@@ -514,4 +510,4 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
 ---
 
-Total: 125 components
+Total: 124 components

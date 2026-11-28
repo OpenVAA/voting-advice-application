@@ -153,7 +153,7 @@
     submitAllEvents(); // flush pending analytics events
     // Read `navigation.to?.url`, not `page.url`, which is the source URL during onNavigate. `shouldAnimate` also gates reduced motion and ?notr=1.
     if (!shouldAnimate(navigation.to?.url)) return;
-    // Opening / closing a modal overlay (the results entity drawer) gets no document VT: named groups would be painted above the top-layer dialog. The overlay's own motion is the transition. See `$lib/utils/viewTransition`.
+    // Opening / closing a modal overlay (the results entity drawer) gets no document VT: named groups would be painted above the top-layer dialog. The overlay's own motion is the transition. The same predicate exempts these navigations from the focus reset in `afterNavigate` below. See `$lib/utils/viewTransition`.
     if (isOverlayNavigation(navigation.from, navigation.to)) return;
     return new Promise<void>((resolve) => {
       startViewTransition(async () => {
@@ -167,11 +167,14 @@
   // The view's route id and parameters are read from `page`, which SvelteKit has already set to the new page when it calls this hook, and not from the navigation's `to`. On the enter navigation, which a document's hydration makes, SvelteKit (2.70.3) reports `to.route.id` as `null` and no `to.params`, so a view started from `to` would leave the first page of every document uncounted, and the events buffered on it would be dropped at its first flush.
   // The focus reset waits for a target that renders after the first frame (the voter question heading does, on a slow host) and is cancelled by the next navigation, so a stale wait never moves focus on a newer page. See `focusNavigationTarget`.
   let cancelPendingFocus: (() => void) | undefined;
-  afterNavigate(() => {
+  afterNavigate(({ from, to }) => {
     startPageview(page.route.id, page.params); // start the analytics view
     settleLogoutDeadline(discardContestantDrafts, 'navigation');
     if (typeof document === 'undefined') return;
     cancelPendingFocus?.();
+    cancelPendingFocus = undefined;
+    // The overlay owns focus on its own navigations: the dialog moves focus inside when it opens, and the native `dialog.close()` returns it to the opener.
+    if (isOverlayNavigation(from, to)) return;
     cancelPendingFocus = focusNavigationTarget();
   });
   onDestroy(() => cancelPendingFocus?.());

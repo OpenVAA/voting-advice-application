@@ -20,7 +20,7 @@ When the active entity type cannot be resolved — no nominations for the active
   import { page } from '$app/state';
   import { Tabs } from '$lib/components/tabs';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { buildListRoute, pluralForEntityType } from '$lib/routes';
+  import { buildListRoute, hasEntityDrawer, pluralForEntityType } from '$lib/routes';
   import { ucFirst } from '$lib/utils/text/ucFirst';
   import type { EntityType } from '@openvaa/data';
   import type { Snippet } from 'svelte';
@@ -31,43 +31,31 @@ When the active entity type cannot be resolved — no nominations for the active
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // The reactive context getters (currentResultsEntityType, matches, selectedElections) are read via voterCtx.X. Genuinely stable members (track, t) remain destructured.
-  //
-  // dataRoot is NOT in that set, and neither is appSettings. Both are bare reactive accessors, so per CLAUDE.md's Context Destructuring Rule neither may be destructured: appSettings is value-replacing, so a destructured local stops updating, and dataRoot is identity-stable behind a #version bridge, so the destructure takes the version dependency once at init and never again. dataRoot must be read as `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope, never through an intermediate $derived alias — referential equality would suppress downstream notification and the cold/direct-URL snapshot would stay empty. This level reads neither, but the rule is restated here because the rule travels with the file, not with the one file that happens to break it. See CLAUDE.md "Context Destructuring Rule" and its stable-reference carve-out.
   const voterCtx = getVoterContext();
   const { track, t } = voterCtx;
-  // Local alias for template readability. `selectedElections` is value-replacing, so a $derived read alias is safe and correct.
-  const elections = $derived(voterCtx.selectedElections);
 
   ////////////////////////////////////////////////////////////////////
   // URL-derived state
   ////////////////////////////////////////////////////////////////////
   //
-  // Each level RE-DERIVES what it needs from the route params and the context rather than receiving it as a prop from the level above. That is what keeps "the URL is the single source of truth" true across three files instead of one: a prop-drilled `activeElectionId` would make this layout's correctness depend on its parent's derivation staying in step with the URL.
-
-  const _urlElectionTab = $derived(page.params.electionTab);
-
-  // Single-election fallback: when the route segment is absent AND there's exactly one available election, auto-select it. The server guard in `[[electionTab]]/+layout.ts` is expected to redirect-and-canonicalize this case, so this fallback is the client-side safety net.
-  const activeElectionId = $derived<string | undefined>(
-    _urlElectionTab ?? (elections.length === 1 ? elections[0].id : undefined)
-  );
+  // Each level reads the context's URL-derived getters (`currentResultsElection`, `currentResultsEntityType`) and the route params rather than receiving them as props from the level above, so every level stays in step with the URL.
 
   // The map of plurals available for the active election (possibly just candidates, possibly just organizations, possibly both). Computed from matches so we always render consistent tab labels without going through a separate $state twin.
   type EntityTab = { id: EntityType; label: string };
-  const entityTabs = $derived<Array<EntityTab>>(
-    activeElectionId && voterCtx.matches[activeElectionId]
-      ? (Object.keys(voterCtx.matches[activeElectionId]) as Array<EntityType>).map((type) => ({
+  const entityTabs = $derived.by<Array<EntityTab>>(() => {
+    const electionId = voterCtx.currentResultsElection?.id;
+    return electionId && voterCtx.matches[electionId]
+      ? (Object.keys(voterCtx.matches[electionId]) as Array<EntityType>).map((type) => ({
           id: type,
           label: ucFirst(t(`common.${type}.plural`))
         }))
-      : []
-  );
+      : [];
+  });
 
-  // Plural → singular mapping uses American spelling. The implied entity type lives on voterContext via `currentResultsEntityType`: URL-first with default-pick fallback to the first available tab for the active election. Reading through `voterCtx.X` per the CLAUDE.md Context Destructuring Rule preserves reactivity (must not destructure).
   const activeEntityType = $derived(voterCtx.currentResultsEntityType);
 
   // An open drawer is an OVERLAY keyed on `entity` + `id`, not a part of the list hierarchy, and it must mount even when the active entity type cannot be resolved. This carve-out guarantees that an entity URL whose type cannot be resolved still mounts the drawer, over an empty list, rather than a blank page. The reachable case is a bare `/results` whose card links carry no election segment: SvelteKit then slots the PLURAL into the freeform `[[electionTab]]`, no election resolves, and the type goes undefined. `perm-localisation-positive` opens a drawer from exactly that page.
-  const drawerVisible = $derived<boolean>(!!(page.params.entity && page.params.id));
+  const drawerVisible = $derived(hasEntityDrawer(page.params));
 
   ////////////////////////////////////////////////////////////////////
   // Handlers (all selector changes push to URL)
@@ -77,7 +65,7 @@ When the active entity type cannot be resolved — no nominations for the active
   function handleEntityTabChange(tab: EntityTab): void {
     const plural = pluralForEntityType(tab.id);
     if (!plural) return;
-    goto(buildListRoute(activeElectionId, plural, page), { noScroll: true });
+    goto(buildListRoute(voterCtx.currentResultsElection?.id, plural, page), { noScroll: true });
     track('results_changeTab', { entityType: tab.id });
   }
 </script>

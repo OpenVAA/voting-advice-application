@@ -37,44 +37,26 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
   import { getVoterContext } from '$lib/contexts/voter';
   import { openEntityDrawer } from '$lib/dynamic-components/entityDetails';
   import { EntityListWithControls } from '$lib/dynamic-components/entityList';
-  import { buildListRoute, narrowEntityPlural, pluralForEntityType } from '$lib/routes';
+  import { buildListRoute, hasEntityDrawer, narrowEntityPlural, pluralForEntityType } from '$lib/routes';
   import { getEntityAndTitle } from '$lib/utils/entityDetails';
   import { compareMaybeWrappedEntities } from '$lib/utils/sorting';
-  import type { Election, EntityType } from '@openvaa/data';
+  import type { EntityType } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // The reactive context getters (constituenciesSelectable, currentResultsEntityType, matches, selectedConstituencies, selectedElections) are read via voterCtx.X.
-  // Genuinely stable members (track, t) remain destructured.
-  //
-  // dataRoot is NOT in that set. It is a bare reactive accessor that is identity-stable behind a #version bridge, so per CLAUDE.md's Context Destructuring Rule it may be neither destructured nor bound to an intermediate $derived read alias: referential equality would suppress downstream notification and the cold/direct-URL snapshot would stay empty. Read `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope — the drawer derivation below does exactly that, and must keep doing it. See CLAUDE.md "Context Destructuring Rule" and its stable-reference carve-out.
+  // Reactive accessors are read as voterCtx.X, never destructured or aliased (CLAUDE.md § Context Destructuring Rule).
   const voterCtx = getVoterContext();
   const { track, t } = voterCtx;
-  // Local aliases for template readability. Both are value-replacing, so a $derived read alias is safe and correct.
-  const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
 
   ////////////////////////////////////////////////////////////////////
   // URL-derived state
   ////////////////////////////////////////////////////////////////////
-  //
-  // Re-derived from the route params here rather than prop-drilled down from the two layouts above, for the reason given in the entity-tab layout: each level reading the URL directly is what keeps "the URL is the single source of truth" true across three files instead of one.
-
-  const _urlElectionTab = $derived(page.params.electionTab);
-
-  const activeElectionId = $derived<string | undefined>(
-    _urlElectionTab ?? (elections.length === 1 ? elections[0].id : undefined)
-  );
-
-  const activeElection = $derived<Election | undefined>(
-    activeElectionId ? elections.find((e) => e.id === activeElectionId) : undefined
-  );
 
   const _urlPlural = $derived(narrowEntityPlural(page.params.entityTab));
 
-  // Plural → singular mapping uses American spelling. The implied entity type lives on voterContext via `currentResultsEntityType`: URL-first with default-pick fallback to the first available tab for the active election. Reading through `voterCtx.X` per the CLAUDE.md Context Destructuring Rule preserves reactivity (must not destructure).
   const activeEntityType = $derived(voterCtx.currentResultsEntityType);
 
   // `compareMaybeWrappedEntities` re-sorts what the matcher already ordered, and the primary key is the same one: it compares match score DESC, which is exactly `MatchingAlgorithm`'s ascending distance. What it adds is a TIE-BREAK — election symbol asc, then name asc — for entities the matcher scores identically.
@@ -82,17 +64,18 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
   // Why this is needed: `matchingAlgorithm.ts:122` sorts on distance alone, and `Array.prototype.sort` is stable, so distance-tied entities keep their ARRIVAL order. That order is the `get_nominations` row order, which falls back to the `gen_random_uuid()` primary key for any nomination lacking `sort_order`, so without a tie-break tied candidates permute between page loads. `dev-seed`'s pipeline writes `sort_order`, but an imported dataset without it would still churn; this makes `/results` stable regardless of what the data layer hands us.
   //
   // `toSorted`, NOT `sort`: `voterCtx.matches[...]` is reactive context state and must not be mutated in place.
-  const activeMatches = $derived<Array<MaybeWrappedEntityVariant> | undefined>(
-    activeElectionId && activeEntityType
-      ? voterCtx.matches[activeElectionId]?.[activeEntityType]?.toSorted(compareMaybeWrappedEntities)
-      : undefined
-  );
+  const activeMatches = $derived.by<Array<MaybeWrappedEntityVariant> | undefined>(() => {
+    const electionId = voterCtx.currentResultsElection?.id;
+    return electionId && activeEntityType
+      ? voterCtx.matches[electionId]?.[activeEntityType]?.toSorted(compareMaybeWrappedEntities)
+      : undefined;
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Drawer visibility — drawer renders iff both singular+id present
   ////////////////////////////////////////////////////////////////////
 
-  const drawerVisible = $derived<boolean>(!!(page.params.entity && page.params.id));
+  const drawerVisible = $derived(hasEntityDrawer(page.params));
 
   const drawerEntity = $derived.by<MaybeWrappedEntityVariant | undefined>(() => {
     if (!drawerVisible) return undefined;
@@ -141,9 +124,12 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
 
   function handleDrawerClose(): void {
     // `noScroll: true` mirrors the entity-card open path (EntityCard's `cardAction` snippet sets `data-sveltekit-noscroll` on its anchor branch). Without it, SvelteKit's default scroll-on-navigation snaps the list back to the top, which reads as "the page scrolls when the drawer closes".
-    goto(buildListRoute(activeElectionId, _urlPlural ?? pluralForEntityType(activeEntityType), page), {
-      noScroll: true
-    });
+    goto(
+      buildListRoute(voterCtx.currentResultsElection?.id, _urlPlural ?? pluralForEntityType(activeEntityType), page),
+      {
+        noScroll: true
+      }
+    );
   }
 </script>
 
@@ -161,13 +147,13 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
             ? 'voter-results-alliance-section'
             : undefined}>
       <!-- {#key}: keep — a scope-tuple change discards per-scope filter UI state; without remount, EntityListWithControls would carry filter selections from one election:entityType context into the next. -->
-      {#key `${activeElectionId}:${activeEntityType}`}
+      {#key `${voterCtx.currentResultsElection?.id}:${activeEntityType}`}
         <h3 class="my-lg mx-10 text-xl">
           {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
           {#if voterCtx.constituenciesSelectable}
             <span class="font-normal">
               {t('results.inConstituency')}
-              {activeElection?.getMostSpecificConstituency(constituencies)?.name || '—'}
+              {voterCtx.currentResultsElection?.getMostSpecificConstituency(constituencies)?.name || '—'}
             </span>
           {/if}
         </h3>

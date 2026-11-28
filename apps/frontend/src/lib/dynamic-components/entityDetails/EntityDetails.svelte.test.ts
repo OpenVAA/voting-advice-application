@@ -10,6 +10,9 @@ import { DataRoot } from '@openvaa/data';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+// jsdom has no `window.matchMedia`, which `svelte/motion` reads at import through `$lib/utils/viewTransition`; motion is reported as allowed.
+vi.mock('svelte/motion', () => ({ prefersReducedMotion: { current: false } }));
+
 /** A tab as the setting names it. */
 type TabName = 'info' | 'opinions' | 'children';
 

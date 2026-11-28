@@ -9,6 +9,10 @@ import { DELAY } from '$lib/utils/timing';
 import { drawerHost } from './drawerHostState.svelte';
 import { polyfillDialogs, pressEscape as pressPlatformEscape } from '../dialogPlatform.testUtils';
 
+// Svelte's `MediaQuery` reads `matchMedia` once at module load, so the reduced-motion query is replaced by an object whose `current` each test sets.
+const reducedMotion = vi.hoisted(() => ({ current: false }));
+vi.mock('svelte/motion', () => ({ prefersReducedMotion: reducedMotion }));
+
 vi.mock('$app/environment', () => ({ browser: true, dev: true, building: false, version: 'test' }));
 
 vi.mock('$lib/contexts/component', () => ({
@@ -49,9 +53,7 @@ afterEach(() => {
 });
 
 function stubReducedMotion(reduce: boolean): void {
-  vi.stubGlobal('matchMedia', (query: string) => ({
-    matches: reduce && query === '(prefers-reduced-motion: reduce)'
-  }));
+  reducedMotion.current = reduce;
 }
 
 function mountHost(): HTMLDialogElement {

@@ -12,11 +12,12 @@
  *   - SCROLL SURVIVAL across entity open, entity close and entity-tab switch, each measured FROM A SCROLLED START. Every case reads its baseline AFTER bringing the click target into view and IMMEDIATELY before the click, and hard-asserts that baseline is greater than zero: Playwright scrolls an off-screen element into view before clicking it, which turns a baseline of 0 into a non-zero post-click offset — a scroll "regression" that is the harness's own doing (see spike 032). A baseline of 0 would make the equality that follows it vacuous, so a collapsed scrolled start is a FAILURE here, never a quiet pass.
  *   - THE TWO VIEW-TRANSITION INVARIANTS: overlay open and overlay close run no document View Transition AT ALL, and any transition that runs while a modal dialog is open carries no named groups. Both are ABSENCE assertions, so each is preceded by a POSITIVE one — a navigation that IS expected to produce a record, shown to produce it — because an absence observed through a dead instrument is not evidence of absence.
  *   - DID-NOT-REMOUNT by DOM NODE IDENTITY: tag a node before the navigation, assert the document still contains that same node after it. That is literally what the claim means, and it needs zero production instrumentation.
+ *   - FOCUS RETURN under reduced motion: a drawer opened from a card by keyboard and closed with Escape leaves focus on the card link, and it is still there two frames later, after the root layout's focus reset would have run.
  *   - THE DRAWER HOST'S SWAP AND TEARDOWN CONTRACT: an entity-to-entity navigation swaps content inside the SAME dialog node rather than reopening, and a dismissal always ends with no open dialog even though the opener is destroyed while the host is still rendering its payload.
  *
  * ## A precondition, not a skip — and derived in the page
  *
- * The View-Transition test needs something to observe: a browser with `document.startViewTransition`, and no `prefers-reduced-motion: reduce` preference, which would make the app's own `shouldAnimate` gate short-circuit. The project pins Desktop Chrome and `reducedMotion: 'no-preference'`, so either condition failing is a broken setup, and the test FAILS on it rather than skipping. Both conditions are derived INSIDE THE PAGE rather than read off the runner, because the repo carries two contradictory claims about whether `page.emulateMedia({ reducedMotion })` reaches the application's `matchMedia` — `voter-journey.fixture.ts@282` says it does not, `eperm07-term-trigger.spec.ts` uses it as a deliberate discriminator. An in-page evaluation is true either way. The scroll describe has no such precondition: those assertions hold with or without motion.
+ * The View-Transition test needs something to observe: a browser with `document.startViewTransition`, and no `prefers-reduced-motion: reduce` preference, which would make the app's own `shouldAnimate` gate short-circuit. The project pins Desktop Chrome and `reducedMotion: 'no-preference'` (the focus-return describe alone overrides it to `reduce`), so either condition failing is a broken setup, and the test FAILS on it rather than skipping. Both conditions are derived INSIDE THE PAGE rather than read off the runner, because the repo carries two contradictory claims about whether `page.emulateMedia({ reducedMotion })` reaches the application's `matchMedia` — `voter-journey.fixture.ts@282` says it does not, `eperm07-term-trigger.spec.ts` uses it as a deliberate discriminator. An in-page evaluation is true either way. The scroll describe has no such precondition: those assertions hold with or without motion.
  *
  * ## How each case reaches its entry condition, and why that keeps the property intact
  *
@@ -319,6 +320,45 @@ test.describe('voter-results-redraw — the drawer host swap and teardown contra
         'a dialog is still open after dismissal — a throw raised inside the host’s render flush aborted the close (see spike 034)'
       ).toHaveCount(0, { timeout: TIMEOUTS.slowPage });
     });
+  });
+});
+
+test.describe('voter-results-redraw — focus returns to the card when the drawer closes', () => {
+  // Under reduced motion the host closes the dialog synchronously, so nothing but the overlay exemption keeps the root layout's post-navigation focus reset from moving focus to the page heading.
+  test.use({ reducedMotion: 'reduce' });
+
+  test('a drawer opened from a card by keyboard and closed with Escape returns focus to the card link', async ({
+    page
+  }) => {
+    test.setTimeout(TIMEOUTS.testMax);
+    await landOnResults(page);
+    await awaitAnimationsSettled(page);
+
+    expect(
+      await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
+      'reduced motion is not emulated in the page, so the synchronous close this case is about never happens'
+    ).toBe(true);
+
+    const cardLink = page.getByTestId(testIds.voter.results.list).getByTestId(testIds.voter.results.cardAction).first();
+    await cardLink.focus();
+    await expect(cardLink).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId(testIds.voter.results.entityDetails)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await expect
+      .poll(() => page.evaluate(() => !!document.activeElement?.closest('dialog[open]')), {
+        message: 'focus did not enter the drawer after it opened',
+        timeout: TIMEOUTS.element
+      })
+      .toBe(true);
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId(testIds.voter.results.entityDetails)).toBeHidden({ timeout: TIMEOUTS.page });
+    await expect(cardLink, 'focus did not return to the card link that opened the drawer').toBeFocused();
+    // The focus reset runs a frame after the navigation, so focus is read again after two frames: a reset that ran would have moved it to the heading by then.
+    await page.evaluate(
+      () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+    );
+    await expect(cardLink, 'focus left the card link a frame after the drawer closed').toBeFocused({ timeout: 0 });
   });
 });
 

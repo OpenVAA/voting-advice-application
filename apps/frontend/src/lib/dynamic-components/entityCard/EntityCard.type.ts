@@ -35,7 +35,7 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
    */
   showType?: boolean;
   /**
-   * Whether a link action keeps the scroll position. Set to `false` when the action navigates to another page rather than opening an overlay over the list. @default true
+   * Whether a link action keeps the scroll position and keeps focus on the link, so a drawer opened over the list returns focus to the card when it closes. Set to `false` when the action navigates to another page rather than opening an overlay over the list. @default true
    */
   keepScroll?: boolean;
 };

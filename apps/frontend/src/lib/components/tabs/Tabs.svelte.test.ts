@@ -8,6 +8,9 @@ import { resolveActiveTab, tabKey } from './tabKey';
 import Tabs from './Tabs.svelte';
 import type { Tab } from './Tabs.type';
 
+// jsdom has no `window.matchMedia`, which `svelte/motion` reads at import through `$lib/utils/viewTransition`; motion is reported as allowed.
+vi.mock('svelte/motion', () => ({ prefersReducedMotion: { current: false } }));
+
 type TestTab = Tab & { extra: number };
 
 const TABS: Array<TestTab> = [

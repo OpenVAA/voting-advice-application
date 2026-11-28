@@ -5,7 +5,7 @@
  *
  * The target may render after the first frame (the voter question heading waits for lazily imported modules), so when the first lookup finds nothing this waits for the target to appear, bounded by a timeout and cancelled by the next navigation.
  *
- * It never takes focus from the user: a focus move or a pointer press while the target is pending cancels the wait.
+ * It never takes focus from the user: a focus move, key press or pointer press while the target is pending cancels the wait.
  */
 
 /** How long a navigation waits for its focus target to render before giving up, in milliseconds. */
@@ -13,6 +13,9 @@ export const FOCUS_TARGET_WAIT_MS = 10_000;
 
 /** The selector for the element a page nominates as its post-navigation focus target. */
 export const FOCUS_ON_NAV_SELECTOR = '[data-focus-on-nav]';
+
+/** The events that show the user acting on the page while the target is pending, each of which cancels the wait. */
+const USER_INPUT_EVENTS = ['focusin', 'keydown', 'pointerdown'] as const;
 
 export interface FocusNavigationTargetOptions {
   /** The document to search and observe. Defaults to the global `document`. */
@@ -43,7 +46,7 @@ export function focusNavigationTarget({
     observer = undefined;
     if (timer !== undefined) clearTimeout(timer);
     timer = undefined;
-    doc.removeEventListener('pointerdown', cancel, { capture: true });
+    for (const type of USER_INPUT_EVENTS) doc.removeEventListener(type, cancel, { capture: true });
   }
 
   function findTarget(): HTMLElement | null {
@@ -71,8 +74,9 @@ export function focusNavigationTarget({
       focusIfPresent();
     });
     observer.observe(doc.documentElement, { childList: true, subtree: true });
-    // Passive and never stops propagation, so the press reaches every other listener unchanged.
-    doc.addEventListener('pointerdown', cancel, { capture: true, passive: true, once: true });
+    // Passive and never stops propagation, so the event reaches every other listener unchanged.
+    for (const type of USER_INPUT_EVENTS)
+      doc.addEventListener(type, cancel, { capture: true, passive: true, once: true });
     timer = setTimeout(cancel, timeoutMs);
   });
 

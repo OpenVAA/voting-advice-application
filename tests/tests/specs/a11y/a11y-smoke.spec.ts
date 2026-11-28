@@ -120,7 +120,7 @@ const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
     contentTestId: testIds.voter.results.card
   },
   {
-    // The drawer content flies in via Svelte `transition:fly` (Drawer.svelte:82), which animates opacity 0->1. axe composites text colour through any in-flight ancestor opacity, so scanning mid-fly produced phantom `color-contrast` failures — e.g. `text-secondary` #666666 rendered ~#969696 (2.95:1) and `primary` #2546a8 rendered ~#6a80c3 (3.82:1), both exactly the token at ~0.69 opacity. At FULL opacity the tokens pass (≈5.7:1 / ≈8.6:1 on white), so this is a scan-timing fix, NOT a theme change. The shared `awaitAnimationsSettled` gate settles the WHOLE document (drawer fly + any page-level entrance fade) and is safe here specifically because it excludes INFINITE animations — the looping match bar on this surface would otherwise never resolve, which is why this route once needed a dialog-subtree-only settle.
+    // `DrawerHost` opens with CSS transitions: the panel slides up and the backdrop fades in. axe composites text colour through any in-flight ancestor opacity, so a scan taken mid-transition reports phantom `color-contrast` failures (e.g. `text-secondary` #666666 rendered ~#969696, 2.95:1); at full opacity the tokens pass (≈5.7:1 / ≈8.6:1 on white), so this is a scan-timing gate, not a theme change. The shared `awaitAnimationsSettled` gate settles the whole document and excludes infinite animations, so the looping match bar on this surface does not keep it waiting.
     name: 'voter-detail-drawer',
     fixture: 'answered',
     contentTestId: testIds.voter.results.entityDetails,

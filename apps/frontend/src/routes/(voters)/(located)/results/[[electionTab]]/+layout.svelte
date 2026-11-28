@@ -6,8 +6,8 @@ The outermost of the three results route levels. It owns the page chrome — the
 
 ## Architecture
 
-- URL is the single source of truth. The active election is `$derived` over `page.params.electionTab` (name-disjoint from the search-side `?electionId=…` AVAILABLE-array surface, which keeps its `voterContext.selectedElections` semantics — that array drives nomination + question filtering and is set by the voter at `/elections`). No local `$state` twins for URL-derivable state; no `$effect`-based sync.
-- This level is the one that SURVIVES every in-results navigation: a tab switch, a drawer open and a drawer close all change params below it, so the page-entry event and the popup countdowns belong here and nowhere lower. Only an election change or a fresh entry re-runs them.
+- URL is the single source of truth. The active election is `voterCtx.currentResultsElection`, derived from `page.params.electionTab` (name-disjoint from the search-side `?electionId=…` AVAILABLE-array surface, which keeps its `voterContext.selectedElections` semantics — that array drives nomination + question filtering and is set by the voter at `/elections`). No local `$state` twins for URL-derivable state; no `$effect`-based sync.
+- This level SURVIVES every in-results navigation, an election switch included: a tab switch, a drawer open and a drawer close change params below it, and an election switch changes only this level's own param, so SvelteKit reuses the component. The page-entry event therefore fires once per visit to the results page, on mount; an election switch is recorded by `results_changeElection` and does not re-fire it. The popup countdowns are likewise started once per visit; their effects re-run only when the app settings change, not on an election switch.
 - `{@render children()}` is rendered INSIDE the `fullWidth` snippet, so the descendant-owned list stays inside `MainContent`'s full-width region. Rendering it outside that snippet would take the list out of its container.
 - Chooser instead of children: when no election can be implied, this layout renders the select-an-election prompt INSTEAD of its children. The entity-tab layout below applies the same rule to its own param.
 
@@ -39,16 +39,10 @@ Sibling tracking concerns:
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // The reactive context getters (currentResultsEntityType, matches, nominationsAvailable, resultsAvailable, selectedElections) are read via voterCtx.X.
-  // Genuinely stable members (getRoute, t, answers, track, *Countdown) remain destructured.
-  //
-  // appSettings and dataRoot are NOT in that set. Both are bare reactive accessors, so per CLAUDE.md's Context Destructuring Rule neither may be destructured: appSettings is value-replacing, so a destructured local stops updating, and dataRoot is identity-stable behind a #version bridge, so the destructure takes the version dependency once at init and never again.
+  // Reactive accessors are read as voterCtx.X, never destructured or aliased (CLAUDE.md § Context Destructuring Rule).
   const voterCtx = getVoterContext();
   const { answers, getRoute, track, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = voterCtx;
-  // appSettings is value-replacing: a $derived read alias is safe and correct.
   const appSettings = $derived(voterCtx.appSettings);
-  // dataRoot is identity-stable: read `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope, never through an intermediate $derived alias (referential equality would suppress downstream notification and the cold/direct-URL snapshot would stay empty). See CLAUDE.md "Context Destructuring Rule" and its stable-reference carve-out.
-  // Local aliases for template readability:
   const elections = $derived(voterCtx.selectedElections);
 
   ////////////////////////////////////////////////////////////////////
@@ -62,21 +56,10 @@ Sibling tracking concerns:
   //
   // entityTab + entity + id are route params, gated by the entityTypePlural / entityTypeSingular short-name matchers. They are read at the levels that own them (the entity-tab layout and the innermost page), not here.
   //
-  // Single-election fallback: when the route segment is absent AND there's exactly one available election, auto-select it. The server guard in `[[electionTab]]/+layout.ts` is expected to redirect-and-canonicalize this case, so this fallback is the client-side safety net.
-
-  const _urlElectionTab = $derived(page.params.electionTab);
-
-  const activeElectionId = $derived<string | undefined>(
-    _urlElectionTab ?? (elections.length === 1 ? elections[0].id : undefined)
-  );
-
-  const activeElection = $derived<Election | undefined>(
-    activeElectionId ? elections.find((e) => e.id === activeElectionId) : undefined
-  );
+  // The active election is `voterCtx.currentResultsElection`: the route segment, or the only available election when the segment is absent and exactly one is available. The server guard in `[[electionTab]]/+layout.ts` redirects that case to the canonical URL first, so the fallback is the client-side safety net.
 
   const _urlPlural = $derived(narrowEntityPlural(page.params.entityTab));
 
-  // Plural → singular mapping uses American spelling. The implied entity type lives on voterContext via `currentResultsEntityType`: URL-first with default-pick fallback to the first available tab for the active election. Reading through `voterCtx.X` per the CLAUDE.md Context Destructuring Rule preserves reactivity (must not destructure).
   const activeEntityType = $derived(voterCtx.currentResultsEntityType);
 
   ////////////////////////////////////////////////////////////////////
@@ -85,7 +68,7 @@ Sibling tracking concerns:
 
   onMount(() => {
     track(voterCtx.resultsAvailable ? 'results_ranked' : 'results_browse', {
-      electionId: activeElectionId,
+      electionId: voterCtx.currentResultsElection?.id,
       entityType: activeEntityType,
       numAnswers: Object.keys(answers.answers).length
     });
@@ -148,7 +131,7 @@ Sibling tracking concerns:
     </div>
 
     {#if voterCtx.dataRoot.elections.length > 1}
-      {@const activeIndex = elections.findIndex((e) => e.id === activeElectionId)}
+      {@const activeIndex = elections.findIndex((e) => e.id === voterCtx.currentResultsElection?.id)}
       <AccordionSelect
         options={elections}
         {activeIndex}
@@ -158,9 +141,9 @@ Sibling tracking concerns:
         style="view-transition-name: results-election-select"
         data-testid="voter-results-election-select" />
 
-      {#if activeElection?.info}
+      {#if voterCtx.currentResultsElection?.info}
         <p transition:slide={{ duration: DELAY.sm }} class="text-secondary text-center text-sm">
-          {activeElection.info}
+          {voterCtx.currentResultsElection.info}
         </p>
       {/if}
     {/if}
@@ -173,7 +156,7 @@ Sibling tracking concerns:
         class="bg-base-300 flex min-h-[120vh] flex-col items-center [content-visibility:auto]"
         style="content-visibility: auto;"
         data-testid="voter-results-list-container">
-        {#if activeElectionId}
+        {#if voterCtx.currentResultsElection}
           {@render children()}
         {:else}
           <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>
