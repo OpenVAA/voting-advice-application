@@ -12,6 +12,7 @@ interface MultipleChoiceValue {
  * - Red is favored?:   A yes, B no  => disagree
  * - Blue is favored?:  A no,  B yes => disagree
  * - Green is favored?: A no,  B no  => agree
+ *
  * Thus, the respondents disagree on two counts but agree on one. In contrast, had they given the same answer, agreement would be perfect regardless of the number of choices.
  * If such behavior limited in the level of disagreement is not what you want, this can be partially remedied by increasing the question weight to `n/2`. Note, however, that this will correct its weighting compared to other questions, but it will not yield full disagreement when looking at the question in isolation because the matching algorithm will normalise the distance using the maximum possible distance after computing it.
  */

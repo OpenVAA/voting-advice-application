@@ -20,7 +20,7 @@ All four are `type: module`, build with [`tsup`](https://tsup.egoist.dev/) + `ts
 - **Build pipeline.** `scripts.build = "tsup && tsc --emitDeclarationOnly --outDir dist"` runs the bundler then emits types. Output goes to `dist/` (gitignored). The `tsBuildInfoFile` is set to `./dist/tsconfig.tsbuildinfo` in `tsconfig.json` so the incremental-build artifact is also gitignored.
 - **`package.json` shape.** See [`@openvaa/core`'s `package.json`](./core/package.json) as the live reference. Required fields: `name`, `version`, `license`, `description`, `repository`, `homepage`, `bugs`, `files`, `publishConfig`, `scripts.build`, `scripts.lint`, `scripts.test:unit`, `scripts.typecheck`, `type: "module"`, `module`, `types`, `exports`. Required devDeps: `@openvaa/shared-config: workspace:^`, `tsup: catalog:`, `typescript: catalog:`, `vitest: catalog:`.
 - **`tsconfig.json` shape.** See [`@openvaa/core`'s `tsconfig.json`](./core/tsconfig.json). Always `extends: "@openvaa/shared-config/ts"`; sets `tsBuildInfoFile`, `rootDir`, `outDir`, `declaration: true`, `emitDeclarationOnly: true`; includes `src/**/*`; excludes `**/*.test.ts`. Add `references` blocks only when depending on another workspace package.
-- **`tsup.config.ts` shape.** See [`@openvaa/core`'s `tsup.config.ts`](./core/tsup.config.ts). Default: `format: ['esm']`, `entry: ['src/index.ts']`, `clean: true`, `sourcemap: true`.
+- **`tsup.config.ts` shape.** The file is one line, `export { default } from '@openvaa/shared-config/tsup';`, re-exporting the shared build from [`@openvaa/shared-config`](./shared-config/tsup.config.mjs): `format: ['esm']`, `entry: ['src/index.ts']`, `clean: true`, `sourcemap: true`.
 
 ## Justified divergences
 

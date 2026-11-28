@@ -21,11 +21,13 @@
   "exports": {
     "./eslint": "./eslint.config.mjs",
     "./prettier": "./prettier.config.mjs",
-    "./ts": "./tsconfig.base.json"
+    "./ts": "./tsconfig.base.json",
+    "./tsup": "./tsup.config.mjs"
   },
   "files": [
     "eslint.config.mjs",
     "prettier.config.mjs",
-    "tsconfig.base.json"
+    "tsconfig.base.json",
+    "tsup.config.mjs"
   ]
 }

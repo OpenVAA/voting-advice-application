@@ -111,7 +111,7 @@ matches. The two storage buckets are created by the migration; a deployment's ow
      three (`000-enums.sql:28`)
    - `grant_permission` (23 values, in `000-enums.sql`): the verbs `user_can` is written in,
      canonical in `162-IMPLEMENTATION-BRIEF.md` section 3.2. `scripts/assert-grant-permission-enum.mjs`
-     holds the same list as a committed canon and reddens `lint:check` on drift.
+     reads the list from `000-enums.sql` and reddens `lint:check` when the generated types drift from it.
    - `storage_verb` (2 values, in `000-enums.sql`): read, write
    - TODO: add test or type assertion ensuring DB enums stay in sync with data package
      TypeScript equivalents (ENTITY_TYPE, QUESTION_TYPE, QUESTION_CATEGORY_TYPE).

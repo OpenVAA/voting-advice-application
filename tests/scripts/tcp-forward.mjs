@@ -10,11 +10,13 @@
  * Usage:
  *   node tests/scripts/tcp-forward.mjs <listenPort>:<upstreamHost>:<upstreamPort> [...]
  *
+ *   ```sh
  *   # The invocation `tests/scripts/visual-container.sh` issues inside the container:
  *   node tests/scripts/tcp-forward.mjs \
  *     "5173:host.docker.internal:5173" \
  *     "54321:host.docker.internal:54321" \
  *     "54324:host.docker.internal:54324"
+ *   ```
  *
  * Handshake -- the caller waits on stdout rather than sleeping:
  *   tcp-forward.mjs: READY <listenPort> -> <upstreamHost>:<upstreamPort>   (one per listener)
@@ -23,9 +25,9 @@
  * Shutdown: SIGTERM or SIGINT closes every listener and exits 0. A forwarder killed by the wrapper at end of run must not turn a green Playwright run into a non-zero script exit.
  *
  * Exit codes -- the caller must be able to branch on the status alone:
- *   0 - clean shutdown (SIGTERM/SIGINT received, every listener closed)
- *   2 - usage error (no arguments, or an argument that is not <listenPort>:<host>:<port>)
- *   5 - a listener failed to bind
+ *   0 - clean shutdown (SIGTERM/SIGINT received, every listener closed).
+ *   2 - usage error (no arguments, or an argument that is not <listenPort>:<host>:<port>).
+ *   5 - a listener failed to bind.
  *
  * These three numbers are shared with `tests/scripts/visual-container.sh`'s exit-code table and must stay in agreement with it.
  *

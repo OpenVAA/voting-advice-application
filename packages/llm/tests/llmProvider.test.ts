@@ -1315,7 +1315,7 @@ describe('LLMProvider', () => {
 
       mockNoObjectGeneratedErrorIsInstance.mockReturnValue(true);
 
-      // First request: success immediately
+      // First request: success immediately.
       // Second request: fail once, then succeed
       mockGenerateObject
         .mockResolvedValueOnce(successResult)

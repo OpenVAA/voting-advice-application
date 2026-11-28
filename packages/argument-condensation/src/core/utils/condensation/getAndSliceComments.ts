@@ -114,7 +114,7 @@ export function getAndSliceComments({
         const categoricalQuestion = question as SingleChoiceCategoricalQuestion;
         const choiceId = answer.value as Id;
 
-        // For categorical questions, use function ensureValue to validate the choice
+        // For categorical questions, use function ensureValue to validate the choice.
         // The actual grouping is done by the choiceId from the answer's value
         try {
           if (isMissingValue(categoricalQuestion.ensureValue(choiceId))) {

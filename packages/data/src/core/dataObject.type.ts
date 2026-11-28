@@ -40,8 +40,9 @@ export interface DataObjectData extends HasId {
    */
   customData?: object | null;
   /**
-   * Whether the object is fully or partially automatically generated during data provision, such as `Alliance`s and `Nomination`s. @defaultValue false
+   * Whether the object is fully or partially automatically generated during data provision, such as `Alliance`s and `Nomination`s.
    * If this is `true`, the `Id` validity check is bypassed, because it’s assumed to be generated as well.
+   * @defaultValue false
    */
   isGenerated?: boolean | null;
 }

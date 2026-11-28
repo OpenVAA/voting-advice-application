@@ -21,8 +21,9 @@ export abstract class MultipleChoiceQuestion<
   implements DataAccessor<MultipleChoiceQuestionData<TType, TValue>>
 {
   /**
-   * Whether or not the same choice can be selected multiple times. @defaultValue false
+   * Whether or not the same choice can be selected multiple times.
    * NB. `allowDuplicates` is assumed `false` if `ordered` is `true`.
+   * @defaultValue false
    */
   get allowDuplicates(): boolean {
     return !this.data.ordered && (this.data.allowDuplicates ?? false);

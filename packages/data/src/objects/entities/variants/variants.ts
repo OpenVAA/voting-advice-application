@@ -1,7 +1,7 @@
 import type { Alliance, Candidate, ENTITY_TYPE, EntityType, Faction, Organization } from '../../../internal';
 
 /**
- * Entity variants
+ * Entity variants.
  * This file contains type and class mappings for all concrete entity types, i.e. those that are not abstract base classes.
  * NB. Make sure to update the types below whenever implemeting new entity variants.
  */

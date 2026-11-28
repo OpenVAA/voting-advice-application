@@ -1,5 +1,5 @@
 /**
- * Base interface for all pipeline metrics
+ * Base interface for all pipeline metrics.
  * Provides common timing and cost tracking across all processing stages
  */
 export interface PipelineMetrics {
@@ -10,7 +10,7 @@ export interface PipelineMetrics {
 }
 
 /**
- * Cost breakdown for an operation
+ * Cost breakdown for an operation.
  * Used across modules for tracking input/output/total costs
  */
 export interface CostBreakdown {

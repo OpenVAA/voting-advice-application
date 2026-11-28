@@ -39,7 +39,7 @@ export function setPromptVars({
   // Determine which variables are optional
   const optionalSet = optional ? new Set(optional) : new Set<string>();
 
-  // Create a working copy of variables
+  // Create a working copy of variables.
   // For optional variables that are missing, provide empty strings
   const workingVariables = { ...variables };
   for (const varName of varsInTemplate) {

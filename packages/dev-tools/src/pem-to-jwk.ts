@@ -4,6 +4,7 @@
  * Supports both signing keys (Idura JAR + private_key_jwt) and encryption keys (JWE id_token decryption for Idura and Signicat).
  *
  * Usage:
+ *   ```sh
  *   yarn workspace @openvaa/dev-tools pem-to-jwk \
  *     --in <path>             PEM file to convert
  *     --type <signing|encryption>
@@ -12,6 +13,7 @@
  *                               signing    -> RS256
  *                               encryption -> RSA-OAEP-256 (Idura)
  *                             Signicat encryption keys need --alg RSA-OAEP.
+ *   ```
  *
  * Private/public detection is based on the PEM header.
  *

@@ -51,13 +51,15 @@ export type QuestionTypeSettings =
       min?: number;
       max?: number;
     };
-// Not supported yet
+// Not supported yet:
+// ```ts
 // | {
 //     type: typeof QUESTION_TYPE.PreferenceOrder;
 //     choices: Array<LocalizedChoice>;
 //     min?: number;
 //     max?: number;
 //   };
+// ```
 
 export type QuestionSettingsDateType = 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday';
 

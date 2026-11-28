@@ -34,8 +34,9 @@ export interface MultipleChoiceQuestionData<
   // - choices: Array<Choice<TValue>>;
 
   /**
-   * Whether or not the same choice can be selected multiple times. @defaultValue false
+   * Whether or not the same choice can be selected multiple times.
    * NB. `allowDuplicates` is assumed `false` if `ordered` is `true`.
+   * @defaultValue false
    */
   allowDuplicates?: boolean | null;
   /**

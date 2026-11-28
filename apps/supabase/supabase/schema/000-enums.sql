@@ -37,7 +37,7 @@ CREATE TYPE public.grant_scope_type AS ENUM('global', 'account', 'project', 'ent
 -- Exactly two role levels: every supported user type is an admin or an editor of some scope. Managing editors is the permission project.manage_editors, with entity.invite_children as its entity-scope equivalent, so a third level would be a security enum member that nothing grants.
 CREATE TYPE public.grant_role_type AS ENUM('admin', 'editor');
 
--- The permission verbs of user_can, in capability-matrix order. Enum ordinals are persisted, so the order is part of the type: scripts/assert-grant-permission-enum.mjs holds the same list in the same order and fails lint:check if this declaration or the generated types drift from it.
+-- The permission verbs of user_can, in capability-matrix order. Enum ordinals are persisted, so the order is part of the type: scripts/assert-grant-permission-enum.mjs reads this declaration as its source of truth and fails lint:check if the generated types drift from it in membership or order.
 CREATE TYPE public.grant_permission AS ENUM(
   'feedback.read',
   'feedback.manage',
